@@ -205,3 +205,27 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# experiment worktrees
+/expert_generic
+/expert_team
+/naive_generic
+/naive_team
+/structured_generic
+/structured_team
+
+# experiment worktrees
+/expert_generic
+/expert_team
+/naive_generic
+/naive_team
+/structured_generic
+/structured_team
+
+# experiment worktrees
+/expert_generic
+/expert_team
+/naive_generic
+/naive_team
+/structured_generic
+/structured_team
