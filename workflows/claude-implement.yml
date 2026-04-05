@@ -1,4 +1,4 @@
-name: Claude Implement Issue
+name: Claude Implement Issue - structured-generic
 
 on:
   issues:
@@ -17,7 +17,7 @@ on:
 
 jobs:
   claude-implement:
-    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'ai-implement'
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'structured-generic'
     runs-on: ubuntu-latest
 
     permissions:
@@ -28,9 +28,10 @@ jobs:
       actions: read
 
     steps:
-      - name: Checkout repository
+      - name: Checkout experiment branch
         uses: actions/checkout@v4
         with:
+          ref: exp/structured-generic
           fetch-depth: 0
 
       - name: Run Claude Code Action
@@ -41,7 +42,11 @@ jobs:
           show_full_output: true
           claude_args: "--max-turns 24"
           prompt: |
-            You are the primary autonomous evolution engine for this repository.
+            You are the autonomous evolution engine for the **structured-generic** experiment.
+
+            Active branch: exp/structured-generic
+            Do NOT access, inspect, or reference any other branch (main, baseline/*, exp/naive-*, exp/structured-team, exp/expert-*, or any other sibling experiment branch).
+            Any PR you open must target exp/structured-generic, never main.
 
             The GitHub issue you must implement is:
 
@@ -50,20 +55,20 @@ jobs:
             ${{ github.event.issue.body || inputs.issue_body }}
 
             Your task is not complete until one of these happens:
-            1. A pull request is created or updated with the implementation
+            1. A pull request is created or updated with the implementation (targeting exp/structured-generic)
             2. You encounter a hard blocking error and explain it clearly
 
             Instructions:
-            - Inspect the repository
-            - Create a dedicated branch for the task
+            - Inspect the repository (current branch only)
+            - Create a dedicated sub-branch off exp/structured-generic for the task
             - Implement the requested change
-            - Run tests if available
-            - If tests do not exist, create appropriate tests
+            - Run tests if available; if tests do not exist, create appropriate ones
             - Commit the changes
-            - Open or update a pull request
+            - Open or update a pull request targeting exp/structured-generic
 
             Constraints:
-            - Never push directly to main
+            - Never push directly to exp/structured-generic or main
             - Follow CLAUDE.md strictly
             - Keep changes minimal, reviewable, and reproducible
             - Do not modify workflow or governance files unless explicitly required by the issue
+            - Never access or reference sibling experiment branches
