@@ -98,7 +98,9 @@ These rules exist to preserve experiment isolation, reproducibility, and valid t
 
 ## Claude as the auto-evolution engine
 
-In this project, Claude (this instance) **is** the self-evolution engine. It is invoked automatically by a GitHub Actions workflow — not by a human typing in a terminal. This section defines what that means and what constraints apply in that context.
+In this project, Claude (this instance) **is** the self-evolution engine. It is invoked **exclusively via GitHub Actions CI** — never from a local terminal or local worktree. This section defines what that means and what constraints apply in that context.
+
+> **If you are reading this outside of a GitHub Actions runner: stop. Do not proceed with autonomous changes.** Local worktrees share a git object store and cannot enforce branch isolation — running autonomous Claude locally would contaminate the experiment and invalidate thesis results.
 
 ### How it works
 
