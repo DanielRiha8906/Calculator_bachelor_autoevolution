@@ -1,0 +1,90 @@
+@startuml sequence_diagram
+
+title Calculator Interactive Session — Sequence Diagram
+
+actor User
+participant "main / run_interactive" as Main
+participant Calculator
+
+User -> Main : start program
+activate Main
+
+Main -> Main : create Calculator()
+Main --> User : display available operations
+
+loop until "quit"
+    User -> Main : enter operation name
+
+    alt operation == "quit"
+        Main --> User : exit
+        deactivate Main
+
+    else unknown operation
+        Main --> User : "Unknown operation '...'"
+
+    else binary operation (add / subtract / multiply / divide / power)
+        Main --> User : prompt "First number:"
+        User -> Main : enter a
+        Main --> User : prompt "Second number:"
+        User -> Main : enter b
+
+        alt invalid number input
+            Main --> User : "Error: both inputs must be valid numbers."
+        else valid input
+            Main -> Calculator : <operation>(a, b)
+            activate Calculator
+
+            alt divide with b == 0
+                Calculator --> Main : raises ValueError
+                Main --> User : "Error: Division by zero is not allowed"
+            else normal result
+                Calculator --> Main : result
+                deactivate Calculator
+                Main --> User : "Result: <value>"
+            end
+        end
+
+    else unary operation — factorial
+        Main --> User : prompt "Number:"
+        User -> Main : enter n
+
+        alt not a valid integer
+            Main --> User : "Error: factorial requires a whole number."
+        else valid integer
+            Main -> Calculator : factorial(n)
+            activate Calculator
+
+            alt n < 0 or non-integer
+                Calculator --> Main : raises ValueError / TypeError
+                Main --> User : "Error: <message>"
+            else valid n
+                Calculator --> Main : n!
+                deactivate Calculator
+                Main --> User : "Result: <value>"
+            end
+        end
+
+    else unary operation — square_root / log / ln / square / cube / cube_root
+        Main --> User : prompt "Number:"
+        User -> Main : enter x
+
+        alt not a valid number
+            Main --> User : "Error: input must be a valid number."
+        else valid number
+            Main -> Calculator : <operation>(x)
+            activate Calculator
+
+            alt domain error (e.g. sqrt of negative)
+                Calculator --> Main : raises ValueError
+                Main --> User : "Error: <message>"
+            else valid input
+                Calculator --> Main : result
+                deactivate Calculator
+                Main --> User : "Result: <value>"
+            end
+        end
+
+    end
+end
+
+@enduml

@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #42 — Add diagrams (Task 6, Naive/generic) ---
+Files changed: artifacts/class_diagram.puml (new), artifacts/activity_diagram.puml (new), artifacts/sequence_diagram.puml (new)
+Purpose: Create PlantUML class, activity, and sequence diagrams documenting the Calculator class and interactive session flow, as required by CLAUDE.md artifacts policy.
+Risks: None — documentation only; no source code or tests modified.
+Testing: python3 -m pytest tests/ -v — 75 passed, 0 failed.
+Duration: 138.8s | Cost: $0.321491 USD | Turns: 19
+Branch: task/issue-42-diagrams. PR target: exp/naive-generic.
+
 --- 2026-04-08: Issue #38 — Add user input to the calculator (Task 5, Naive/generic) ---
 Files changed: src/__main__.py (replaced demo main with run_interactive loop), tests/test_calculator.py (added TestRunInteractive class, 19 new tests)
 Purpose: Expose all Calculator operations through an interactive REPL so users can enter operations and numbers at runtime instead of hardcoded values.
