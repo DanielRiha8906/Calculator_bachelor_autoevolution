@@ -4,7 +4,7 @@ Files changed: src/calculator.py (added 7 methods), tests/test_calculator.py (ad
 Purpose: Implement square, cube, square_root, cube_root, power, log (base-10), and ln operations; raise ValueError for invalid domains (sqrt of negative, log/ln of ≤0).
 Risks: cube_root uses sign-preserving fractional exponent to handle negative inputs correctly; floating-point results use math.isclose in tests.
 Testing: python3 -m pytest tests/test_calculator.py -v — 76 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 131.4s | Cost: $0.327596 USD | Turns: 15
 Branch: task/issue-37-math-functions-expert-generic | PR target: exp/expert-generic
 
 --- 2026-04-08: Issue #25 (exp/expert-generic) — Add factorial operation ---
