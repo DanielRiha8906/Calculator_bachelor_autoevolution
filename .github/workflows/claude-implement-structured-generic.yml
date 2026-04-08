@@ -31,6 +31,4 @@ jobs:
       issue_number: ${{ github.event.issue.number || inputs.issue_number }}
       issue_title: ${{ github.event.issue.title || inputs.issue_title }}
       issue_body: ${{ github.event.issue.body || inputs.issue_body }}
-      prompt_additions: |
-      Name the sub-branch exactly: task/issue-${{ github.event.issue.number || inputs.issue_number }}-{short-slug} where {short-slug} is a concise kebab-case summary of the issue (e.g. task/issue-42-add-logging)
     secrets: inherit
