@@ -4,7 +4,7 @@ Files changed: src/calculator.py (added __init__, _record, get_history, clear_hi
 Purpose: Add a history of operations to the Calculator class. Each successful operation is appended to an internal list (_history). The get_history() method returns a copy; clear_history() resets it. In interactive mode, users can type 'history' to see a numbered list of past operations or 'clear_history' to reset it. Failed operations are never recorded.
 Risks: Low — additive change. Calculator class now has __init__ (previously relied on implicit object()); all existing tests still pass. run_cli is untouched. get_history() returns a shallow copy to prevent external mutation of the internal list.
 Testing: python -m pytest tests/test_calculator.py -v — 118 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 264.0s | Cost: $0.862664 USD | Turns: 35
 Branch: task/issue-63-history. PR target: exp/naive-generic.
 
 --- 2026-04-08: Issue #60 — Input validation with retry logic (Task 8, Naive/generic) ---
