@@ -4,7 +4,7 @@ Files changed: src/__main__.py, tests/test_main.py, artifacts/activity_diagram.p
 Purpose: Added MAX_ATTEMPTS=3 retry loop to the interactive mode so invalid operation choice and invalid operand input prompt the user to try again instead of crashing or looping indefinitely. After exhausting all retries the session ends with a clear "Ending session" message. Added _parse_float() helper used by both modes to emit "'<val>' is not a valid number" instead of Python's raw float() error. Fixed three existing tests that assumed single-attempt error handling; added six new tests covering retry-then-success, max-attempt exhaustion, and bash-mode non-numeric input. Updated activity and sequence diagrams to document the retry paths.
 Risks: Minimal — no Calculator class changes; behaviour change is confined to run_calculator() and run_bash_mode(). MAX_ATTEMPTS is a module-level constant, easy to adjust.
 Testing: python -m pytest tests/ — 103 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 580.4s | Cost: $1.223240 USD | Turns: 32
 Branch: task/issue-61-input-validation. PR targeting exp/structured-generic.
 
 --- 2026-04-08: Issue #48 — Bash mode CLI (structured-generic) ---
