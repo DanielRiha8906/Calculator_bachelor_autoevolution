@@ -71,20 +71,30 @@ else no args — interactive mode
     CLI -> Main : interactive_main()
 
     User -> Main : run program
-    note right of Main : choice_failures = 0
+    note right of Main : choice_failures = 0\nhistory = []
 
     loop session (until choice == "0" or too many failures)
 
-        Main -> User : display menu (1–12, 0 to quit)
+        Main -> User : display menu (1–12, 0 to quit, h to show history)
         User -> Main : enter menu choice
 
         alt choice == "0"
             Main -> User : "Goodbye!"
+            Main -> Main : _write_history(history, history_file)
             note right of Main : session ends
+
+        else choice == "h"
+            alt history is empty
+                Main -> User : "No history yet."
+            else history has entries
+                Main -> User : each history entry (e.g. "add(2, 3) = 5")
+
+            end
 
         else unknown choice
             note right of Main : choice_failures += 1
             alt choice_failures >= MAX_ATTEMPTS
+                Main -> Main : _write_history(history, history_file)
                 Main -> User : "Too many invalid choices — ending session"
                 note right of Main : session ends
             else
@@ -105,6 +115,7 @@ else no args — interactive mode
                 end
                 alt MAX_ATTEMPTS exceeded
                     ReadNum -> Main : raise TooManyAttemptsError
+                    Main -> Main : _write_history(history, history_file)
                     Main -> User : "Too many invalid inputs — ending session"
                     note right of Main : session ends
                 else valid float
@@ -121,6 +132,7 @@ else no args — interactive mode
                 end
                 alt MAX_ATTEMPTS exceeded
                     ReadNum -> Main : raise TooManyAttemptsError
+                    Main -> Main : _write_history(history, history_file)
                     Main -> User : "Too many invalid inputs — ending session"
                     note right of Main : session ends
                 else valid float
@@ -130,6 +142,7 @@ else no args — interactive mode
                 Main -> Calc : add(a, b)  [or subtract/multiply/divide/power]
                 alt valid input
                     Calc -> Main : result
+                    Main -> Main : append entry to history
                     Main -> User : "Result: <value>"
                 else ZeroDivisionError (divide by zero)
                     Calc -> Main : raise ZeroDivisionError
@@ -156,6 +169,7 @@ else no args — interactive mode
                 Main -> Calc : square_root(a)  [or square/cube/cube_root/log/ln]
                 alt valid input
                     Calc -> Main : result
+                    Main -> Main : append entry to history
                     Main -> User : "Result: <value>"
                 else ValueError (e.g. negative square root)
                     Calc -> Main : raise ValueError
@@ -185,6 +199,7 @@ else no args — interactive mode
                     Main -> Calc : factorial(int(n))
                     alt valid input
                         Calc -> Main : result
+                        Main -> Main : append entry to history
                         Main -> User : "Result: <value>"
                     else ValueError / TypeError
                         Calc -> Main : raise error

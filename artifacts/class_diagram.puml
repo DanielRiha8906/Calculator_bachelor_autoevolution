@@ -25,8 +25,12 @@ package "src" {
     class "__main__" as Main {
         - OPERATIONS : dict
         - MAX_ATTEMPTS : int
+        - HISTORY_FILE : str
+        + _fmt_num(x) : str
+        + _format_entry(method_name: str, operands: tuple, result) : str
+        + _write_history(history: list[str], path: str) : None
         + _read_number(prompt: str, max_attempts: int) : float
-        + run_session(calc: Calculator) : None
+        + run_session(calc: Calculator, history_file: str) : None
         + main() : None
     }
 
@@ -62,6 +66,12 @@ note right of Main
   consecutive invalid number inputs.
   _read_number() raises TooManyAttemptsError
   when the attempt limit is reached.
+  History: each successful calculation is
+  appended to a list in function-call style
+  (e.g. add(2, 3) = 5). On session exit,
+  _write_history() saves the list to
+  HISTORY_FILE ("history.txt"). The user
+  can view history mid-session via "h".
 end note
 
 note right of CLI

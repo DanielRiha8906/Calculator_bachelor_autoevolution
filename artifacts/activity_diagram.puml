@@ -55,27 +55,38 @@ else (no — interactive mode)
 
     :Create Calculator instance;
     :Set choice_failures = 0;
-    :Display operation menu (1–12, or 0 to quit);
+    :Initialise history = [];
+    :Display operation menu (1–12, 0 to quit, h to show history);
 
     repeat
 
         :Read user menu choice;
 
         if (choice == "0"?) then (yes)
+            :Write history to history.txt;
             stop
         endif
 
-        if (choice is valid operation?) then (no)
-            :Increment choice_failures;
-            if (choice_failures >= MAX_ATTEMPTS?) then (yes)
-                :Print "Too many invalid choices — ending session";
-                stop
+        if (choice == "h"?) then (yes)
+            if (history is empty?) then (yes)
+                :Print "No history yet.";
             else (no)
-                :Print "Unknown choice" + available operations list;
-                :Show remaining attempts;
+                :Print each history entry;
             endif
-        else (yes)
-            :Reset choice_failures = 0;
+        else (no — numeric choice or unknown)
+
+            if (choice is valid operation?) then (no)
+                :Increment choice_failures;
+                if (choice_failures >= MAX_ATTEMPTS?) then (yes)
+                    :Print "Too many invalid choices — ending session";
+                    :Write history to history.txt;
+                    stop
+                else (no)
+                    :Print "Unknown choice" + available operations list;
+                    :Show remaining attempts;
+                endif
+            else (yes)
+                :Reset choice_failures = 0;
 
             if (operation requires two operands?) then (yes)
                 :number_failures = 0;
@@ -136,17 +147,23 @@ else (no — interactive mode)
                 endif
             endif
 
-            :Call Calculator method with operand(s);
+                :Call Calculator method with operand(s);
 
-            if (operation raises ValueError, ZeroDivisionError, or TypeError?) then (yes)
-                :Print error message;
-            else (no)
-                :Print result;
+                if (operation raises ValueError, ZeroDivisionError, or TypeError?) then (yes)
+                    :Print error message;
+                else (no)
+                    :Print result;
+                    :Append formatted entry to history;
+                    note right: e.g. add(2, 3) = 5
+                endif
+
             endif
 
         endif
 
     repeat while (session continues)
+
+    :Write history to history.txt;
 
 endif
 
