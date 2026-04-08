@@ -1,0 +1,51 @@
+@startuml class_diagram
+title Calculator – Class Diagram
+
+package "src" {
+
+    class Calculator {
+        + add(a, b) : float
+        + subtract(a, b) : float
+        + multiply(a, b) : float
+        + divide(a, b) : float
+        + power(base, exp) : float
+        + factorial(n : int) : int
+        + square(x) : float
+        + cube(x) : float
+        + square_root(x) : float
+        + cube_root(x) : float
+        + log(x) : float
+        + ln(x) : float
+    }
+
+    class "__main__" as Main {
+        BINARY_OPS : set
+        UNARY_OPS : set
+        ALL_OPS : set
+        + run_interactive(calc : Calculator, input_fn, output_fn) : None
+        + main() : None
+    }
+
+    Main --> Calculator : uses
+}
+
+package "stdlib" {
+    class math <<module>> {
+        + sqrt(x) : float
+        + log(x) : float
+        + log10(x) : float
+        + copysign(x, y) : float
+    }
+}
+
+Calculator ..> math : imports
+
+note right of Calculator
+  Validation rules:
+  divide   → b ≠ 0
+  square_root → x ≥ 0
+  log / ln  → x > 0
+  factorial → n ∈ ℤ, n ≥ 0
+end note
+
+@enduml

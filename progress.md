@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #42 — Add diagrams (Task 6, Naive/generic) ---
+Files changed: artifacts/class_diagram.puml (new), artifacts/activity_diagram.puml (new), artifacts/sequence_diagram.puml (new)
+Purpose: Document the Calculator design with PlantUML class, activity, and sequence diagrams for thesis artifacts.
+Risks: None — documentation only; no source or test files modified.
+Testing: python -m pytest — 75 passed, 0 failed (diagrams are non-executable artifacts).
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+Branch: task/issue-42-diagrams-naive-generic. PR target: exp/naive-generic.
+
 --- 2026-04-08: Issue #38 — Add user input to the calculator (Task 5, Naive/generic) ---
 Files changed: src/__main__.py (replaced demo main with run_interactive loop), tests/test_calculator.py (added TestRunInteractive class, 19 new tests)
 Purpose: Expose all Calculator operations through an interactive REPL so users can enter operations and numbers at runtime instead of hardcoded values.

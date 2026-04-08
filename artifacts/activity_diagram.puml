@@ -1,0 +1,64 @@
+@startuml activity_diagram
+title Calculator – Activity Diagram (Interactive Session)
+
+start
+
+:Print available operations;
+
+repeat
+
+    :Prompt user for operation;
+    :Read operation input;
+
+    if (operation == "quit"?) then (yes)
+        stop
+    endif
+
+    if (operation in ALL_OPS?) then (no)
+        :Print "Unknown operation" error;
+    else (yes)
+        if (operation in BINARY_OPS?) then (yes)
+            :Prompt for first number;
+            :Prompt for second number;
+            if (inputs are valid floats?) then (no)
+                :Print "inputs must be valid numbers" error;
+            else (yes)
+                :Call calc.<operation>(a, b);
+                if (domain error raised?) then (yes)
+                    :Print ValueError / TypeError message;
+                else (no)
+                    :Print result;
+                endif
+            endif
+        else (no — unary op)
+            if (operation == "factorial"?) then (yes)
+                :Prompt for integer;
+                if (input is valid int?) then (no)
+                    :Print "factorial requires a whole number" error;
+                else (yes)
+                    :Call calc.factorial(n);
+                    if (domain error raised?) then (yes)
+                        :Print ValueError / TypeError message;
+                    else (no)
+                        :Print result;
+                    endif
+                endif
+            else (no — other unary)
+                :Prompt for number;
+                if (input is valid float?) then (no)
+                    :Print "input must be a valid number" error;
+                else (yes)
+                    :Call calc.<operation>(x);
+                    if (domain error raised?) then (yes)
+                        :Print ValueError message;
+                    else (no)
+                        :Print result;
+                    endif
+                endif
+            endif
+        endif
+    endif
+
+repeat while (session continues)
+
+@enduml

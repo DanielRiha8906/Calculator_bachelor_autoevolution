@@ -1,0 +1,60 @@
+@startuml sequence_diagram
+title Calculator – Sequence Diagram (Typical Interaction)
+
+actor User
+participant "__main__\nrun_interactive()" as Main
+participant "Calculator" as Calc
+participant "math\n(stdlib)" as Math
+
+== Session Start ==
+
+Main -> User : print available operations
+
+== Binary Operation (e.g. divide) ==
+
+User -> Main : "divide"
+Main -> User : "First number: "
+User -> Main : "10"
+Main -> User : "Second number: "
+User -> Main : "4"
+Main -> Calc : divide(10.0, 4.0)
+note right of Calc : b ≠ 0  ✓
+Calc --> Main : 2.5
+Main -> User : "Result: 2.5"
+
+== Unary Operation (e.g. square_root) ==
+
+User -> Main : "square_root"
+Main -> User : "Number: "
+User -> Main : "9"
+Main -> Calc : square_root(9.0)
+Calc -> Math : sqrt(9.0)
+Math --> Calc : 3.0
+Calc --> Main : 3.0
+Main -> User : "Result: 3.0"
+
+== Error: Division by Zero ==
+
+User -> Main : "divide"
+Main -> User : "First number: "
+User -> Main : "5"
+Main -> User : "Second number: "
+User -> Main : "0"
+Main -> Calc : divide(5.0, 0.0)
+Calc --> Main : raises ValueError("Division by zero is not allowed")
+Main -> User : "Error: Division by zero is not allowed"
+
+== Error: Invalid Input ==
+
+User -> Main : "add"
+Main -> User : "First number: "
+User -> Main : "abc"
+note right of Main : float("abc") raises ValueError
+Main -> User : "Error: both inputs must be valid numbers."
+
+== Session End ==
+
+User -> Main : "quit"
+Main --> User : (session ends)
+
+@enduml
