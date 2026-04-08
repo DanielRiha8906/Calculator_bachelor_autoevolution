@@ -413,3 +413,73 @@ def test_bash_non_numeric_single_value():
     code = run_bash_mode(["sqrt", "abc"], print_fn=outputs.append)
     assert code == 1
     assert any("Error" in line for line in outputs)
+
+
+# --- Error logging ---
+
+def test_error_log_invalid_choice_interactive(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    history_file = str(tmp_path / "history.txt")
+    run_calculator(
+        input_fn=make_inputs("99", "q"),
+        print_fn=lambda x: None,
+        history_file=history_file,
+        error_log_file=error_log,
+    )
+    with open(error_log) as f:
+        content = f.read()
+    assert "99" in content
+
+
+def test_error_log_calc_error_interactive(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    history_file = str(tmp_path / "history.txt")
+    # divide by zero triggers a logged error; second attempt succeeds so session ends cleanly
+    run_calculator(
+        input_fn=make_inputs("4", "10", "0", "5", "2", "n"),
+        print_fn=lambda x: None,
+        history_file=history_file,
+        error_log_file=error_log,
+    )
+    with open(error_log) as f:
+        content = f.read()
+    assert "divide" in content.lower() or "zero" in content.lower()
+
+
+def test_error_log_bash_unknown_operation(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    run_bash_mode(["foobar"], print_fn=lambda x: None, error_log_file=error_log)
+    with open(error_log) as f:
+        content = f.read()
+    assert "foobar" in content
+
+
+def test_error_log_bash_calc_error(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    run_bash_mode(["divide", "5", "0"], print_fn=lambda x: None, error_log_file=error_log)
+    with open(error_log) as f:
+        content = f.read()
+    assert "divide" in content.lower() or "zero" in content.lower()
+
+
+def test_error_log_bash_invalid_input(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    run_bash_mode(["add", "abc", "3"], print_fn=lambda x: None, error_log_file=error_log)
+    with open(error_log) as f:
+        content = f.read()
+    assert "abc" in content or "add" in content.lower()
+
+
+def test_error_log_bash_wrong_arg_count(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    run_bash_mode(["add", "5"], print_fn=lambda x: None, error_log_file=error_log)
+    with open(error_log) as f:
+        content = f.read()
+    assert "add" in content.lower()
+
+
+def test_error_log_not_written_on_success(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    run_bash_mode(["add", "2", "3"], print_fn=lambda x: None, error_log_file=error_log)
+    # No error occurred, so the log file should not exist
+    assert not (tmp_path / "errors.log").exists()

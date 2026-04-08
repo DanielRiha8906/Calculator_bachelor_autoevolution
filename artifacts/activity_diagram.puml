@@ -11,6 +11,7 @@ if (Command-line arguments provided?) then (yes)
     if (Operation name is known?) then (no)
         :Print "Error: Unknown operation";
         :Print usage hint;
+        :Append timestamped error to calculator_errors.log;
         :Exit with code 1;
         stop
     endif
@@ -57,6 +58,7 @@ if (Command-line arguments provided?) then (yes)
     endif
 
     if (ValueError raised?) then (yes)
+        :Append timestamped error to calculator_errors.log;
         :Print "Error: <message>";
         :Exit with code 1;
         stop
@@ -89,6 +91,7 @@ else (no)
                 break
             else (no)
                 :attempt = attempt + 1;
+                :Append timestamped error to calculator_errors.log;
                 if (attempt < MAX_ATTEMPTS?) then (yes)
                     :Print "Invalid choice. Please try again.";
                 else (no)
@@ -116,6 +119,7 @@ else (no)
 
             if (ValueError raised?) then (yes)
                 :attempt = attempt + 1;
+                :Append timestamped error to calculator_errors.log;
                 :Print "Error: <message>";
                 if (attempt < MAX_ATTEMPTS?) then (yes)
                     :Print "Please try again.";
