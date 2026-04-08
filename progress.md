@@ -4,7 +4,7 @@ Files changed: src/__main__.py, tests/test_main.py, artifacts/class_diagram.puml
 Purpose: Added session history to the interactive calculator. Each successful operation is recorded in history.txt (format: "op(operands) = result"). The file is cleared at the start of every session so history never persists between runs. Users can type 'h' at the operation prompt to display all calculations from the current session; 'h' does not consume a retry attempt. Bash mode is unaffected. Added HISTORY_FILE constant and three private helpers (_clear_history, _append_history, _show_history). Added history_file parameter to run_calculator() for test isolation. Added five new tests covering empty history, single-operation recording, multi-operation accumulation, session clearing, and 'h' not consuming an attempt. Updated all three PlantUML diagrams to reflect the new history flow. Added history.txt to .gitignore.
 Risks: Minimal — Calculator class unchanged; bash mode unchanged. The only new I/O is file writes to history.txt in the working directory. Tests use tmp_path so no cross-test file contamination.
 Testing: python3 -m pytest tests/ — 108 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 446.2s | Cost: $0.924571 USD | Turns: 26
 Branch: task/issue-64-history-structured-generic. PR targeting exp/structured-generic.
 
 --- 2026-04-08: Issue #61 — Input validation with retry logic (structured-generic) ---
