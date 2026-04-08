@@ -4,7 +4,10 @@ Files changed: src/calculator.py (added `import logging`, module-level `logger =
 Purpose: Add error logging to the Calculator so that every invalid-input condition (division by zero, bad factorial argument, negative square root, non-positive log/ln domain) is recorded at ERROR level via Python's standard logging module. Successful operations produce no error logs.
 Risks: Low — additive change only. No existing behaviour modified; exceptions still propagate unchanged. Uses Python stdlib logging (no new dependency). Existing 118 tests unaffected.
 Testing: python3 -m pytest tests/test_calculator.py -v — 126 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 279728
+6.5s | Cost: $0.6708840.67088435
+0.68724515 USD | Turns: 29
+1
 Branch: task/issue-66-error-logging. PR target: exp/naive-generic.
 
 --- 2026-04-08: Issue #63 — History of operations (Task 9, Naive/generic) ---
