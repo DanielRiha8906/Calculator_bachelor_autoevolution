@@ -8,6 +8,7 @@ participant "__main__\nrun_bash_mode()" as Bash
 participant "__main__\nrun_calculator()" as Interactive
 participant "Calculator" as Calc
 database "history.txt" as HistFile
+database "calculator_errors.log" as ErrLog
 
 User -> Main : python -m src [operation] [values...]
 
@@ -18,24 +19,23 @@ alt command-line arguments present
     alt unknown operation
         Bash -> User : "Error: Unknown operation '<name>'"
         Bash -> User : usage hint
+        Bash -> ErrLog : append timestamped error
         Bash --> Main : exit code 1
     else wrong number of values
         Bash -> User : "Error: '<op>' requires exactly N value(s)"
+        Bash -> ErrLog : append timestamped error
         Bash --> Main : exit code 1
-    else non-numeric value
-        Bash -> User : "Error: '<value>' is not a valid number"
-        Bash --> Main : exit code 1
-    else valid arguments
+    else non-numeric value or calc error
         Bash -> Calc : <operation>(parsed values)
-        alt no error
-            Calc --> Bash : result
-            Bash -> User : "Result: <value>"
-            Bash --> Main : exit code 0
-        else ValueError
-            Calc --> Bash : raise ValueError("<message>")
-            Bash -> User : "Error: <message>"
-            Bash --> Main : exit code 1
-        end
+        Calc --> Bash : raise ValueError("<message>")
+        Bash -> User : "Error: <message>"
+        Bash -> ErrLog : append timestamped error
+        Bash --> Main : exit code 1
+    else valid arguments, no error
+        Bash -> Calc : <operation>(parsed values)
+        Calc --> Bash : result
+        Bash -> User : "Result: <value>"
+        Bash --> Main : exit code 0
     end
 
 else no arguments (interactive mode)
@@ -59,8 +59,10 @@ else no arguments (interactive mode)
                 else valid choice
                     note right: break out of retry loop
                 else invalid choice, attempts remaining
+                    Interactive -> ErrLog : append timestamped error
                     Interactive -> User : "Invalid choice. Please try again."
                 else invalid choice, attempts exhausted
+                    Interactive -> ErrLog : append timestamped error
                     Interactive -> User : "Too many invalid attempts. Ending session."
                     Interactive --> Main : return
                 end
@@ -88,10 +90,12 @@ else no arguments (interactive mode)
                     note right: break out of retry loop
                 else ValueError, attempts remaining
                     Calc --> Interactive : raise ValueError("<message>")
+                    Interactive -> ErrLog : append timestamped error
                     Interactive -> User : "Error: <message>"
                     Interactive -> User : "Please try again."
                 else ValueError, attempts exhausted
                     Calc --> Interactive : raise ValueError("<message>")
+                    Interactive -> ErrLog : append timestamped error
                     Interactive -> User : "Error: <message>"
                     Interactive -> User : "Too many invalid inputs. Ending session."
                     Interactive --> Main : return

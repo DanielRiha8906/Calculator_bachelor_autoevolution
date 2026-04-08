@@ -1,3 +1,4 @@
+import datetime
 import sys
 
 from .calculator import Calculator
@@ -26,6 +27,16 @@ MAX_ATTEMPTS = 3
 
 # File used to persist history within an interactive session.
 HISTORY_FILE = "history.txt"
+
+# File used to record errors and invalid-usage events.
+ERROR_LOG_FILE = "calculator_errors.log"
+
+
+def _log_error(path: str, message: str) -> None:
+    """Append a timestamped error entry to the error log file."""
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(path, "a") as f:
+        f.write(f"[{timestamp}] ERROR: {message}\n")
 
 
 def _parse_float(s: str) -> float:
@@ -63,11 +74,13 @@ def _show_history(path: str, print_fn) -> None:
             print_fn(f"  {line}")
 
 
-def run_calculator(input_fn=input, print_fn=print, history_file=HISTORY_FILE):
+def run_calculator(input_fn=input, print_fn=print, history_file=HISTORY_FILE, error_log_file=ERROR_LOG_FILE):
     """Run the interactive calculator loop.
 
-    Accepts optional input_fn and print_fn for testability, and history_file
-    to override where session history is written (defaults to HISTORY_FILE).
+    Accepts optional input_fn and print_fn for testability, history_file
+    to override where session history is written (defaults to HISTORY_FILE),
+    and error_log_file to override where errors are logged (defaults to
+    ERROR_LOG_FILE).
     Clears the history file at the start of each session so history does not
     persist between runs.
     Loops until the user quits, answers 'n' to continue, or exceeds
@@ -100,6 +113,7 @@ def run_calculator(input_fn=input, print_fn=print, history_file=HISTORY_FILE):
                 op_name, num_args, _ = OPERATIONS[choice]
                 break
             attempt += 1
+            _log_error(error_log_file, f"Invalid operation choice: '{choice}'")
             remaining = MAX_ATTEMPTS - attempt
             if remaining > 0:
                 print_fn("Invalid choice. Please try again.")
@@ -131,6 +145,7 @@ def run_calculator(input_fn=input, print_fn=print, history_file=HISTORY_FILE):
                 print_fn(f"Result: {result}")
                 break
             except ValueError as e:
+                _log_error(error_log_file, f"Error in '{op_name}': {e}")
                 remaining = MAX_ATTEMPTS - attempt - 1
                 print_fn(f"Error: {e}")
                 if remaining > 0:
@@ -145,12 +160,13 @@ def run_calculator(input_fn=input, print_fn=print, history_file=HISTORY_FILE):
             break
 
 
-def run_bash_mode(args, print_fn=print):
+def run_bash_mode(args, print_fn=print, error_log_file=ERROR_LOG_FILE):
     """Execute a single calculator operation from command-line arguments.
 
     Args:
         args: list of strings, e.g. ["add", "5", "3"] or ["sqrt", "16"]
         print_fn: callable used for output (injectable for testing)
+        error_log_file: path to the error log file (defaults to ERROR_LOG_FILE)
 
     Returns:
         0 on success, 1 on error.
@@ -158,12 +174,14 @@ def run_bash_mode(args, print_fn=print):
     if not args:
         print_fn("Usage: python -m src <operation> <value1> [<value2>]")
         print_fn("Operations: " + ", ".join(OP_BY_NAME.keys()))
+        _log_error(error_log_file, "No arguments provided to bash mode")
         return 1
 
     op_name = args[0].lower()
     if op_name not in OP_BY_NAME:
         print_fn(f"Error: Unknown operation '{op_name}'")
         print_fn("Operations: " + ", ".join(OP_BY_NAME.keys()))
+        _log_error(error_log_file, f"Unknown operation: '{op_name}'")
         return 1
 
     num_args = OP_BY_NAME[op_name]
@@ -174,6 +192,7 @@ def run_bash_mode(args, print_fn=print):
         if num_args == 1:
             if len(args) != 2:
                 print_fn(f"Error: '{op_name}' requires exactly 1 value")
+                _log_error(error_log_file, f"Wrong argument count for '{op_name}': expected 1 value")
                 return 1
             if op_name == "factorial":
                 val = _parse_float(args[1])
@@ -186,6 +205,7 @@ def run_bash_mode(args, print_fn=print):
         else:
             if len(args) != 3:
                 print_fn(f"Error: '{op_name}' requires exactly 2 values")
+                _log_error(error_log_file, f"Wrong argument count for '{op_name}': expected 2 values")
                 return 1
             a = _parse_float(args[1])
             b = _parse_float(args[2])
@@ -194,6 +214,7 @@ def run_bash_mode(args, print_fn=print):
         return 0
     except ValueError as e:
         print_fn(f"Error: {e}")
+        _log_error(error_log_file, f"Calculation error in bash mode ('{op_name}'): {e}")
         return 1
 
 

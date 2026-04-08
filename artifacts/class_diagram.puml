@@ -32,11 +32,13 @@ package "src" {
 
     class "__main__" as Main {
         + HISTORY_FILE : str
+        + ERROR_LOG_FILE : str
         + MAX_ATTEMPTS : int
         + main() : None
-        + run_calculator(input_fn, print_fn, history_file) : None
-        + run_bash_mode(args, print_fn) : int
+        + run_calculator(input_fn, print_fn, history_file, error_log_file) : None
+        + run_bash_mode(args, print_fn, error_log_file) : int
         - _parse_float(s : str) : float
+        - _log_error(path : str, message : str) : None
         - _clear_history(path : str) : None
         - _append_history(path : str, entry : str) : None
         - _show_history(path : str, print_fn) : None
@@ -48,6 +50,10 @@ package "src" {
         operation is appended. 'h' in interactive
         mode displays current session history.
         Bash mode does not record history.
+        error_log_file defaults to ERROR_LOG_FILE.
+        Invalid choices, invalid operands, and
+        calculation errors are appended as
+        timestamped entries. Never mixed with history.
     end note
 
     Main --> Calculator : uses
