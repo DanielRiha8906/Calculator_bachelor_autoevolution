@@ -1,8 +1,9 @@
+import os
 import pytest
 import math
 from unittest.mock import patch
 from src.calculator import Calculator
-from src.__main__ import run_session
+from src.__main__ import run_session, _format_entry
 from main import run_cli
 
 
@@ -554,3 +555,75 @@ class TestCLI:
         with pytest.raises(SystemExit) as exc_info:
             run_cli(["factorial", "5.5"])
         assert exc_info.value.code == 1
+
+
+# ---------------------------------------------------------------------------
+# History — session tracking, display, and file output
+# ---------------------------------------------------------------------------
+
+class TestHistory:
+    """Tests for session history tracking, 'h' display, and file output."""
+
+    def test_history_empty_initially(self, calc, capsys, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["h", "0"]):
+            run_session(calc, history_file=history_file)
+        assert "No history yet." in capsys.readouterr().out
+
+    def test_history_shows_entry_after_two_operand_calc(self, calc, capsys, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["1", "2", "3", "h", "0"]):
+            run_session(calc, history_file=history_file)
+        assert "add(2, 3) = 5" in capsys.readouterr().out
+
+    def test_history_shows_entry_after_one_operand_calc(self, calc, capsys, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["9", "9", "h", "0"]):
+            run_session(calc, history_file=history_file)
+        assert "square_root(9) = 3" in capsys.readouterr().out
+
+    def test_history_shows_factorial_entry(self, calc, capsys, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["6", "5", "h", "0"]):
+            run_session(calc, history_file=history_file)
+        assert "factorial(5) = 120" in capsys.readouterr().out
+
+    def test_history_written_to_file_on_quit(self, calc, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["1", "4", "5", "0"]):
+            run_session(calc, history_file=history_file)
+        with open(history_file) as f:
+            content = f.read()
+        assert "add(4, 5) = 9" in content
+
+    def test_history_file_created_even_when_empty(self, calc, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["0"]):
+            run_session(calc, history_file=history_file)
+        assert os.path.exists(history_file)
+
+    def test_history_accumulates_multiple_entries(self, calc, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["1", "2", "3", "3", "4", "5", "h", "0"]):
+            run_session(calc, history_file=history_file)
+        with open(history_file) as f:
+            content = f.read()
+        assert "add(2, 3) = 5" in content
+        assert "multiply(4, 5) = 20" in content
+
+    def test_format_entry_two_operands(self):
+        assert _format_entry("add", (2.0, 3.0), 5.0) == "add(2, 3) = 5"
+
+    def test_format_entry_one_operand(self):
+        assert _format_entry("square_root", (9.0,), 3.0) == "square_root(9) = 3"
+
+    def test_format_entry_factorial(self):
+        assert _format_entry("factorial", (5,), 120) == "factorial(5) = 120"
+
+    def test_history_not_recorded_on_math_error(self, calc, capsys, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        # divide by zero should not add an entry to history
+        with patch("builtins.input", side_effect=["4", "1", "0", "h", "0"]):
+            run_session(calc, history_file=history_file)
+        out = capsys.readouterr().out
+        assert "No history yet." in out
