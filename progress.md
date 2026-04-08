@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #37 (exp/expert-generic) — Add square, cube, sqrt, cbrt, power, log, ln ---
+Files changed: src/calculator.py (added 7 methods), tests/test_calculator.py (added 36 tests across 7 new test classes)
+Purpose: Implement square, cube, square_root, cube_root, power, log (base-10), and ln operations; raise ValueError for invalid domains (sqrt of negative, log/ln of ≤0).
+Risks: cube_root uses sign-preserving fractional exponent to handle negative inputs correctly; floating-point results use math.isclose in tests.
+Testing: python3 -m pytest tests/test_calculator.py -v — 76 passed, 0 failed.
+Duration: 131.4s | Cost: $0.327596 USD | Turns: 15
+Branch: task/issue-37-math-functions-expert-generic | PR target: exp/expert-generic
+
 --- 2026-04-08: Issue #25 (exp/expert-generic) — Add factorial operation ---
 Files changed: src/calculator.py (added factorial method + import math), tests/test_calculator.py (added TestFactorial with 8 tests)
 Purpose: Implement Calculator.factorial(n) for non-negative integers; reject negatives (ValueError) and non-integers including booleans (TypeError).

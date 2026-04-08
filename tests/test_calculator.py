@@ -162,3 +162,158 @@ class TestFactorial:
     def test_bool_raises(self, calc):
         with pytest.raises(TypeError):
             calc.factorial(True)
+
+
+# ---------------------------------------------------------------------------
+# square
+# ---------------------------------------------------------------------------
+
+class TestSquare:
+    def test_positive_integer(self, calc):
+        assert calc.square(4) == 16
+
+    def test_zero(self, calc):
+        assert calc.square(0) == 0
+
+    def test_negative(self, calc):
+        assert calc.square(-3) == 9
+
+    def test_float(self, calc):
+        assert math.isclose(calc.square(2.5), 6.25, rel_tol=1e-9)
+
+
+# ---------------------------------------------------------------------------
+# cube
+# ---------------------------------------------------------------------------
+
+class TestCube:
+    def test_positive_integer(self, calc):
+        assert calc.cube(3) == 27
+
+    def test_zero(self, calc):
+        assert calc.cube(0) == 0
+
+    def test_negative(self, calc):
+        assert calc.cube(-2) == -8
+
+    def test_float(self, calc):
+        assert math.isclose(calc.cube(1.5), 3.375, rel_tol=1e-9)
+
+
+# ---------------------------------------------------------------------------
+# square_root
+# ---------------------------------------------------------------------------
+
+class TestSquareRoot:
+    def test_perfect_square(self, calc):
+        assert calc.square_root(9) == 3.0
+
+    def test_zero(self, calc):
+        assert calc.square_root(0) == 0.0
+
+    def test_non_perfect_square(self, calc):
+        assert math.isclose(calc.square_root(2), math.sqrt(2), rel_tol=1e-9)
+
+    def test_float_input(self, calc):
+        assert math.isclose(calc.square_root(0.25), 0.5, rel_tol=1e-9)
+
+    def test_negative_raises(self, calc):
+        with pytest.raises(ValueError):
+            calc.square_root(-1)
+
+
+# ---------------------------------------------------------------------------
+# cube_root
+# ---------------------------------------------------------------------------
+
+class TestCubeRoot:
+    def test_perfect_cube(self, calc):
+        assert math.isclose(calc.cube_root(27), 3.0, rel_tol=1e-9)
+
+    def test_zero(self, calc):
+        assert calc.cube_root(0) == 0.0
+
+    def test_negative(self, calc):
+        assert math.isclose(calc.cube_root(-8), -2.0, rel_tol=1e-9)
+
+    def test_float_input(self, calc):
+        assert math.isclose(calc.cube_root(0.125), 0.5, rel_tol=1e-9)
+
+
+# ---------------------------------------------------------------------------
+# power
+# ---------------------------------------------------------------------------
+
+class TestPower:
+    def test_positive_integer_exponent(self, calc):
+        assert calc.power(2, 10) == 1024
+
+    def test_zero_exponent(self, calc):
+        assert calc.power(5, 0) == 1
+
+    def test_one_exponent(self, calc):
+        assert calc.power(7, 1) == 7
+
+    def test_negative_base(self, calc):
+        assert calc.power(-2, 3) == -8
+
+    def test_fractional_exponent(self, calc):
+        assert math.isclose(calc.power(4, 0.5), 2.0, rel_tol=1e-9)
+
+    def test_zero_base(self, calc):
+        assert calc.power(0, 5) == 0
+
+    def test_float_base(self, calc):
+        assert math.isclose(calc.power(2.5, 2), 6.25, rel_tol=1e-9)
+
+
+# ---------------------------------------------------------------------------
+# log (base-10)
+# ---------------------------------------------------------------------------
+
+class TestLog:
+    def test_one(self, calc):
+        assert calc.log(1) == 0.0
+
+    def test_ten(self, calc):
+        assert math.isclose(calc.log(10), 1.0, rel_tol=1e-9)
+
+    def test_hundred(self, calc):
+        assert math.isclose(calc.log(100), 2.0, rel_tol=1e-9)
+
+    def test_fraction(self, calc):
+        assert math.isclose(calc.log(0.1), -1.0, rel_tol=1e-9)
+
+    def test_zero_raises(self, calc):
+        with pytest.raises(ValueError):
+            calc.log(0)
+
+    def test_negative_raises(self, calc):
+        with pytest.raises(ValueError):
+            calc.log(-5)
+
+
+# ---------------------------------------------------------------------------
+# ln (natural logarithm)
+# ---------------------------------------------------------------------------
+
+class TestLn:
+    def test_one(self, calc):
+        assert calc.ln(1) == 0.0
+
+    def test_e(self, calc):
+        assert math.isclose(calc.ln(math.e), 1.0, rel_tol=1e-9)
+
+    def test_e_squared(self, calc):
+        assert math.isclose(calc.ln(math.e ** 2), 2.0, rel_tol=1e-9)
+
+    def test_fraction(self, calc):
+        assert math.isclose(calc.ln(1 / math.e), -1.0, rel_tol=1e-9)
+
+    def test_zero_raises(self, calc):
+        with pytest.raises(ValueError):
+            calc.ln(0)
+
+    def test_negative_raises(self, calc):
+        with pytest.raises(ValueError):
+            calc.ln(-1)
