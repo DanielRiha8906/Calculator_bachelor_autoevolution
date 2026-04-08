@@ -1,0 +1,89 @@
+@startuml sequence_diagram
+
+title Calculator — Typical User Interaction Sequence Diagram
+
+actor User
+participant "__main__\nrun_session()" as Main
+participant "_read_number()" as ReadNum
+participant "Calculator" as Calc
+
+User -> Main : run program
+
+loop session (until choice == "0")
+
+    Main -> User : display menu (1–12, 0 to quit)
+    User -> Main : enter menu choice
+
+    alt choice == "0"
+        Main -> User : (exit)
+
+    else unknown choice
+        Main -> User : "Unknown choice, please try again"
+
+    else two-operand operation (e.g. add)
+        Main -> ReadNum : _read_number("Enter first number: ")
+        loop until valid float
+            ReadNum -> User : prompt
+            User -> ReadNum : raw input
+        end
+        ReadNum -> Main : first operand (float)
+
+        Main -> ReadNum : _read_number("Enter second number: ")
+        loop until valid float
+            ReadNum -> User : prompt
+            User -> ReadNum : raw input
+        end
+        ReadNum -> Main : second operand (float)
+
+        Main -> Calc : add(a, b)  [or subtract/multiply/divide/power]
+        alt valid input
+            Calc -> Main : result
+            Main -> User : "Result: <value>"
+        else ZeroDivisionError (divide by zero)
+            Calc -> Main : raise ZeroDivisionError
+            Main -> User : "Error: <message>"
+        end
+
+    else single-operand, non-factorial (e.g. square_root)
+        Main -> ReadNum : _read_number("Enter number: ")
+        loop until valid float
+            ReadNum -> User : prompt
+            User -> ReadNum : raw input
+        end
+        ReadNum -> Main : operand (float)
+
+        Main -> Calc : square_root(a)  [or square/cube/cube_root/log/ln]
+        alt valid input
+            Calc -> Main : result
+            Main -> User : "Result: <value>"
+        else ValueError (e.g. negative square root)
+            Calc -> Main : raise ValueError
+            Main -> User : "Error: <message>"
+        end
+
+    else factorial
+        Main -> ReadNum : _read_number("Enter number: ")
+        loop until valid float
+            ReadNum -> User : prompt
+            User -> ReadNum : raw input
+        end
+        ReadNum -> Main : operand (float)
+
+        alt operand is not a whole number
+            Main -> User : "Error: Input must be a whole number for factorial"
+        else whole number
+            Main -> Calc : factorial(int(n))
+            alt valid input
+                Calc -> Main : result
+                Main -> User : "Result: <value>"
+            else ValueError / TypeError
+                Calc -> Main : raise error
+                Main -> User : "Error: <message>"
+            end
+        end
+
+    end
+
+end
+
+@enduml
