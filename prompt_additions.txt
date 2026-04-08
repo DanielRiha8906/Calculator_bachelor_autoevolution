@@ -1,0 +1,162 @@
+# prompt_additions.txt
+# Reference file — NOT committed (see .gitignore)
+#
+# This file documents the prompt_additions text for each experiment workflow.
+# Paste the relevant block into the `prompt_additions:` field of the
+# corresponding workflow file under .github/workflows/.
+#
+# Experiment matrix:
+#   Prompting strategy  x  Agent configuration
+#   naive / structured / expert  x  generic / team
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PROMPTING STRATEGY DESCRIPTIONS
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# NAIVE
+#   Issue body: a single bullet point stating only the bare task.
+#   No mention of tests, edge cases, artifacts, or implementation details.
+#   Example: "Add factorial to the calculator."
+#   Goal: measure what Claude produces with the least possible guidance.
+#
+# STRUCTURED
+#   Issue body: 2–3 bullet points.
+#   Names the feature precisely, explicitly asks for tests to be updated,
+#   and mentions keeping development artifacts consistent.
+#   No implementation hints or edge-case enumeration.
+#   Example:
+#     - Add factorial as a supported calculator operation.
+#     - Make sure the calculator can correctly compute factorial values for
+#       valid inputs and update the tests accordingly.
+#
+# EXPERT-GUIDED
+#   Issue body: 3+ bullet points with edge cases, constraints, and examples.
+#   Specifies boundary conditions, invalid-input handling, and scope limits.
+#   May include example invocations (e.g. CLI usage).
+#   Example:
+#     - Add factorial as a supported calculator operation.
+#     - Ensure the implementation handles valid integer inputs correctly,
+#       including boundary cases such as 0 and 1, and rejects unsupported
+#       inputs such as negative values or non-integers.
+#     - Keep the change scoped to this feature, update the relevant tests,
+#       and avoid unrelated refactoring.
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AGENT CONFIGURATION DESCRIPTIONS
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# GENERIC (single agent)
+#   Claude acts as one autonomous developer. No role separation is imposed.
+#   No additional behavioral constraints beyond the shared workflow prompt.
+#
+# TEAM (theoretical software development team)
+#   Claude is instructed to simulate a full software development team by
+#   working through four professional roles before committing:
+#     Data Analyst    — analyse the requirements, clarify scope, identify
+#                       what data/inputs/outputs the feature involves.
+#     System Architect — design the solution: which modules change, how the
+#                        feature fits the existing architecture, what risks exist.
+#     Programmer      — implement the solution according to the architecture.
+#     Tester          — write or update tests, run them, verify all pass.
+#   Each role's output informs the next. Role separation is documented in
+#   the PR description.
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# prompt_additions BLOCKS — copy-paste into the matching workflow
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ─── naive-generic ─────────────────────────────────────────────────────────
+# workflow: claude-implement-naive-generic.yml
+# prompt_additions: ""   ← leave empty / omit the field entirely
+# (No additions. The sparse one-line issue is the full experiment input.)
+
+
+# ─── naive-team ────────────────────────────────────────────────────────────
+# workflow: claude-implement-naive-team.yml
+#
+# prompt_additions: |
+#   Approach this task as a theoretical software development team. Work
+#   through each role in sequence before committing:
+#     1. Data Analyst    — analyse the requirement, clarify scope, identify
+#                          what inputs, outputs, and data are involved.
+#     2. System Architect — design the solution: which modules change, how
+#                           the feature fits the existing architecture, what
+#                           risks exist.
+#     3. Programmer      — implement the solution according to the design.
+#     4. Tester          — write or update tests, run them, verify all pass.
+#   Each role's output informs the next. Briefly document this breakdown in
+#   the PR description.
+
+
+# ─── structured-generic ────────────────────────────────────────────────────
+# workflow: claude-implement-structured-generic.yml
+#
+# prompt_additions: |
+#   The issue above is structured with clear, ordered bullet points.
+#   Follow each point in order and do not add functionality beyond what is
+#   specified. Tests must be included or updated as directed by the issue.
+#   Keep development artifacts (progress.md, diagrams) consistent with the
+#   current state of the application after your changes.
+
+
+# ─── structured-team ───────────────────────────────────────────────────────
+# workflow: claude-implement-structured-team.yml
+#
+# prompt_additions: |
+#   The issue above is structured with clear, ordered bullet points.
+#   Follow each point in order and do not add functionality beyond what is
+#   specified. Tests must be included or updated as directed by the issue.
+#   Keep development artifacts (progress.md, diagrams) consistent with the
+#   current state of the application after your changes.
+#
+#   Additionally, approach this task as a theoretical software development
+#   team. Work through each role in sequence:
+#     1. Data Analyst    — analyse the requirement, clarify scope, identify
+#                          what inputs, outputs, and data are involved.
+#     2. System Architect — design the solution: which modules change, how
+#                           the feature fits the existing architecture, what
+#                           risks exist.
+#     3. Programmer      — implement the solution according to the design.
+#     4. Tester          — write or update tests, run them, verify all pass.
+#   Each role's output informs the next. Briefly document this breakdown in
+#   the PR description.
+
+
+# ─── expert-generic ────────────────────────────────────────────────────────
+# workflow: claude-implement-expert-generic.yml
+#
+# prompt_additions: |
+#   The issue above contains detailed implementation guidance, explicit edge
+#   cases, and scope constraints. Follow all specified requirements precisely.
+#   Pay particular attention to boundary conditions and invalid-input handling.
+#   Do not go beyond the stated scope — the issue already defines what
+#   "complete" looks like. Tests must cover the edge cases named in the issue.
+
+
+# ─── expert-team ───────────────────────────────────────────────────────────
+# workflow: claude-implement-expert-team.yml
+#
+# prompt_additions: |
+#   The issue above contains detailed implementation guidance, explicit edge
+#   cases, and scope constraints. Follow all specified requirements precisely.
+#   Pay particular attention to boundary conditions and invalid-input handling.
+#   Do not go beyond the stated scope — the issue already defines what
+#   "complete" looks like. Tests must cover the edge cases named in the issue.
+#
+#   Additionally, approach this task as a theoretical software development
+#   team. Work through each role in sequence:
+#     1. Data Analyst    — analyse the requirement, clarify scope, identify
+#                          what inputs, outputs, and data are involved.
+#     2. System Architect — design the solution: which modules change, how
+#                           the feature fits the existing architecture, what
+#                           risks exist.
+#     3. Programmer      — implement the solution following the expert
+#                          guidance exactly.
+#     4. Tester          — write or update tests covering the edge cases
+#                          named in the issue, run them, verify all pass.
+#   Each role's output informs the next. Briefly document this breakdown in
+#   the PR description.
