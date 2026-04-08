@@ -4,7 +4,7 @@ Files changed: src/__main__.py, tests/test_main.py, artifacts/class_diagram.puml
 Purpose: Added error logging to the calculator. Failures and invalid-usage events (invalid operation choice, invalid operands, unsupported operations, and calculation errors) are now appended as timestamped lines to calculator_errors.log. The log is separate from history.txt so normal operation history is never mixed with errors. Implementation uses a single _log_error(path, message) helper consistent with the existing _append_history pattern. Added ERROR_LOG_FILE constant and error_log_file parameter to run_calculator() and run_bash_mode() for test isolation. Added 7 new tests covering: invalid choice logging, calc error logging in interactive mode, bash unknown operation, bash calc error, bash invalid input, bash wrong arg count, and absence of log file on success.
 Risks: Minimal — Calculator class unchanged. The only new I/O is file appends to calculator_errors.log. Existing tests unaffected because they do not pass error_log_file, so errors are written to the default path in the test working directory (not asserted). New tests use tmp_path for isolation.
 Testing: python -m pytest tests/ — 115 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 323.7s | Cost: $0.990597 USD | Turns: 39
 Branch: task/issue-67-error-logging-structured-generic. PR targeting exp/structured-generic.
 
 --- 2026-04-08: Issue #64 — History (structured-generic) ---
