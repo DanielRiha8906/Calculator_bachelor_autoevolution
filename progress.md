@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #39 — Add interactive user input (structured-generic) ---
+Files changed: src/__main__.py, tests/test_main.py
+Purpose: Replaced hardcoded demo in __main__.py with an interactive loop. Users can select any of the 12 calculator operations by number, enter the required operands, see the result, and choose to continue or quit. Invalid input and math errors are shown as messages; the loop offers "Continue? (y/n)" after each operation. Added tests/test_main.py with 20 tests covering all operations, error paths, invalid choice, continue loop, and quit.
+Risks: Minimal — Calculator class unchanged; only the entry point and a new test file added.
+Testing: python3 -m pytest tests/ — 77 passed, 0 failed.
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+Branch: task/user-input-structured-generic. PR targeting exp/structured-generic.
+
 --- 2026-04-08: Issue #36 — Add square, cube, sqrt, cbrt, power, log, ln (structured-generic) ---
 Files changed: src/calculator.py, tests/test_calculator.py
 Purpose: Added 7 new Calculator methods: square, cube, sqrt, cbrt, power, log (base 10), ln. sqrt, log, and ln raise ValueError for invalid inputs (negative/non-positive). Added 31 tests covering normal values, edge cases, and error paths for each new method.
