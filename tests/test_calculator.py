@@ -81,3 +81,28 @@ class TestDivide:
     def test_divide_zero_by_zero_raises_value_error(self):
         with pytest.raises(ValueError):
             self.calc.divide(0, 0)
+
+
+class TestFactorial:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_factorial_of_zero(self):
+        assert self.calc.factorial(0) == 1
+
+    def test_factorial_of_one(self):
+        assert self.calc.factorial(1) == 1
+
+    def test_factorial_of_positive_number(self):
+        assert self.calc.factorial(5) == 120
+
+    def test_factorial_large_number(self):
+        assert self.calc.factorial(10) == 3628800
+
+    def test_factorial_negative_raises_value_error(self):
+        with pytest.raises(ValueError, match="Factorial is not defined for negative numbers"):
+            self.calc.factorial(-1)
+
+    def test_factorial_float_raises_type_error(self):
+        with pytest.raises(TypeError, match="Factorial is only defined for integers"):
+            self.calc.factorial(3.5)
