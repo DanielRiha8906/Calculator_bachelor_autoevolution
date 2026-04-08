@@ -4,7 +4,7 @@ Files changed: src/__main__.py (added MAX_INPUT_RETRIES constant and _read_numbe
 Purpose: When the user enters an invalid number in interactive mode, prompt them again up to MAX_INPUT_RETRIES (3) times before returning to the operation selection menu. CLI mode is unchanged (single-shot, exit code 1 on bad input).
 Risks: Low — run_cli is untouched; the Calculator class is untouched. Existing interactive tests updated to provide enough canned inputs to exhaust or satisfy the retry loop. _read_number returns None on exhaustion so the caller uses continue to return to operation selection.
 Testing: python -m pytest tests/test_calculator.py -v — 102 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 236.8s | Cost: $0.597701 USD | Turns: 20
 Branch: task/issue-60-input-validation. PR target: exp/naive-generic.
 
 --- 2026-04-08: Issue #45 — Add CLI bash mode (Task 7, Naive/generic) ---
