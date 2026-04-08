@@ -5,6 +5,7 @@ from unittest.mock import patch
 from src.calculator import Calculator
 from src.__main__ import run_session, _format_entry
 from main import run_cli
+from src.error_logger import ERROR_LOG_FILE
 
 
 @pytest.fixture
@@ -627,3 +628,124 @@ class TestHistory:
             run_session(calc, history_file=history_file)
         out = capsys.readouterr().out
         assert "No history yet." in out
+
+
+# ---------------------------------------------------------------------------
+# Error logging — separate log file for failures and invalid usage
+# ---------------------------------------------------------------------------
+
+class TestErrorLogging:
+    """Tests for error logging to calculator_errors.log (separate from history)."""
+
+    def _read_log(self, path: str) -> str:
+        if not os.path.exists(path):
+            return ""
+        with open(path, encoding="utf-8") as f:
+            return f.read()
+
+    # --- Interactive mode ---
+
+    def test_calculation_error_logged_interactive(self, calc, tmp_path):
+        # Division by zero must produce an entry in the error log.
+        log_file = str(tmp_path / "errors.log")
+        with patch("builtins.input", side_effect=["4", "1", "0", "0"]):
+            run_session(calc, error_log_file=log_file)
+        assert "divide" in self._read_log(log_file)
+
+    def test_sqrt_negative_logged_interactive(self, calc, tmp_path):
+        log_file = str(tmp_path / "errors.log")
+        with patch("builtins.input", side_effect=["9", "-4", "0"]):
+            run_session(calc, error_log_file=log_file)
+        assert "square_root" in self._read_log(log_file)
+
+    def test_invalid_menu_choice_logged_interactive(self, calc, tmp_path):
+        log_file = str(tmp_path / "errors.log")
+        with patch("builtins.input", side_effect=["99", "0"]):
+            run_session(calc, error_log_file=log_file)
+        assert "99" in self._read_log(log_file)
+
+    def test_too_many_invalid_choices_logged_interactive(self, calc, tmp_path):
+        log_file = str(tmp_path / "errors.log")
+        with patch("builtins.input", side_effect=["a", "b", "c", "d", "e"]):
+            run_session(calc, error_log_file=log_file)
+        content = self._read_log(log_file)
+        assert "too many invalid menu choices" in content.lower()
+
+    def test_invalid_number_input_logged_interactive(self, calc, tmp_path):
+        # Typing a non-numeric value for an operand must appear in the error log.
+        log_file = str(tmp_path / "errors.log")
+        with patch("builtins.input", side_effect=["1", "abc", "2", "3", "0"]):
+            run_session(calc, error_log_file=log_file)
+        assert "abc" in self._read_log(log_file)
+
+    def test_factorial_non_integer_logged_interactive(self, calc, tmp_path):
+        log_file = str(tmp_path / "errors.log")
+        with patch("builtins.input", side_effect=["6", "5.5", "0"]):
+            run_session(calc, error_log_file=log_file)
+        assert "factorial" in self._read_log(log_file)
+
+    def test_too_many_invalid_inputs_logged_interactive(self, calc, tmp_path):
+        # TooManyAttemptsError must be recorded in the error log.
+        log_file = str(tmp_path / "errors.log")
+        with patch("builtins.input", side_effect=["1", "x", "x", "x", "x", "x"]):
+            run_session(calc, error_log_file=log_file)
+        content = self._read_log(log_file)
+        assert "Too many invalid inputs" in content
+
+    def test_successful_operation_not_in_error_log_interactive(self, calc, tmp_path):
+        # A successful calculation must not generate any error log entry.
+        log_file = str(tmp_path / "errors.log")
+        with patch("builtins.input", side_effect=["1", "3", "4", "0"]):
+            run_session(calc, error_log_file=log_file)
+        assert self._read_log(log_file) == ""
+
+    def test_error_log_separate_from_history(self, calc, tmp_path):
+        # history.txt and errors.log must be distinct files with distinct content.
+        history_file = str(tmp_path / "history.txt")
+        log_file = str(tmp_path / "errors.log")
+        with patch("builtins.input", side_effect=["4", "1", "0", "0"]):
+            run_session(calc, history_file=history_file, error_log_file=log_file)
+        assert os.path.exists(history_file)
+        assert "divide" in self._read_log(log_file)
+        with open(history_file) as f:
+            history_content = f.read()
+        # The error detail must not appear in the history file.
+        assert "ERROR" not in history_content
+
+    # --- CLI mode ---
+
+    def test_unknown_operation_logged_cli(self, tmp_path):
+        log_file = str(tmp_path / "errors.log")
+        with pytest.raises(SystemExit):
+            run_cli(["foobar", "5"], error_log_file=log_file)
+        assert "foobar" in self._read_log(log_file)
+
+    def test_wrong_operand_count_logged_cli(self, tmp_path):
+        log_file = str(tmp_path / "errors.log")
+        with pytest.raises(SystemExit):
+            run_cli(["add", "5"], error_log_file=log_file)
+        assert "add" in self._read_log(log_file)
+
+    def test_invalid_number_logged_cli(self, tmp_path):
+        log_file = str(tmp_path / "errors.log")
+        with pytest.raises(SystemExit):
+            run_cli(["add", "foo", "7"], error_log_file=log_file)
+        assert "foo" in self._read_log(log_file)
+
+    def test_calculation_error_logged_cli(self, tmp_path):
+        log_file = str(tmp_path / "errors.log")
+        with pytest.raises(SystemExit):
+            run_cli(["divide", "5", "0"], error_log_file=log_file)
+        assert "divide" in self._read_log(log_file)
+
+    def test_factorial_non_integer_logged_cli(self, tmp_path):
+        log_file = str(tmp_path / "errors.log")
+        with pytest.raises(SystemExit):
+            run_cli(["factorial", "5.5"], error_log_file=log_file)
+        assert "factorial" in self._read_log(log_file)
+
+    def test_successful_cli_operation_not_in_error_log(self, tmp_path):
+        # A successful CLI operation must not produce any error log entry.
+        log_file = str(tmp_path / "errors.log")
+        run_cli(["add", "3", "4"], error_log_file=log_file)
+        assert self._read_log(log_file) == ""

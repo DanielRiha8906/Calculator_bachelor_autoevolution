@@ -1,4 +1,5 @@
 from .calculator import Calculator
+from .error_logger import get_error_logger, ERROR_LOG_FILE
 
 MAX_ATTEMPTS = 5
 HISTORY_FILE = "history.txt"
@@ -43,7 +44,11 @@ def _write_history(history: list[str], path: str) -> None:
             f.write(entry + "\n")
 
 
-def _read_number(prompt: str, max_attempts: int = MAX_ATTEMPTS) -> float:
+def _read_number(
+    prompt: str,
+    max_attempts: int = MAX_ATTEMPTS,
+    error_logger=None,
+) -> float:
     """Prompt the user until a valid float is entered or attempts are exhausted.
 
     Raises:
@@ -55,6 +60,8 @@ def _read_number(prompt: str, max_attempts: int = MAX_ATTEMPTS) -> float:
         try:
             return float(raw)
         except ValueError:
+            if error_logger is not None:
+                error_logger.error("Interactive: invalid number input '%s'", raw)
             remaining = max_attempts - attempt
             if remaining == 0:
                 raise TooManyAttemptsError(
@@ -66,13 +73,19 @@ def _read_number(prompt: str, max_attempts: int = MAX_ATTEMPTS) -> float:
             )
 
 
-def run_session(calc: Calculator, history_file: str = HISTORY_FILE) -> None:
+def run_session(
+    calc: Calculator,
+    history_file: str = HISTORY_FILE,
+    error_log_file: str = ERROR_LOG_FILE,
+) -> None:
     """Run an interactive calculator session until the user quits.
 
     Tracks all successful calculations in a session history list. On exit,
     the history is written to *history_file* (one entry per line). During
     the session, the user can type 'h' to display the current history.
+    Errors and invalid usage are recorded in *error_log_file*.
     """
+    error_logger = get_error_logger(error_log_file)
     print("Calculator — enter 0 to quit.")
     choice_failures = 0
     history: list[str] = []
@@ -108,11 +121,17 @@ def run_session(calc: Calculator, history_file: str = HISTORY_FILE) -> None:
                 )
             )
             if choice_failures >= MAX_ATTEMPTS:
+                error_logger.error(
+                    "Interactive: too many invalid menu choices — session terminated"
+                )
                 print(
                     f"  Unknown choice '{choice}'. "
                     f"Too many invalid choices — ending session."
                 )
                 break
+            error_logger.error(
+                "Interactive: invalid menu choice '%s'", choice
+            )
             remaining = MAX_ATTEMPTS - choice_failures
             print(
                 f"  Unknown choice '{choice}'. "
@@ -126,9 +145,12 @@ def run_session(calc: Calculator, history_file: str = HISTORY_FILE) -> None:
 
         try:
             if operand_count == 1:
-                a = _read_number("  Enter value: ")
+                a = _read_number("  Enter value: ", error_logger=error_logger)
                 if method_name == "factorial":
                     if a != int(a):
+                        error_logger.error(
+                            "Interactive: factorial requires a whole number; got %s", a
+                        )
                         print("  Error: factorial requires a whole number.")
                         continue
                     operand = int(a)
@@ -138,16 +160,20 @@ def run_session(calc: Calculator, history_file: str = HISTORY_FILE) -> None:
                     result = getattr(calc, method_name)(a)
                     history.append(_format_entry(method_name, (a,), result))
             else:
-                a = _read_number("  Enter first value: ")
-                b = _read_number("  Enter second value: ")
+                a = _read_number("  Enter first value: ", error_logger=error_logger)
+                b = _read_number("  Enter second value: ", error_logger=error_logger)
                 result = getattr(calc, method_name)(a, b)
                 history.append(_format_entry(method_name, (a, b), result))
 
             print(f"  Result: {result}")
         except TooManyAttemptsError as exc:
+            error_logger.error("Interactive: %s", exc)
             print(f"  {exc}")
             break
         except (ValueError, ZeroDivisionError, TypeError) as exc:
+            error_logger.error(
+                "Interactive: calculation error in %s — %s", method_name, exc
+            )
             print(f"  Error: {exc}")
 
     _write_history(history, history_file)
