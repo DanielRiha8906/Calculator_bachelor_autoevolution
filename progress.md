@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #8 (exp/expert-generic) — Division by zero test ---
+Files changed: tests/test_calculator.py (added test_divide_by_zero_raises)
+Purpose: Assert that Calculator.divide(1, 0) raises ZeroDivisionError. No implementation change needed — Python's / operator already raises ZeroDivisionError natively.
+Risks: None — no production code modified.
+Testing: python -m pytest tests/test_calculator.py -v — 1 passed, 0 failed.
+Tokens used: ~3 000 (estimated) | Cost: ~$0.01 | Turns: 1
+Branch: task/issue-8-division-by-zero | PR target: exp/expert-generic (PR #11)
+
 --- 2026-04-03: Issue #12 — User input for calculator ---
 Files changed: src/calculator.py (added run_interactive()), tests/test_calculator.py (added TestRunInteractive with 11 tests), artifacts/calculator_sequence_diagram.puml (revised), artifacts/calculator_activity_diagram.puml (created)
 Purpose: Replace hardcoded __main__ block with an interactive loop (run_interactive()) that prompts the user for an operation and two numbers, displays the result, and asks whether to continue or quit. Supports all four operations and handles invalid input gracefully.
