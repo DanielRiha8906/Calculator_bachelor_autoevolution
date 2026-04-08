@@ -4,7 +4,7 @@ Files changed: src/__main__.py (added MAX_ATTEMPTS, TooManyAttemptsError, update
 Purpose: Add retry logic and session termination to the interactive mode. Invalid menu choices now show the list of available operations and a remaining-attempts hint; after 5 consecutive invalid choices the session ends. _read_number() now raises TooManyAttemptsError after 5 consecutive non-numeric inputs, which run_session() catches to terminate gracefully. CLI (bash) mode is unchanged — it already fails fast with a clear error and no retry loop.
 Risks: TooManyAttemptsError is a new exception type internal to src/__main__.py; it is caught before propagating out of run_session() so external callers are unaffected. The choice_failures counter resets on every valid selection, so users are not penalised across separate operations.
 Testing: python3.12 -m pytest tests/test_calculator.py -v — 119 passed, 0 failed (113 original + 6 new TestMain tests).
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 692.8s | Cost: $1.371254 USD | Turns: 34
 Branch: task/issue-62-input-validation | PR target: exp/expert-generic
 
 --- 2026-04-08: Issue #49 (exp/expert-generic) — Add bash CLI mode ---
