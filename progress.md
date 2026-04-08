@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #62 (exp/expert-generic) — Input validation with retry logic ---
+Files changed: src/__main__.py (added MAX_ATTEMPTS, TooManyAttemptsError, updated _read_number, updated run_session), tests/test_calculator.py (added 6 new TestMain tests), artifacts/class_diagram.puml (updated), artifacts/activity_diagram.puml (updated), artifacts/sequence_diagram.puml (updated)
+Purpose: Add retry logic and session termination to the interactive mode. Invalid menu choices now show the list of available operations and a remaining-attempts hint; after 5 consecutive invalid choices the session ends. _read_number() now raises TooManyAttemptsError after 5 consecutive non-numeric inputs, which run_session() catches to terminate gracefully. CLI (bash) mode is unchanged — it already fails fast with a clear error and no retry loop.
+Risks: TooManyAttemptsError is a new exception type internal to src/__main__.py; it is caught before propagating out of run_session() so external callers are unaffected. The choice_failures counter resets on every valid selection, so users are not penalised across separate operations.
+Testing: python3.12 -m pytest tests/test_calculator.py -v — 119 passed, 0 failed (113 original + 6 new TestMain tests).
+Duration: 692.8s | Cost: $1.371254 USD | Turns: 34
+Branch: task/issue-62-input-validation | PR target: exp/expert-generic
+
 --- 2026-04-08: Issue #49 (exp/expert-generic) — Add bash CLI mode ---
 Files changed: main.py (new), tests/test_calculator.py (added TestCLI with 19 tests), artifacts/class_diagram.puml (updated), artifacts/activity_diagram.puml (updated), artifacts/sequence_diagram.puml (updated)
 Purpose: Add a command-line interface so the calculator can be invoked non-interactively by passing the operation name and operands as arguments (e.g. python main.py add 5 7). When no arguments are given, main.py falls back to the existing interactive session. Errors (unknown operation, wrong operand count, invalid number, math errors) are printed to stderr and exit with code 1.

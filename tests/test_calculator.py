@@ -417,6 +417,53 @@ class TestMain:
             run_session(calc)
         assert capsys.readouterr().out.count("Result:") == 2
 
+    def test_too_many_invalid_choices_ends_session(self, calc, capsys):
+        # Five consecutive unknown choices must terminate the session.
+        with patch("builtins.input", side_effect=["a", "b", "c", "d", "e"]):
+            run_session(calc)
+        out = capsys.readouterr().out
+        assert "Too many invalid choices" in out
+        assert "Goodbye!" not in out
+
+    def test_invalid_choice_lists_available_operations(self, calc, capsys):
+        # An unknown choice must print the list of available operations.
+        with patch("builtins.input", side_effect=["99", "0"]):
+            run_session(calc)
+        assert "Available operations" in capsys.readouterr().out
+
+    def test_invalid_choice_retry_succeeds(self, calc, capsys):
+        # One invalid choice followed by a valid choice should complete normally.
+        with patch("builtins.input", side_effect=["99", "1", "2", "3", "0"]):
+            run_session(calc)
+        assert "Result: 5.0" in capsys.readouterr().out
+
+    def test_too_many_invalid_numbers_ends_session(self, calc, capsys):
+        # Five non-numeric inputs for a single operand must terminate the session.
+        with patch("builtins.input", side_effect=["1", "x", "x", "x", "x", "x"]):
+            run_session(calc)
+        out = capsys.readouterr().out
+        assert "Too many invalid inputs" in out
+
+    def test_invalid_number_shows_remaining_attempts(self, calc, capsys):
+        # One invalid number should show the remaining-attempts hint.
+        with patch("builtins.input", side_effect=["1", "abc", "5", "3", "0"]):
+            run_session(calc)
+        out = capsys.readouterr().out
+        assert "attempt(s) left" in out
+        assert "Result: 8.0" in out
+
+    def test_choice_failure_counter_resets_after_valid_choice(self, calc, capsys):
+        # Four invalid choices, one valid operation, then four more invalid choices
+        # should NOT terminate — each run of bad choices starts fresh.
+        with patch(
+            "builtins.input",
+            side_effect=["a", "b", "c", "d", "1", "3", "4", "a", "b", "c", "d", "0"],
+        ):
+            run_session(calc)
+        out = capsys.readouterr().out
+        assert "Result: 7.0" in out
+        assert "Goodbye!" in out
+
 
 # ---------------------------------------------------------------------------
 # CLI (bash mode) — main.py:run_cli

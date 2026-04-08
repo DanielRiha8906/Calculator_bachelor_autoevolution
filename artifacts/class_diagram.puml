@@ -19,14 +19,19 @@ package "src" {
         + factorial(n: int) : int
     }
 
+    class TooManyAttemptsError {
+    }
+
     class "__main__" as Main {
         - OPERATIONS : dict
-        + _read_number(prompt: str) : float
+        - MAX_ATTEMPTS : int
+        + _read_number(prompt: str, max_attempts: int) : float
         + run_session(calc: Calculator) : None
         + main() : None
     }
 
     Main --> Calculator : uses
+    Main ..> TooManyAttemptsError : raises / catches
 }
 
 class "main" as CLI {
@@ -52,6 +57,11 @@ note right of Main
   OPERATIONS dict maps menu keys (1..12)
   to method names, operand count, and labels.
   run_session() loops until user enters "0".
+  MAX_ATTEMPTS = 5: session terminates after
+  5 consecutive invalid menu choices or 5
+  consecutive invalid number inputs.
+  _read_number() raises TooManyAttemptsError
+  when the attempt limit is reached.
 end note
 
 note right of CLI

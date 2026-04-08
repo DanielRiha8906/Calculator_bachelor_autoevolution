@@ -10,6 +10,7 @@ if (command-line arguments provided?) then (yes — bash mode)
 
     if (operation is known?) then (no)
         :Print error to stderr;
+        :List available operations on stderr;
         :Exit with code 1;
         stop
     endif
@@ -53,6 +54,7 @@ if (command-line arguments provided?) then (yes — bash mode)
 else (no — interactive mode)
 
     :Create Calculator instance;
+    :Set choice_failures = 0;
     :Display operation menu (1–12, or 0 to quit);
 
     repeat
@@ -64,36 +66,73 @@ else (no — interactive mode)
         endif
 
         if (choice is valid operation?) then (no)
-            :Print "Unknown choice, please try again";
+            :Increment choice_failures;
+            if (choice_failures >= MAX_ATTEMPTS?) then (yes)
+                :Print "Too many invalid choices — ending session";
+                stop
+            else (no)
+                :Print "Unknown choice" + available operations list;
+                :Show remaining attempts;
+            endif
         else (yes)
+            :Reset choice_failures = 0;
 
             if (operation requires two operands?) then (yes)
+                :number_failures = 0;
                 repeat
                     :Prompt for first number;
+                    if (input is valid float?) then (yes)
+                    else (no)
+                        :Increment number_failures;
+                        if (number_failures >= MAX_ATTEMPTS?) then (yes)
+                            :Print "Too many invalid inputs — ending session";
+                            stop
+                        else (no)
+                            :Show remaining attempts;
+                        endif
+                    endif
                 repeat while (input is not a valid float?) is (invalid)
                 ->valid;
 
+                :number_failures = 0;
                 repeat
                     :Prompt for second number;
+                    if (input is valid float?) then (yes)
+                    else (no)
+                        :Increment number_failures;
+                        if (number_failures >= MAX_ATTEMPTS?) then (yes)
+                            :Print "Too many invalid inputs — ending session";
+                            stop
+                        else (no)
+                            :Show remaining attempts;
+                        endif
+                    endif
                 repeat while (input is not a valid float?) is (invalid)
                 ->valid;
 
             else (no — single operand)
+                :number_failures = 0;
+                repeat
+                    :Prompt for number;
+                    if (input is valid float?) then (yes)
+                    else (no)
+                        :Increment number_failures;
+                        if (number_failures >= MAX_ATTEMPTS?) then (yes)
+                            :Print "Too many invalid inputs — ending session";
+                            stop
+                        else (no)
+                            :Show remaining attempts;
+                        endif
+                    endif
+                repeat while (input is not a valid float?) is (invalid)
+                ->valid;
+
                 if (operation is factorial?) then (yes)
-                    repeat
-                        :Prompt for number;
-                    repeat while (input is not a valid float?) is (invalid)
-                    ->valid;
                     :Validate input is whole number;
                     if (not whole number?) then (yes)
                         :Print "Input must be a whole number";
                         note right: skip to next loop iteration
                     endif
-                else (no)
-                    repeat
-                        :Prompt for number;
-                    repeat while (input is not a valid float?) is (invalid)
-                    ->valid;
                 endif
             endif
 
