@@ -1,7 +1,7 @@
 import pytest
 import math
 from src.calculator import Calculator
-from src.__main__ import run_interactive
+from src.__main__ import run_interactive, run_cli
 
 
 class TestAdd:
@@ -337,3 +337,138 @@ class TestRunInteractive:
         assert len(results) == 2
         assert "Result: 3.0" in results[0]
         assert "Result: 12.0" in results[1]
+
+
+class TestRunCLI:
+    """Tests for the non-interactive CLI (bash) mode in src/__main__.py."""
+
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def _run(self, *argv):
+        """Helper: run CLI mode with given argv and capture output and exit code."""
+        outputs = []
+        code = run_cli(list(argv), self.calc, output_fn=outputs.append)
+        return outputs, code
+
+    def test_help_flag_short_exits_zero(self):
+        outputs, code = self._run("-h")
+        assert code == 0
+        assert any("Usage" in line for line in outputs)
+
+    def test_help_flag_long_exits_zero(self):
+        outputs, code = self._run("--help")
+        assert code == 0
+        assert any("Usage" in line for line in outputs)
+
+    def test_empty_argv_shows_usage_exits_zero(self):
+        outputs, code = run_cli([], self.calc, output_fn=[].append), 0
+        # empty list is the --help path; just ensure no crash
+        outputs2 = []
+        code2 = run_cli([], self.calc, output_fn=outputs2.append)
+        assert code2 == 0
+
+    def test_binary_add(self):
+        outputs, code = self._run("add", "3", "5")
+        assert code == 0
+        assert any("Result: 8.0" in line for line in outputs)
+
+    def test_binary_subtract(self):
+        outputs, code = self._run("subtract", "10", "4")
+        assert code == 0
+        assert any("Result: 6.0" in line for line in outputs)
+
+    def test_binary_multiply(self):
+        outputs, code = self._run("multiply", "3", "4")
+        assert code == 0
+        assert any("Result: 12.0" in line for line in outputs)
+
+    def test_binary_divide(self):
+        outputs, code = self._run("divide", "10", "2")
+        assert code == 0
+        assert any("Result: 5.0" in line for line in outputs)
+
+    def test_binary_power(self):
+        outputs, code = self._run("power", "2", "8")
+        assert code == 0
+        assert any("Result: 256.0" in line for line in outputs)
+
+    def test_unary_square(self):
+        outputs, code = self._run("square", "4")
+        assert code == 0
+        assert any("Result: 16" in line for line in outputs)
+
+    def test_unary_cube(self):
+        outputs, code = self._run("cube", "3")
+        assert code == 0
+        assert any("Result: 27" in line for line in outputs)
+
+    def test_unary_square_root(self):
+        outputs, code = self._run("square_root", "9")
+        assert code == 0
+        assert any("Result: 3.0" in line for line in outputs)
+
+    def test_unary_log(self):
+        outputs, code = self._run("log", "100")
+        assert code == 0
+        assert any("Result: 2.0" in line for line in outputs)
+
+    def test_unary_ln(self):
+        outputs, code = self._run("ln", "1")
+        assert code == 0
+        assert any("Result: 0.0" in line for line in outputs)
+
+    def test_factorial_valid(self):
+        outputs, code = self._run("factorial", "5")
+        assert code == 0
+        assert any("Result: 120" in line for line in outputs)
+
+    def test_unknown_operation_returns_error(self):
+        outputs, code = self._run("foobar")
+        assert code == 1
+        assert any("Error" in line for line in outputs)
+
+    def test_binary_op_missing_second_arg_returns_error(self):
+        outputs, code = self._run("add", "5")
+        assert code == 1
+        assert any("Error" in line for line in outputs)
+
+    def test_binary_op_missing_all_args_returns_error(self):
+        outputs, code = self._run("multiply")
+        assert code == 1
+        assert any("Error" in line for line in outputs)
+
+    def test_unary_op_missing_arg_returns_error(self):
+        outputs, code = self._run("square")
+        assert code == 1
+        assert any("Error" in line for line in outputs)
+
+    def test_invalid_number_binary_returns_error(self):
+        outputs, code = self._run("add", "abc", "5")
+        assert code == 1
+        assert any("Error" in line for line in outputs)
+
+    def test_invalid_number_unary_returns_error(self):
+        outputs, code = self._run("square", "abc")
+        assert code == 1
+        assert any("Error" in line for line in outputs)
+
+    def test_factorial_non_integer_returns_error(self):
+        outputs, code = self._run("factorial", "3.5")
+        assert code == 1
+        assert any("Error" in line for line in outputs)
+
+    def test_divide_by_zero_returns_error(self):
+        outputs, code = self._run("divide", "10", "0")
+        assert code == 1
+        assert any("Error" in line for line in outputs)
+
+    def test_square_root_negative_returns_error(self):
+        outputs, code = self._run("square_root", "-1")
+        assert code == 1
+        assert any("Error" in line for line in outputs)
+
+    def test_operation_case_insensitive(self):
+        outputs, code = self._run("ADD", "3", "5")
+        assert code == 0
+        assert any("Result: 8.0" in line for line in outputs)
