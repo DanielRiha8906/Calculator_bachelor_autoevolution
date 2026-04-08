@@ -1,3 +1,6 @@
+import math
+
+
 class Calculator:
     def add(self, a, b):
         return a + b
@@ -22,4 +25,31 @@ class Calculator:
         for i in range(2, n + 1):
             result *= i
         return result
+
+    def square(self, x):
+        return x ** 2
+
+    def cube(self, x):
+        return x ** 3
+
+    def sqrt(self, x):
+        if x < 0:
+            raise ValueError("Square root is not defined for negative numbers")
+        return math.sqrt(x)
+
+    def cbrt(self, x):
+        return math.cbrt(x)
+
+    def power(self, base, exp):
+        return base ** exp
+
+    def log(self, x):
+        if x <= 0:
+            raise ValueError("Logarithm is not defined for non-positive numbers")
+        return math.log10(x)
+
+    def ln(self, x):
+        if x <= 0:
+            raise ValueError("Natural logarithm is not defined for non-positive numbers")
+        return math.log(x)
 
