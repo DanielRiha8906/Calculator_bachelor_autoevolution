@@ -1,0 +1,95 @@
+name: Claude Fix PR (shared)
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        description: 'Experiment branch this PR targets (e.g. exp/naive-generic)'
+        type: string
+        required: true
+      experiment_name:
+        description: 'Human-readable experiment name (e.g. naive-generic)'
+        type: string
+        required: true
+      pr_number:
+        description: 'Pull request number'
+        type: string
+        required: true
+      pr_title:
+        description: 'Pull request title'
+        type: string
+        required: true
+      pr_body:
+        description: 'Pull request body / description'
+        type: string
+        required: false
+        default: ''
+      pr_head_ref:
+        description: 'PR head branch to check out'
+        type: string
+        required: true
+    secrets:
+      anthropic_api_key:
+        required: true
+
+jobs:
+  claude-fix:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+      actions: read
+
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.pr_head_ref }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run Claude Code Action
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.anthropic_api_key }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          show_full_output: true
+          claude_args: "--max-turns 18"
+          prompt: |
+            You are fixing an existing pull request for the **${{ inputs.experiment_name }}** experiment.
+
+            Active branch: ${{ inputs.pr_head_ref }}
+            Target branch: ${{ inputs.branch }}
+            Do NOT access, inspect, or reference any other branch — only ${{ inputs.pr_head_ref }} is in scope.
+
+            Pull request #${{ inputs.pr_number }}: ${{ inputs.pr_title }}
+
+            PR body:
+            ${{ inputs.pr_body }}
+
+            A maintainer added the label `request-changes:${{ inputs.experiment_name }}`.
+
+            Instructions:
+            - Inspect the current PR branch only
+            - Make only the changes needed to address review feedback or fix issues
+            - Run the test suite; all tests must pass before committing
+            - Commit and push fixes to the same branch (${{ inputs.pr_head_ref }})
+            - Do not open a new PR
+            - Do not modify workflow or governance files unless explicitly required
+
+            Constraints:
+            - Never push directly to ${{ inputs.branch }} or main
+            - Follow CLAUDE.md strictly
+            - Never access or reference sibling experiment branches
