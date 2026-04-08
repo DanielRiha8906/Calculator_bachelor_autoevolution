@@ -1,6 +1,8 @@
 import pytest
 import math
+from unittest.mock import patch
 from src.calculator import Calculator
+from src.__main__ import run_session
 
 
 @pytest.fixture
@@ -317,3 +319,99 @@ class TestLn:
     def test_negative_raises(self, calc):
         with pytest.raises(ValueError):
             calc.ln(-1)
+
+
+# ---------------------------------------------------------------------------
+# run_session (interactive loop in __main__)
+# ---------------------------------------------------------------------------
+
+class TestMain:
+    def test_quit_immediately(self, calc, capsys):
+        with patch("builtins.input", side_effect=["0"]):
+            run_session(calc)
+        assert "Goodbye!" in capsys.readouterr().out
+
+    def test_add(self, calc, capsys):
+        with patch("builtins.input", side_effect=["1", "3", "4", "0"]):
+            run_session(calc)
+        assert "Result: 7.0" in capsys.readouterr().out
+
+    def test_subtract(self, calc, capsys):
+        with patch("builtins.input", side_effect=["2", "10", "3", "0"]):
+            run_session(calc)
+        assert "Result: 7.0" in capsys.readouterr().out
+
+    def test_multiply(self, calc, capsys):
+        with patch("builtins.input", side_effect=["3", "6", "7", "0"]):
+            run_session(calc)
+        assert "Result: 42.0" in capsys.readouterr().out
+
+    def test_divide(self, calc, capsys):
+        with patch("builtins.input", side_effect=["4", "10", "2", "0"]):
+            run_session(calc)
+        assert "Result: 5.0" in capsys.readouterr().out
+
+    def test_power(self, calc, capsys):
+        with patch("builtins.input", side_effect=["5", "2", "10", "0"]):
+            run_session(calc)
+        assert "Result: 1024.0" in capsys.readouterr().out
+
+    def test_factorial(self, calc, capsys):
+        with patch("builtins.input", side_effect=["6", "5", "0"]):
+            run_session(calc)
+        assert "Result: 120" in capsys.readouterr().out
+
+    def test_square(self, calc, capsys):
+        with patch("builtins.input", side_effect=["7", "4", "0"]):
+            run_session(calc)
+        assert "Result: 16.0" in capsys.readouterr().out
+
+    def test_cube(self, calc, capsys):
+        with patch("builtins.input", side_effect=["8", "3", "0"]):
+            run_session(calc)
+        assert "Result: 27.0" in capsys.readouterr().out
+
+    def test_square_root(self, calc, capsys):
+        with patch("builtins.input", side_effect=["9", "9", "0"]):
+            run_session(calc)
+        assert "Result: 3.0" in capsys.readouterr().out
+
+    def test_cube_root(self, calc, capsys):
+        with patch("builtins.input", side_effect=["10", "27", "0"]):
+            run_session(calc)
+        assert "Result:" in capsys.readouterr().out
+
+    def test_log(self, calc, capsys):
+        with patch("builtins.input", side_effect=["11", "100", "0"]):
+            run_session(calc)
+        assert "Result: 2.0" in capsys.readouterr().out
+
+    def test_ln(self, calc, capsys):
+        with patch("builtins.input", side_effect=["12", "1", "0"]):
+            run_session(calc)
+        assert "Result: 0.0" in capsys.readouterr().out
+
+    def test_unknown_choice(self, calc, capsys):
+        with patch("builtins.input", side_effect=["99", "0"]):
+            run_session(calc)
+        assert "Unknown choice" in capsys.readouterr().out
+
+    def test_divide_by_zero_error(self, calc, capsys):
+        with patch("builtins.input", side_effect=["4", "1", "0", "0"]):
+            run_session(calc)
+        assert "Error:" in capsys.readouterr().out
+
+    def test_sqrt_negative_error(self, calc, capsys):
+        with patch("builtins.input", side_effect=["9", "-4", "0"]):
+            run_session(calc)
+        assert "Error:" in capsys.readouterr().out
+
+    def test_factorial_non_integer_error(self, calc, capsys):
+        with patch("builtins.input", side_effect=["6", "5.5", "0"]):
+            run_session(calc)
+        assert "Error" in capsys.readouterr().out
+
+    def test_multiple_calculations(self, calc, capsys):
+        with patch("builtins.input", side_effect=["1", "2", "3", "3", "4", "5", "0"]):
+            run_session(calc)
+        assert capsys.readouterr().out.count("Result:") == 2
