@@ -1,6 +1,6 @@
 import math
 import pytest
-from src.__main__ import run_calculator
+from src.__main__ import run_calculator, run_bash_mode
 
 
 def make_inputs(*responses):
@@ -146,3 +146,149 @@ def test_non_y_answer_stops_loop():
     outputs = []
     run_calculator(input_fn=make_inputs("1", "1", "1", "no"), print_fn=outputs.append)
     assert any("Goodbye" in line for line in outputs)
+
+
+# --- Bash mode: two-operand operations ---
+
+def test_bash_add():
+    outputs = []
+    code = run_bash_mode(["add", "5", "3"], print_fn=outputs.append)
+    assert code == 0
+    assert any("8" in line for line in outputs)
+
+
+def test_bash_subtract():
+    outputs = []
+    code = run_bash_mode(["subtract", "10", "4"], print_fn=outputs.append)
+    assert code == 0
+    assert any("6" in line for line in outputs)
+
+
+def test_bash_multiply():
+    outputs = []
+    code = run_bash_mode(["multiply", "6", "7"], print_fn=outputs.append)
+    assert code == 0
+    assert any("42" in line for line in outputs)
+
+
+def test_bash_divide():
+    outputs = []
+    code = run_bash_mode(["divide", "10", "4"], print_fn=outputs.append)
+    assert code == 0
+    assert any("2.5" in line for line in outputs)
+
+
+def test_bash_power():
+    outputs = []
+    code = run_bash_mode(["power", "2", "10"], print_fn=outputs.append)
+    assert code == 0
+    assert any("1024" in line for line in outputs)
+
+
+# --- Bash mode: one-operand operations ---
+
+def test_bash_factorial():
+    outputs = []
+    code = run_bash_mode(["factorial", "5"], print_fn=outputs.append)
+    assert code == 0
+    assert any("120" in line for line in outputs)
+
+
+def test_bash_factorial_float_whole_number():
+    outputs = []
+    code = run_bash_mode(["factorial", "5.0"], print_fn=outputs.append)
+    assert code == 0
+    assert any("120" in line for line in outputs)
+
+
+def test_bash_square():
+    outputs = []
+    code = run_bash_mode(["square", "4"], print_fn=outputs.append)
+    assert code == 0
+    assert any("16" in line for line in outputs)
+
+
+def test_bash_cube():
+    outputs = []
+    code = run_bash_mode(["cube", "3"], print_fn=outputs.append)
+    assert code == 0
+    assert any("27" in line for line in outputs)
+
+
+def test_bash_sqrt():
+    outputs = []
+    code = run_bash_mode(["sqrt", "9"], print_fn=outputs.append)
+    assert code == 0
+    assert any("3.0" in line for line in outputs)
+
+
+def test_bash_cbrt():
+    outputs = []
+    code = run_bash_mode(["cbrt", "27"], print_fn=outputs.append)
+    assert code == 0
+    assert any("3.0" in line for line in outputs)
+
+
+def test_bash_log():
+    outputs = []
+    code = run_bash_mode(["log", "100"], print_fn=outputs.append)
+    assert code == 0
+    assert any("2.0" in line for line in outputs)
+
+
+def test_bash_ln():
+    outputs = []
+    code = run_bash_mode(["ln", "1"], print_fn=outputs.append)
+    assert code == 0
+    assert any("0.0" in line for line in outputs)
+
+
+# --- Bash mode: error cases ---
+
+def test_bash_unknown_operation():
+    outputs = []
+    code = run_bash_mode(["foobar"], print_fn=outputs.append)
+    assert code == 1
+    assert any("Unknown operation" in line for line in outputs)
+
+
+def test_bash_divide_by_zero():
+    outputs = []
+    code = run_bash_mode(["divide", "5", "0"], print_fn=outputs.append)
+    assert code == 1
+    assert any("Error" in line for line in outputs)
+
+
+def test_bash_sqrt_negative():
+    outputs = []
+    code = run_bash_mode(["sqrt", "-4"], print_fn=outputs.append)
+    assert code == 1
+    assert any("Error" in line for line in outputs)
+
+
+def test_bash_factorial_fractional():
+    outputs = []
+    code = run_bash_mode(["factorial", "5.5"], print_fn=outputs.append)
+    assert code == 1
+    assert any("Error" in line for line in outputs)
+
+
+def test_bash_wrong_arg_count_two_op():
+    outputs = []
+    code = run_bash_mode(["add", "5"], print_fn=outputs.append)
+    assert code == 1
+    assert any("Error" in line for line in outputs)
+
+
+def test_bash_wrong_arg_count_one_op():
+    outputs = []
+    code = run_bash_mode(["sqrt"], print_fn=outputs.append)
+    assert code == 1
+    assert any("Error" in line for line in outputs)
+
+
+def test_bash_no_args_prints_usage():
+    outputs = []
+    code = run_bash_mode([], print_fn=outputs.append)
+    assert code == 1
+    assert any("Usage" in line for line in outputs)

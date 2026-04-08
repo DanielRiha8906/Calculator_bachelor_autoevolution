@@ -1,3 +1,5 @@
+import sys
+
 from .calculator import Calculator
 
 
@@ -15,6 +17,9 @@ OPERATIONS = {
     "11": ("log",       1, "Logarithm base 10 (log x)"),
     "12": ("ln",        1, "Natural Logarithm (ln x)"),
 }
+
+# Maps operation name → number of required arguments, for bash mode lookup.
+OP_BY_NAME = {name: num_args for _, (name, num_args, _) in OPERATIONS.items()}
 
 
 def run_calculator(input_fn=input, print_fn=print):
@@ -69,8 +74,62 @@ def run_calculator(input_fn=input, print_fn=print):
             break
 
 
+def run_bash_mode(args, print_fn=print):
+    """Execute a single calculator operation from command-line arguments.
+
+    Args:
+        args: list of strings, e.g. ["add", "5", "3"] or ["sqrt", "16"]
+        print_fn: callable used for output (injectable for testing)
+
+    Returns:
+        0 on success, 1 on error.
+    """
+    if not args:
+        print_fn("Usage: python -m src <operation> <value1> [<value2>]")
+        print_fn("Operations: " + ", ".join(OP_BY_NAME.keys()))
+        return 1
+
+    op_name = args[0].lower()
+    if op_name not in OP_BY_NAME:
+        print_fn(f"Error: Unknown operation '{op_name}'")
+        print_fn("Operations: " + ", ".join(OP_BY_NAME.keys()))
+        return 1
+
+    num_args = OP_BY_NAME[op_name]
+    calc = Calculator()
+    method = getattr(calc, op_name)
+
+    try:
+        if num_args == 1:
+            if len(args) != 2:
+                print_fn(f"Error: '{op_name}' requires exactly 1 value")
+                return 1
+            if op_name == "factorial":
+                val = float(args[1])
+                if val != int(val):
+                    raise ValueError("Factorial requires a whole number.")
+                x = int(val)
+            else:
+                x = float(args[1])
+            result = method(x)
+        else:
+            if len(args) != 3:
+                print_fn(f"Error: '{op_name}' requires exactly 2 values")
+                return 1
+            a = float(args[1])
+            b = float(args[2])
+            result = method(a, b)
+        print_fn(f"Result: {result}")
+        return 0
+    except ValueError as e:
+        print_fn(f"Error: {e}")
+        return 1
+
+
 def main():
-    """Entry point for the interactive calculator."""
+    """Entry point: bash mode if arguments provided, interactive mode otherwise."""
+    if len(sys.argv) > 1:
+        sys.exit(run_bash_mode(sys.argv[1:]))
     run_calculator()
 
 

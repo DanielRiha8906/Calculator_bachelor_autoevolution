@@ -30,8 +30,10 @@ package "src" {
           - factorial(-1) → "n must be a non-negative integer"
     end note
 
-    class "__main__\nrun_calculator()" as Main {
+    class "__main__" as Main {
+        + main() : None
         + run_calculator(input_fn, print_fn) : None
+        + run_bash_mode(args, print_fn) : int
     }
 
     Main --> Calculator : uses
