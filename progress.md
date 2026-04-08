@@ -4,7 +4,7 @@ Files changed: artifacts/class_diagram.puml, artifacts/activity_diagram.puml, ar
 Purpose: Created three PlantUML documentation diagrams in artifacts/ covering the Calculator class structure (class diagram), the interactive calculator loop (activity diagram), and the component interaction flow (sequence diagram).
 Risks: Docs-only change; no source or test files modified.
 Testing: No executable tests needed — diagram syntax is declarative PlantUML. Existing 77 tests unaffected (not re-run since no source changed).
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 98.2s | Cost: $0.282727 USD | Turns: 13
 Branch: task/issue-43-add-diagrams. PR targeting exp/structured-generic.
 
 --- 2026-04-08: Issue #39 — Add interactive user input (structured-generic) ---
