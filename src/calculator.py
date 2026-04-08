@@ -1,4 +1,7 @@
+import logging
 import math
+
+logger = logging.getLogger(__name__)
 
 
 class Calculator:
@@ -38,6 +41,7 @@ class Calculator:
 
     def divide(self, a, b):
         if b == 0:
+            logger.error("divide called with b=0 (a=%s)", a)
             raise ValueError("Division by zero is not allowed")
         result = a / b
         self._record("divide", (a, b), result)
@@ -45,8 +49,10 @@ class Calculator:
 
     def factorial(self, n: int) -> int:
         if not isinstance(n, int):
+            logger.error("factorial called with non-integer argument (n=%s, type=%s)", n, type(n).__name__)
             raise TypeError("Factorial is only defined for integers")
         if n < 0:
+            logger.error("factorial called with negative argument (n=%s)", n)
             raise ValueError("Factorial is not defined for negative numbers")
         result = 1
         for i in range(2, n + 1):
@@ -66,6 +72,7 @@ class Calculator:
 
     def square_root(self, x):
         if x < 0:
+            logger.error("square_root called with negative argument (x=%s)", x)
             raise ValueError("Square root is not defined for negative numbers")
         result = math.sqrt(x)
         self._record("square_root", (x,), result)
@@ -83,6 +90,7 @@ class Calculator:
 
     def log(self, x):
         if x <= 0:
+            logger.error("log called with non-positive argument (x=%s)", x)
             raise ValueError("Logarithm is not defined for non-positive numbers")
         result = math.log10(x)
         self._record("log", (x,), result)
@@ -90,6 +98,7 @@ class Calculator:
 
     def ln(self, x):
         if x <= 0:
+            logger.error("ln called with non-positive argument (x=%s)", x)
             raise ValueError("Natural logarithm is not defined for non-positive numbers")
         result = math.log(x)
         self._record("ln", (x,), result)

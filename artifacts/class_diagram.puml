@@ -30,6 +30,8 @@ note right of Calculator
   log / ln raise ValueError for x <= 0
   Failed operations are not recorded
     in history; only successful ones are.
+  All error conditions are logged at ERROR
+    level via module-level logger.
 end note
 
 class "__main__" as Main {
