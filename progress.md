@@ -4,7 +4,7 @@ Files changed: src/__main__.py (replaced demo main with run_interactive loop), t
 Purpose: Expose all Calculator operations through an interactive REPL so users can enter operations and numbers at runtime instead of hardcoded values.
 Risks: None — additive change; calculator.py is untouched. run_interactive accepts injectable input_fn/output_fn for testability.
 Testing: python3 -m pytest tests/test_calculator.py -v — 75 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 153.0s | Cost: $0.416516 USD | Turns: 20
 Branch: task/issue-38-user-input. PR target: exp/naive-generic.
 
 --- 2026-04-08: Issue #35 — Add multiple math functions (Task 4, Naive/generic) ---
