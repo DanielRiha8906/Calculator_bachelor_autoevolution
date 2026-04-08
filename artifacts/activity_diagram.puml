@@ -1,0 +1,64 @@
+@startuml activity_diagram
+
+title Calculator — User Interaction Activity Diagram
+
+start
+
+:Create Calculator instance;
+:Display operation menu (1–12, or 0 to quit);
+
+repeat
+
+    :Read user menu choice;
+
+    if (choice == "0"?) then (yes)
+        stop
+    endif
+
+    if (choice is valid operation?) then (no)
+        :Print "Unknown choice, please try again";
+    else (yes)
+
+        if (operation requires two operands?) then (yes)
+            repeat
+                :Prompt for first number;
+            repeat while (input is not a valid float?) is (invalid)
+            ->valid;
+
+            repeat
+                :Prompt for second number;
+            repeat while (input is not a valid float?) is (invalid)
+            ->valid;
+
+        else (no — single operand)
+            if (operation is factorial?) then (yes)
+                repeat
+                    :Prompt for number;
+                repeat while (input is not a valid float?) is (invalid)
+                ->valid;
+                :Validate input is whole number;
+                if (not whole number?) then (yes)
+                    :Print "Input must be a whole number";
+                    note right: skip to next loop iteration
+                endif
+            else (no)
+                repeat
+                    :Prompt for number;
+                repeat while (input is not a valid float?) is (invalid)
+                ->valid;
+            endif
+        endif
+
+        :Call Calculator method with operand(s);
+
+        if (operation raises ValueError, ZeroDivisionError, or TypeError?) then (yes)
+            :Print error message;
+        else (no)
+            :Print result;
+        endif
+
+    endif
+
+repeat while (session continues)
+
+@enduml
