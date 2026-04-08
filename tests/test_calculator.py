@@ -3,6 +3,7 @@ import math
 from unittest.mock import patch
 from src.calculator import Calculator
 from src.__main__ import run_session
+from main import run_cli
 
 
 @pytest.fixture
@@ -415,3 +416,94 @@ class TestMain:
         with patch("builtins.input", side_effect=["1", "2", "3", "3", "4", "5", "0"]):
             run_session(calc)
         assert capsys.readouterr().out.count("Result:") == 2
+
+
+# ---------------------------------------------------------------------------
+# CLI (bash mode) — main.py:run_cli
+# ---------------------------------------------------------------------------
+
+class TestCLI:
+    """Tests for the bash CLI interface (main.py:run_cli)."""
+
+    def test_add(self, capsys):
+        run_cli(["add", "5", "7"])
+        assert "12.0" in capsys.readouterr().out
+
+    def test_subtract(self, capsys):
+        run_cli(["subtract", "10", "3"])
+        assert "7.0" in capsys.readouterr().out
+
+    def test_multiply(self, capsys):
+        run_cli(["multiply", "4", "5"])
+        assert "20.0" in capsys.readouterr().out
+
+    def test_divide(self, capsys):
+        run_cli(["divide", "10", "2"])
+        assert "5.0" in capsys.readouterr().out
+
+    def test_power(self, capsys):
+        run_cli(["power", "2", "8"])
+        assert "256.0" in capsys.readouterr().out
+
+    def test_factorial(self, capsys):
+        run_cli(["factorial", "5"])
+        assert "120" in capsys.readouterr().out
+
+    def test_square(self, capsys):
+        run_cli(["square", "6"])
+        assert "36.0" in capsys.readouterr().out
+
+    def test_cube(self, capsys):
+        run_cli(["cube", "3"])
+        assert "27.0" in capsys.readouterr().out
+
+    def test_square_root(self, capsys):
+        run_cli(["square_root", "9"])
+        assert "3.0" in capsys.readouterr().out
+
+    def test_cube_root(self, capsys):
+        run_cli(["cube_root", "8"])
+        assert "2.0" in capsys.readouterr().out
+
+    def test_log(self, capsys):
+        run_cli(["log", "100"])
+        assert "2.0" in capsys.readouterr().out
+
+    def test_ln(self, capsys):
+        run_cli(["ln", "1"])
+        assert "0.0" in capsys.readouterr().out
+
+    def test_unknown_operation_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["foobar", "5"])
+        assert exc_info.value.code == 1
+
+    def test_wrong_operand_count_too_few_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["add", "5"])
+        assert exc_info.value.code == 1
+
+    def test_wrong_operand_count_too_many_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["square", "5", "6"])
+        assert exc_info.value.code == 1
+
+    def test_invalid_number_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["add", "foo", "7"])
+        assert exc_info.value.code == 1
+
+    def test_divide_by_zero_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["divide", "5", "0"])
+        assert exc_info.value.code == 1
+
+    def test_sqrt_negative_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["square_root", "-4"])
+        assert exc_info.value.code == 1
+
+    def test_factorial_non_integer_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["factorial", "5.5"])
+        assert exc_info.value.code == 1

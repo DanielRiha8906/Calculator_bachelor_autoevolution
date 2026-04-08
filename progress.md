@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #49 (exp/expert-generic) — Add bash CLI mode ---
+Files changed: main.py (new), tests/test_calculator.py (added TestCLI with 19 tests), artifacts/class_diagram.puml (updated), artifacts/activity_diagram.puml (updated), artifacts/sequence_diagram.puml (updated)
+Purpose: Add a command-line interface so the calculator can be invoked non-interactively by passing the operation name and operands as arguments (e.g. python main.py add 5 7). When no arguments are given, main.py falls back to the existing interactive session. Errors (unknown operation, wrong operand count, invalid number, math errors) are printed to stderr and exit with code 1.
+Risks: main.py is a new file; the existing interactive session in src/__main__.py is unchanged. Factorial whole-number validation mirrors the interactive mode to keep behaviour consistent.
+Testing: python3 -m pytest tests/test_calculator.py -v — 113 passed, 0 failed (94 original + 19 new TestCLI tests).
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+Branch: task/issue-49-bash-cli | PR target: exp/expert-generic
+
 --- 2026-04-08: Issue #44 (exp/expert-generic) — Add PlantUML diagrams ---
 Files changed: artifacts/class_diagram.puml (new), artifacts/activity_diagram.puml (new), artifacts/sequence_diagram.puml (new)
 Purpose: Document the calculator structure and user interaction with three PlantUML diagrams — class diagram covering the Calculator class and __main__ module, activity diagram covering the full session loop with input validation and error handling, and sequence diagram covering a representative interaction for each operation type.

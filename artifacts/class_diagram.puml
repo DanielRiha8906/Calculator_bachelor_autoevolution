@@ -29,6 +29,15 @@ package "src" {
     Main --> Calculator : uses
 }
 
+class "main" as CLI {
+    - CLI_OPERATIONS : dict
+    + _parse_operand(raw: str) : float
+    + run_cli(args: list[str]) : None
+}
+
+CLI --> Calculator : uses
+CLI --> Main : delegates interactive_main()
+
 note right of Calculator
   Validation rules:
   divide: b != 0
@@ -43,6 +52,14 @@ note right of Main
   OPERATIONS dict maps menu keys (1..12)
   to method names, operand count, and labels.
   run_session() loops until user enters "0".
+end note
+
+note right of CLI
+  CLI_OPERATIONS dict maps operation name strings
+  to (operand_count, method_name) pairs.
+  run_cli() dispatches one operation per invocation.
+  Errors printed to stderr; exits with code 1.
+  Falls back to interactive_main() when no args given.
 end note
 
 @enduml
