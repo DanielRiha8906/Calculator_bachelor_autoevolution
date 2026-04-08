@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #43 — Add PlantUML diagrams (structured-generic) ---
+Files changed: artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+Purpose: Created three PlantUML documentation diagrams in artifacts/ covering the Calculator class structure (class diagram), the interactive calculator loop (activity diagram), and the component interaction flow (sequence diagram).
+Risks: Docs-only change; no source or test files modified.
+Testing: No executable tests needed — diagram syntax is declarative PlantUML. Existing 77 tests unaffected (not re-run since no source changed).
+Duration: 98.2s | Cost: $0.282727 USD | Turns: 13
+Branch: task/issue-43-add-diagrams. PR targeting exp/structured-generic.
+
 --- 2026-04-08: Issue #39 — Add interactive user input (structured-generic) ---
 Files changed: src/__main__.py, tests/test_main.py
 Purpose: Replaced hardcoded demo in __main__.py with an interactive loop. Users can select any of the 12 calculator operations by number, enter the required operands, see the result, and choose to continue or quit. Invalid input and math errors are shown as messages; the loop offers "Continue? (y/n)" after each operation. Added tests/test_main.py with 20 tests covering all operations, error paths, invalid choice, continue loop, and quit.
