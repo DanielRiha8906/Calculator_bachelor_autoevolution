@@ -106,3 +106,136 @@ class TestFactorial:
     def test_factorial_float_raises_type_error(self):
         with pytest.raises(TypeError, match="Factorial is only defined for integers"):
             self.calc.factorial(3.5)
+
+
+class TestSquare:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_square_positive(self):
+        assert self.calc.square(4) == 16
+
+    def test_square_negative(self):
+        assert self.calc.square(-3) == 9
+
+    def test_square_zero(self):
+        assert self.calc.square(0) == 0
+
+    def test_square_float(self):
+        assert self.calc.square(2.5) == pytest.approx(6.25)
+
+
+class TestCube:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_cube_positive(self):
+        assert self.calc.cube(3) == 27
+
+    def test_cube_negative(self):
+        assert self.calc.cube(-2) == -8
+
+    def test_cube_zero(self):
+        assert self.calc.cube(0) == 0
+
+    def test_cube_float(self):
+        assert self.calc.cube(2.0) == pytest.approx(8.0)
+
+
+class TestSquareRoot:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_square_root_positive(self):
+        assert self.calc.square_root(9) == pytest.approx(3.0)
+
+    def test_square_root_zero(self):
+        assert self.calc.square_root(0) == pytest.approx(0.0)
+
+    def test_square_root_float(self):
+        assert self.calc.square_root(2.0) == pytest.approx(math.sqrt(2))
+
+    def test_square_root_negative_raises_value_error(self):
+        with pytest.raises(ValueError, match="Square root is not defined for negative numbers"):
+            self.calc.square_root(-1)
+
+
+class TestCubeRoot:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_cube_root_positive(self):
+        assert self.calc.cube_root(27) == pytest.approx(3.0)
+
+    def test_cube_root_negative(self):
+        assert self.calc.cube_root(-8) == pytest.approx(-2.0)
+
+    def test_cube_root_zero(self):
+        assert self.calc.cube_root(0) == pytest.approx(0.0)
+
+    def test_cube_root_float(self):
+        assert self.calc.cube_root(1.0) == pytest.approx(1.0)
+
+
+class TestPower:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_power_positive_exponent(self):
+        assert self.calc.power(2, 10) == 1024
+
+    def test_power_zero_exponent(self):
+        assert self.calc.power(5, 0) == 1
+
+    def test_power_negative_exponent(self):
+        assert self.calc.power(2, -1) == pytest.approx(0.5)
+
+    def test_power_fractional_exponent(self):
+        assert self.calc.power(9, 0.5) == pytest.approx(3.0)
+
+    def test_power_base_zero(self):
+        assert self.calc.power(0, 5) == 0
+
+
+class TestLog:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_log_of_one(self):
+        assert self.calc.log(1) == pytest.approx(0.0)
+
+    def test_log_of_ten(self):
+        assert self.calc.log(10) == pytest.approx(1.0)
+
+    def test_log_of_hundred(self):
+        assert self.calc.log(100) == pytest.approx(2.0)
+
+    def test_log_zero_raises_value_error(self):
+        with pytest.raises(ValueError, match="Logarithm is not defined for non-positive numbers"):
+            self.calc.log(0)
+
+    def test_log_negative_raises_value_error(self):
+        with pytest.raises(ValueError):
+            self.calc.log(-5)
+
+
+class TestLn:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_ln_of_one(self):
+        assert self.calc.ln(1) == pytest.approx(0.0)
+
+    def test_ln_of_e(self):
+        assert self.calc.ln(math.e) == pytest.approx(1.0)
+
+    def test_ln_positive(self):
+        assert self.calc.ln(math.e ** 3) == pytest.approx(3.0)
+
+    def test_ln_zero_raises_value_error(self):
+        with pytest.raises(ValueError, match="Natural logarithm is not defined for non-positive numbers"):
+            self.calc.ln(0)
+
+    def test_ln_negative_raises_value_error(self):
+        with pytest.raises(ValueError):
+            self.calc.ln(-1)
