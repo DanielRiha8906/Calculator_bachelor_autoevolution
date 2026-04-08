@@ -58,7 +58,7 @@ jobs:
           anthropic_api_key: ${{ secrets.anthropic_api_key }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           show_full_output: true
-          claude_args: "--max-turns 24"
+          claude_args: "--max-turns 50"
           prompt: |
             You are the autonomous evolution engine for the **${{ inputs.experiment_name }}** experiment.
 
