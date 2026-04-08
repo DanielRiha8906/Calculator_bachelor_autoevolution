@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #7 — ZeroDivisionError handling (structured-generic) ---
+Files changed: src/calculator.py, tests/test_calculator.py
+Purpose: Raise ValueError("Cannot divide by zero") explicitly in Calculator.divide instead of propagating Python's raw ZeroDivisionError. Added unit test test_divide_by_zero_raises_value_error to assert the correct exception and message.
+Risks: Minimal — only the divide method is touched. Existing callers catching ZeroDivisionError would need to be updated to catch ValueError, but no such callers exist in this codebase.
+Testing: python3 -m pytest tests/test_calculator.py — 1 passed, 0 failed.
+Tokens used: ~2,000 (estimated). Cost: ~$0.01 (estimated). Turns: 1.
+Branch: task/zero-division-error-structured. PR: #12 targeting exp/structured-generic.
+
 --- 2026-04-03: Issue #12 — User input for calculator ---
 Files changed: src/calculator.py (added run_interactive()), tests/test_calculator.py (added TestRunInteractive with 11 tests), artifacts/calculator_sequence_diagram.puml (revised), artifacts/calculator_activity_diagram.puml (created)
 Purpose: Replace hardcoded __main__ block with an interactive loop (run_interactive()) that prompts the user for an operation and two numbers, displays the result, and asks whether to continue or quit. Supports all four operations and handles invalid input gracefully.
