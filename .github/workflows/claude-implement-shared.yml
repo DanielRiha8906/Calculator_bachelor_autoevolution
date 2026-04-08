@@ -92,6 +92,11 @@ jobs:
             - Never access or reference sibling experiment branches
             ${{ inputs.prompt_additions }}
 
+            Progress logging format (mandatory):
+            When writing the cost/turns/duration line in progress.md, write it exactly as:
+            Duration: PENDING | Cost: PENDING | Turns: PENDING
+            Do not estimate or guess these values — the workflow will replace PENDING with real values after your run completes.
+
       - name: Log cost and turns
         if: always()
         run: |
@@ -113,3 +118,55 @@ jobs:
           echo "| Total cost | \$$COST USD |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Turns | $TURNS |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Duration | ${DURATION_S}s |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Patch progress.md with actual cost
+        if: always()
+        run: |
+          EXEC_FILE="${{ steps.run-claude.outputs.execution_file }}"
+          if [ -z "$EXEC_FILE" ] || [ ! -f "$EXEC_FILE" ]; then
+            echo "No execution file, skipping progress.md patch."
+            exit 0
+          fi
+          RESULT=$(jq '.[] | select(.type == "result")' "$EXEC_FILE")
+          COST=$(echo "$RESULT" | jq -r '.total_cost_usd // "N/A"')
+          TURNS=$(echo "$RESULT" | jq -r '.num_turns // "N/A"')
+          DURATION=$(echo "$RESULT" | jq -r '.duration_ms // 0')
+          DURATION_S=$(echo "scale=1; $DURATION / 1000" | bc)
+          if [ "$COST" != "N/A" ]; then
+            COST_FMT=$(printf "%.6f" "$COST" 2>/dev/null || echo "$COST")
+          else
+            COST_FMT="$COST"
+          fi
+
+          git fetch --all --quiet
+          TASK_BRANCH=$(git branch -r | grep -E "origin/task/issue-${{ inputs.issue_number }}[^0-9]" | head -1 | tr -d ' ')
+          if [ -z "$TASK_BRANCH" ]; then
+            TASK_BRANCH=$(git branch -r | grep "origin/task/issue-${{ inputs.issue_number }}-" | head -1 | tr -d ' ')
+          fi
+          if [ -z "$TASK_BRANCH" ]; then
+            echo "No task branch found for issue ${{ inputs.issue_number }}, skipping."
+            exit 0
+          fi
+
+          LOCAL_BRANCH="${TASK_BRANCH#origin/}"
+          git checkout -b "$LOCAL_BRANCH" "$TASK_BRANCH" 2>/dev/null || git checkout "$LOCAL_BRANCH"
+
+          if [ ! -f "progress.md" ] || ! grep -q "PENDING" progress.md; then
+            echo "No PENDING placeholder in progress.md, skipping."
+            exit 0
+          fi
+
+          export ACTUAL_LINE="Duration: ${DURATION_S}s | Cost: \$${COST_FMT} USD | Turns: ${TURNS}"
+          python3 - <<'PYEOF'
+          import os
+          content = open('progress.md').read()
+          actual = os.environ['ACTUAL_LINE']
+          new = content.replace('Duration: PENDING | Cost: PENDING | Turns: PENDING', actual, 1)
+          open('progress.md', 'w').write(new)
+          PYEOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add progress.md
+          git commit -m "chore: update progress.md with actual workflow cost"
+          git push origin "$LOCAL_BRANCH"
