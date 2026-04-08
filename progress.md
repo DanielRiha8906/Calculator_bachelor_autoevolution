@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #24 — Add factorial operation (structured-generic) ---
+Files changed: src/calculator.py, tests/test_calculator.py
+Purpose: Added Calculator.factorial(n) method supporting non-negative integers; raises ValueError for negative or non-integer inputs. Added 6 tests covering zero, one, positive values, large values, negative input error, and non-integer input error.
+Risks: Minimal — new method only; no existing methods modified.
+Testing: python3 -m pytest tests/test_calculator.py — 26 passed, 0 failed.
+Tokens used: ~3,000 (estimated). Cost: ~$0.01 (estimated). Turns: 1.
+Branch: task/factorial-structured-generic. PR targeting exp/structured-generic.
+
 --- 2026-04-08: Issue #10 — Unit test suite for all arithmetic operations (structured-generic) ---
 Files changed: tests/test_calculator.py
 Purpose: Expanded the test suite from 1 test (divide-by-zero) to 20 tests covering add, subtract, multiply, and divide with positive, negative, float, and zero inputs; preserves the existing divide-by-zero assertion.
