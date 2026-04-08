@@ -4,7 +4,7 @@ Files changed: src/calculator.py, tests/test_calculator.py
 Purpose: Added 7 new Calculator methods: square, cube, sqrt, cbrt, power, log (base 10), ln. sqrt, log, and ln raise ValueError for invalid inputs (negative/non-positive). Added 31 tests covering normal values, edge cases, and error paths for each new method.
 Risks: Minimal — new methods only; no existing methods modified. math.cbrt requires Python 3.11+; project uses Python 3.12.
 Testing: python -m pytest tests/test_calculator.py — 57 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 127.4s | Cost: $0.33351364999999994 USD | Turns: 16
 Branch: task/add-math-functions-structured-generic. PR targeting exp/structured-generic.
 
 --- 2026-04-08: Issue #24 — Add factorial operation (structured-generic) ---
