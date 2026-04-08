@@ -80,42 +80,71 @@ else (no args — interactive mode)
         elseif (operation in ALL_OPS?) then (no)
             :Display "Unknown operation" error;
         elseif (operation in BINARY_OPS?) then (yes)
-            :Prompt for first number (a);
-            :Prompt for second number (b);
-            if (inputs are valid numbers?) then (no)
-                :Display "inputs must be valid numbers" error;
-            else (yes)
-                :Call calc.<operation>(a, b);
-                if (operation raises ValueError?) then (yes)
-                    :Display error message;
+            :attempt = 1;
+            repeat
+                :Prompt for first number (a);
+                if (input is valid float?) then (yes)
+                    break
                 else (no)
-                    :Display result;
-                endif
-            endif
-        else (unary op)
-            if (operation == "factorial"?) then (yes)
-                :Prompt for integer number;
-                if (input is valid integer?) then (no)
-                    :Display "factorial requires a whole number" error;
-                else (yes)
-                    :Call calc.factorial(n);
-                    if (raises ValueError or TypeError?) then (yes)
-                        :Display error message;
-                    else (no)
-                        :Display result;
-                    endif
-                endif
-            else (other unary)
-                :Prompt for number;
-                if (input is valid float?) then (no)
                     :Display "input must be a valid number" error;
+                    :attempt = attempt + 1;
+                endif
+            repeat while (attempt <= MAX_INPUT_RETRIES)
+            if (a parsed successfully?) then (no)
+                :Return to operation prompt;
+            else (yes)
+                :attempt = 1;
+                repeat
+                    :Prompt for second number (b);
+                    if (input is valid float?) then (yes)
+                        break
+                    else (no)
+                        :Display "input must be a valid number" error;
+                        :attempt = attempt + 1;
+                    endif
+                repeat while (attempt <= MAX_INPUT_RETRIES)
+                if (b parsed successfully?) then (no)
+                    :Return to operation prompt;
                 else (yes)
-                    :Call calc.<operation>(a);
+                    :Call calc.<operation>(a, b);
                     if (operation raises ValueError?) then (yes)
                         :Display error message;
                     else (no)
                         :Display result;
                     endif
+                endif
+            endif
+        else (unary op)
+            :attempt = 1;
+            if (operation == "factorial"?) then (yes)
+                repeat
+                    :Prompt for integer number;
+                    if (input is valid integer?) then (yes)
+                        break
+                    else (no)
+                        :Display "factorial requires a whole number" error;
+                        :attempt = attempt + 1;
+                    endif
+                repeat while (attempt <= MAX_INPUT_RETRIES)
+            else (other unary)
+                repeat
+                    :Prompt for number;
+                    if (input is valid float?) then (yes)
+                        break
+                    else (no)
+                        :Display "input must be a valid number" error;
+                        :attempt = attempt + 1;
+                    endif
+                repeat while (attempt <= MAX_INPUT_RETRIES)
+            endif
+            if (a parsed successfully?) then (no)
+                :Return to operation prompt;
+            else (yes)
+                :Call calc.<operation>(a);
+                if (operation raises ValueError/TypeError?) then (yes)
+                    :Display error message;
+                else (no)
+                    :Display result;
                 endif
             endif
         endif

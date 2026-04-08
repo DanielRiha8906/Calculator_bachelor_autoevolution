@@ -312,16 +312,37 @@ class TestRunInteractive:
         assert any("Result: 120" in line for line in outputs)
 
     def test_factorial_non_integer_input_shows_error(self):
-        outputs = self._run("factorial", "3.5", "quit")
+        # Three bad inputs exhaust all retries (MAX_INPUT_RETRIES=3), then quit
+        outputs = self._run("factorial", "3.5", "2.5", "1.5", "quit")
         assert any("Error" in line for line in outputs)
 
     def test_invalid_number_binary_shows_error(self):
-        outputs = self._run("add", "abc", "5", "quit")
+        # Three bad inputs exhaust all retries for first number, then quit
+        outputs = self._run("add", "abc", "xyz", "bad", "quit")
         assert any("Error" in line for line in outputs)
 
     def test_invalid_number_unary_shows_error(self):
-        outputs = self._run("square", "abc", "quit")
+        # Three bad inputs exhaust all retries, then quit
+        outputs = self._run("square", "abc", "xyz", "bad", "quit")
         assert any("Error" in line for line in outputs)
+
+    def test_retry_succeeds_on_second_attempt_binary(self):
+        # First number fails once then succeeds; second number valid; result produced
+        outputs = self._run("add", "abc", "3", "5", "quit")
+        assert any("Error" in line for line in outputs)
+        assert any("Result: 8.0" in line for line in outputs)
+
+    def test_retry_succeeds_on_second_attempt_unary(self):
+        # Number fails once then succeeds; result produced
+        outputs = self._run("square", "abc", "4", "quit")
+        assert any("Error" in line for line in outputs)
+        assert any("Result: 16" in line for line in outputs)
+
+    def test_all_retries_exhausted_returns_to_menu(self):
+        # Exhaust all retries for first number, then a valid operation succeeds
+        outputs = self._run("add", "bad1", "bad2", "bad3", "add", "2", "3", "quit")
+        assert any("Error" in line for line in outputs)
+        assert any("Result: 5.0" in line for line in outputs)
 
     def test_divide_by_zero_shows_error(self):
         outputs = self._run("divide", "10", "0", "quit")
