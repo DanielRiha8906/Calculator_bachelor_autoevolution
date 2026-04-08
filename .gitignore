@@ -209,3 +209,4 @@ __marimo__/
 secrets/
 .mcp.json
 key.txt
+prompt_additions.txt
