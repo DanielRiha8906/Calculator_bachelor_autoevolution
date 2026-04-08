@@ -72,11 +72,21 @@ if (command-line args provided?) then (yes)
 else (no args — interactive mode)
     :run_interactive(calc);
     :Display available operations;
+    :Display history/clear_history hint;
 
     repeat
         :Prompt user for operation;
         if (operation == "quit"?) then (yes)
             stop
+        elseif (operation == "history"?) then (yes)
+            if (history is empty?) then (yes)
+                :Display "No history yet.";
+            else (no)
+                :Display numbered list of past operations;
+            endif
+        elseif (operation == "clear_history"?) then (yes)
+            :Call calc.clear_history();
+            :Display "History cleared.";
         elseif (operation in ALL_OPS?) then (no)
             :Display "Unknown operation" error;
         elseif (operation in BINARY_OPS?) then (yes)

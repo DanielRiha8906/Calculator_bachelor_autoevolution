@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #63 — History of operations (Task 9, Naive/generic) ---
+Files changed: src/calculator.py (added __init__, _record, get_history, clear_history; all 13 operation methods updated to call _record on success), src/__main__.py (added HISTORY_OPS constant; run_interactive now handles 'history' and 'clear_history' commands; welcome message updated), tests/test_calculator.py (added TestCalculatorHistory class with 10 tests; added TestRunInteractiveHistory class with 6 tests), artifacts/class_diagram.puml (added _history field and new methods), artifacts/activity_diagram.puml (added history/clear_history branches in interactive flow), artifacts/sequence_diagram.puml (added history/clear_history interactions)
+Purpose: Add a history of operations to the Calculator class. Each successful operation is appended to an internal list (_history). The get_history() method returns a copy; clear_history() resets it. In interactive mode, users can type 'history' to see a numbered list of past operations or 'clear_history' to reset it. Failed operations are never recorded.
+Risks: Low — additive change. Calculator class now has __init__ (previously relied on implicit object()); all existing tests still pass. run_cli is untouched. get_history() returns a shallow copy to prevent external mutation of the internal list.
+Testing: python -m pytest tests/test_calculator.py -v — 118 passed, 0 failed.
+Duration: 264.0s | Cost: $0.862664 USD | Turns: 35
+Branch: task/issue-63-history. PR target: exp/naive-generic.
+
 --- 2026-04-08: Issue #60 — Input validation with retry logic (Task 8, Naive/generic) ---
 Files changed: src/__main__.py (added MAX_INPUT_RETRIES constant and _read_number helper; refactored run_interactive to use per-number retry loop), tests/test_calculator.py (updated 3 existing tests to supply enough inputs for retry; added 3 new tests for retry behavior), artifacts/activity_diagram.puml (updated interactive path to show retry loops), artifacts/sequence_diagram.puml (updated interactive path to show retry loops)
 Purpose: When the user enters an invalid number in interactive mode, prompt them again up to MAX_INPUT_RETRIES (3) times before returning to the operation selection menu. CLI mode is unchanged (single-shot, exit code 1 on bad input).

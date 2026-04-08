@@ -3,6 +3,11 @@
 title Calculator — Class Diagram
 
 class Calculator {
+    - _history : list[dict]
+    + __init__()
+    - _record(operation: str, operands: tuple, result) : None
+    + get_history() : list[dict]
+    + clear_history() : None
     + add(a, b) : float
     + subtract(a, b) : float
     + multiply(a, b) : float
@@ -23,13 +28,17 @@ note right of Calculator
     ValueError for negative n
   square_root raises ValueError for x < 0
   log / ln raise ValueError for x <= 0
+  Failed operations are not recorded
+    in history; only successful ones are.
 end note
 
 class "__main__" as Main {
     + BINARY_OPS : set
     + UNARY_OPS : set
     + ALL_OPS : set
+    + HISTORY_OPS : set
     + run_interactive(calc, input_fn, output_fn) : None
+    + run_cli(argv, calc, output_fn) : int
     + main() : None
 }
 
