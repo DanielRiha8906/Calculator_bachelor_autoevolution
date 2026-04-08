@@ -4,61 +4,111 @@ title Calculator — User Interaction Activity Diagram
 
 start
 
-:Create Calculator instance;
-:Display operation menu (1–12, or 0 to quit);
+if (command-line arguments provided?) then (yes — bash mode)
 
-repeat
+    :Read operation name from args[0];
 
-    :Read user menu choice;
-
-    if (choice == "0"?) then (yes)
+    if (operation is known?) then (no)
+        :Print error to stderr;
+        :Exit with code 1;
         stop
     endif
 
-    if (choice is valid operation?) then (no)
-        :Print "Unknown choice, please try again";
-    else (yes)
-
-        if (operation requires two operands?) then (yes)
-            repeat
-                :Prompt for first number;
-            repeat while (input is not a valid float?) is (invalid)
-            ->valid;
-
-            repeat
-                :Prompt for second number;
-            repeat while (input is not a valid float?) is (invalid)
-            ->valid;
-
-        else (no — single operand)
-            if (operation is factorial?) then (yes)
-                repeat
-                    :Prompt for number;
-                repeat while (input is not a valid float?) is (invalid)
-                ->valid;
-                :Validate input is whole number;
-                if (not whole number?) then (yes)
-                    :Print "Input must be a whole number";
-                    note right: skip to next loop iteration
-                endif
-            else (no)
-                repeat
-                    :Prompt for number;
-                repeat while (input is not a valid float?) is (invalid)
-                ->valid;
-            endif
-        endif
-
-        :Call Calculator method with operand(s);
-
-        if (operation raises ValueError, ZeroDivisionError, or TypeError?) then (yes)
-            :Print error message;
-        else (no)
-            :Print result;
-        endif
-
+    if (correct number of operands provided?) then (no)
+        :Print error to stderr;
+        :Exit with code 1;
+        stop
     endif
 
-repeat while (session continues)
+    if (operand(s) are valid numbers?) then (no)
+        :Print error to stderr;
+        :Exit with code 1;
+        stop
+    endif
+
+    if (operation is factorial?) then (yes)
+        if (value is not a whole number?) then (yes)
+            :Print error to stderr;
+            :Exit with code 1;
+            stop
+        endif
+        :Call Calculator.factorial(int(a));
+    else (no)
+        if (operation requires two operands?) then (yes)
+            :Call Calculator method with a, b;
+        else (no)
+            :Call Calculator method with a;
+        endif
+    endif
+
+    if (operation raises ValueError, ZeroDivisionError, or TypeError?) then (yes)
+        :Print error to stderr;
+        :Exit with code 1;
+        stop
+    else (no)
+        :Print result to stdout;
+        stop
+    endif
+
+else (no — interactive mode)
+
+    :Create Calculator instance;
+    :Display operation menu (1–12, or 0 to quit);
+
+    repeat
+
+        :Read user menu choice;
+
+        if (choice == "0"?) then (yes)
+            stop
+        endif
+
+        if (choice is valid operation?) then (no)
+            :Print "Unknown choice, please try again";
+        else (yes)
+
+            if (operation requires two operands?) then (yes)
+                repeat
+                    :Prompt for first number;
+                repeat while (input is not a valid float?) is (invalid)
+                ->valid;
+
+                repeat
+                    :Prompt for second number;
+                repeat while (input is not a valid float?) is (invalid)
+                ->valid;
+
+            else (no — single operand)
+                if (operation is factorial?) then (yes)
+                    repeat
+                        :Prompt for number;
+                    repeat while (input is not a valid float?) is (invalid)
+                    ->valid;
+                    :Validate input is whole number;
+                    if (not whole number?) then (yes)
+                        :Print "Input must be a whole number";
+                        note right: skip to next loop iteration
+                    endif
+                else (no)
+                    repeat
+                        :Prompt for number;
+                    repeat while (input is not a valid float?) is (invalid)
+                    ->valid;
+                endif
+            endif
+
+            :Call Calculator method with operand(s);
+
+            if (operation raises ValueError, ZeroDivisionError, or TypeError?) then (yes)
+                :Print error message;
+            else (no)
+                :Print result;
+            endif
+
+        endif
+
+    repeat while (session continues)
+
+endif
 
 @enduml
