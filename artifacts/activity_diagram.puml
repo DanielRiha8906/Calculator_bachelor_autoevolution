@@ -1,60 +1,93 @@
 @startuml activity_diagram
 
-title Calculator Interactive Loop — Activity Diagram
+title Calculator — Activity Diagram
 
 start
 
-:Display operation menu (1–12);
+if (Command-line arguments present?) then (yes)
 
-repeat
+    :Parse operation and value(s) from argv;
 
-    :Prompt user for operation choice;
-
-    if (Input is 'q'?) then (yes)
-        :Print "Goodbye!";
+    if (Operation valid and correct number of values?) then (no)
+        :Print argparse error message;
+        :Exit with code 2;
         stop
     endif
 
-    if (Input is a valid number 1–12?) then (no)
-        :Print "Invalid choice";
-    else (yes)
-
-        if (Operation requires two operands?\n(add, subtract, multiply,\ndivide, power)) then (yes)
-            :Prompt for operand a;
-            :Convert a to float;
-            :Prompt for operand b;
-            if (Operation is factorial?) then (no)
-                :Convert b to float;
-            else (yes)
-                :Validate b is a whole number;
-                :Convert b to int;
-            endif
-        else (no)
-            :Prompt for single operand;
-            if (Operation is factorial?) then (yes)
-                :Validate input is a whole number;
-                :Convert to int;
-            else (no)
-                :Convert to float;
-            endif
+    if (Operation is factorial?) then (yes)
+        :Validate value is a whole number;
+        if (Not a whole number?) then (yes)
+            :Print "Error: Factorial requires a whole number.";
+            :Exit with code 1;
+            stop
         endif
-
-        :Call Calculator.<operation>(operands);
-
-        if (ValueError raised?) then (yes)
-            :Print "Error: <message>";
-        else (no)
-            :Print "Result: <value>";
-        endif
-
+        :Convert to int;
+    else (no)
+        :Use value(s) as float;
     endif
 
-    :Prompt "Continue? (y/n)";
+    :Call Calculator.<operation>(value(s));
 
-repeat while (User answers 'y'?) is (yes)
-->no;
+    if (ValueError raised?) then (yes)
+        :Print "Error: <message>";
+        :Exit with code 1;
+        stop
+    else (no)
+        :Print "Result: <value>";
+        :Exit with code 0;
+        stop
+    endif
 
-:Exit;
-stop
+else (no)
+
+    :Display operation menu (1–12);
+
+    repeat
+
+        :Prompt user for operation choice;
+
+        if (Input is 'q'?) then (yes)
+            :Print "Goodbye!";
+            stop
+        endif
+
+        if (Input is a valid number 1–12?) then (no)
+            :Print "Invalid choice";
+        else (yes)
+
+            if (Operation requires two operands?\n(add, subtract, multiply,\ndivide, power)) then (yes)
+                :Prompt for operand a;
+                :Convert a to float;
+                :Prompt for operand b;
+                :Convert b to float;
+            else (no)
+                :Prompt for single operand;
+                if (Operation is factorial?) then (yes)
+                    :Validate input is a whole number;
+                    :Convert to int;
+                else (no)
+                    :Convert to float;
+                endif
+            endif
+
+            :Call Calculator.<operation>(operands);
+
+            if (ValueError raised?) then (yes)
+                :Print "Error: <message>";
+            else (no)
+                :Print "Result: <value>";
+            endif
+
+        endif
+
+        :Prompt "Continue? (y/n)";
+
+    repeat while (User answers 'y'?) is (yes)
+    ->no;
+
+    :Print "Goodbye!";
+    stop
+
+endif
 
 @enduml

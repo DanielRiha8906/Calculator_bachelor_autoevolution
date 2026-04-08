@@ -3,48 +3,74 @@
 title Calculator Usage — Sequence Diagram
 
 actor User
-participant "__main__\nrun_calculator()" as Main
+participant "__main__\nmain()" as Main
+participant "__main__\nrun_cli()" as CLI
+participant "__main__\nrun_calculator()" as Interactive
 participant "Calculator" as Calc
 
-User -> Main : python -m src
+== Bash (non-interactive) mode ==
 
-Main -> User : Display operation menu (1–12)
+User -> Main : python -m src <operation> <value(s)>
+Main -> CLI : run_cli(argv)
+
+alt invalid operation or wrong number of values
+    CLI -> User : argparse error message (exit 2)
+else valid arguments
+
+    CLI -> Calc : <operation>(value(s))
+
+    alt no error
+        Calc --> CLI : result
+        CLI -> User : "Result: <value>" (exit 0)
+    else ValueError
+        Calc --> CLI : raise ValueError("<message>")
+        CLI -> User : "Error: <message>" (exit 1)
+    end
+
+end
+
+== Interactive mode ==
+
+User -> Main : python -m src
+Main -> Interactive : run_calculator()
+
+Interactive -> User : Display operation menu (1–12)
 
 loop until quit or 'n'
 
-    User -> Main : Enter operation choice (e.g. "1" for add)
+    User -> Interactive : Enter operation choice (e.g. "1" for add)
 
     alt invalid choice
-        Main -> User : "Invalid choice, try again."
+        Interactive -> User : "Invalid choice, try again."
     else valid choice
 
         alt two-operand operation (add, subtract, multiply, divide, power)
-            Main -> User : "Enter first number:"
-            User -> Main : operand a
-            Main -> User : "Enter second number:"
-            User -> Main : operand b
+            Interactive -> User : "Enter first number:"
+            User -> Interactive : operand a
+            Interactive -> User : "Enter second number:"
+            User -> Interactive : operand b
         else one-operand operation (factorial, square, cube, sqrt, cbrt, log, ln)
-            Main -> User : "Enter number:"
-            User -> Main : operand
+            Interactive -> User : "Enter number:"
+            User -> Interactive : operand
         end
 
-        Main -> Calc : <operation>(operand(s))
+        Interactive -> Calc : <operation>(operand(s))
 
         alt no error
-            Calc --> Main : result
-            Main -> User : "Result: <value>"
+            Calc --> Interactive : result
+            Interactive -> User : "Result: <value>"
         else ValueError
-            Calc --> Main : raise ValueError("<message>")
-            Main -> User : "Error: <message>"
+            Calc --> Interactive : raise ValueError("<message>")
+            Interactive -> User : "Error: <message>"
         end
 
     end
 
-    Main -> User : "Continue? (y/n)"
-    User -> Main : 'y' or 'n'
+    Interactive -> User : "Continue? (y/n)"
+    User -> Interactive : 'y' or 'n'
 
 end
 
-Main -> User : "Goodbye!"
+Interactive -> User : "Goodbye!"
 
 @enduml

@@ -30,9 +30,19 @@ package "src" {
           - factorial(-1) → "n must be a non-negative integer"
     end note
 
-    class "__main__\nrun_calculator()" as Main {
+    class "__main__" as Main {
         + run_calculator(input_fn, print_fn) : None
+        + run_cli(argv, print_fn) : None
+        + main() : None
     }
+
+    note bottom of Main
+        main() routes based on sys.argv:
+          - args present → run_cli() (bash mode)
+          - no args      → run_calculator() (interactive)
+        run_cli() exits with code 1 on math errors,
+        code 2 on argument errors.
+    end note
 
     Main --> Calculator : uses
 }
