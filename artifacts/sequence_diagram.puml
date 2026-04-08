@@ -25,33 +25,59 @@ alt no command-line args (interactive mode)
         else unknown operation
             Interactive --> User : "Unknown operation '...'"
         else binary operation
-            Interactive --> User : prompt "First number:"
-            User -> Interactive : enter a
-            Interactive --> User : prompt "Second number:"
-            User -> Interactive : enter b
+            loop up to MAX_INPUT_RETRIES times (first number)
+                Interactive --> User : prompt "First number:"
+                User -> Interactive : enter a
+                alt invalid number
+                    Interactive --> User : "Error: input must be a valid number. N attempt(s) remaining."
+                else valid number
+                    Interactive -> Interactive : a parsed, exit retry loop
+                end
+            end
 
-            alt invalid number input
-                Interactive --> User : "Error: both inputs must be valid numbers."
-            else valid input
-                Interactive -> Calculator : <operation>(a, b)
-                activate Calculator
-                alt raises ValueError/TypeError
-                    Calculator --> Interactive : exception
-                    Interactive --> User : "Error: <message>"
-                else result
-                    Calculator --> Interactive : result
-                    deactivate Calculator
-                    Interactive --> User : "Result: <value>"
+            alt all retries exhausted for a
+                Interactive --> User : return to operation prompt
+            else a parsed successfully
+                loop up to MAX_INPUT_RETRIES times (second number)
+                    Interactive --> User : prompt "Second number:"
+                    User -> Interactive : enter b
+                    alt invalid number
+                        Interactive --> User : "Error: input must be a valid number. N attempt(s) remaining."
+                    else valid number
+                        Interactive -> Interactive : b parsed, exit retry loop
+                    end
+                end
+
+                alt all retries exhausted for b
+                    Interactive --> User : return to operation prompt
+                else b parsed successfully
+                    Interactive -> Calculator : <operation>(a, b)
+                    activate Calculator
+                    alt raises ValueError/TypeError
+                        Calculator --> Interactive : exception
+                        Interactive --> User : "Error: <message>"
+                    else result
+                        Calculator --> Interactive : result
+                        deactivate Calculator
+                        Interactive --> User : "Result: <value>"
+                    end
                 end
             end
 
         else unary operation
-            Interactive --> User : prompt "Number:"
-            User -> Interactive : enter value
+            loop up to MAX_INPUT_RETRIES times
+                Interactive --> User : prompt "Number:"
+                User -> Interactive : enter value
+                alt invalid input
+                    Interactive --> User : "Error: ... N attempt(s) remaining."
+                else valid input
+                    Interactive -> Interactive : value parsed, exit retry loop
+                end
+            end
 
-            alt invalid input
-                Interactive --> User : "Error: ..."
-            else valid input
+            alt all retries exhausted
+                Interactive --> User : return to operation prompt
+            else value parsed successfully
                 Interactive -> Calculator : <operation>(value)
                 activate Calculator
                 alt raises ValueError/TypeError

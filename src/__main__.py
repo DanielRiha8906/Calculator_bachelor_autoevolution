@@ -6,6 +6,37 @@ BINARY_OPS = {"add", "subtract", "multiply", "divide", "power"}
 UNARY_OPS = {"factorial", "square", "cube", "square_root", "cube_root", "log", "ln"}
 ALL_OPS = BINARY_OPS | UNARY_OPS
 
+MAX_INPUT_RETRIES = 3
+
+
+def _read_number(prompt: str, as_int: bool, input_fn, output_fn) -> float | int | None:
+    """Prompt for a number, allowing up to MAX_INPUT_RETRIES attempts.
+
+    Args:
+        prompt: The prompt string shown to the user.
+        as_int: If True, parse as integer; otherwise parse as float.
+        input_fn: Callable used to read user input.
+        output_fn: Callable used to display output.
+
+    Returns:
+        The parsed number on success, or None if all attempts are exhausted.
+    """
+    for attempt in range(1, MAX_INPUT_RETRIES + 1):
+        raw = input_fn(prompt).strip()
+        try:
+            return int(raw) if as_int else float(raw)
+        except ValueError:
+            if as_int:
+                msg = "Error: factorial requires a whole number."
+            else:
+                msg = "Error: input must be a valid number."
+            remaining = MAX_INPUT_RETRIES - attempt
+            if remaining > 0:
+                output_fn(f"{msg} {remaining} attempt(s) remaining.")
+            else:
+                output_fn(f"{msg} Returning to operation menu.")
+    return None
+
 
 def run_interactive(calc: Calculator, input_fn=input, output_fn=print) -> None:
     """Run an interactive calculator session.
@@ -31,31 +62,22 @@ def run_interactive(calc: Calculator, input_fn=input, output_fn=print) -> None:
             )
             continue
 
+        if operation in BINARY_OPS:
+            a = _read_number("First number: ", False, input_fn, output_fn)
+            if a is None:
+                continue
+            b = _read_number("Second number: ", False, input_fn, output_fn)
+            if b is None:
+                continue
+        else:
+            a = _read_number("Number: ", operation == "factorial", input_fn, output_fn)
+            if a is None:
+                continue
+
         try:
             if operation in BINARY_OPS:
-                a_raw = input_fn("First number: ").strip()
-                b_raw = input_fn("Second number: ").strip()
-                try:
-                    a = float(a_raw)
-                    b = float(b_raw)
-                except ValueError:
-                    output_fn("Error: both inputs must be valid numbers.")
-                    continue
                 result = getattr(calc, operation)(a, b)
             else:
-                raw = input_fn("Number: ").strip()
-                if operation == "factorial":
-                    try:
-                        a = int(raw)
-                    except ValueError:
-                        output_fn("Error: factorial requires a whole number.")
-                        continue
-                else:
-                    try:
-                        a = float(raw)
-                    except ValueError:
-                        output_fn("Error: input must be a valid number.")
-                        continue
                 result = getattr(calc, operation)(a)
             output_fn(f"Result: {result}")
         except (ValueError, TypeError) as e:

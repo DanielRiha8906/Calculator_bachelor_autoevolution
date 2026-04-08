@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #60 — Input validation with retry logic (Task 8, Naive/generic) ---
+Files changed: src/__main__.py (added MAX_INPUT_RETRIES constant and _read_number helper; refactored run_interactive to use per-number retry loop), tests/test_calculator.py (updated 3 existing tests to supply enough inputs for retry; added 3 new tests for retry behavior), artifacts/activity_diagram.puml (updated interactive path to show retry loops), artifacts/sequence_diagram.puml (updated interactive path to show retry loops)
+Purpose: When the user enters an invalid number in interactive mode, prompt them again up to MAX_INPUT_RETRIES (3) times before returning to the operation selection menu. CLI mode is unchanged (single-shot, exit code 1 on bad input).
+Risks: Low — run_cli is untouched; the Calculator class is untouched. Existing interactive tests updated to provide enough canned inputs to exhaust or satisfy the retry loop. _read_number returns None on exhaustion so the caller uses continue to return to operation selection.
+Testing: python -m pytest tests/test_calculator.py -v — 102 passed, 0 failed.
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+Branch: task/issue-60-input-validation. PR target: exp/naive-generic.
+
 --- 2026-04-08: Issue #45 — Add CLI bash mode (Task 7, Naive/generic) ---
 Files changed: src/__main__.py (added run_cli function, updated main to dispatch on sys.argv), tests/test_calculator.py (added TestRunCLI class, 24 new tests), artifacts/activity_diagram.puml (updated to show CLI path), artifacts/sequence_diagram.puml (updated to show CLI vs interactive paths)
 Purpose: Expose all Calculator operations as a non-interactive CLI so the calculator can be driven from bash scripts and one-liners (e.g. python -m src add 5 3). When sys.argv has arguments, main() dispatches to run_cli(); when invoked with no arguments the existing interactive REPL is preserved.
