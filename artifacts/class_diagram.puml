@@ -31,10 +31,24 @@ package "src" {
     end note
 
     class "__main__" as Main {
+        + HISTORY_FILE : str
+        + MAX_ATTEMPTS : int
         + main() : None
-        + run_calculator(input_fn, print_fn) : None
+        + run_calculator(input_fn, print_fn, history_file) : None
         + run_bash_mode(args, print_fn) : int
+        - _parse_float(s : str) : float
+        - _clear_history(path : str) : None
+        - _append_history(path : str, entry : str) : None
+        - _show_history(path : str, print_fn) : None
     }
+
+    note right of Main
+        history_file defaults to HISTORY_FILE.
+        Cleared at session start; each successful
+        operation is appended. 'h' in interactive
+        mode displays current session history.
+        Bash mode does not record history.
+    end note
 
     Main --> Calculator : uses
 }

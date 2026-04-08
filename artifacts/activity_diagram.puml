@@ -68,7 +68,8 @@ if (Command-line arguments provided?) then (yes)
 
 else (no)
 
-    :Display operation menu (1-12);
+    :Clear history file (history.txt);
+    :Display operation menu (1-12, h, q);
 
     repeat
 
@@ -80,7 +81,10 @@ else (no)
                 :Print "Goodbye!";
                 stop
             endif
-            if (Input is a valid number 1-12?) then (yes)
+            if (Input is 'h'?) then (yes)
+                :Display session history from file;
+                note right: attempt not incremented
+            elseif (Input is a valid number 1-12?) then (yes)
                 :Select operation;
                 break
             else (no)
@@ -92,7 +96,7 @@ else (no)
                     stop
                 endif
             endif
-        repeat while (choice invalid)
+        repeat while (choice invalid or 'h')
 
         :attempt = 0;
 
@@ -120,6 +124,7 @@ else (no)
                     stop
                 endif
             else (no)
+                :Append "<op>(<operands>) = <result>" to history file;
                 :Print "Result: <value>";
                 break
             endif

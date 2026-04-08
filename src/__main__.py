@@ -24,6 +24,9 @@ OP_BY_NAME = {name: num_args for _, (name, num_args, _) in OPERATIONS.items()}
 # Maximum number of consecutive invalid inputs before the interactive session ends.
 MAX_ATTEMPTS = 3
 
+# File used to persist history within an interactive session.
+HISTORY_FILE = "history.txt"
+
 
 def _parse_float(s: str) -> float:
     """Parse a string as float, raising ValueError with a clear message on failure."""
@@ -33,33 +36,71 @@ def _parse_float(s: str) -> float:
         raise ValueError(f"'{s}' is not a valid number")
 
 
-def run_calculator(input_fn=input, print_fn=print):
+def _clear_history(path: str) -> None:
+    """Create or truncate the history file at the start of a new session."""
+    with open(path, "w") as f:
+        pass
+
+
+def _append_history(path: str, entry: str) -> None:
+    """Append one operation entry to the history file."""
+    with open(path, "a") as f:
+        f.write(entry + "\n")
+
+
+def _show_history(path: str, print_fn) -> None:
+    """Print all history entries recorded so far in this session."""
+    try:
+        with open(path, "r") as f:
+            lines = [line.rstrip("\n") for line in f if line.strip()]
+    except FileNotFoundError:
+        lines = []
+    if not lines:
+        print_fn("No history yet.")
+    else:
+        print_fn("History:")
+        for line in lines:
+            print_fn(f"  {line}")
+
+
+def run_calculator(input_fn=input, print_fn=print, history_file=HISTORY_FILE):
     """Run the interactive calculator loop.
 
-    Accepts optional input_fn and print_fn for testability.
+    Accepts optional input_fn and print_fn for testability, and history_file
+    to override where session history is written (defaults to HISTORY_FILE).
+    Clears the history file at the start of each session so history does not
+    persist between runs.
     Loops until the user quits, answers 'n' to continue, or exceeds
     MAX_ATTEMPTS consecutive invalid inputs for a choice or operand.
     """
     calc = Calculator()
+    _clear_history(history_file)
 
     while True:
         print_fn("\nSelect an operation:")
         for key, (_, _, label) in OPERATIONS.items():
             print_fn(f"  {key}. {label}")
+        print_fn("  h. Show history")
         print_fn("  q. Quit")
 
         # Prompt for operation choice, retrying up to MAX_ATTEMPTS on invalid input.
+        # Entering 'h' displays history without consuming an attempt.
         op_name = None
         num_args = None
-        for attempt in range(MAX_ATTEMPTS):
+        attempt = 0
+        while attempt < MAX_ATTEMPTS:
             choice = input_fn("Enter choice: ").strip().lower()
             if choice == "q":
                 print_fn("Goodbye!")
                 return
+            if choice == "h":
+                _show_history(history_file, print_fn)
+                continue
             if choice in OPERATIONS:
                 op_name, num_args, _ = OPERATIONS[choice]
                 break
-            remaining = MAX_ATTEMPTS - attempt - 1
+            attempt += 1
+            remaining = MAX_ATTEMPTS - attempt
             if remaining > 0:
                 print_fn("Invalid choice. Please try again.")
             else:
@@ -81,10 +122,12 @@ def run_calculator(input_fn=input, print_fn=print):
                     else:
                         x = _parse_float(raw)
                     result = method(x)
+                    _append_history(history_file, f"{op_name}({x}) = {result}")
                 else:
                     a = _parse_float(input_fn("Enter first value: ").strip())
                     b = _parse_float(input_fn("Enter second value: ").strip())
                     result = method(a, b)
+                    _append_history(history_file, f"{op_name}({a}, {b}) = {result}")
                 print_fn(f"Result: {result}")
                 break
             except ValueError as e:
