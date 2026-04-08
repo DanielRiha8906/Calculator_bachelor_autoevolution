@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #66 — Error logging (Task 10, Naive/generic) ---
+Files changed: src/calculator.py (added `import logging`, module-level `logger = logging.getLogger(__name__)`, and `logger.error(...)` calls before each raise in divide, factorial, square_root, log, and ln), tests/test_calculator.py (added TestCalculatorErrorLogging class, 8 new tests using pytest caplog fixture), artifacts/class_diagram.puml (updated note to mention error logging)
+Purpose: Add error logging to the Calculator so that every invalid-input condition (division by zero, bad factorial argument, negative square root, non-positive log/ln domain) is recorded at ERROR level via Python's standard logging module. Successful operations produce no error logs.
+Risks: Low — additive change only. No existing behaviour modified; exceptions still propagate unchanged. Uses Python stdlib logging (no new dependency). Existing 118 tests unaffected.
+Testing: python3 -m pytest tests/test_calculator.py -v — 126 passed, 0 failed.
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+Branch: task/issue-66-error-logging. PR target: exp/naive-generic.
+
 --- 2026-04-08: Issue #63 — History of operations (Task 9, Naive/generic) ---
 Files changed: src/calculator.py (added __init__, _record, get_history, clear_history; all 13 operation methods updated to call _record on success), src/__main__.py (added HISTORY_OPS constant; run_interactive now handles 'history' and 'clear_history' commands; welcome message updated), tests/test_calculator.py (added TestCalculatorHistory class with 10 tests; added TestRunInteractiveHistory class with 6 tests), artifacts/class_diagram.puml (added _history field and new methods), artifacts/activity_diagram.puml (added history/clear_history branches in interactive flow), artifacts/sequence_diagram.puml (added history/clear_history interactions)
 Purpose: Add a history of operations to the Calculator class. Each successful operation is appended to an internal list (_history). The get_history() method returns a copy; clear_history() resets it. In interactive mode, users can type 'history' to see a numbered list of past operations or 'clear_history' to reset it. Failed operations are never recorded.

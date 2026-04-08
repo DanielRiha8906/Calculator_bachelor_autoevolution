@@ -620,3 +620,70 @@ class TestRunInteractiveHistory:
         outputs = self._run("divide", "10", "0", "history", "quit")
         assert any("Error" in line for line in outputs)
         assert any("No history yet" in line for line in outputs)
+
+
+class TestCalculatorErrorLogging:
+    """Verify that Calculator emits ERROR log records for each invalid-input condition."""
+
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_divide_by_zero_logs_error(self, caplog):
+        import logging
+        with caplog.at_level(logging.ERROR, logger="src.calculator"):
+            with pytest.raises(ValueError):
+                self.calc.divide(10, 0)
+        assert any("divide" in r.message and "b=0" in r.message for r in caplog.records)
+
+    def test_factorial_non_integer_logs_error(self, caplog):
+        import logging
+        with caplog.at_level(logging.ERROR, logger="src.calculator"):
+            with pytest.raises(TypeError):
+                self.calc.factorial(3.5)
+        assert any("factorial" in r.message and "non-integer" in r.message for r in caplog.records)
+
+    def test_factorial_negative_logs_error(self, caplog):
+        import logging
+        with caplog.at_level(logging.ERROR, logger="src.calculator"):
+            with pytest.raises(ValueError):
+                self.calc.factorial(-1)
+        assert any("factorial" in r.message and "negative" in r.message for r in caplog.records)
+
+    def test_square_root_negative_logs_error(self, caplog):
+        import logging
+        with caplog.at_level(logging.ERROR, logger="src.calculator"):
+            with pytest.raises(ValueError):
+                self.calc.square_root(-4)
+        assert any("square_root" in r.message and "negative" in r.message for r in caplog.records)
+
+    def test_log_non_positive_logs_error(self, caplog):
+        import logging
+        with caplog.at_level(logging.ERROR, logger="src.calculator"):
+            with pytest.raises(ValueError):
+                self.calc.log(0)
+        assert any("log" in r.message and "non-positive" in r.message for r in caplog.records)
+
+    def test_ln_non_positive_logs_error(self, caplog):
+        import logging
+        with caplog.at_level(logging.ERROR, logger="src.calculator"):
+            with pytest.raises(ValueError):
+                self.calc.ln(-1)
+        assert any("ln" in r.message and "non-positive" in r.message for r in caplog.records)
+
+    def test_successful_operations_produce_no_error_logs(self, caplog):
+        import logging
+        with caplog.at_level(logging.ERROR, logger="src.calculator"):
+            self.calc.add(1, 2)
+            self.calc.divide(10, 2)
+            self.calc.factorial(5)
+            self.calc.square_root(9)
+            self.calc.log(10)
+            self.calc.ln(1)
+        assert caplog.records == []
+
+    def test_error_log_level_is_error(self, caplog):
+        import logging
+        with caplog.at_level(logging.ERROR, logger="src.calculator"):
+            with pytest.raises(ValueError):
+                self.calc.divide(5, 0)
+        assert all(r.levelno == logging.ERROR for r in caplog.records)
