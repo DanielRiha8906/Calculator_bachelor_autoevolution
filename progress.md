@@ -4,7 +4,7 @@ Files changed: src/error_logger.py (new — ERROR_LOG_FILE constant, get_error_l
 Purpose: Record failures and invalid usage (invalid inputs, unsupported operations, calculation errors) to calculator_errors.log, a dedicated file separate from history.txt. Uses Python's logging module with a FileHandler. Logger name is derived from the log file path so tests using tmp_path each get an isolated logger. Successful operations produce no log entries.
 Risks: FileHandler opens the log file on first call per logger name; in long test runs, unclosed handlers accumulate (one per tmp_path). This is acceptable for the scale of this test suite. The default log file (calculator_errors.log) is written to the process working directory — same convention as history.txt.
 Testing: python3.12 -m pytest tests/test_calculator.py -v — 145 passed, 0 failed (130 original + 15 new TestErrorLogging tests).
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 636.7s | Cost: $1.583755 USD | Turns: 39
 Branch: task/issue-69-error-logging | PR target: exp/expert-generic
 
 --- 2026-04-08: Issue #65 (exp/expert-generic) — Session history ---
