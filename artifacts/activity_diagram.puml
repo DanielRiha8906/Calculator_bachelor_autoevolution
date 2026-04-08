@@ -6,9 +6,11 @@ start
 
 if (command-line arguments provided?) then (yes — bash mode)
 
+    :Initialise error logger (calculator_errors.log);
     :Read operation name from args[0];
 
     if (operation is known?) then (no)
+        :Log error: unknown operation;
         :Print error to stderr;
         :List available operations on stderr;
         :Exit with code 1;
@@ -16,12 +18,14 @@ if (command-line arguments provided?) then (yes — bash mode)
     endif
 
     if (correct number of operands provided?) then (no)
+        :Log error: wrong operand count;
         :Print error to stderr;
         :Exit with code 1;
         stop
     endif
 
     if (operand(s) are valid numbers?) then (no)
+        :Log error: invalid operand (not a number);
         :Print error to stderr;
         :Exit with code 1;
         stop
@@ -29,6 +33,7 @@ if (command-line arguments provided?) then (yes — bash mode)
 
     if (operation is factorial?) then (yes)
         if (value is not a whole number?) then (yes)
+            :Log error: factorial non-integer input;
             :Print error to stderr;
             :Exit with code 1;
             stop
@@ -43,6 +48,7 @@ if (command-line arguments provided?) then (yes — bash mode)
     endif
 
     if (operation raises ValueError, ZeroDivisionError, or TypeError?) then (yes)
+        :Log error: calculation error;
         :Print error to stderr;
         :Exit with code 1;
         stop
@@ -54,6 +60,7 @@ if (command-line arguments provided?) then (yes — bash mode)
 else (no — interactive mode)
 
     :Create Calculator instance;
+    :Initialise error logger (calculator_errors.log);
     :Set choice_failures = 0;
     :Initialise history = [];
     :Display operation menu (1–12, 0 to quit, h to show history);
@@ -78,10 +85,12 @@ else (no — interactive mode)
             if (choice is valid operation?) then (no)
                 :Increment choice_failures;
                 if (choice_failures >= MAX_ATTEMPTS?) then (yes)
+                    :Log error: too many invalid menu choices;
                     :Print "Too many invalid choices — ending session";
                     :Write history to history.txt;
                     stop
                 else (no)
+                    :Log error: invalid menu choice;
                     :Print "Unknown choice" + available operations list;
                     :Show remaining attempts;
                 endif
@@ -94,8 +103,10 @@ else (no — interactive mode)
                     :Prompt for first number;
                     if (input is valid float?) then (yes)
                     else (no)
+                        :Log error: invalid number input;
                         :Increment number_failures;
                         if (number_failures >= MAX_ATTEMPTS?) then (yes)
+                            :Log error: TooManyAttemptsError;
                             :Print "Too many invalid inputs — ending session";
                             stop
                         else (no)
@@ -110,8 +121,10 @@ else (no — interactive mode)
                     :Prompt for second number;
                     if (input is valid float?) then (yes)
                     else (no)
+                        :Log error: invalid number input;
                         :Increment number_failures;
                         if (number_failures >= MAX_ATTEMPTS?) then (yes)
+                            :Log error: TooManyAttemptsError;
                             :Print "Too many invalid inputs — ending session";
                             stop
                         else (no)
@@ -127,8 +140,10 @@ else (no — interactive mode)
                     :Prompt for number;
                     if (input is valid float?) then (yes)
                     else (no)
+                        :Log error: invalid number input;
                         :Increment number_failures;
                         if (number_failures >= MAX_ATTEMPTS?) then (yes)
+                            :Log error: TooManyAttemptsError;
                             :Print "Too many invalid inputs — ending session";
                             stop
                         else (no)
@@ -141,6 +156,7 @@ else (no — interactive mode)
                 if (operation is factorial?) then (yes)
                     :Validate input is whole number;
                     if (not whole number?) then (yes)
+                        :Log error: factorial non-integer input;
                         :Print "Input must be a whole number";
                         note right: skip to next loop iteration
                     endif
@@ -150,6 +166,7 @@ else (no — interactive mode)
                 :Call Calculator method with operand(s);
 
                 if (operation raises ValueError, ZeroDivisionError, or TypeError?) then (yes)
+                    :Log error: calculation error;
                     :Print error message;
                 else (no)
                     :Print result;
