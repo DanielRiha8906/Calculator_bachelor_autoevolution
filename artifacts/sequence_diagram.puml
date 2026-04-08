@@ -1,0 +1,50 @@
+@startuml sequence_diagram
+
+title Calculator Usage — Sequence Diagram
+
+actor User
+participant "__main__\nrun_calculator()" as Main
+participant "Calculator" as Calc
+
+User -> Main : python -m src
+
+Main -> User : Display operation menu (1–12)
+
+loop until quit or 'n'
+
+    User -> Main : Enter operation choice (e.g. "1" for add)
+
+    alt invalid choice
+        Main -> User : "Invalid choice, try again."
+    else valid choice
+
+        alt two-operand operation (add, subtract, multiply, divide, power)
+            Main -> User : "Enter first number:"
+            User -> Main : operand a
+            Main -> User : "Enter second number:"
+            User -> Main : operand b
+        else one-operand operation (factorial, square, cube, sqrt, cbrt, log, ln)
+            Main -> User : "Enter number:"
+            User -> Main : operand
+        end
+
+        Main -> Calc : <operation>(operand(s))
+
+        alt no error
+            Calc --> Main : result
+            Main -> User : "Result: <value>"
+        else ValueError
+            Calc --> Main : raise ValueError("<message>")
+            Main -> User : "Error: <message>"
+        end
+
+    end
+
+    Main -> User : "Continue? (y/n)"
+    User -> Main : 'y' or 'n'
+
+end
+
+Main -> User : "Goodbye!"
+
+@enduml

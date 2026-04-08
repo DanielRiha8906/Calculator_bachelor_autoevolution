@@ -1,0 +1,60 @@
+@startuml activity_diagram
+
+title Calculator Interactive Loop — Activity Diagram
+
+start
+
+:Display operation menu (1–12);
+
+repeat
+
+    :Prompt user for operation choice;
+
+    if (Input is 'q'?) then (yes)
+        :Print "Goodbye!";
+        stop
+    endif
+
+    if (Input is a valid number 1–12?) then (no)
+        :Print "Invalid choice";
+    else (yes)
+
+        if (Operation requires two operands?\n(add, subtract, multiply,\ndivide, power)) then (yes)
+            :Prompt for operand a;
+            :Convert a to float;
+            :Prompt for operand b;
+            if (Operation is factorial?) then (no)
+                :Convert b to float;
+            else (yes)
+                :Validate b is a whole number;
+                :Convert b to int;
+            endif
+        else (no)
+            :Prompt for single operand;
+            if (Operation is factorial?) then (yes)
+                :Validate input is a whole number;
+                :Convert to int;
+            else (no)
+                :Convert to float;
+            endif
+        endif
+
+        :Call Calculator.<operation>(operands);
+
+        if (ValueError raised?) then (yes)
+            :Print "Error: <message>";
+        else (no)
+            :Print "Result: <value>";
+        endif
+
+    endif
+
+    :Prompt "Continue? (y/n)";
+
+repeat while (User answers 'y'?) is (yes)
+->no;
+
+:Exit;
+stop
+
+@enduml

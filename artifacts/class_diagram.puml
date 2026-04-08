@@ -1,0 +1,40 @@
+@startuml class_diagram
+
+title Calculator — Class Diagram
+
+package "src" {
+
+    class Calculator {
+        + add(a, b) : float
+        + subtract(a, b) : float
+        + multiply(a, b) : float
+        + divide(a, b) : float
+        --
+        + factorial(n : int) : int
+        + square(x) : float
+        + cube(x) : float
+        + sqrt(x) : float
+        + cbrt(x) : float
+        + power(base, exp) : float
+        + log(x) : float
+        + ln(x) : float
+    }
+
+    note right of Calculator
+        All methods are stateless.
+        Errors raised as ValueError
+        with descriptive messages:
+          - divide(x, 0) → "Cannot divide by zero"
+          - sqrt(-1) → "Cannot take sqrt of negative"
+          - log(0) → "Cannot take log of non-positive"
+          - factorial(-1) → "n must be a non-negative integer"
+    end note
+
+    class "__main__\nrun_calculator()" as Main {
+        + run_calculator(input_fn, print_fn) : None
+    }
+
+    Main --> Calculator : uses
+}
+
+@enduml
