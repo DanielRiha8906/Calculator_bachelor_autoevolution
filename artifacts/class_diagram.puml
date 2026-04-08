@@ -1,0 +1,38 @@
+@startuml class_diagram
+
+title Calculator — Class Diagram
+
+class Calculator {
+    + add(a, b) : float
+    + subtract(a, b) : float
+    + multiply(a, b) : float
+    + divide(a, b) : float
+    + factorial(n: int) : int
+    + square(x) : float
+    + cube(x) : float
+    + square_root(x) : float
+    + cube_root(x) : float
+    + power(base, exp) : float
+    + log(x) : float
+    + ln(x) : float
+}
+
+note right of Calculator
+  divide raises ValueError on b == 0
+  factorial raises TypeError for non-int,
+    ValueError for negative n
+  square_root raises ValueError for x < 0
+  log / ln raise ValueError for x <= 0
+end note
+
+class "__main__" as Main {
+    + BINARY_OPS : set
+    + UNARY_OPS : set
+    + ALL_OPS : set
+    + run_interactive(calc, input_fn, output_fn) : None
+    + main() : None
+}
+
+Main --> Calculator : uses
+
+@enduml
