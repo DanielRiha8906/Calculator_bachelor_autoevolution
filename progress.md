@@ -4,7 +4,7 @@ Files changed: artifacts/class_diagram.puml (new), artifacts/activity_diagram.pu
 Purpose: Create PlantUML class, activity, and sequence diagrams documenting the Calculator class and interactive session flow, as required by CLAUDE.md artifacts policy.
 Risks: None — documentation only; no source code or tests modified.
 Testing: python3 -m pytest tests/ -v — 75 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 138.8s | Cost: $0.321491 USD | Turns: 19
 Branch: task/issue-42-diagrams. PR target: exp/naive-generic.
 
 --- 2026-04-08: Issue #38 — Add user input to the calculator (Task 5, Naive/generic) ---
