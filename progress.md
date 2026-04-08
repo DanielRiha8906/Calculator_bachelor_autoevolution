@@ -4,7 +4,10 @@ Files changed: src/__main__.py (added HISTORY_FILE constant, _fmt_num, _format_e
 Purpose: Track all successful calculations in a session history list. Each entry uses function-call style format (e.g. add(2, 3) = 5, factorial(5) = 120, square_root(9) = 3). Typing "h" in the interactive menu displays the current history. When the session ends (quit, too many invalid choices, or too many invalid inputs), the history is written to history.txt in the working directory; a new session always starts with an empty list. Math errors (ValueError, ZeroDivisionError, TypeError) and invalid inputs do not add entries to history.
 Risks: history.txt is written to the current working directory on every session exit, including when history is empty (creates an empty file). The file is overwritten each session (fresh start). Tests use tmp_path to isolate file writes; no production files are modified during testing.
 Testing: python3 -m pytest tests/test_calculator.py -v — 130 passed, 0 failed (119 original + 11 new TestHistory tests).
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 600141
+4.3s | Cost: $1.3011371.3011367999999996
+1.3267228999999996 USD | Turns: 37
+1
 Branch: task/issue-65-history | PR target: exp/expert-generic
 
 --- 2026-04-08: Issue #62 (exp/expert-generic) — Input validation with retry logic ---
