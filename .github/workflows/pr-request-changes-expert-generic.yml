@@ -11,6 +11,12 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       (github.event.label.name == 'request-changes:expert-generic' &&
        github.event.pull_request.base.ref == 'exp/expert-generic')
+    permissions:                                                                                                                                                                          
+      contents: write                                                                                                                                                                                            
+      issues: write                                                                                                                                                                                              
+      pull-requests: write                                                                                                                                                                                       
+      id-token: write                                                                                                                                                                                         
+      actions: read
     uses: ./.github/workflows/pr-request-changes-shared.yml
     with:
       branch: exp/expert-generic
