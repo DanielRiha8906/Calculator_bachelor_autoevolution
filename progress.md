@@ -4,7 +4,7 @@ Files changed: src/__main__.py (added run_cli function, updated main to dispatch
 Purpose: Expose all Calculator operations as a non-interactive CLI so the calculator can be driven from bash scripts and one-liners (e.g. python -m src add 5 3). When sys.argv has arguments, main() dispatches to run_cli(); when invoked with no arguments the existing interactive REPL is preserved.
 Risks: Low — run_cli is additive; run_interactive and Calculator are unchanged. sys.exit is called on the CLI path so callers get a proper exit code.
 Testing: python -m pytest tests/test_calculator.py -v — 99 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 208.7s | Cost: $0.612450 USD | Turns: 24
 Branch: task/issue-45-bash-mode. PR target: exp/naive-generic.
 
 --- 2026-04-08: Issue #42 — Add diagrams (Task 6, Naive/generic) ---
