@@ -1,0 +1,81 @@
+@startuml activity_diagram
+
+title Calculator — User Interaction Activity Diagram
+
+start
+
+:Create Calculator instance;
+:Print "Calculator — enter 0 to quit.";
+
+repeat
+
+    :Display numbered operation menu (1–12) and quit option (0);
+    :Read user choice;
+
+    if (choice == "0"?) then (yes)
+        :Print "Goodbye!";
+        stop
+    else (no)
+        if (choice in OPERATIONS?) then (no)
+            :Print "Unknown choice";
+        else (yes)
+            :Look up method_name and operand_count;
+
+            if (operand_count == 1?) then (yes)
+                repeat
+                    :Prompt "Enter value:";
+                    :Read raw input;
+                    if (valid float?) then (yes)
+                        :Parse as float;
+                    else (no)
+                        :Print "not a valid number — please try again.";
+                    endif
+                repeat while (valid float? is no)
+
+                if (method is factorial?) then (yes)
+                    if (value is whole number?) then (no)
+                        :Print "factorial requires a whole number.";
+                        note right: skips to next loop iteration
+                    else (yes)
+                        :Call calc.factorial(int(value));
+                    endif
+                else (no)
+                    :Call calc.<method>(value);
+                endif
+
+            else (no, operand_count == 2)
+                repeat
+                    :Prompt "Enter first value:";
+                    :Read raw input;
+                    if (valid float?) then (yes)
+                        :Parse as float (a);
+                    else (no)
+                        :Print "not a valid number — please try again.";
+                    endif
+                repeat while (valid float? is no)
+
+                repeat
+                    :Prompt "Enter second value:";
+                    :Read raw input;
+                    if (valid float?) then (yes)
+                        :Parse as float (b);
+                    else (no)
+                        :Print "not a valid number — please try again.";
+                    endif
+                repeat while (valid float? is no)
+
+                :Call calc.<method>(a, b);
+            endif
+
+            if (operation raised exception?) then (yes)
+                :Print "Error: <exception message>";
+            else (no)
+                :Print "Result: <result>";
+            endif
+
+        endif
+    endif
+
+repeat while (user has not quit)
+
+@enduml

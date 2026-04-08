@@ -1,0 +1,96 @@
+@startuml sequence_diagram
+
+title Calculator — Sequence Diagram (Typical Interaction)
+
+actor User
+participant "__main__" as Main
+participant "Calculator" as Calc
+
+User -> Main : python -m src
+activate Main
+
+Main -> Calc : Calculator()
+activate Calc
+Calc --> Main : calc instance
+deactivate Calc
+
+Main --> User : "Calculator — enter 0 to quit."
+
+loop session (until user enters 0)
+
+    Main --> User : display operation menu (1–12, 0 to quit)
+    User -> Main : enter choice (e.g. "1")
+
+    alt invalid choice
+        Main --> User : "Unknown choice '<choice>'."
+    else choice == "0"
+        Main --> User : "Goodbye!"
+        deactivate Main
+    else valid choice (binary operation, e.g. add)
+        Main --> User : "Enter first value:"
+        User -> Main : "5"
+        Main --> User : (parsed as 5.0)
+
+        Main --> User : "Enter second value:"
+        User -> Main : "3"
+        Main --> User : (parsed as 3.0)
+
+        Main -> Calc : add(5.0, 3.0)
+        activate Calc
+        Calc --> Main : 8.0
+        deactivate Calc
+
+        Main --> User : "Result: 8.0"
+
+    else valid choice (unary operation, e.g. square_root)
+        Main --> User : "Enter value:"
+        User -> Main : "16"
+        Main --> User : (parsed as 16.0)
+
+        Main -> Calc : square_root(16.0)
+        activate Calc
+        Calc --> Main : 4.0
+        deactivate Calc
+
+        Main --> User : "Result: 4.0"
+
+    else valid choice (factorial)
+        Main --> User : "Enter value:"
+        User -> Main : "5"
+        Main --> User : (parsed as 5.0)
+
+        alt value is not a whole number
+            Main --> User : "Error: factorial requires a whole number."
+        else value is a whole number
+            Main -> Calc : factorial(5)
+            activate Calc
+            Calc --> Main : 120
+            deactivate Calc
+
+            Main --> User : "Result: 120"
+        end
+
+    else operation raises exception (e.g. divide by zero)
+        Main --> User : "Enter first value:"
+        User -> Main : "9"
+        Main --> User : "Enter second value:"
+        User -> Main : "0"
+
+        Main -> Calc : divide(9.0, 0.0)
+        activate Calc
+        Calc --> Main : raises ZeroDivisionError
+        deactivate Calc
+
+        Main --> User : "Error: division by zero"
+
+    else invalid number input
+        Main --> User : "Enter value:"
+        User -> Main : "abc"
+        Main --> User : "'abc' is not a valid number — please try again."
+        User -> Main : "4"
+        Main --> User : (parsed as 4.0, continues normally)
+    end
+
+end
+
+@enduml

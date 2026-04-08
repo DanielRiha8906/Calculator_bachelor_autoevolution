@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #44 (exp/expert-generic) — Add PlantUML diagrams ---
+Files changed: artifacts/class_diagram.puml (new), artifacts/activity_diagram.puml (new), artifacts/sequence_diagram.puml (new)
+Purpose: Document the calculator's structure and user interaction with three PlantUML diagrams: class diagram for the Calculator class and __main__ module, activity diagram for the user interaction loop, and sequence diagram for a typical session including error paths.
+Risks: None — documentation only, no source code modified.
+Testing: python -m pytest — 94 passed, 0 failed (no code changes, existing suite still green).
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+Branch: task/issue-44-add-diagrams-expert-generic | PR target: exp/expert-generic
+
 --- 2026-04-08: Issue #40 (exp/expert-generic) — Add interactive user input ---
 Files changed: src/__main__.py (replaced hardcoded demo with interactive session loop), tests/test_calculator.py (added TestMain class with 18 tests)
 Purpose: Replace the hardcoded demo in __main__.py with a menu-driven REPL that reads operation choice and operands at runtime. Handles one-operand operations (factorial, square, cube, sqrt, cbrt, log, ln) and two-operand operations (add, subtract, multiply, divide, power) with appropriate prompts. Session loops until user enters 0. Errors (ValueError, ZeroDivisionError, TypeError) are caught and displayed without crashing the session.

@@ -1,0 +1,49 @@
+@startuml class_diagram
+
+title Calculator — Class Diagram
+
+package "src" {
+
+    class Calculator {
+        + add(a: float, b: float) : float
+        + subtract(a: float, b: float) : float
+        + multiply(a: float, b: float) : float
+        + divide(a: float, b: float) : float
+        + power(base: float, exponent: float) : float
+        + factorial(n: int) : int
+        + square(a: float) : float
+        + cube(a: float) : float
+        + square_root(a: float) : float
+        + cube_root(a: float) : float
+        + log(a: float) : float
+        + ln(a: float) : float
+    }
+
+    class "__main__" as Main {
+        OPERATIONS : dict
+        --
+        + main() : None
+        + run_session(calc: Calculator) : None
+        - _read_number(prompt: str) : float
+    }
+
+}
+
+Main --> Calculator : creates and uses
+
+note right of Calculator
+  Binary operations (2 operands):
+    add, subtract, multiply,
+    divide, power
+  Unary operations (1 operand):
+    factorial, square, cube,
+    square_root, cube_root,
+    log, ln
+end note
+
+note right of Main
+  OPERATIONS maps choice key to
+  (method_name, operand_count, label)
+end note
+
+@enduml
