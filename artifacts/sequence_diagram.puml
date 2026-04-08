@@ -22,6 +22,17 @@ alt no command-line args (interactive mode)
 
         alt operation == "quit"
             Interactive --> User : exit loop
+        else operation == "history"
+            Interactive -> Calculator : get_history()
+            Calculator --> Interactive : list of entries
+            alt history is empty
+                Interactive --> User : "No history yet."
+            else entries present
+                Interactive --> User : numbered list of past operations
+            end
+        else operation == "clear_history"
+            Interactive -> Calculator : clear_history()
+            Interactive --> User : "History cleared."
         else unknown operation
             Interactive --> User : "Unknown operation '...'"
         else binary operation

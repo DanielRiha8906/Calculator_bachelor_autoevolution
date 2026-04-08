@@ -5,6 +5,7 @@ from .calculator import Calculator
 BINARY_OPS = {"add", "subtract", "multiply", "divide", "power"}
 UNARY_OPS = {"factorial", "square", "cube", "square_root", "cube_root", "log", "ln"}
 ALL_OPS = BINARY_OPS | UNARY_OPS
+HISTORY_OPS = {"history", "clear_history"}
 
 MAX_INPUT_RETRIES = 3
 
@@ -49,12 +50,26 @@ def run_interactive(calc: Calculator, input_fn=input, output_fn=print) -> None:
     output_fn("Calculator - available operations:")
     output_fn("  Binary (two numbers): " + ", ".join(sorted(BINARY_OPS)))
     output_fn("  Unary  (one number):  " + ", ".join(sorted(UNARY_OPS)))
+    output_fn("Type 'history' to view history, 'clear_history' to clear it.")
     output_fn("Type 'quit' to exit.")
 
     while True:
         operation = input_fn("Operation: ").strip().lower()
         if operation == "quit":
             break
+        if operation == "history":
+            entries = calc.get_history()
+            if not entries:
+                output_fn("No history yet.")
+            else:
+                for i, entry in enumerate(entries, 1):
+                    operands_str = ", ".join(str(o) for o in entry["operands"])
+                    output_fn(f"  {i}. {entry['operation']}({operands_str}) = {entry['result']}")
+            continue
+        if operation == "clear_history":
+            calc.clear_history()
+            output_fn("History cleared.")
+            continue
         if operation not in ALL_OPS:
             output_fn(
                 f"Unknown operation '{operation}'. "

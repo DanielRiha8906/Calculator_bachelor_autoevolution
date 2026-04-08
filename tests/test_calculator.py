@@ -493,3 +493,130 @@ class TestRunCLI:
         outputs, code = self._run("ADD", "3", "5")
         assert code == 0
         assert any("Result: 8.0" in line for line in outputs)
+
+
+class TestCalculatorHistory:
+    """Tests for the operation history feature on the Calculator class."""
+
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_history_starts_empty(self):
+        assert self.calc.get_history() == []
+
+    def test_history_records_successful_binary_operation(self):
+        self.calc.add(3, 5)
+        history = self.calc.get_history()
+        assert len(history) == 1
+        assert history[0]["operation"] == "add"
+        assert history[0]["operands"] == (3, 5)
+        assert history[0]["result"] == 8
+
+    def test_history_records_successful_unary_operation(self):
+        self.calc.square(4)
+        history = self.calc.get_history()
+        assert len(history) == 1
+        assert history[0]["operation"] == "square"
+        assert history[0]["operands"] == (4,)
+        assert history[0]["result"] == 16
+
+    def test_history_records_multiple_operations_in_order(self):
+        self.calc.add(1, 2)
+        self.calc.multiply(3, 4)
+        self.calc.factorial(5)
+        history = self.calc.get_history()
+        assert len(history) == 3
+        assert history[0]["operation"] == "add"
+        assert history[1]["operation"] == "multiply"
+        assert history[2]["operation"] == "factorial"
+
+    def test_history_does_not_record_failed_operation(self):
+        with pytest.raises(ValueError):
+            self.calc.divide(10, 0)
+        assert self.calc.get_history() == []
+
+    def test_history_does_not_record_failed_sqrt(self):
+        with pytest.raises(ValueError):
+            self.calc.square_root(-1)
+        assert self.calc.get_history() == []
+
+    def test_history_does_not_record_failed_factorial(self):
+        with pytest.raises(TypeError):
+            self.calc.factorial(3.5)
+        assert self.calc.get_history() == []
+
+    def test_clear_history_removes_all_entries(self):
+        self.calc.add(1, 2)
+        self.calc.subtract(5, 3)
+        self.calc.clear_history()
+        assert self.calc.get_history() == []
+
+    def test_get_history_returns_copy(self):
+        self.calc.add(1, 2)
+        history = self.calc.get_history()
+        history.clear()
+        # Internal history must not be affected by mutation of the returned list
+        assert len(self.calc.get_history()) == 1
+
+    def test_history_records_all_operations(self):
+        self.calc.add(1, 1)
+        self.calc.subtract(5, 2)
+        self.calc.multiply(3, 3)
+        self.calc.divide(8, 2)
+        self.calc.power(2, 3)
+        self.calc.factorial(4)
+        self.calc.square(5)
+        self.calc.cube(2)
+        self.calc.square_root(9)
+        self.calc.cube_root(27)
+        self.calc.log(100)
+        self.calc.ln(1)
+        assert len(self.calc.get_history()) == 12
+
+
+class TestRunInteractiveHistory:
+    """Tests for history commands in the interactive session."""
+
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def _run(self, *responses):
+        responses_iter = iter(responses)
+
+        def fake_input(prompt=""):
+            return next(responses_iter)
+
+        outputs = []
+        run_interactive(self.calc, input_fn=fake_input, output_fn=outputs.append)
+        return outputs
+
+    def test_welcome_message_mentions_history(self):
+        outputs = self._run("quit")
+        assert any("history" in line.lower() for line in outputs)
+
+    def test_history_command_empty_shows_no_history(self):
+        outputs = self._run("history", "quit")
+        assert any("No history yet" in line for line in outputs)
+
+    def test_history_command_shows_previous_operations(self):
+        outputs = self._run("add", "3", "5", "history", "quit")
+        history_lines = [line for line in outputs if "add" in line and "=" in line]
+        assert len(history_lines) == 1
+        assert "8" in history_lines[0]
+
+    def test_history_shows_multiple_entries(self):
+        outputs = self._run("add", "1", "2", "multiply", "3", "4", "history", "quit")
+        history_lines = [line for line in outputs if "=" in line and any(
+            op in line for op in ("add", "multiply")
+        )]
+        assert len(history_lines) == 2
+
+    def test_clear_history_command_empties_history(self):
+        outputs = self._run("add", "1", "2", "clear_history", "history", "quit")
+        assert any("cleared" in line.lower() for line in outputs)
+        assert any("No history yet" in line for line in outputs)
+
+    def test_failed_operation_not_in_history(self):
+        outputs = self._run("divide", "10", "0", "history", "quit")
+        assert any("Error" in line for line in outputs)
+        assert any("No history yet" in line for line in outputs)
