@@ -21,12 +21,24 @@ OPERATIONS = {
 # Maps operation name → number of required arguments, for bash mode lookup.
 OP_BY_NAME = {name: num_args for _, (name, num_args, _) in OPERATIONS.items()}
 
+# Maximum number of consecutive invalid inputs before the interactive session ends.
+MAX_ATTEMPTS = 3
+
+
+def _parse_float(s: str) -> float:
+    """Parse a string as float, raising ValueError with a clear message on failure."""
+    try:
+        return float(s)
+    except ValueError:
+        raise ValueError(f"'{s}' is not a valid number")
+
 
 def run_calculator(input_fn=input, print_fn=print):
     """Run the interactive calculator loop.
 
     Accepts optional input_fn and print_fn for testability.
-    Loops until the user quits.
+    Loops until the user quits, answers 'n' to continue, or exceeds
+    MAX_ATTEMPTS consecutive invalid inputs for a choice or operand.
     """
     calc = Calculator()
 
@@ -36,37 +48,53 @@ def run_calculator(input_fn=input, print_fn=print):
             print_fn(f"  {key}. {label}")
         print_fn("  q. Quit")
 
-        choice = input_fn("Enter choice: ").strip().lower()
+        # Prompt for operation choice, retrying up to MAX_ATTEMPTS on invalid input.
+        op_name = None
+        num_args = None
+        for attempt in range(MAX_ATTEMPTS):
+            choice = input_fn("Enter choice: ").strip().lower()
+            if choice == "q":
+                print_fn("Goodbye!")
+                return
+            if choice in OPERATIONS:
+                op_name, num_args, _ = OPERATIONS[choice]
+                break
+            remaining = MAX_ATTEMPTS - attempt - 1
+            if remaining > 0:
+                print_fn("Invalid choice. Please try again.")
+            else:
+                print_fn("Invalid choice. Too many invalid attempts. Ending session.")
+                return
 
-        if choice == "q":
-            print_fn("Goodbye!")
-            break
-
-        if choice not in OPERATIONS:
-            print_fn("Invalid choice. Please try again.")
-            continue
-
-        op_name, num_args, _ = OPERATIONS[choice]
         method = getattr(calc, op_name)
 
-        try:
-            if num_args == 1:
-                raw = input_fn("Enter value: ").strip()
-                if op_name == "factorial":
-                    val = float(raw)
-                    if val != int(val):
-                        raise ValueError("Factorial requires a whole number.")
-                    x = int(val)
+        # Prompt for operand(s), retrying up to MAX_ATTEMPTS on invalid input.
+        for attempt in range(MAX_ATTEMPTS):
+            try:
+                if num_args == 1:
+                    raw = input_fn("Enter value: ").strip()
+                    if op_name == "factorial":
+                        val = _parse_float(raw)
+                        if val != int(val):
+                            raise ValueError("Factorial requires a whole number.")
+                        x = int(val)
+                    else:
+                        x = _parse_float(raw)
+                    result = method(x)
                 else:
-                    x = float(raw)
-                result = method(x)
-            else:
-                a = float(input_fn("Enter first value: ").strip())
-                b = float(input_fn("Enter second value: ").strip())
-                result = method(a, b)
-            print_fn(f"Result: {result}")
-        except ValueError as e:
-            print_fn(f"Error: {e}")
+                    a = _parse_float(input_fn("Enter first value: ").strip())
+                    b = _parse_float(input_fn("Enter second value: ").strip())
+                    result = method(a, b)
+                print_fn(f"Result: {result}")
+                break
+            except ValueError as e:
+                remaining = MAX_ATTEMPTS - attempt - 1
+                print_fn(f"Error: {e}")
+                if remaining > 0:
+                    print_fn("Please try again.")
+                else:
+                    print_fn("Too many invalid inputs. Ending session.")
+                    return
 
         again = input_fn("Continue? (y/n): ").strip().lower()
         if again != "y":
@@ -105,19 +133,19 @@ def run_bash_mode(args, print_fn=print):
                 print_fn(f"Error: '{op_name}' requires exactly 1 value")
                 return 1
             if op_name == "factorial":
-                val = float(args[1])
+                val = _parse_float(args[1])
                 if val != int(val):
                     raise ValueError("Factorial requires a whole number.")
                 x = int(val)
             else:
-                x = float(args[1])
+                x = _parse_float(args[1])
             result = method(x)
         else:
             if len(args) != 3:
                 print_fn(f"Error: '{op_name}' requires exactly 2 values")
                 return 1
-            a = float(args[1])
-            b = float(args[2])
+            a = _parse_float(args[1])
+            b = _parse_float(args[2])
             result = method(a, b)
         print_fn(f"Result: {result}")
         return 0

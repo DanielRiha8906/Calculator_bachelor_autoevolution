@@ -62,7 +62,8 @@ def test_power_operation():
 
 def test_divide_by_zero_shows_error():
     outputs = []
-    run_calculator(input_fn=make_inputs("4", "10", "0", "n"), print_fn=outputs.append)
+    # First attempt: divide by zero → error + retry; second attempt: valid division succeeds.
+    run_calculator(input_fn=make_inputs("4", "10", "0", "5", "2", "n"), print_fn=outputs.append)
     assert any("Error" in line for line in outputs)
     assert any("Goodbye" in line for line in outputs)
 
@@ -84,8 +85,10 @@ def test_factorial_float_whole_number():
 
 def test_factorial_fractional_input_shows_error():
     outputs = []
-    run_calculator(input_fn=make_inputs("6", "5.5", "n"), print_fn=outputs.append)
+    # First attempt: fractional → error + retry; second attempt: valid whole number succeeds.
+    run_calculator(input_fn=make_inputs("6", "5.5", "5", "n"), print_fn=outputs.append)
     assert any("Error" in line for line in outputs)
+    assert any("120" in line for line in outputs)
 
 
 def test_square_operation():
@@ -108,8 +111,10 @@ def test_sqrt_operation():
 
 def test_sqrt_negative_shows_error():
     outputs = []
-    run_calculator(input_fn=make_inputs("9", "-4", "n"), print_fn=outputs.append)
+    # First attempt: negative input → error + retry; second attempt: valid input succeeds.
+    run_calculator(input_fn=make_inputs("9", "-4", "9", "n"), print_fn=outputs.append)
     assert any("Error" in line for line in outputs)
+    assert any("3.0" in line for line in outputs)
 
 
 def test_cbrt_operation():
@@ -292,3 +297,52 @@ def test_bash_no_args_prints_usage():
     code = run_bash_mode([], print_fn=outputs.append)
     assert code == 1
     assert any("Usage" in line for line in outputs)
+
+
+# --- Interactive mode: retry and max-attempt limits ---
+
+def test_invalid_choice_max_attempts_ends_session():
+    outputs = []
+    # Three consecutive invalid choices exhaust MAX_ATTEMPTS and end the session.
+    run_calculator(input_fn=make_inputs("99", "88", "77"), print_fn=outputs.append)
+    assert any("Invalid choice" in line for line in outputs)
+    assert any("Ending session" in line for line in outputs)
+
+
+def test_invalid_operand_retry_succeeds():
+    outputs = []
+    # Non-numeric input for square → error; valid input on retry → correct result.
+    run_calculator(input_fn=make_inputs("7", "abc", "4", "n"), print_fn=outputs.append)
+    assert any("Error" in line for line in outputs)
+    assert any("16" in line for line in outputs)
+
+
+def test_invalid_operand_all_attempts_exhausted_ends_session():
+    outputs = []
+    # Three consecutive invalid operand inputs exhaust MAX_ATTEMPTS and end the session.
+    run_calculator(input_fn=make_inputs("7", "abc", "def", "xyz"), print_fn=outputs.append)
+    assert any("Error" in line for line in outputs)
+    assert any("Ending session" in line for line in outputs)
+
+
+# --- Bash mode: non-numeric input ---
+
+def test_bash_non_numeric_first_value():
+    outputs = []
+    code = run_bash_mode(["add", "abc", "3"], print_fn=outputs.append)
+    assert code == 1
+    assert any("Error" in line for line in outputs)
+
+
+def test_bash_non_numeric_second_value():
+    outputs = []
+    code = run_bash_mode(["add", "5", "xyz"], print_fn=outputs.append)
+    assert code == 1
+    assert any("Error" in line for line in outputs)
+
+
+def test_bash_non_numeric_single_value():
+    outputs = []
+    code = run_bash_mode(["sqrt", "abc"], print_fn=outputs.append)
+    assert code == 1
+    assert any("Error" in line for line in outputs)

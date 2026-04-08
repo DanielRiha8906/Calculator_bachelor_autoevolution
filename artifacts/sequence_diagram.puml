@@ -21,6 +21,9 @@ alt command-line arguments present
     else wrong number of values
         Bash -> User : "Error: '<op>' requires exactly N value(s)"
         Bash --> Main : exit code 1
+    else non-numeric value
+        Bash -> User : "Error: '<value>' is not a valid number"
+        Bash --> Main : exit code 1
     else valid arguments
         Bash -> Calc : <operation>(parsed values)
         alt no error
@@ -41,32 +44,52 @@ else no arguments (interactive mode)
 
     loop until quit or 'n'
 
-        User -> Interactive : Enter operation choice (e.g. "1" for add)
-
-        alt invalid choice
-            Interactive -> User : "Invalid choice, try again."
-        else valid choice
-
-            alt two-operand operation (add, subtract, multiply, divide, power)
-                Interactive -> User : "Enter first number:"
-                User -> Interactive : operand a
-                Interactive -> User : "Enter second number:"
-                User -> Interactive : operand b
-            else one-operand operation (factorial, square, cube, sqrt, cbrt, log, ln)
-                Interactive -> User : "Enter number:"
-                User -> Interactive : operand
+        group operation choice (up to MAX_ATTEMPTS retries)
+            loop attempt < MAX_ATTEMPTS
+                User -> Interactive : Enter operation choice
+                alt 'q'
+                    Interactive -> User : "Goodbye!"
+                    Interactive --> Main : return
+                else valid choice
+                    note right: break out of retry loop
+                else invalid choice, attempts remaining
+                    Interactive -> User : "Invalid choice. Please try again."
+                else invalid choice, attempts exhausted
+                    Interactive -> User : "Too many invalid attempts. Ending session."
+                    Interactive --> Main : return
+                end
             end
+        end
 
-            Interactive -> Calc : <operation>(operand(s))
+        group operand input (up to MAX_ATTEMPTS retries)
+            loop attempt < MAX_ATTEMPTS
+                alt two-operand operation (add, subtract, multiply, divide, power)
+                    Interactive -> User : "Enter first value:"
+                    User -> Interactive : operand a
+                    Interactive -> User : "Enter second value:"
+                    User -> Interactive : operand b
+                else one-operand operation (factorial, square, cube, sqrt, cbrt, log, ln)
+                    Interactive -> User : "Enter value:"
+                    User -> Interactive : operand
+                end
 
-            alt no error
-                Calc --> Interactive : result
-                Interactive -> User : "Result: <value>"
-            else ValueError
-                Calc --> Interactive : raise ValueError("<message>")
-                Interactive -> User : "Error: <message>"
+                Interactive -> Calc : <operation>(operand(s))
+
+                alt no error
+                    Calc --> Interactive : result
+                    Interactive -> User : "Result: <value>"
+                    note right: break out of retry loop
+                else ValueError, attempts remaining
+                    Calc --> Interactive : raise ValueError("<message>")
+                    Interactive -> User : "Error: <message>"
+                    Interactive -> User : "Please try again."
+                else ValueError, attempts exhausted
+                    Calc --> Interactive : raise ValueError("<message>")
+                    Interactive -> User : "Error: <message>"
+                    Interactive -> User : "Too many invalid inputs. Ending session."
+                    Interactive --> Main : return
+                end
             end
-
         end
 
         Interactive -> User : "Continue? (y/n)"
