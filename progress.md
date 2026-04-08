@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #48 — Bash mode CLI (structured-generic) ---
+Files changed: src/__main__.py, tests/test_main.py, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml, artifacts/class_diagram.puml
+Purpose: Added run_bash_mode() to __main__.py so the calculator can be invoked non-interactively from the command line: python -m src <operation> <value1> [<value2>]. If arguments are present, main() dispatches to bash mode and exits with code 0 (success) or 1 (error); no arguments falls through to the existing interactive loop. Added 20 new tests covering all 12 operations in bash mode, error paths (unknown op, wrong arg count, math errors, factorial validation).
+Risks: Minimal — interactive loop unchanged; bash mode is an additive dispatch path in main(). sys.exit() is only called from main(), not from run_bash_mode(), so tests remain independent.
+Testing: python -m pytest tests/ — 97 passed, 0 failed.
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+Branch: task/issue-48-bash-mode. PR targeting exp/structured-generic.
+
 --- 2026-04-08: Issue #43 — Add PlantUML diagrams (structured-generic) ---
 Files changed: artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
 Purpose: Created three PlantUML documentation diagrams in artifacts/ covering the Calculator class structure (class diagram), the interactive calculator loop (activity diagram), and the component interaction flow (sequence diagram).

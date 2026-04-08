@@ -3,48 +3,79 @@
 title Calculator Usage — Sequence Diagram
 
 actor User
-participant "__main__\nrun_calculator()" as Main
+participant "__main__\nmain()" as Main
+participant "__main__\nrun_bash_mode()" as Bash
+participant "__main__\nrun_calculator()" as Interactive
 participant "Calculator" as Calc
 
-User -> Main : python -m src
+User -> Main : python -m src [operation] [values...]
 
-Main -> User : Display operation menu (1–12)
+alt command-line arguments present
 
-loop until quit or 'n'
+    Main -> Bash : run_bash_mode(argv[1:])
 
-    User -> Main : Enter operation choice (e.g. "1" for add)
-
-    alt invalid choice
-        Main -> User : "Invalid choice, try again."
-    else valid choice
-
-        alt two-operand operation (add, subtract, multiply, divide, power)
-            Main -> User : "Enter first number:"
-            User -> Main : operand a
-            Main -> User : "Enter second number:"
-            User -> Main : operand b
-        else one-operand operation (factorial, square, cube, sqrt, cbrt, log, ln)
-            Main -> User : "Enter number:"
-            User -> Main : operand
-        end
-
-        Main -> Calc : <operation>(operand(s))
-
+    alt unknown operation
+        Bash -> User : "Error: Unknown operation '<name>'"
+        Bash -> User : usage hint
+        Bash --> Main : exit code 1
+    else wrong number of values
+        Bash -> User : "Error: '<op>' requires exactly N value(s)"
+        Bash --> Main : exit code 1
+    else valid arguments
+        Bash -> Calc : <operation>(parsed values)
         alt no error
-            Calc --> Main : result
-            Main -> User : "Result: <value>"
+            Calc --> Bash : result
+            Bash -> User : "Result: <value>"
+            Bash --> Main : exit code 0
         else ValueError
-            Calc --> Main : raise ValueError("<message>")
-            Main -> User : "Error: <message>"
+            Calc --> Bash : raise ValueError("<message>")
+            Bash -> User : "Error: <message>"
+            Bash --> Main : exit code 1
         end
+    end
+
+else no arguments (interactive mode)
+
+    Main -> Interactive : run_calculator()
+    Interactive -> User : Display operation menu (1-12)
+
+    loop until quit or 'n'
+
+        User -> Interactive : Enter operation choice (e.g. "1" for add)
+
+        alt invalid choice
+            Interactive -> User : "Invalid choice, try again."
+        else valid choice
+
+            alt two-operand operation (add, subtract, multiply, divide, power)
+                Interactive -> User : "Enter first number:"
+                User -> Interactive : operand a
+                Interactive -> User : "Enter second number:"
+                User -> Interactive : operand b
+            else one-operand operation (factorial, square, cube, sqrt, cbrt, log, ln)
+                Interactive -> User : "Enter number:"
+                User -> Interactive : operand
+            end
+
+            Interactive -> Calc : <operation>(operand(s))
+
+            alt no error
+                Calc --> Interactive : result
+                Interactive -> User : "Result: <value>"
+            else ValueError
+                Calc --> Interactive : raise ValueError("<message>")
+                Interactive -> User : "Error: <message>"
+            end
+
+        end
+
+        Interactive -> User : "Continue? (y/n)"
+        User -> Interactive : 'y' or 'n'
 
     end
 
-    Main -> User : "Continue? (y/n)"
-    User -> Main : 'y' or 'n'
+    Interactive -> User : "Goodbye!"
 
 end
-
-Main -> User : "Goodbye!"
 
 @enduml
