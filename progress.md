@@ -4,7 +4,7 @@ Files changed: artifacts/class_diagram.puml (new), artifacts/activity_diagram.pu
 Purpose: Document the Calculator design with PlantUML class, activity, and sequence diagrams for thesis artifacts.
 Risks: None — documentation only; no source or test files modified.
 Testing: python -m pytest — 75 passed, 0 failed (diagrams are non-executable artifacts).
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 115.7s | Cost: $0.307827 USD | Turns: 17
 Branch: task/issue-42-diagrams-naive-generic. PR target: exp/naive-generic.
 
 --- 2026-04-08: Issue #38 — Add user input to the calculator (Task 5, Naive/generic) ---
