@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #38 — Add user input to the calculator (Task 5, Naive/generic) ---
+Files changed: src/__main__.py (replaced demo main with run_interactive loop), tests/test_calculator.py (added TestRunInteractive class, 19 new tests)
+Purpose: Expose all Calculator operations through an interactive REPL so users can enter operations and numbers at runtime instead of hardcoded values.
+Risks: None — additive change; calculator.py is untouched. run_interactive accepts injectable input_fn/output_fn for testability.
+Testing: python3 -m pytest tests/test_calculator.py -v — 75 passed, 0 failed.
+Duration: 153.0s | Cost: $0.416516 USD | Turns: 20
+Branch: task/issue-38-user-input. PR target: exp/naive-generic.
+
 --- 2026-04-08: Issue #35 — Add multiple math functions (Task 4, Naive/generic) ---
 Files changed: src/calculator.py (import math + 7 new methods: square, cube, square_root, cube_root, power, log, ln), tests/test_calculator.py (7 new test classes, 31 new tests)
 Purpose: Extend Calculator with square, cube, square root, cube root, power, base-10 log, and natural log operations.

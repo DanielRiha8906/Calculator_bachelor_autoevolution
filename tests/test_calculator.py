@@ -1,6 +1,7 @@
 import pytest
 import math
 from src.calculator import Calculator
+from src.__main__ import run_interactive
 
 
 class TestAdd:
@@ -239,3 +240,100 @@ class TestLn:
     def test_ln_negative_raises_value_error(self):
         with pytest.raises(ValueError):
             self.calc.ln(-1)
+
+
+class TestRunInteractive:
+    """Tests for the interactive user-input loop in src/__main__.py."""
+
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def _run(self, *responses):
+        """Helper: run the interactive loop with pre-canned responses and capture output."""
+        responses_iter = iter(responses)
+
+        def fake_input(prompt=""):
+            return next(responses_iter)
+
+        outputs = []
+        run_interactive(self.calc, input_fn=fake_input, output_fn=outputs.append)
+        return outputs
+
+    def test_quit_exits_immediately(self):
+        outputs = self._run("quit")
+        assert any("quit" in line.lower() or "exit" in line.lower() for line in outputs)
+
+    def test_unknown_operation_shows_error(self):
+        outputs = self._run("foobar", "quit")
+        assert any("Unknown operation" in line or "foobar" in line for line in outputs)
+
+    def test_binary_add(self):
+        outputs = self._run("add", "3", "5", "quit")
+        assert any("Result: 8.0" in line for line in outputs)
+
+    def test_binary_subtract(self):
+        outputs = self._run("subtract", "10", "4", "quit")
+        assert any("Result: 6.0" in line for line in outputs)
+
+    def test_binary_multiply(self):
+        outputs = self._run("multiply", "3", "4", "quit")
+        assert any("Result: 12.0" in line for line in outputs)
+
+    def test_binary_divide(self):
+        outputs = self._run("divide", "10", "2", "quit")
+        assert any("Result: 5.0" in line for line in outputs)
+
+    def test_binary_power(self):
+        outputs = self._run("power", "2", "8", "quit")
+        assert any("Result: 256.0" in line for line in outputs)
+
+    def test_unary_square(self):
+        outputs = self._run("square", "4", "quit")
+        assert any("Result: 16" in line for line in outputs)
+
+    def test_unary_cube(self):
+        outputs = self._run("cube", "3", "quit")
+        assert any("Result: 27" in line for line in outputs)
+
+    def test_unary_square_root(self):
+        outputs = self._run("square_root", "9", "quit")
+        assert any("Result: 3.0" in line for line in outputs)
+
+    def test_unary_log(self):
+        outputs = self._run("log", "100", "quit")
+        assert any("Result: 2.0" in line for line in outputs)
+
+    def test_unary_ln(self):
+        outputs = self._run("ln", "1", "quit")
+        assert any("Result: 0.0" in line for line in outputs)
+
+    def test_factorial_valid(self):
+        outputs = self._run("factorial", "5", "quit")
+        assert any("Result: 120" in line for line in outputs)
+
+    def test_factorial_non_integer_input_shows_error(self):
+        outputs = self._run("factorial", "3.5", "quit")
+        assert any("Error" in line for line in outputs)
+
+    def test_invalid_number_binary_shows_error(self):
+        outputs = self._run("add", "abc", "5", "quit")
+        assert any("Error" in line for line in outputs)
+
+    def test_invalid_number_unary_shows_error(self):
+        outputs = self._run("square", "abc", "quit")
+        assert any("Error" in line for line in outputs)
+
+    def test_divide_by_zero_shows_error(self):
+        outputs = self._run("divide", "10", "0", "quit")
+        assert any("Error" in line for line in outputs)
+
+    def test_square_root_negative_shows_error(self):
+        outputs = self._run("square_root", "-1", "quit")
+        assert any("Error" in line for line in outputs)
+
+    def test_multiple_operations_in_sequence(self):
+        outputs = self._run("add", "1", "2", "multiply", "3", "4", "quit")
+        results = [line for line in outputs if line.startswith("Result:")]
+        assert len(results) == 2
+        assert "Result: 3.0" in results[0]
+        assert "Result: 12.0" in results[1]
