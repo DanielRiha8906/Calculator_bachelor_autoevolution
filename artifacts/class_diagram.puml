@@ -1,0 +1,85 @@
+@startuml class_diagram
+
+title Calculator — Class Diagram
+
+package "src" {
+
+    class Calculator {
+        + add(a: float, b: float) : float
+        + subtract(a: float, b: float) : float
+        + multiply(a: float, b: float) : float
+        + divide(a: float, b: float) : float
+        + power(base: float, exponent: float) : float
+        + square(a: float) : float
+        + cube(a: float) : float
+        + square_root(a: float) : float
+        + cube_root(a: float) : float
+        + log(a: float) : float
+        + ln(a: float) : float
+        + factorial(n: int) : int
+    }
+
+    class TooManyAttemptsError {
+    }
+
+    class "__main__" as Main {
+        - OPERATIONS : dict
+        - MAX_ATTEMPTS : int
+        - HISTORY_FILE : str
+        + _fmt_num(x) : str
+        + _format_entry(method_name: str, operands: tuple, result) : str
+        + _write_history(history: list[str], path: str) : None
+        + _read_number(prompt: str, max_attempts: int) : float
+        + run_session(calc: Calculator, history_file: str) : None
+        + main() : None
+    }
+
+    Main --> Calculator : uses
+    Main ..> TooManyAttemptsError : raises / catches
+}
+
+class "main" as CLI {
+    - CLI_OPERATIONS : dict
+    + _parse_operand(raw: str) : float
+    + run_cli(args: list[str]) : None
+}
+
+CLI --> Calculator : uses
+CLI --> Main : delegates interactive_main()
+
+note right of Calculator
+  Validation rules:
+  divide: b != 0
+  square_root: a >= 0
+  cube_root: handles negative (sign-preserving)
+  log: a > 0
+  ln: a > 0
+  factorial: n >= 0, integer, not bool
+end note
+
+note right of Main
+  OPERATIONS dict maps menu keys (1..12)
+  to method names, operand count, and labels.
+  run_session() loops until user enters "0".
+  MAX_ATTEMPTS = 5: session terminates after
+  5 consecutive invalid menu choices or 5
+  consecutive invalid number inputs.
+  _read_number() raises TooManyAttemptsError
+  when the attempt limit is reached.
+  History: each successful calculation is
+  appended to a list in function-call style
+  (e.g. add(2, 3) = 5). On session exit,
+  _write_history() saves the list to
+  HISTORY_FILE ("history.txt"). The user
+  can view history mid-session via "h".
+end note
+
+note right of CLI
+  CLI_OPERATIONS dict maps operation name strings
+  to (operand_count, method_name) pairs.
+  run_cli() dispatches one operation per invocation.
+  Errors printed to stderr; exits with code 1.
+  Falls back to interactive_main() when no args given.
+end note
+
+@enduml

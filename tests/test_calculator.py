@@ -1,8 +1,10 @@
+import os
 import pytest
 import math
 from unittest.mock import patch
 from src.calculator import Calculator
-from src.__main__ import run_session
+from src.__main__ import run_session, _format_entry
+from main import run_cli
 
 
 @pytest.fixture
@@ -415,3 +417,213 @@ class TestMain:
         with patch("builtins.input", side_effect=["1", "2", "3", "3", "4", "5", "0"]):
             run_session(calc)
         assert capsys.readouterr().out.count("Result:") == 2
+
+    def test_too_many_invalid_choices_ends_session(self, calc, capsys):
+        # Five consecutive unknown choices must terminate the session.
+        with patch("builtins.input", side_effect=["a", "b", "c", "d", "e"]):
+            run_session(calc)
+        out = capsys.readouterr().out
+        assert "Too many invalid choices" in out
+        assert "Goodbye!" not in out
+
+    def test_invalid_choice_lists_available_operations(self, calc, capsys):
+        # An unknown choice must print the list of available operations.
+        with patch("builtins.input", side_effect=["99", "0"]):
+            run_session(calc)
+        assert "Available operations" in capsys.readouterr().out
+
+    def test_invalid_choice_retry_succeeds(self, calc, capsys):
+        # One invalid choice followed by a valid choice should complete normally.
+        with patch("builtins.input", side_effect=["99", "1", "2", "3", "0"]):
+            run_session(calc)
+        assert "Result: 5.0" in capsys.readouterr().out
+
+    def test_too_many_invalid_numbers_ends_session(self, calc, capsys):
+        # Five non-numeric inputs for a single operand must terminate the session.
+        with patch("builtins.input", side_effect=["1", "x", "x", "x", "x", "x"]):
+            run_session(calc)
+        out = capsys.readouterr().out
+        assert "Too many invalid inputs" in out
+
+    def test_invalid_number_shows_remaining_attempts(self, calc, capsys):
+        # One invalid number should show the remaining-attempts hint.
+        with patch("builtins.input", side_effect=["1", "abc", "5", "3", "0"]):
+            run_session(calc)
+        out = capsys.readouterr().out
+        assert "attempt(s) left" in out
+        assert "Result: 8.0" in out
+
+    def test_choice_failure_counter_resets_after_valid_choice(self, calc, capsys):
+        # Four invalid choices, one valid operation, then four more invalid choices
+        # should NOT terminate — each run of bad choices starts fresh.
+        with patch(
+            "builtins.input",
+            side_effect=["a", "b", "c", "d", "1", "3", "4", "a", "b", "c", "d", "0"],
+        ):
+            run_session(calc)
+        out = capsys.readouterr().out
+        assert "Result: 7.0" in out
+        assert "Goodbye!" in out
+
+
+# ---------------------------------------------------------------------------
+# CLI (bash mode) — main.py:run_cli
+# ---------------------------------------------------------------------------
+
+class TestCLI:
+    """Tests for the bash CLI interface (main.py:run_cli)."""
+
+    def test_add(self, capsys):
+        run_cli(["add", "5", "7"])
+        assert "12.0" in capsys.readouterr().out
+
+    def test_subtract(self, capsys):
+        run_cli(["subtract", "10", "3"])
+        assert "7.0" in capsys.readouterr().out
+
+    def test_multiply(self, capsys):
+        run_cli(["multiply", "4", "5"])
+        assert "20.0" in capsys.readouterr().out
+
+    def test_divide(self, capsys):
+        run_cli(["divide", "10", "2"])
+        assert "5.0" in capsys.readouterr().out
+
+    def test_power(self, capsys):
+        run_cli(["power", "2", "8"])
+        assert "256.0" in capsys.readouterr().out
+
+    def test_factorial(self, capsys):
+        run_cli(["factorial", "5"])
+        assert "120" in capsys.readouterr().out
+
+    def test_square(self, capsys):
+        run_cli(["square", "6"])
+        assert "36.0" in capsys.readouterr().out
+
+    def test_cube(self, capsys):
+        run_cli(["cube", "3"])
+        assert "27.0" in capsys.readouterr().out
+
+    def test_square_root(self, capsys):
+        run_cli(["square_root", "9"])
+        assert "3.0" in capsys.readouterr().out
+
+    def test_cube_root(self, capsys):
+        run_cli(["cube_root", "8"])
+        assert "2.0" in capsys.readouterr().out
+
+    def test_log(self, capsys):
+        run_cli(["log", "100"])
+        assert "2.0" in capsys.readouterr().out
+
+    def test_ln(self, capsys):
+        run_cli(["ln", "1"])
+        assert "0.0" in capsys.readouterr().out
+
+    def test_unknown_operation_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["foobar", "5"])
+        assert exc_info.value.code == 1
+
+    def test_wrong_operand_count_too_few_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["add", "5"])
+        assert exc_info.value.code == 1
+
+    def test_wrong_operand_count_too_many_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["square", "5", "6"])
+        assert exc_info.value.code == 1
+
+    def test_invalid_number_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["add", "foo", "7"])
+        assert exc_info.value.code == 1
+
+    def test_divide_by_zero_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["divide", "5", "0"])
+        assert exc_info.value.code == 1
+
+    def test_sqrt_negative_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["square_root", "-4"])
+        assert exc_info.value.code == 1
+
+    def test_factorial_non_integer_exits(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            run_cli(["factorial", "5.5"])
+        assert exc_info.value.code == 1
+
+
+# ---------------------------------------------------------------------------
+# History — session tracking, display, and file output
+# ---------------------------------------------------------------------------
+
+class TestHistory:
+    """Tests for session history tracking, 'h' display, and file output."""
+
+    def test_history_empty_initially(self, calc, capsys, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["h", "0"]):
+            run_session(calc, history_file=history_file)
+        assert "No history yet." in capsys.readouterr().out
+
+    def test_history_shows_entry_after_two_operand_calc(self, calc, capsys, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["1", "2", "3", "h", "0"]):
+            run_session(calc, history_file=history_file)
+        assert "add(2, 3) = 5" in capsys.readouterr().out
+
+    def test_history_shows_entry_after_one_operand_calc(self, calc, capsys, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["9", "9", "h", "0"]):
+            run_session(calc, history_file=history_file)
+        assert "square_root(9) = 3" in capsys.readouterr().out
+
+    def test_history_shows_factorial_entry(self, calc, capsys, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["6", "5", "h", "0"]):
+            run_session(calc, history_file=history_file)
+        assert "factorial(5) = 120" in capsys.readouterr().out
+
+    def test_history_written_to_file_on_quit(self, calc, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["1", "4", "5", "0"]):
+            run_session(calc, history_file=history_file)
+        with open(history_file) as f:
+            content = f.read()
+        assert "add(4, 5) = 9" in content
+
+    def test_history_file_created_even_when_empty(self, calc, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["0"]):
+            run_session(calc, history_file=history_file)
+        assert os.path.exists(history_file)
+
+    def test_history_accumulates_multiple_entries(self, calc, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        with patch("builtins.input", side_effect=["1", "2", "3", "3", "4", "5", "h", "0"]):
+            run_session(calc, history_file=history_file)
+        with open(history_file) as f:
+            content = f.read()
+        assert "add(2, 3) = 5" in content
+        assert "multiply(4, 5) = 20" in content
+
+    def test_format_entry_two_operands(self):
+        assert _format_entry("add", (2.0, 3.0), 5.0) == "add(2, 3) = 5"
+
+    def test_format_entry_one_operand(self):
+        assert _format_entry("square_root", (9.0,), 3.0) == "square_root(9) = 3"
+
+    def test_format_entry_factorial(self):
+        assert _format_entry("factorial", (5,), 120) == "factorial(5) = 120"
+
+    def test_history_not_recorded_on_math_error(self, calc, capsys, tmp_path):
+        history_file = str(tmp_path / "history.txt")
+        # divide by zero should not add an entry to history
+        with patch("builtins.input", side_effect=["4", "1", "0", "h", "0"]):
+            run_session(calc, history_file=history_file)
+        out = capsys.readouterr().out
+        assert "No history yet." in out

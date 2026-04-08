@@ -1,4 +1,36 @@
 
+--- 2026-04-08: Issue #65 (exp/expert-generic) — Session history ---
+Files changed: src/__main__.py (added HISTORY_FILE constant, _fmt_num, _format_entry, _write_history helpers; updated run_session to track history, display via "h" choice, and write history.txt on exit), tests/test_calculator.py (added import os, imported _format_entry, added TestHistory class with 11 tests), artifacts/class_diagram.puml (updated __main__ methods and note), artifacts/activity_diagram.puml (added history initialisation, "h" branch, history append, file write on exit), artifacts/sequence_diagram.puml (added "h" choice path, history append after successful calcs, file write on all exit paths)
+Purpose: Track all successful calculations in a session history list. Each entry uses function-call style format (e.g. add(2, 3) = 5, factorial(5) = 120, square_root(9) = 3). Typing "h" in the interactive menu displays the current history. When the session ends (quit, too many invalid choices, or too many invalid inputs), the history is written to history.txt in the working directory; a new session always starts with an empty list. Math errors (ValueError, ZeroDivisionError, TypeError) and invalid inputs do not add entries to history.
+Risks: history.txt is written to the current working directory on every session exit, including when history is empty (creates an empty file). The file is overwritten each session (fresh start). Tests use tmp_path to isolate file writes; no production files are modified during testing.
+Testing: python3 -m pytest tests/test_calculator.py -v — 130 passed, 0 failed (119 original + 11 new TestHistory tests).
+Duration: 601.3s | Cost: $1.3011371 USD | Turns: 37
+Branch: task/issue-65-history | PR target: exp/expert-generic
+
+--- 2026-04-08: Issue #62 (exp/expert-generic) — Input validation with retry logic ---
+Files changed: src/__main__.py (added MAX_ATTEMPTS, TooManyAttemptsError, updated _read_number, updated run_session), tests/test_calculator.py (added 6 new TestMain tests), artifacts/class_diagram.puml (updated), artifacts/activity_diagram.puml (updated), artifacts/sequence_diagram.puml (updated)
+Purpose: Add retry logic and session termination to the interactive mode. Invalid menu choices now show the list of available operations and a remaining-attempts hint; after 5 consecutive invalid choices the session ends. _read_number() now raises TooManyAttemptsError after 5 consecutive non-numeric inputs, which run_session() catches to terminate gracefully. CLI (bash) mode is unchanged — it already fails fast with a clear error and no retry loop.
+Risks: TooManyAttemptsError is a new exception type internal to src/__main__.py; it is caught before propagating out of run_session() so external callers are unaffected. The choice_failures counter resets on every valid selection, so users are not penalised across separate operations.
+Testing: python3.12 -m pytest tests/test_calculator.py -v — 119 passed, 0 failed (113 original + 6 new TestMain tests).
+Duration: 692.8s | Cost: $1.371254 USD | Turns: 34
+Branch: task/issue-62-input-validation | PR target: exp/expert-generic
+
+--- 2026-04-08: Issue #49 (exp/expert-generic) — Add bash CLI mode ---
+Files changed: main.py (new), tests/test_calculator.py (added TestCLI with 19 tests), artifacts/class_diagram.puml (updated), artifacts/activity_diagram.puml (updated), artifacts/sequence_diagram.puml (updated)
+Purpose: Add a command-line interface so the calculator can be invoked non-interactively by passing the operation name and operands as arguments (e.g. python main.py add 5 7). When no arguments are given, main.py falls back to the existing interactive session. Errors (unknown operation, wrong operand count, invalid number, math errors) are printed to stderr and exit with code 1.
+Risks: main.py is a new file; the existing interactive session in src/__main__.py is unchanged. Factorial whole-number validation mirrors the interactive mode to keep behaviour consistent.
+Testing: python3 -m pytest tests/test_calculator.py -v — 113 passed, 0 failed (94 original + 19 new TestCLI tests).
+Duration: 273.6s | Cost: $0.742709 USD | Turns: 32
+Branch: task/issue-49-bash-cli | PR target: exp/expert-generic
+
+--- 2026-04-08: Issue #44 (exp/expert-generic) — Add PlantUML diagrams ---
+Files changed: artifacts/class_diagram.puml (new), artifacts/activity_diagram.puml (new), artifacts/sequence_diagram.puml (new)
+Purpose: Document the calculator structure and user interaction with three PlantUML diagrams — class diagram covering the Calculator class and __main__ module, activity diagram covering the full session loop with input validation and error handling, and sequence diagram covering a representative interaction for each operation type.
+Risks: None — documentation only, no production code modified.
+Testing: python -m pytest --tb=short -q — 94 passed, 0 failed.
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+Branch: task/issue-44-diagrams-expert-generic | PR target: exp/expert-generic
+
 --- 2026-04-08: Issue #40 (exp/expert-generic) — Add interactive user input ---
 Files changed: src/__main__.py (replaced hardcoded demo with interactive session loop), tests/test_calculator.py (added TestMain class with 18 tests)
 Purpose: Replace the hardcoded demo in __main__.py with a menu-driven REPL that reads operation choice and operands at runtime. Handles one-operand operations (factorial, square, cube, sqrt, cbrt, log, ln) and two-operand operations (add, subtract, multiply, divide, power) with appropriate prompts. Session loops until user enters 0. Errors (ValueError, ZeroDivisionError, TypeError) are caught and displayed without crashing the session.

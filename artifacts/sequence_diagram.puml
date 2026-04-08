@@ -1,0 +1,217 @@
+@startuml sequence_diagram
+
+title Calculator — Typical User Interaction Sequence Diagram
+
+actor User
+participant "main.py\nrun_cli()" as CLI
+participant "__main__\nrun_session()" as Main
+participant "_read_number()" as ReadNum
+participant "Calculator" as Calc
+
+User -> CLI : python main.py [args...]
+
+alt args provided — bash mode
+
+    CLI -> CLI : parse operation name
+
+    alt unknown operation
+        CLI -> User : stderr: "Error: unknown operation"
+        CLI -> User : stderr: "Available operations: <list>"
+        CLI -> User : exit(1)
+
+    else wrong operand count
+        CLI -> User : stderr: "Error: requires N operand(s), got M"
+        CLI -> User : exit(1)
+
+    else invalid number format
+        CLI -> User : stderr: "Error: '<raw>' is not a valid number"
+        CLI -> User : exit(1)
+
+    else two-operand operation (e.g. add)
+        CLI -> Calc : add(a, b)  [or subtract/multiply/divide/power]
+        alt valid input
+            Calc -> CLI : result
+            CLI -> User : stdout: result
+        else ZeroDivisionError
+            Calc -> CLI : raise ZeroDivisionError
+            CLI -> User : stderr: "Error: <message>"
+            CLI -> User : exit(1)
+        end
+
+    else single-operand, non-factorial (e.g. square_root)
+        CLI -> Calc : square_root(a)  [or square/cube/cube_root/log/ln]
+        alt valid input
+            Calc -> CLI : result
+            CLI -> User : stdout: result
+        else ValueError (e.g. negative square root)
+            Calc -> CLI : raise ValueError
+            CLI -> User : stderr: "Error: <message>"
+            CLI -> User : exit(1)
+        end
+
+    else factorial
+        alt non-whole-number input
+            CLI -> User : stderr: "Error: factorial requires a whole number"
+            CLI -> User : exit(1)
+        else whole number
+            CLI -> Calc : factorial(int(n))
+            alt valid input
+                Calc -> CLI : result
+                CLI -> User : stdout: result
+            else ValueError / TypeError
+                Calc -> CLI : raise error
+                CLI -> User : stderr: "Error: <message>"
+                CLI -> User : exit(1)
+            end
+        end
+    end
+
+else no args — interactive mode
+
+    CLI -> Main : interactive_main()
+
+    User -> Main : run program
+    note right of Main : choice_failures = 0\nhistory = []
+
+    loop session (until choice == "0" or too many failures)
+
+        Main -> User : display menu (1–12, 0 to quit, h to show history)
+        User -> Main : enter menu choice
+
+        alt choice == "0"
+            Main -> User : "Goodbye!"
+            Main -> Main : _write_history(history, history_file)
+            note right of Main : session ends
+
+        else choice == "h"
+            alt history is empty
+                Main -> User : "No history yet."
+            else history has entries
+                Main -> User : each history entry (e.g. "add(2, 3) = 5")
+
+            end
+
+        else unknown choice
+            note right of Main : choice_failures += 1
+            alt choice_failures >= MAX_ATTEMPTS
+                Main -> Main : _write_history(history, history_file)
+                Main -> User : "Too many invalid choices — ending session"
+                note right of Main : session ends
+            else
+                Main -> User : "Unknown choice '<x>'. Available operations: <list>. (N attempt(s) left)"
+            end
+
+        else valid choice
+            note right of Main : choice_failures = 0
+
+            alt two-operand operation (e.g. add)
+                Main -> ReadNum : _read_number("Enter first number: ")
+                loop until valid float or MAX_ATTEMPTS exceeded
+                    ReadNum -> User : prompt
+                    User -> ReadNum : raw input
+                    alt invalid float
+                        ReadNum -> User : "not a valid number (N left)"
+                    end
+                end
+                alt MAX_ATTEMPTS exceeded
+                    ReadNum -> Main : raise TooManyAttemptsError
+                    Main -> Main : _write_history(history, history_file)
+                    Main -> User : "Too many invalid inputs — ending session"
+                    note right of Main : session ends
+                else valid float
+                    ReadNum -> Main : first operand (float)
+                end
+
+                Main -> ReadNum : _read_number("Enter second number: ")
+                loop until valid float or MAX_ATTEMPTS exceeded
+                    ReadNum -> User : prompt
+                    User -> ReadNum : raw input
+                    alt invalid float
+                        ReadNum -> User : "not a valid number (N left)"
+                    end
+                end
+                alt MAX_ATTEMPTS exceeded
+                    ReadNum -> Main : raise TooManyAttemptsError
+                    Main -> Main : _write_history(history, history_file)
+                    Main -> User : "Too many invalid inputs — ending session"
+                    note right of Main : session ends
+                else valid float
+                    ReadNum -> Main : second operand (float)
+                end
+
+                Main -> Calc : add(a, b)  [or subtract/multiply/divide/power]
+                alt valid input
+                    Calc -> Main : result
+                    Main -> Main : append entry to history
+                    Main -> User : "Result: <value>"
+                else ZeroDivisionError (divide by zero)
+                    Calc -> Main : raise ZeroDivisionError
+                    Main -> User : "Error: <message>"
+                end
+
+            else single-operand, non-factorial (e.g. square_root)
+                Main -> ReadNum : _read_number("Enter number: ")
+                loop until valid float or MAX_ATTEMPTS exceeded
+                    ReadNum -> User : prompt
+                    User -> ReadNum : raw input
+                    alt invalid float
+                        ReadNum -> User : "not a valid number (N left)"
+                    end
+                end
+                alt MAX_ATTEMPTS exceeded
+                    ReadNum -> Main : raise TooManyAttemptsError
+                    Main -> User : "Too many invalid inputs — ending session"
+                    note right of Main : session ends
+                else valid float
+                    ReadNum -> Main : operand (float)
+                end
+
+                Main -> Calc : square_root(a)  [or square/cube/cube_root/log/ln]
+                alt valid input
+                    Calc -> Main : result
+                    Main -> Main : append entry to history
+                    Main -> User : "Result: <value>"
+                else ValueError (e.g. negative square root)
+                    Calc -> Main : raise ValueError
+                    Main -> User : "Error: <message>"
+                end
+
+            else factorial
+                Main -> ReadNum : _read_number("Enter number: ")
+                loop until valid float or MAX_ATTEMPTS exceeded
+                    ReadNum -> User : prompt
+                    User -> ReadNum : raw input
+                    alt invalid float
+                        ReadNum -> User : "not a valid number (N left)"
+                    end
+                end
+                alt MAX_ATTEMPTS exceeded
+                    ReadNum -> Main : raise TooManyAttemptsError
+                    Main -> User : "Too many invalid inputs — ending session"
+                    note right of Main : session ends
+                else valid float
+                    ReadNum -> Main : operand (float)
+                end
+
+                alt operand is not a whole number
+                    Main -> User : "Error: Input must be a whole number for factorial"
+                else whole number
+                    Main -> Calc : factorial(int(n))
+                    alt valid input
+                        Calc -> Main : result
+                        Main -> Main : append entry to history
+                        Main -> User : "Result: <value>"
+                    else ValueError / TypeError
+                        Calc -> Main : raise error
+                        Main -> User : "Error: <message>"
+                    end
+                end
+
+            end
+        end
+
+    end
+
+end
+
+@enduml
