@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #64 — History (structured-generic) ---
+Files changed: src/__main__.py, tests/test_main.py, artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml, .gitignore
+Purpose: Added session history to the interactive calculator. Each successful operation is recorded in history.txt (format: "op(operands) = result"). The file is cleared at the start of every session so history never persists between runs. Users can type 'h' at the operation prompt to display all calculations from the current session; 'h' does not consume a retry attempt. Bash mode is unaffected. Added HISTORY_FILE constant and three private helpers (_clear_history, _append_history, _show_history). Added history_file parameter to run_calculator() for test isolation. Added five new tests covering empty history, single-operation recording, multi-operation accumulation, session clearing, and 'h' not consuming an attempt. Updated all three PlantUML diagrams to reflect the new history flow. Added history.txt to .gitignore.
+Risks: Minimal — Calculator class unchanged; bash mode unchanged. The only new I/O is file writes to history.txt in the working directory. Tests use tmp_path so no cross-test file contamination.
+Testing: python3 -m pytest tests/ — 108 passed, 0 failed.
+Duration: 446.2s | Cost: $0.924571 USD | Turns: 26
+Branch: task/issue-64-history-structured-generic. PR targeting exp/structured-generic.
+
 --- 2026-04-08: Issue #61 — Input validation with retry logic (structured-generic) ---
 Files changed: src/__main__.py, tests/test_main.py, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
 Purpose: Added MAX_ATTEMPTS=3 retry loop to the interactive mode so invalid operation choice and invalid operand input prompt the user to try again instead of crashing or looping indefinitely. After exhausting all retries the session ends with a clear "Ending session" message. Added _parse_float() helper used by both modes to emit "'<val>' is not a valid number" instead of Python's raw float() error. Fixed three existing tests that assumed single-attempt error handling; added six new tests covering retry-then-success, max-attempt exhaustion, and bash-mode non-numeric input. Updated activity and sequence diagrams to document the retry paths.

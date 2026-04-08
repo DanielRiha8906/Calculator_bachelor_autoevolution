@@ -325,6 +325,73 @@ def test_invalid_operand_all_attempts_exhausted_ends_session():
     assert any("Ending session" in line for line in outputs)
 
 
+# --- History feature ---
+
+def test_history_empty_shows_no_history(tmp_path):
+    history_file = str(tmp_path / "history.txt")
+    outputs = []
+    run_calculator(
+        input_fn=make_inputs("h", "q"),
+        print_fn=outputs.append,
+        history_file=history_file,
+    )
+    assert any("No history yet" in line for line in outputs)
+
+
+def test_history_records_single_operation(tmp_path):
+    history_file = str(tmp_path / "history.txt")
+    outputs = []
+    run_calculator(
+        input_fn=make_inputs("1", "3", "7", "y", "h", "q"),
+        print_fn=outputs.append,
+        history_file=history_file,
+    )
+    assert any("add" in line and "10" in line for line in outputs)
+
+
+def test_history_accumulates_multiple_operations(tmp_path):
+    history_file = str(tmp_path / "history.txt")
+    outputs = []
+    run_calculator(
+        input_fn=make_inputs("1", "2", "3", "y", "7", "4", "y", "h", "q"),
+        print_fn=outputs.append,
+        history_file=history_file,
+    )
+    history_lines = [line for line in outputs if "add" in line or "square" in line]
+    assert len(history_lines) >= 2
+
+
+def test_history_cleared_on_new_session(tmp_path):
+    history_file = str(tmp_path / "history.txt")
+    # First session: run one operation
+    outputs1 = []
+    run_calculator(
+        input_fn=make_inputs("1", "2", "3", "n"),
+        print_fn=outputs1.append,
+        history_file=history_file,
+    )
+    # Second session: history should be empty
+    outputs2 = []
+    run_calculator(
+        input_fn=make_inputs("h", "q"),
+        print_fn=outputs2.append,
+        history_file=history_file,
+    )
+    assert any("No history yet" in line for line in outputs2)
+
+
+def test_history_does_not_count_as_invalid_attempt(tmp_path):
+    history_file = str(tmp_path / "history.txt")
+    outputs = []
+    # Three 'h' inputs before a valid choice must not exhaust MAX_ATTEMPTS.
+    run_calculator(
+        input_fn=make_inputs("h", "h", "h", "1", "5", "3", "n"),
+        print_fn=outputs.append,
+        history_file=history_file,
+    )
+    assert any("8" in line for line in outputs)
+
+
 # --- Bash mode: non-numeric input ---
 
 def test_bash_non_numeric_first_value():

@@ -7,6 +7,7 @@ participant "__main__\nmain()" as Main
 participant "__main__\nrun_bash_mode()" as Bash
 participant "__main__\nrun_calculator()" as Interactive
 participant "Calculator" as Calc
+database "history.txt" as HistFile
 
 User -> Main : python -m src [operation] [values...]
 
@@ -40,16 +41,21 @@ alt command-line arguments present
 else no arguments (interactive mode)
 
     Main -> Interactive : run_calculator()
-    Interactive -> User : Display operation menu (1-12)
+    Interactive -> HistFile : clear (truncate to empty)
+    Interactive -> User : Display operation menu (1-12, h, q)
 
     loop until quit or 'n'
 
-        group operation choice (up to MAX_ATTEMPTS retries)
+        group operation choice (up to MAX_ATTEMPTS retries for invalid input)
             loop attempt < MAX_ATTEMPTS
                 User -> Interactive : Enter operation choice
                 alt 'q'
                     Interactive -> User : "Goodbye!"
                     Interactive --> Main : return
+                else 'h' — show history (attempt not incremented)
+                    Interactive -> HistFile : read all entries
+                    HistFile --> Interactive : history lines
+                    Interactive -> User : "History:" + entries (or "No history yet.")
                 else valid choice
                     note right: break out of retry loop
                 else invalid choice, attempts remaining
@@ -77,6 +83,7 @@ else no arguments (interactive mode)
 
                 alt no error
                     Calc --> Interactive : result
+                    Interactive -> HistFile : append "<op>(<operands>) = <result>"
                     Interactive -> User : "Result: <value>"
                     note right: break out of retry loop
                 else ValueError, attempts remaining
