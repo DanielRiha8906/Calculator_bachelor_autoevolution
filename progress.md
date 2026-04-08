@@ -4,7 +4,7 @@ Files changed: src/__main__.py (replaced hardcoded demo with interactive session
 Purpose: Replace the hardcoded demo in __main__.py with a menu-driven REPL that reads operation choice and operands at runtime. Handles one-operand operations (factorial, square, cube, sqrt, cbrt, log, ln) and two-operand operations (add, subtract, multiply, divide, power) with appropriate prompts. Session loops until user enters 0. Errors (ValueError, ZeroDivisionError, TypeError) are caught and displayed without crashing the session.
 Risks: factorial input is accepted as float from _read_number and then validated as a whole number before conversion to int — input like "5.5" is rejected cleanly.
 Testing: python3.12 -m pytest tests/test_calculator.py -v — 94 passed, 0 failed (76 original + 18 new TestMain tests).
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 200.7s | Cost: $0.502824 USD | Turns: 19
 Branch: task/issue-40-user-input-expert-generic | PR target: exp/expert-generic
 
 --- 2026-04-08: Issue #37 (exp/expert-generic) — Add square, cube, sqrt, cbrt, power, log, ln ---
