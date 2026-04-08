@@ -128,3 +128,37 @@ class TestDivide:
     def test_divide_zero_by_zero_raises(self, calc):
         with pytest.raises(ZeroDivisionError):
             calc.divide(0, 0)
+
+
+# ---------------------------------------------------------------------------
+# factorial
+# ---------------------------------------------------------------------------
+
+class TestFactorial:
+    def test_zero(self, calc):
+        assert calc.factorial(0) == 1
+
+    def test_one(self, calc):
+        assert calc.factorial(1) == 1
+
+    def test_small_positive(self, calc):
+        assert calc.factorial(5) == 120
+
+    def test_larger_positive(self, calc):
+        assert calc.factorial(10) == 3628800
+
+    def test_negative_raises(self, calc):
+        with pytest.raises(ValueError):
+            calc.factorial(-1)
+
+    def test_float_raises(self, calc):
+        with pytest.raises(TypeError):
+            calc.factorial(3.0)
+
+    def test_string_raises(self, calc):
+        with pytest.raises(TypeError):
+            calc.factorial("5")
+
+    def test_bool_raises(self, calc):
+        with pytest.raises(TypeError):
+            calc.factorial(True)

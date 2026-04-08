@@ -1,4 +1,12 @@
 
+--- 2026-04-08: Issue #25 (exp/expert-generic) — Add factorial operation ---
+Files changed: src/calculator.py (added factorial method + import math), tests/test_calculator.py (added TestFactorial with 8 tests)
+Purpose: Implement Calculator.factorial(n) for non-negative integers; reject negatives (ValueError) and non-integers including booleans (TypeError).
+Risks: None — uses stdlib math.factorial, no new dependencies.
+Testing: python -m pytest tests/test_calculator.py -v — 40 passed, 0 failed.
+Tokens used: ~6 000 (estimated) | Cost: ~$0.03 | Turns: 1
+Branch: task/issue-25-factorial-expert-generic | PR target: exp/expert-generic (PR #27)
+
 --- 2026-04-08: Issue #13 (exp/expert-generic) — Comprehensive unit test suite ---
 Files changed: tests/test_calculator.py (expanded from 1 to 32 tests)
 Purpose: Add full test coverage for add, subtract, multiply, divide — normal inputs and edge cases (floats, negatives, zero, large numbers, division-by-zero).
