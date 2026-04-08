@@ -4,7 +4,7 @@ Files changed: src/calculator.py (import math + 7 new methods: square, cube, squ
 Purpose: Extend Calculator with square, cube, square root, cube root, power, base-10 log, and natural log operations.
 Risks: None — purely additive; no existing methods modified. square_root and log/ln raise ValueError for invalid domains.
 Testing: python -m pytest tests/test_calculator.py -v — 56 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 111.4s | Cost: $0.297980 USD | Turns: 17
 Branch: task/issue-35-math-functions. PR target: exp/naive-generic.
 
 --- 2026-04-08: Issue #9 — Create tests for the calculator (Task 2, Unstructured/gen) ---
