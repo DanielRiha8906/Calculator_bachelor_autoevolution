@@ -4,7 +4,7 @@ Files changed: progress.md (added this run entry; implementation already present
 Purpose: Confirm implementation is complete and open PR for issue #103. Branch already contains: explicit ZeroDivisionError guard in divide(), TestDivideByZero class with 5 focused tests, all 150 tests passing.
 Risks: None — no code changes in this run; only PR creation.
 Testing: python3 -m pytest tests/test_calculator.py — 150 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 323.2s | Cost: $0.745947 USD | Turns: 31
 Branch: task/issue-103-zero-division-error | PR target: exp/expert-generic
 
 --- 2026-04-09: Issue #103 re-run (exp/expert-generic) — ZeroDivisionError focused coverage ---
