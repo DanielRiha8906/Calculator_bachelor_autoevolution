@@ -76,9 +76,9 @@ def test_divide_positive_by_negative(calc):
 def test_divide_resulting_in_float(calc):
     assert math.isclose(calc.divide(7, 2), 3.5)
 
-def test_divide_by_zero_raises_value_error():
+def test_divide_by_zero_raises_zero_division_error():
     calc = Calculator()
-    with pytest.raises(ValueError, match="Cannot divide by zero"):
+    with pytest.raises(ZeroDivisionError, match="Cannot divide by zero"):
         calc.divide(10, 0)
 
 
