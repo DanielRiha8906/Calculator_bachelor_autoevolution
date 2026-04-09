@@ -1,4 +1,12 @@
 
+--- 2026-04-09: Issue #102 — ZeroDivisionError (V2 Task 1, structured-generic) ---
+Files changed: src/calculator.py, tests/test_calculator.py, src/__main__.py
+Purpose: Changed Calculator.divide to raise ZeroDivisionError instead of ValueError when the divisor is zero, aligning with Python's native exception semantics. Renamed the unit test from test_divide_by_zero_raises_value_error to test_divide_by_zero_raises_zero_division_error and updated its assertion to match. Broadened the except clauses in run_calculator() and run_bash_mode() from ValueError to (ValueError, ZeroDivisionError) so that interactive and bash modes continue to handle division-by-zero errors gracefully without crashing.
+Risks: Minimal — the behavior change is confined to the exception type raised by divide(). Any caller that previously caught ValueError for division by zero would need updating, but all callers in this codebase are covered by the __main__.py change above. No other operations are affected.
+Testing: python -m pytest tests/ — 115 passed, 0 failed.
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+Branch: task/issue-102-zero-division-error. PR targeting exp/structured-generic.
+
 --- 2026-04-08: Issue #67 — Error logging (structured-generic) ---
 Files changed: src/__main__.py, tests/test_main.py, artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
 Purpose: Added error logging to the calculator. Failures and invalid-usage events (invalid operation choice, invalid operands, unsupported operations, and calculation errors) are now appended as timestamped lines to calculator_errors.log. The log is separate from history.txt so normal operation history is never mixed with errors. Implementation uses a single _log_error(path, message) helper consistent with the existing _append_history pattern. Added ERROR_LOG_FILE constant and error_log_file parameter to run_calculator() and run_bash_mode() for test isolation. Added 7 new tests covering: invalid choice logging, calc error logging in interactive mode, bash unknown operation, bash calc error, bash invalid input, bash wrong arg count, and absence of log file on success.
