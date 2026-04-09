@@ -39,10 +39,19 @@ class "__main__" as Main {
     + UNARY_OPS : set
     + ALL_OPS : set
     + HISTORY_OPS : set
+    + MAX_INPUT_RETRIES : int
+    - _read_number(prompt: str, as_int: bool, input_fn, output_fn) : float | int | None
     + run_interactive(calc, input_fn, output_fn) : None
     + run_cli(argv, calc, output_fn) : int
     + main() : None
 }
+
+note bottom of Main
+  _read_number retries up to MAX_INPUT_RETRIES (3) times.
+  Returns None when all attempts are exhausted,
+  causing the caller to skip the operation and
+  return to the operation prompt.
+end note
 
 Main --> Calculator : uses
 
