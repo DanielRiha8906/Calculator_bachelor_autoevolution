@@ -1,4 +1,12 @@
 
+--- 2026-04-09: Issue #101 — Add test for incorrect inputs in division (Task 1 V2, Naive/generic) ---
+Files changed: tests/test_calculator.py (added 4 new tests to TestDivide: test_divide_string_numerator_raises_type_error, test_divide_string_denominator_raises_type_error, test_divide_none_numerator_raises_type_error, test_divide_none_denominator_raises_type_error)
+Purpose: Cover non-numeric (string, None) inputs to divide(), which naturally raise TypeError from Python's / operator. Complements the existing division-by-zero tests.
+Risks: None — additive change, no source code modified, no new dependencies.
+Testing: python -m pytest tests/test_calculator.py — 130 passed, 0 failed.
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+Branch: task/issue-101-divide-incorrect-inputs. PR target: exp/naive-generic.
+
 --- 2026-04-08: Issue #66 — Error logging (Task 10, Naive/generic) ---
 Files changed: src/calculator.py (added `import logging`, module-level `logger = logging.getLogger(__name__)`, and `logger.error(...)` calls before each raise in divide, factorial, square_root, log, and ln), tests/test_calculator.py (added TestCalculatorErrorLogging class, 8 new tests using pytest caplog fixture), artifacts/class_diagram.puml (updated note to mention error logging)
 Purpose: Add error logging to the Calculator so that every invalid-input condition (division by zero, bad factorial argument, negative square root, non-positive log/ln domain) is recorded at ERROR level via Python's standard logging module. Successful operations produce no error logs.
