@@ -202,5 +202,18 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.anthropic_api_key }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          claude_args: "--max-turns 12"
-          prompt: You are an system architect. You are here to implement change to artifacts in /artifacts. Read every change in src/ and update the diagrams accordingly.
+          claude_args: "--max-turns 20"
+          prompt: |
+            You are a system architect maintaining PlantUML diagrams for this project.
+
+            Your task: read the current source code in `src/` and create or update the three required diagram files in `artifacts/`:
+            - `artifacts/class_diagram.puml` — PlantUML class diagram covering all core classes and their relationships
+            - `artifacts/activity_diagram.puml` — PlantUML activity diagram showing the main calculation/execution flow
+            - `artifacts/sequence_diagram.puml` — PlantUML sequence diagram showing key interactions between components
+
+            Rules:
+            - All diagrams must be valid PlantUML (start with `@startuml`, end with `@enduml`)
+            - Create the `artifacts/` directory if it does not exist
+            - Base diagrams on the actual current state of `src/` — read the files first
+            - If a diagram file already exists, update it to reflect any changes; do not delete content that is still accurate
+            - After updating all three files, commit the changes with message "chore: update PlantUML diagrams" and push to the current branch
