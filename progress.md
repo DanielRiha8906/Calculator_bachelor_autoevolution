@@ -4,7 +4,7 @@ Files changed: src/calculator.py (added explicit ZeroDivisionError guard and doc
 Purpose: Make the zero-division guard in divide() explicit and documented rather than relying silently on Python's native behaviour. Adds a dedicated TestDivideByZero class covering negative dividend, float dividend, float-zero divisor, large dividend, and direct type assertion — complementing the two existing divide-by-zero tests in TestDivide.
 Risks: The explicit guard (if b == 0) is functionally equivalent to Python's native / for integer and float zeros; no behaviour change for callers. 0.0 == 0 is True in Python so float-zero divisors are caught correctly.
 Testing: python -m pytest tests/test_calculator.py -v — 150 passed, 0 failed (145 original + 5 new TestDivideByZero tests).
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 158.4s | Cost: $0.392942 USD | Turns: 18
 Branch: task/issue-103-zero-division-error | PR target: exp/expert-generic
 
 --- 2026-04-08: Issue #69 (exp/expert-generic) — Error logging ---
