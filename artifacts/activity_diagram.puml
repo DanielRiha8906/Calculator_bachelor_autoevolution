@@ -1,187 +1,129 @@
 @startuml activity_diagram
 
-title Calculator — User Interaction Activity Diagram
+title Calculator — Interactive Session Activity Diagram
 
 start
 
-if (command-line arguments provided?) then (yes — bash mode)
+:Create Calculator instance;
+:Initialise error logger (calculator_errors.log);
+:Set choice_failures = 0;
+:Initialise history = [];
+:Display operation menu (1–12, 0 to quit, h to show history);
 
-    :Initialise error logger (calculator_errors.log);
-    :Read operation name from args[0];
+repeat
 
-    if (operation is known?) then (no)
-        :Log error: unknown operation;
-        :Print error to stderr;
-        :List available operations on stderr;
-        :Exit with code 1;
+    :Read user menu choice;
+
+    if (choice == "0"?) then (yes)
+        :Print "Goodbye!";
+        :Write history to history.txt;
         stop
     endif
 
-    if (correct number of operands provided?) then (no)
-        :Log error: wrong operand count;
-        :Print error to stderr;
-        :Exit with code 1;
-        stop
-    endif
-
-    if (operand(s) are valid numbers?) then (no)
-        :Log error: invalid operand (not a number);
-        :Print error to stderr;
-        :Exit with code 1;
-        stop
-    endif
-
-    if (operation is factorial?) then (yes)
-        if (value is not a whole number?) then (yes)
-            :Log error: factorial non-integer input;
-            :Print error to stderr;
-            :Exit with code 1;
-            stop
-        endif
-        :Call Calculator.factorial(int(a));
-    else (no)
-        if (operation requires two operands?) then (yes)
-            :Call Calculator method with a, b;
+    if (choice == "h"?) then (yes)
+        if (history is empty?) then (yes)
+            :Print "No history yet.";
         else (no)
-            :Call Calculator method with a;
+            :Print each history entry;
         endif
-    endif
+    else (no — numeric choice or unknown)
 
-    if (operation raises ValueError, ZeroDivisionError, or TypeError?) then (yes)
-        :Log error: calculation error;
-        :Print error to stderr;
-        :Exit with code 1;
-        stop
-    else (no)
-        :Print result to stdout;
-        stop
-    endif
-
-else (no — interactive mode)
-
-    :Create Calculator instance;
-    :Initialise error logger (calculator_errors.log);
-    :Set choice_failures = 0;
-    :Initialise history = [];
-    :Display operation menu (1–12, 0 to quit, h to show history);
-
-    repeat
-
-        :Read user menu choice;
-
-        if (choice == "0"?) then (yes)
-            :Write history to history.txt;
-            stop
-        endif
-
-        if (choice == "h"?) then (yes)
-            if (history is empty?) then (yes)
-                :Print "No history yet.";
+        if (choice is valid operation?) then (no)
+            :Increment choice_failures;
+            if (choice_failures >= MAX_ATTEMPTS?) then (yes)
+                :Log error: too many invalid menu choices;
+                :Print "Too many invalid choices — ending session";
+                :Write history to history.txt;
+                stop
             else (no)
-                :Print each history entry;
+                :Log error: invalid menu choice;
+                :Print "Unknown choice" + available operations list;
+                :Show remaining attempts;
             endif
-        else (no — numeric choice or unknown)
-
-            if (choice is valid operation?) then (no)
-                :Increment choice_failures;
-                if (choice_failures >= MAX_ATTEMPTS?) then (yes)
-                    :Log error: too many invalid menu choices;
-                    :Print "Too many invalid choices — ending session";
-                    :Write history to history.txt;
-                    stop
-                else (no)
-                    :Log error: invalid menu choice;
-                    :Print "Unknown choice" + available operations list;
-                    :Show remaining attempts;
-                endif
-            else (yes)
-                :Reset choice_failures = 0;
+        else (yes — valid operation)
+            :Reset choice_failures = 0;
 
             if (operation requires two operands?) then (yes)
-                :number_failures = 0;
                 repeat
-                    :Prompt for first number;
+                    :Prompt "Enter first value:";
                     if (input is valid float?) then (yes)
                     else (no)
                         :Log error: invalid number input;
-                        :Increment number_failures;
-                        if (number_failures >= MAX_ATTEMPTS?) then (yes)
+                        if (attempts >= MAX_ATTEMPTS?) then (yes)
                             :Log error: TooManyAttemptsError;
                             :Print "Too many invalid inputs — ending session";
+                            :Write history to history.txt;
                             stop
                         else (no)
                             :Show remaining attempts;
                         endif
                     endif
-                repeat while (input is not a valid float?) is (invalid)
+                repeat while (input is not valid float?) is (invalid)
                 ->valid;
 
-                :number_failures = 0;
                 repeat
-                    :Prompt for second number;
+                    :Prompt "Enter second value:";
                     if (input is valid float?) then (yes)
                     else (no)
                         :Log error: invalid number input;
-                        :Increment number_failures;
-                        if (number_failures >= MAX_ATTEMPTS?) then (yes)
+                        if (attempts >= MAX_ATTEMPTS?) then (yes)
                             :Log error: TooManyAttemptsError;
                             :Print "Too many invalid inputs — ending session";
+                            :Write history to history.txt;
                             stop
                         else (no)
                             :Show remaining attempts;
                         endif
                     endif
-                repeat while (input is not a valid float?) is (invalid)
+                repeat while (input is not valid float?) is (invalid)
                 ->valid;
 
             else (no — single operand)
-                :number_failures = 0;
                 repeat
-                    :Prompt for number;
+                    :Prompt "Enter value:";
                     if (input is valid float?) then (yes)
                     else (no)
                         :Log error: invalid number input;
-                        :Increment number_failures;
-                        if (number_failures >= MAX_ATTEMPTS?) then (yes)
+                        if (attempts >= MAX_ATTEMPTS?) then (yes)
                             :Log error: TooManyAttemptsError;
                             :Print "Too many invalid inputs — ending session";
+                            :Write history to history.txt;
                             stop
                         else (no)
                             :Show remaining attempts;
                         endif
                     endif
-                repeat while (input is not a valid float?) is (invalid)
+                repeat while (input is not valid float?) is (invalid)
                 ->valid;
 
                 if (operation is factorial?) then (yes)
-                    :Validate input is whole number;
-                    if (not whole number?) then (yes)
+                    if (value is not a whole number?) then (yes)
                         :Log error: factorial non-integer input;
-                        :Print "Input must be a whole number";
+                        :Print "Error: factorial requires a whole number";
                         note right: skip to next loop iteration
+                    else (no — whole number)
+                        :Cast value to int;
                     endif
                 endif
             endif
 
-                :Call Calculator method with operand(s);
+            :Call Calculator method with operand(s);
 
-                if (operation raises ValueError, ZeroDivisionError, or TypeError?) then (yes)
-                    :Log error: calculation error;
-                    :Print error message;
-                else (no)
-                    :Print result;
-                    :Append formatted entry to history;
-                    note right: e.g. add(2, 3) = 5
-                endif
-
+            if (operation raises ValueError, ZeroDivisionError, or TypeError?) then (yes)
+                :Log error: calculation error;
+                :Print error message;
+            else (no)
+                :Print "Result: <value>";
+                :Append formatted entry to history;
+                note right: e.g. add(2, 3) = 5
             endif
 
         endif
 
-    repeat while (session continues)
+    endif
 
-    :Write history to history.txt;
+repeat while (session continues)
 
-endif
+:Write history to history.txt;
 
 @enduml
