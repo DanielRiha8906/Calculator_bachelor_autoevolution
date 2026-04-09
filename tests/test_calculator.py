@@ -83,6 +83,22 @@ class TestDivide:
         with pytest.raises(ValueError):
             self.calc.divide(0, 0)
 
+    def test_divide_string_numerator_raises_type_error(self):
+        with pytest.raises(TypeError):
+            self.calc.divide("hello", 2)
+
+    def test_divide_string_denominator_raises_type_error(self):
+        with pytest.raises(TypeError):
+            self.calc.divide(10, "hello")
+
+    def test_divide_none_numerator_raises_type_error(self):
+        with pytest.raises(TypeError):
+            self.calc.divide(None, 2)
+
+    def test_divide_none_denominator_raises_type_error(self):
+        with pytest.raises(TypeError):
+            self.calc.divide(10, None)
+
 
 class TestFactorial:
     def setup_method(self):
