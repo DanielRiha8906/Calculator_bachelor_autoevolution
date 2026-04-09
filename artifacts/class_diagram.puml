@@ -22,15 +22,19 @@ package "src" {
 
     note right of Calculator
         All methods are stateless.
-        Errors raised as ValueError
-        with descriptive messages:
-          - divide(x, 0) → "Cannot divide by zero"
-          - sqrt(-1) → "Cannot take sqrt of negative"
-          - log(0) → "Cannot take log of non-positive"
-          - factorial(-1) → "n must be a non-negative integer"
+        Error types and messages:
+          - divide(x, 0) → ZeroDivisionError("division by zero")
+          - sqrt(x<0) → ValueError("Square root is not defined for negative numbers")
+          - cbrt: no error (supports negatives via math.cbrt)
+          - log(x≤0) → ValueError("Logarithm is not defined for non-positive numbers")
+          - ln(x≤0) → ValueError("Natural logarithm is not defined for non-positive numbers")
+          - factorial(non-int) → ValueError("Factorial requires a non-negative integer")
+          - factorial(n<0) → ValueError("Factorial is not defined for negative numbers")
     end note
 
     class "__main__" as Main {
+        + OPERATIONS : dict
+        + OP_BY_NAME : dict
         + HISTORY_FILE : str
         + ERROR_LOG_FILE : str
         + MAX_ATTEMPTS : int
@@ -45,6 +49,10 @@ package "src" {
     }
 
     note right of Main
+        OPERATIONS maps choice keys ("1"-"12") to
+        (method_name, num_args, label) tuples.
+        OP_BY_NAME maps method_name → num_args
+        for bash mode lookup.
         history_file defaults to HISTORY_FILE.
         Cleared at session start; each successful
         operation is appended. 'h' in interactive
@@ -52,8 +60,8 @@ package "src" {
         Bash mode does not record history.
         error_log_file defaults to ERROR_LOG_FILE.
         Invalid choices, invalid operands, and
-        calculation errors are appended as
-        timestamped entries. Never mixed with history.
+        calculation errors (ValueError, ZeroDivisionError)
+        are appended as timestamped entries.
     end note
 
     Main --> Calculator : uses

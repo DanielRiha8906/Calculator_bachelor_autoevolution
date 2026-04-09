@@ -27,7 +27,7 @@ alt command-line arguments present
         Bash --> Main : exit code 1
     else non-numeric value or calc error
         Bash -> Calc : <operation>(parsed values)
-        Calc --> Bash : raise ValueError("<message>")
+        Calc --> Bash : raise ValueError or ZeroDivisionError("<message>")
         Bash -> User : "Error: <message>"
         Bash -> ErrLog : append timestamped error
         Bash --> Main : exit code 1
@@ -88,13 +88,13 @@ else no arguments (interactive mode)
                     Interactive -> HistFile : append "<op>(<operands>) = <result>"
                     Interactive -> User : "Result: <value>"
                     note right: break out of retry loop
-                else ValueError, attempts remaining
-                    Calc --> Interactive : raise ValueError("<message>")
+                else ValueError or ZeroDivisionError, attempts remaining
+                    Calc --> Interactive : raise ValueError or ZeroDivisionError("<message>")
                     Interactive -> ErrLog : append timestamped error
                     Interactive -> User : "Error: <message>"
                     Interactive -> User : "Please try again."
-                else ValueError, attempts exhausted
-                    Calc --> Interactive : raise ValueError("<message>")
+                else ValueError or ZeroDivisionError, attempts exhausted
+                    Calc --> Interactive : raise ValueError or ZeroDivisionError("<message>")
                     Interactive -> ErrLog : append timestamped error
                     Interactive -> User : "Error: <message>"
                     Interactive -> User : "Too many invalid inputs. Ending session."
