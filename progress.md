@@ -4,7 +4,7 @@ Files changed: src/calculator.py, tests/test_calculator.py, src/__main__.py
 Purpose: Changed Calculator.divide to raise ZeroDivisionError instead of ValueError when the divisor is zero, aligning with Python's native exception semantics. Renamed the unit test from test_divide_by_zero_raises_value_error to test_divide_by_zero_raises_zero_division_error and updated its assertion to match. Broadened the except clauses in run_calculator() and run_bash_mode() from ValueError to (ValueError, ZeroDivisionError) so that interactive and bash modes continue to handle division-by-zero errors gracefully without crashing.
 Risks: Minimal — the behavior change is confined to the exception type raised by divide(). Any caller that previously caught ValueError for division by zero would need updating, but all callers in this codebase are covered by the __main__.py change above. No other operations are affected.
 Testing: python -m pytest tests/ — 115 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 193.7s | Cost: $0.686539 USD | Turns: 29
 Branch: task/issue-102-zero-division-error. PR targeting exp/structured-generic.
 
 --- 2026-04-08: Issue #67 — Error logging (structured-generic) ---
