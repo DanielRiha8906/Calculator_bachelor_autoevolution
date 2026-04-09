@@ -47,12 +47,13 @@ package "src" {
 
 note right of Calculator
   Validation rules:
-  divide: b != 0
-  square_root: a >= 0
-  cube_root: handles negative (sign-preserving)
-  log: a > 0
-  ln: a > 0
-  factorial: n >= 0, integer, not bool
+  divide: b == 0 → raises ZeroDivisionError("division by zero")
+  square_root: a < 0 → raises ValueError
+  cube_root: a < 0 → sign-preserving real root (no exception)
+  log: a <= 0 → raises ValueError
+  ln: a <= 0 → raises ValueError
+  factorial: non-int or bool → raises TypeError
+             n < 0 → raises ValueError
 end note
 
 note right of ErrLog

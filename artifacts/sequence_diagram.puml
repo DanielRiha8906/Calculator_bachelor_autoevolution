@@ -88,10 +88,10 @@ loop session (until choice == "0" or too many failures)
                 Calc -> Main : result
                 Main -> Main : append entry to history
                 Main -> User : "Result: <value>"
-            else ZeroDivisionError (divide by zero)
-                Calc -> Main : raise ZeroDivisionError
+            else ZeroDivisionError — divide: guard raises explicitly when b == 0
+                Calc -> Main : raise ZeroDivisionError("division by zero")
                 Main -> ErrLog : error("Interactive: calculation error in divide — ...")
-                Main -> User : "Error: <message>"
+                Main -> User : "Error: division by zero"
             end
 
         else single-operand non-factorial (e.g. square, square_root, log, ln, cube, cube_root)
