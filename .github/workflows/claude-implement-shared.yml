@@ -44,6 +44,9 @@ jobs:
       id-token: write
       actions: read
 
+    outputs:
+      task_branch: ${{ steps.detect-branch.outputs.task_branch }}
+
     steps:
       - name: Checkout experiment branch
         uses: actions/checkout@v4
@@ -119,6 +122,18 @@ jobs:
           echo "| Turns | $TURNS |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Duration | ${DURATION_S}s |" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Detect task branch
+        id: detect-branch
+        if: always()
+        run: |
+          git fetch --all --quiet
+          TASK_BRANCH=$(git branch -r | grep -E "origin/task/issue-${{ inputs.issue_number }}[^0-9]" | head -1 | tr -d ' ')
+          if [ -z "$TASK_BRANCH" ]; then
+            TASK_BRANCH=$(git branch -r | grep "origin/task/issue-${{ inputs.issue_number }}-" | head -1 | tr -d ' ')
+          fi
+          LOCAL_BRANCH="${TASK_BRANCH#origin/}"
+          echo "task_branch=$LOCAL_BRANCH" >> "$GITHUB_OUTPUT"
+
       - name: Patch progress.md with actual cost
         if: always()
         run: |
@@ -138,18 +153,13 @@ jobs:
             COST_FMT="$COST"
           fi
 
-          git fetch --all --quiet
-          TASK_BRANCH=$(git branch -r | grep -E "origin/task/issue-${{ inputs.issue_number }}[^0-9]" | head -1 | tr -d ' ')
-          if [ -z "$TASK_BRANCH" ]; then
-            TASK_BRANCH=$(git branch -r | grep "origin/task/issue-${{ inputs.issue_number }}-" | head -1 | tr -d ' ')
-          fi
-          if [ -z "$TASK_BRANCH" ]; then
+          LOCAL_BRANCH="${{ steps.detect-branch.outputs.task_branch }}"
+          if [ -z "$LOCAL_BRANCH" ]; then
             echo "No task branch found for issue ${{ inputs.issue_number }}, skipping."
             exit 0
           fi
 
-          LOCAL_BRANCH="${TASK_BRANCH#origin/}"
-          git checkout -b "$LOCAL_BRANCH" "$TASK_BRANCH" 2>/dev/null || git checkout "$LOCAL_BRANCH"
+          git checkout -b "$LOCAL_BRANCH" "origin/$LOCAL_BRANCH" 2>/dev/null || git checkout "$LOCAL_BRANCH"
 
           if [ ! -f "progress.md" ] || ! grep -q "PENDING" progress.md; then
             echo "No PENDING placeholder in progress.md, skipping."
@@ -170,3 +180,27 @@ jobs:
           git add progress.md
           git commit -m "chore: update progress.md with actual workflow cost"
           git push origin "$LOCAL_BRANCH"
+
+  update-diagrams:
+    needs: claude-implement
+    if: ${{ needs.claude-implement.outputs.task_branch != '' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout task branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.claude-implement.outputs.task_branch }}
+          fetch-depth: 1
+
+      - name: Run Claude Code for diagram update
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.anthropic_api_key }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: "--max-turns 12"
+          prompt: You are an system architect. You are here to implement change to artifacts in /artifacts. Read every change in src/ and update the diagrams accordingly.

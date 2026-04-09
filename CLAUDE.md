@@ -35,7 +35,6 @@ These rules exist because the subject of this project is code that modifies itse
 
 ## Testing
 
-- Run tests before and after every non-trivial change: `python -m pytest`
 - All self-modification outputs (generated code, patches) must have a corresponding test asserting the output is syntactically valid Python before it is written to disk.
 - Tests live alongside source code; do not delete tests to make a failing suite pass.
 - Coverage is not the goal — correctness of the self-evolution loop is. Prioritize integration tests over unit tests for the core mutation/patch pipeline.
@@ -128,7 +127,6 @@ In this project, Claude (this instance) **is** the self-evolution engine. It is 
 - Never inspect or use sibling worktree branches as implementation context.
 - Never treat another experiment branch as a fallback source of truth.
 - Never push directly to `main`.
-- Never apply a self-generated patch to the live codebase without it first being written as a diff artifact under `patches/` or `output/`.
 - Never make network calls from within generated or evolved code unless the workflow explicitly authorizes it via an environment variable (`ALLOW_NETWORK=1`).
 - If the workflow provides no clear stopping condition, stop after one iteration and report.
 
@@ -161,11 +159,7 @@ Before any commit, append a run summary to `progress.md` including:
 - files changed
 - purpose of the change
 - risks
-- how it was tested
 - whether all tests passed
-- number of tokens used
-- estimated cost in USD
-- number of turns
 - current branch/worktree name
 - intended merge or PR target
 
