@@ -1,4 +1,12 @@
 
+--- 2026-04-09: Issue #102 — ZeroDivisionError handling (structured-generic) ---
+Files changed: src/calculator.py, src/__main__.py, tests/test_calculator.py
+Purpose: Changed Calculator.divide() to raise ZeroDivisionError("division by zero") instead of ValueError. Updated both exception handlers in __main__.py to catch (ValueError, ZeroDivisionError) so interactive and bash modes continue to display the error cleanly. Renamed and updated the existing divide-by-zero unit test to assert ZeroDivisionError.
+Risks: Callers that previously caught ValueError for divide-by-zero must now catch ZeroDivisionError. Within this codebase the only callers are in __main__.py, which has been updated. The semantic change (ValueError → ZeroDivisionError) is more Pythonically correct.
+Testing: python3 -m pytest tests/ — 115 passed, 0 failed.
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+Branch: task/issue-102-zero-division-error-structured-generic. PR targeting exp/structured-generic.
+
 --- 2026-04-08: Issue #67 — Error logging (structured-generic) ---
 Files changed: src/__main__.py, tests/test_main.py, artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
 Purpose: Added error logging to the calculator. Failures and invalid-usage events (invalid operation choice, invalid operands, unsupported operations, and calculation errors) are now appended as timestamped lines to calculator_errors.log. The log is separate from history.txt so normal operation history is never mixed with errors. Implementation uses a single _log_error(path, message) helper consistent with the existing _append_history pattern. Added ERROR_LOG_FILE constant and error_log_file parameter to run_calculator() and run_bash_mode() for test isolation. Added 7 new tests covering: invalid choice logging, calc error logging in interactive mode, bash unknown operation, bash calc error, bash invalid input, bash wrong arg count, and absence of log file on success.
