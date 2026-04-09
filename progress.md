@@ -52,7 +52,10 @@ Files changed: artifacts/class_diagram.puml (new), artifacts/activity_diagram.pu
 Purpose: Document the calculator structure and user interaction with three PlantUML diagrams — class diagram covering the Calculator class and __main__ module, activity diagram covering the full session loop with input validation and error handling, and sequence diagram covering a representative interaction for each operation type.
 Risks: None — documentation only, no production code modified.
 Testing: python -m pytest --tb=short -q — 94 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 263726
+2.3s | Cost: $0.5426050.5426053499999999
+0.5587138499999998 USD | Turns: 28
+1
 Branch: task/issue-44-diagrams-expert-generic | PR target: exp/expert-generic
 
 --- 2026-04-08: Issue #40 (exp/expert-generic) — Add interactive user input ---
