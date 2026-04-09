@@ -26,7 +26,7 @@ jobs:
         actions: read
     uses: ./.github/workflows/claude-implement-shared.yml
     with:
-      branch: exp/naive-generic
+      branch: exp2/naive-generic
       experiment_name: naive-generic
       issue_number: ${{ github.event.issue.number || inputs.issue_number }}
       issue_title: ${{ github.event.issue.title || inputs.issue_title }}
