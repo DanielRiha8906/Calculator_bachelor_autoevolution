@@ -144,7 +144,7 @@ def run_calculator(input_fn=input, print_fn=print, history_file=HISTORY_FILE, er
                     _append_history(history_file, f"{op_name}({a}, {b}) = {result}")
                 print_fn(f"Result: {result}")
                 break
-            except ValueError as e:
+            except (ValueError, ZeroDivisionError) as e:
                 _log_error(error_log_file, f"Error in '{op_name}': {e}")
                 remaining = MAX_ATTEMPTS - attempt - 1
                 print_fn(f"Error: {e}")
@@ -212,7 +212,7 @@ def run_bash_mode(args, print_fn=print, error_log_file=ERROR_LOG_FILE):
             result = method(a, b)
         print_fn(f"Result: {result}")
         return 0
-    except ValueError as e:
+    except (ValueError, ZeroDivisionError) as e:
         print_fn(f"Error: {e}")
         _log_error(error_log_file, f"Calculation error in bash mode ('{op_name}'): {e}")
         return 1
