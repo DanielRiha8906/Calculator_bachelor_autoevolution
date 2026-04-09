@@ -136,6 +136,34 @@ class TestDivide:
 
 
 # ---------------------------------------------------------------------------
+# division by zero — focused coverage
+# ---------------------------------------------------------------------------
+
+class TestDivideByZero:
+    """Focused tests asserting that division by zero always raises ZeroDivisionError."""
+
+    def test_negative_dividend_zero_divisor(self, calc):
+        with pytest.raises(ZeroDivisionError):
+            calc.divide(-5, 0)
+
+    def test_float_dividend_zero_divisor(self, calc):
+        with pytest.raises(ZeroDivisionError):
+            calc.divide(3.14, 0)
+
+    def test_float_zero_divisor(self, calc):
+        with pytest.raises(ZeroDivisionError):
+            calc.divide(1, 0.0)
+
+    def test_large_dividend_zero_divisor(self, calc):
+        with pytest.raises(ZeroDivisionError):
+            calc.divide(1e308, 0)
+
+    def test_exception_type_is_zero_division_error(self, calc):
+        with pytest.raises(ZeroDivisionError):
+            calc.divide(42, 0)
+
+
+# ---------------------------------------------------------------------------
 # factorial
 # ---------------------------------------------------------------------------
 
