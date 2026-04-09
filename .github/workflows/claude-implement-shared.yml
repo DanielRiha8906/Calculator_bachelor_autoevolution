@@ -81,7 +81,7 @@ jobs:
 
             Instructions:
             - Inspect the repository (current branch only)
-            - Create a dedicated sub-branch off ${{ inputs.branch }} for the task
+            - Create a dedicated sub-branch off ${{ inputs.branch }} for the task, named exactly `task/issue-${{ inputs.issue_number }}-<short-description>` (e.g. `task/issue-${{ inputs.issue_number }}-add-logging`)
             - Implement the requested change
             - Run tests if available; if tests do not exist, create appropriate ones
             - Commit the changes
