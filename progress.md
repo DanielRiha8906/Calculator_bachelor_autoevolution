@@ -4,7 +4,7 @@ Files changed: tests/test_calculator.py (added 4 new tests to TestDivide: test_d
 Purpose: Cover incorrect (non-numeric) inputs to divide() — passing a string or None as either operand should raise TypeError. Python raises this naturally via its / operator; no calculator change needed.
 Risks: None — test-only, additive change. No source code modified. All existing 126 tests unaffected.
 Testing: python -m pytest tests/test_calculator.py -v — 130 passed, 0 failed.
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 147.9s | Cost: $0.400964 USD | Turns: 16
 Branch: task/issue-101-divide-incorrect-inputs. PR target: exp/naive-generic.
 
 --- 2026-04-08: Issue #66 — Error logging (Task 10, Naive/generic) ---
