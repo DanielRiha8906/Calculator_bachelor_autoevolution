@@ -16,4 +16,5 @@ Add tests that verify `Calculator.divide()` raises the appropriate Python except
 ### Test results
 All 6 tests passed (pytest 9.0.3, Python 3.12.3).
 
+### Duration / Cost / Turns
 Duration: PENDING | Cost: PENDING | Turns: PENDING
