@@ -100,6 +100,13 @@ jobs:
             Duration: PENDING | Cost: PENDING | Turns: PENDING
             Do not estimate or guess these values — the workflow will replace PENDING with real values after your run completes.
 
+      - name: Upload Claude execution log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-execution-${{ inputs.issue_number }}
+          path: /home/runner/work/_temp/claude-execution-output.json
+
       - name: Log cost and turns
         if: always()
         run: |
@@ -121,6 +128,10 @@ jobs:
           echo "| Total cost | \$$COST USD |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Turns | $TURNS |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Duration | ${DURATION_S}s |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: List remote branches (debug)
+        if: always()
+        run: git fetch --all --quiet && git branch -r | grep task || echo "No task branches found"
 
       - name: Detect task branch
         id: detect-branch
