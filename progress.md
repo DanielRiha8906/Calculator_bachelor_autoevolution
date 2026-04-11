@@ -1,3 +1,43 @@
+## Run: issue-113 — Add user input to the calculator
+
+- **Branch:** task/issue-113-add-user-input
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/user_input.py` — new module with `interactive_mode()` function implementing an interactive CLI REPL for the calculator
+- `src/__main__.py` — updated to call `interactive_mode()` instead of the static demo
+- `tests/test_user_input.py` — new test file with 15 tests covering quit, menu display, all operation types, invalid input, and error handling
+
+### Purpose
+Implements Issue #113 (V2 Task 5 - User input - Naive/generic): adds an interactive command-line interface that lets users select an operation from a menu, enter operands, and see the result. The loop repeats until the user quits with 'q'. All 12 calculator operations are accessible; errors (ZeroDivisionError, ValueError, TypeError) are displayed without crashing.
+
+### Risks
+- None. `interactive_mode()` is a pure I/O wrapper over the existing `Calculator` class; no calculator logic was modified.
+- Factorial requires integer input — the function parses with `int()` for that operation and `float()` for all others.
+
+### Test results
+All 89 tests passed (74 pre-existing + 15 new):
+- `TestInteractiveMode::test_quit_immediately` — PASSED
+- `TestInteractiveMode::test_menu_is_printed` — PASSED
+- `TestInteractiveMode::test_add_two_numbers` — PASSED
+- `TestInteractiveMode::test_subtract_two_numbers` — PASSED
+- `TestInteractiveMode::test_multiply_two_numbers` — PASSED
+- `TestInteractiveMode::test_divide_two_numbers` — PASSED
+- `TestInteractiveMode::test_factorial_integer` — PASSED
+- `TestInteractiveMode::test_square_number` — PASSED
+- `TestInteractiveMode::test_cube_number` — PASSED
+- `TestInteractiveMode::test_square_root` — PASSED
+- `TestInteractiveMode::test_power_operation` — PASSED
+- `TestInteractiveMode::test_invalid_choice_shows_error` — PASSED
+- `TestInteractiveMode::test_divide_by_zero_shows_error` — PASSED
+- `TestInteractiveMode::test_square_root_negative_shows_error` — PASSED
+- `TestInteractiveMode::test_multiple_operations_in_session` — PASSED
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-110 — Add more math functions to the calculator
 
 - **Branch:** task/issue-110-add-math-functions
