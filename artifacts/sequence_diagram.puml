@@ -1,0 +1,29 @@
+@startuml sequence_diagram
+
+participant "__main__" as Main
+participant "Calculator" as Calc
+
+Main -> Main : main()
+Main -> Calc : <<create>>
+
+Main -> Calc : add(10, 5)
+Calc --> Main : 15
+Main -> Main : print("Addition: 15")
+
+Main -> Calc : subtract(10, 5)
+Calc --> Main : 5
+Main -> Main : print("Subtraction: 5")
+
+Main -> Calc : multiply(10, 5)
+Calc --> Main : 50
+Main -> Main : print("Multiplication: 50")
+
+Main -> Calc : divide(10, 5)
+alt b == 0
+    Calc --> Main : ZeroDivisionError
+else b != 0
+    Calc --> Main : 2.0
+    Main -> Main : print("Division: 2.0")
+end
+
+@enduml
