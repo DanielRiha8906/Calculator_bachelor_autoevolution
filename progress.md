@@ -1,3 +1,43 @@
+## Run: issue-110 — Add more math functions to the calculator
+
+- **Branch:** task/issue-110-add-math-functions
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/calculator.py` — added `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln` methods
+- `tests/test_calculator.py` — added 11 test classes (36 new test cases) covering all 7 new methods
+- `src/__main__.py` — added demo calls for all 7 new functions
+- `artifacts/class_diagram.puml` — added 7 new methods to `Calculator` and 11 new test classes
+- `artifacts/activity_diagram.puml` — added activity blocks for all 7 new operations
+- `artifacts/sequence_diagram.puml` — added sequence interactions for all 7 new operations
+
+### Purpose
+Implements Issue #110 (V2 Task 4 - More functions - Naive/generic): adds `square(x)`, `cube(x)`, `square_root(x)`, `cube_root(x)`, `power(base, exp)`, `log(x)`, and `ln(x)` to the `Calculator` class. All implementations delegate to the Python `math` standard library (`math.sqrt`, `math.cbrt`, `math.pow`, `math.log10`, `math.log`) for correctness, with `square` and `cube` using direct Python operators.
+
+### Risks
+- `math.cbrt` was introduced in Python 3.11 — compatible with this project's Python 3.12 requirement.
+- `log` is implemented as `math.log10` (common/base-10 logarithm); `ln` uses `math.log` (natural logarithm).
+- `power` uses `math.pow` which always returns a float and raises `ValueError` for domain errors (e.g., negative base with fractional exponent).
+- No new dependencies introduced; all functions use the standard library `math` module already imported.
+
+### Test results
+All 74 tests passed (38 pre-existing + 36 new):
+- `TestSquare` (5 tests) — all PASSED
+- `TestCube` (5 tests) — all PASSED
+- `TestSquareRoot` (4 tests) — all PASSED
+- `TestSquareRootIncorrectInputs` (1 test) — PASSED
+- `TestCubeRoot` (4 tests) — all PASSED
+- `TestPower` (5 tests) — all PASSED
+- `TestLog` (4 tests) — all PASSED
+- `TestLogIncorrectInputs` (2 tests) — all PASSED
+- `TestLn` (4 tests) — all PASSED
+- `TestLnIncorrectInputs` (2 tests) — all PASSED
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-101 — Add tests for incorrect inputs in division
 
 - **Branch:** task/issue-101-add-division-input-tests

@@ -160,3 +160,166 @@ class TestFactorialIncorrectInputs:
     def test_factorial_none(self):
         with pytest.raises(TypeError):
             self.calc.factorial(None)
+
+
+class TestSquare:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_square_positive_integer(self):
+        assert self.calc.square(4) == 16
+
+    def test_square_negative_integer(self):
+        assert self.calc.square(-3) == 9
+
+    def test_square_zero(self):
+        assert self.calc.square(0) == 0
+
+    def test_square_float(self):
+        assert self.calc.square(2.5) == pytest.approx(6.25)
+
+    def test_square_one(self):
+        assert self.calc.square(1) == 1
+
+
+class TestCube:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_cube_positive_integer(self):
+        assert self.calc.cube(3) == 27
+
+    def test_cube_negative_integer(self):
+        assert self.calc.cube(-2) == -8
+
+    def test_cube_zero(self):
+        assert self.calc.cube(0) == 0
+
+    def test_cube_float(self):
+        assert self.calc.cube(2.0) == pytest.approx(8.0)
+
+    def test_cube_one(self):
+        assert self.calc.cube(1) == 1
+
+
+class TestSquareRoot:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_square_root_perfect_square(self):
+        assert self.calc.square_root(9) == pytest.approx(3.0)
+
+    def test_square_root_non_perfect_square(self):
+        assert self.calc.square_root(2) == pytest.approx(math.sqrt(2))
+
+    def test_square_root_zero(self):
+        assert self.calc.square_root(0) == pytest.approx(0.0)
+
+    def test_square_root_float_input(self):
+        assert self.calc.square_root(6.25) == pytest.approx(2.5)
+
+
+class TestSquareRootIncorrectInputs:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_square_root_negative(self):
+        with pytest.raises(ValueError):
+            self.calc.square_root(-1)
+
+
+class TestCubeRoot:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_cube_root_positive(self):
+        assert self.calc.cube_root(27) == pytest.approx(3.0)
+
+    def test_cube_root_negative(self):
+        assert self.calc.cube_root(-8) == pytest.approx(-2.0)
+
+    def test_cube_root_zero(self):
+        assert self.calc.cube_root(0) == pytest.approx(0.0)
+
+    def test_cube_root_float_input(self):
+        assert self.calc.cube_root(8.0) == pytest.approx(2.0)
+
+
+class TestPower:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_power_positive_base_integer_exp(self):
+        assert self.calc.power(2, 3) == pytest.approx(8.0)
+
+    def test_power_base_to_zero(self):
+        assert self.calc.power(5, 0) == pytest.approx(1.0)
+
+    def test_power_base_to_one(self):
+        assert self.calc.power(7, 1) == pytest.approx(7.0)
+
+    def test_power_float_exponent(self):
+        assert self.calc.power(4, 0.5) == pytest.approx(2.0)
+
+    def test_power_fractional_base(self):
+        assert self.calc.power(0.5, 2) == pytest.approx(0.25)
+
+
+class TestLog:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_log_of_one(self):
+        assert self.calc.log(1) == pytest.approx(0.0)
+
+    def test_log_of_ten(self):
+        assert self.calc.log(10) == pytest.approx(1.0)
+
+    def test_log_of_hundred(self):
+        assert self.calc.log(100) == pytest.approx(2.0)
+
+    def test_log_of_float(self):
+        assert self.calc.log(0.1) == pytest.approx(-1.0)
+
+
+class TestLogIncorrectInputs:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_log_of_zero(self):
+        with pytest.raises(ValueError):
+            self.calc.log(0)
+
+    def test_log_of_negative(self):
+        with pytest.raises(ValueError):
+            self.calc.log(-1)
+
+
+class TestLn:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_ln_of_one(self):
+        assert self.calc.ln(1) == pytest.approx(0.0)
+
+    def test_ln_of_e(self):
+        assert self.calc.ln(math.e) == pytest.approx(1.0)
+
+    def test_ln_of_e_squared(self):
+        assert self.calc.ln(math.e ** 2) == pytest.approx(2.0)
+
+    def test_ln_of_float(self):
+        assert self.calc.ln(0.5) == pytest.approx(math.log(0.5))
+
+
+class TestLnIncorrectInputs:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_ln_of_zero(self):
+        with pytest.raises(ValueError):
+            self.calc.ln(0)
+
+    def test_ln_of_negative(self):
+        with pytest.raises(ValueError):
+            self.calc.ln(-1)

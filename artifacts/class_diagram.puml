@@ -8,6 +8,13 @@ package "src" {
         +multiply(a, b) : number
         +divide(a, b) : number
         +factorial(n) : int
+        +square(x) : float
+        +cube(x) : float
+        +square_root(x) : float
+        +cube_root(x) : float
+        +power(base, exp) : float
+        +log(x) : float
+        +ln(x) : float
     }
 
     class "__main__" as Main {
@@ -95,6 +102,92 @@ package "tests" {
         +test_factorial_none() : void
     }
 
+    class TestSquare {
+        -calc : Calculator
+        +setup_method() : void
+        +test_square_positive_integer() : void
+        +test_square_negative_integer() : void
+        +test_square_zero() : void
+        +test_square_float() : void
+        +test_square_one() : void
+    }
+
+    class TestCube {
+        -calc : Calculator
+        +setup_method() : void
+        +test_cube_positive_integer() : void
+        +test_cube_negative_integer() : void
+        +test_cube_zero() : void
+        +test_cube_float() : void
+        +test_cube_one() : void
+    }
+
+    class TestSquareRoot {
+        -calc : Calculator
+        +setup_method() : void
+        +test_square_root_perfect_square() : void
+        +test_square_root_non_perfect_square() : void
+        +test_square_root_zero() : void
+        +test_square_root_float_input() : void
+    }
+
+    class TestSquareRootIncorrectInputs {
+        -calc : Calculator
+        +setup_method() : void
+        +test_square_root_negative() : void
+    }
+
+    class TestCubeRoot {
+        -calc : Calculator
+        +setup_method() : void
+        +test_cube_root_positive() : void
+        +test_cube_root_negative() : void
+        +test_cube_root_zero() : void
+        +test_cube_root_float_input() : void
+    }
+
+    class TestPower {
+        -calc : Calculator
+        +setup_method() : void
+        +test_power_positive_base_integer_exp() : void
+        +test_power_base_to_zero() : void
+        +test_power_base_to_one() : void
+        +test_power_float_exponent() : void
+        +test_power_fractional_base() : void
+    }
+
+    class TestLog {
+        -calc : Calculator
+        +setup_method() : void
+        +test_log_of_one() : void
+        +test_log_of_ten() : void
+        +test_log_of_hundred() : void
+        +test_log_of_float() : void
+    }
+
+    class TestLogIncorrectInputs {
+        -calc : Calculator
+        +setup_method() : void
+        +test_log_of_zero() : void
+        +test_log_of_negative() : void
+    }
+
+    class TestLn {
+        -calc : Calculator
+        +setup_method() : void
+        +test_ln_of_one() : void
+        +test_ln_of_e() : void
+        +test_ln_of_e_squared() : void
+        +test_ln_of_float() : void
+    }
+
+    class TestLnIncorrectInputs {
+        -calc : Calculator
+        +setup_method() : void
+        +test_ln_of_zero() : void
+        +test_ln_of_negative() : void
+    }
+
 }
 
 Main --> Calculator : instantiates
@@ -106,5 +199,15 @@ TestDivision --> Calculator : tests
 TestDivisionIncorrectInputs --> Calculator : tests
 TestFactorial --> Calculator : tests
 TestFactorialIncorrectInputs --> Calculator : tests
+TestSquare --> Calculator : tests
+TestCube --> Calculator : tests
+TestSquareRoot --> Calculator : tests
+TestSquareRootIncorrectInputs --> Calculator : tests
+TestCubeRoot --> Calculator : tests
+TestPower --> Calculator : tests
+TestLog --> Calculator : tests
+TestLogIncorrectInputs --> Calculator : tests
+TestLn --> Calculator : tests
+TestLnIncorrectInputs --> Calculator : tests
 
 @enduml

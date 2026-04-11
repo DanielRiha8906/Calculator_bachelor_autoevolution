@@ -37,6 +37,52 @@ else (no)
     :Print "Factorial: 120";
 endif
 
+:Call calc.square(4);
+:Return x²;
+:Print "Square: 16";
+
+:Call calc.cube(3);
+:Return x³;
+:Print "Cube: 27";
+
+:Call calc.square_root(9);
+
+if (x < 0?) then (yes)
+    :Raise ValueError;
+    stop
+else (no)
+    :Return √x;
+    :Print "Square Root: 3.0";
+endif
+
+:Call calc.cube_root(27);
+:Return ∛x;
+:Print "Cube Root: 3.0";
+
+:Call calc.power(2, 10);
+:Return base^exp;
+:Print "Power: 1024.0";
+
+:Call calc.log(100);
+
+if (x <= 0?) then (yes)
+    :Raise ValueError;
+    stop
+else (no)
+    :Return log₁₀(x);
+    :Print "Log (base 10): 2.0";
+endif
+
+:Call calc.ln(1);
+
+if (x <= 0?) then (yes)
+    :Raise ValueError;
+    stop
+else (no)
+    :Return ln(x);
+    :Print "Ln (natural log): 0.0";
+endif
+
 stop
 
 @enduml
