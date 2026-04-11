@@ -42,7 +42,7 @@ design uses `CalculatorMode` as a shared abstraction with `SimpleMode` and
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 376.2s | Cost: $1.099639 USD | Turns: 28
 
 ---
 
