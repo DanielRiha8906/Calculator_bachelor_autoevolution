@@ -686,3 +686,42 @@ N/A — diagram-only run.
 exp2/expert-generic (never main)
 
 Duration: 76.1s | Cost: $0.275522 USD | Turns: 18
+
+---
+
+## Run: Diagram update — PlantUML artifacts (task/issue-154-error-logging)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-154-error-logging
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+
+Reviewed all three PlantUML diagrams against the current state of `src/` and `main.py`.
+The `error_logger` module (`ERROR_LOG_FILE`, `setup_error_logging`, `get_error_logger`),
+all twelve Calculator methods, both entry points (interactive `src/__main__.py` and bash
+CLI `main.py`), the retry logic (`MAX_RETRIES`, `_prompt_number`, menu failure counter),
+session history (`HISTORY_FILE`, `_format_history_entry`, `_write_history`, `'h'` command),
+and all error-logging paths (with `[cli]`/`[interactive]` prefixes, `error.log` participant)
+introduced in issue #154 are already correctly represented in every diagram from the
+previous issue run. No updates were required.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
