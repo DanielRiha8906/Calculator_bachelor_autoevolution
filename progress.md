@@ -1,3 +1,33 @@
+## Run: issue-149 — Add history of operations to the calculator
+
+- **Branch:** task/issue-149-add-history
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/calculator.py` — added `__init__` with `_history: list[dict]`; added `_record()`, `get_history()`, and `clear_history()` methods; each of the 12 operation methods now calls `_record()` after a successful computation so that only successful operations appear in history
+- `src/user_input.py` — added `_print_history()` helper that prints each entry as `N. op(args) = result` or "No history." when empty; added `"h: show history"` line to `_print_menu()`; added `"h"` command handler in `interactive_mode()` loop that calls `_print_history(calc.get_history())`; imported `_print_history` is also exported for tests
+- `tests/test_calculator.py` — added `TestHistory` class (8 tests): empty on init, records successful op, records multiple ops, skips failed ops, `clear_history()`, `get_history()` returns a copy, single-arg op, factorial
+- `tests/test_user_input.py` — added `_print_history` to imports; added `TestHistoryInInteractiveMode` class (7 tests): menu shows "history", empty history message, history after one operation, accumulates multiple, `_print_history` with empty/single/two-arg entry
+
+### Purpose
+Implements Issue #149 (V2 Task 9 - History - Naive/generic): adds per-session operation history to the calculator. Every successful calculation is appended to an in-memory list on the `Calculator` instance. In interactive mode the user can press `h` at any time to review all operations performed in the current session, each shown with the operation name, arguments, and result.
+
+### Risks
+- History is in-memory only; it is not persisted between sessions (not required by the issue).
+- Failed operations (errors) are intentionally excluded from history — only successful results are recorded.
+- `get_history()` returns a shallow copy of the list; individual entry dicts are not deep-copied, so mutating a returned entry dict would affect internal state. This is acceptable for the current use case (read-only display).
+- No new dependencies introduced.
+
+### Test results
+All 138 tests passed (123 pre-existing + 15 new):
+- `TestHistory` (8 tests) — all PASSED
+- `TestHistoryInInteractiveMode` (7 tests) — all PASSED
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-146 — Add retry logic for bad input in interactive mode
 
 - **Branch:** task/issue-146-retry-logic
