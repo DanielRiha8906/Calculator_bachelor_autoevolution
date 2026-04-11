@@ -78,7 +78,7 @@ No regressions in `test_calculator.py` (75), `test_cli.py` (43), or `test_main.p
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 539.9s | Cost: $1.897967 USD | Turns: 50
 
 ---
 
