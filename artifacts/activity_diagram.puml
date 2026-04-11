@@ -6,53 +6,60 @@ start
 
 if (Command-line arguments provided?) then (yes)
 
-    :Parse arguments with argparse\n(operation + operands);
+    :Parse arguments with argparse\n(operation + operands + --mode flag);
 
     if (Operation valid?) then (no)
         :argparse prints error and exits (code 2);
         stop
     else (yes)
-        :Create Calculator instance;
+        :Resolve mode: --mode normal | scientific\n(default: scientific);
 
-        if (op in INT_OPS?) then (yes)
-            if (operand count == 1?) then (no)
-                :Print "Error: requires exactly 1 integer operand" to stderr;
-                :Return exit code 1;
-                stop
-            else (yes)
-                :Parse operand as int;
-                :Call op(int_value);
-            endif
-        elseif (op in TWO_ARG_OPS?) then (yes)
-            if (operand count == 2?) then (no)
-                :Print "Error: requires exactly 2 operands" to stderr;
-                :Return exit code 1;
-                stop
-            else (yes)
-                :Parse operands as float;
-                :Call op(a, b);
-            endif
-        else (no)
-            if (operand count == 1?) then (no)
-                :Print "Error: requires exactly 1 operand" to stderr;
-                :Return exit code 1;
-                stop
-            else (yes)
-                :Parse operand as float;
-                :Call op(a);
-            endif
-        endif
-
-        if (ValueError, ZeroDivisionError, or TypeError raised?) then (yes)
-            :Print "Error: <message>" to stderr;
+        if (mode == normal AND op not in BASIC_OPS?) then (yes)
+            :Print "Error: operation not available in normal mode" to stderr;
             :Return exit code 1;
             stop
         else (no)
-            :Print result to stdout;
-            :Return exit code 0;
-            stop
-        endif
+            :Create Calculator instance;
 
+            if (op in INT_OPS?) then (yes)
+                if (operand count == 1?) then (no)
+                    :Print "Error: requires exactly 1 integer operand" to stderr;
+                    :Return exit code 1;
+                    stop
+                else (yes)
+                    :Parse operand as int;
+                    :Call op(int_value);
+                endif
+            elseif (op in TWO_ARG_OPS?) then (yes)
+                if (operand count == 2?) then (no)
+                    :Print "Error: requires exactly 2 operands" to stderr;
+                    :Return exit code 1;
+                    stop
+                else (yes)
+                    :Parse operands as float;
+                    :Call op(a, b);
+                endif
+            else (no)
+                if (operand count == 1?) then (no)
+                    :Print "Error: requires exactly 1 operand" to stderr;
+                    :Return exit code 1;
+                    stop
+                else (yes)
+                    :Parse operand as float;
+                    :Call op(a);
+                endif
+            endif
+
+            if (ValueError, ZeroDivisionError, or TypeError raised?) then (yes)
+                :Print "Error: <message>" to stderr;
+                :Return exit code 1;
+                stop
+            else (no)
+                :Print result to stdout;
+                :Return exit code 0;
+                stop
+            endif
+        endif
     endif
 
 else (no)
@@ -60,8 +67,9 @@ else (no)
     :Call interactive_mode();
 
     :Create Calculator instance;
+    :Set scientific_mode = False;
 
-    :Print menu (OPERATIONS);
+    :Print menu (BASIC_OPERATIONS only);
 
     repeat
 
@@ -72,12 +80,20 @@ else (no)
             stop
         endif
 
+        if (choice == 'm'?) then (yes)
+            :Toggle scientific_mode;
+            :Print menu reflecting new mode\n(BASIC_OPERATIONS or all OPERATIONS);
+        else (no)
+        endif
+
         if (choice == 'h'?) then (yes)
             :_print_history(calc.get_history())\nPrint each entry as "N. op(args) = result"\nor "No history." if empty;
         else (no)
         endif
 
-        if (choice in OPERATIONS?) then (no)
+        :Determine active_ops = BASIC_OPERATIONS if not scientific_mode\nelse OPERATIONS;
+
+        if (choice in active_ops?) then (no)
             :Print "Unknown operation: <choice>";
         else (yes)
             :Look up operation name and method on Calculator;

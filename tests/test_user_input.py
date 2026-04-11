@@ -47,35 +47,40 @@ class TestInteractiveMode:
         assert "Result: 5.0" in captured.out
 
     def test_factorial_integer(self, capsys):
-        inputs = iter(["5", "5", "q"])
+        # Switch to scientific mode first, then use factorial (key "5")
+        inputs = iter(["m", "5", "5", "q"])
         with patch("builtins.input", side_effect=inputs):
             interactive_mode()
         captured = capsys.readouterr()
         assert "Result: 120" in captured.out
 
     def test_square_number(self, capsys):
-        inputs = iter(["6", "4", "q"])
+        # Switch to scientific mode first, then use square (key "6")
+        inputs = iter(["m", "6", "4", "q"])
         with patch("builtins.input", side_effect=inputs):
             interactive_mode()
         captured = capsys.readouterr()
         assert "Result: 16.0" in captured.out
 
     def test_cube_number(self, capsys):
-        inputs = iter(["7", "3", "q"])
+        # Switch to scientific mode first, then use cube (key "7")
+        inputs = iter(["m", "7", "3", "q"])
         with patch("builtins.input", side_effect=inputs):
             interactive_mode()
         captured = capsys.readouterr()
         assert "Result: 27.0" in captured.out
 
     def test_square_root(self, capsys):
-        inputs = iter(["8", "9", "q"])
+        # Switch to scientific mode first, then use square_root (key "8")
+        inputs = iter(["m", "8", "9", "q"])
         with patch("builtins.input", side_effect=inputs):
             interactive_mode()
         captured = capsys.readouterr()
         assert "Result: 3.0" in captured.out
 
     def test_power_operation(self, capsys):
-        inputs = iter(["10", "2", "3", "q"])
+        # Switch to scientific mode first, then use power (key "10")
+        inputs = iter(["m", "10", "2", "3", "q"])
         with patch("builtins.input", side_effect=inputs):
             interactive_mode()
         captured = capsys.readouterr()
@@ -96,7 +101,8 @@ class TestInteractiveMode:
         assert "Error:" in captured.out
 
     def test_square_root_negative_shows_error(self, capsys):
-        inputs = iter(["8", "-1", "q"])
+        # Switch to scientific mode first, then use square_root (key "8")
+        inputs = iter(["m", "8", "-1", "q"])
         with patch("builtins.input", side_effect=inputs):
             interactive_mode()
         captured = capsys.readouterr()
@@ -172,8 +178,8 @@ class TestRetryLogicInInteractiveMode:
         assert "Result: 7.0" in captured.out
 
     def test_invalid_int_then_valid_computes_factorial(self, capsys):
-        # Select factorial (op 5), enter bad integer, then good integer
-        inputs = iter(["5", "notint", "4", "q"])
+        # Switch to scientific mode, select factorial (op 5), enter bad integer, then good integer
+        inputs = iter(["m", "5", "notint", "4", "q"])
         with patch("builtins.input", side_effect=inputs):
             interactive_mode()
         captured = capsys.readouterr()
@@ -181,9 +187,9 @@ class TestRetryLogicInInteractiveMode:
         assert "Result: 24" in captured.out
 
     def test_exhausted_retries_shows_error_and_returns_to_menu(self, capsys):
-        # Select square (op 6), exhaust all retries, then quit
+        # Switch to scientific mode, select square (op 6), exhaust all retries, then quit
         bad_inputs = ["bad"] * MAX_RETRIES
-        inputs = iter(["6"] + bad_inputs + ["q"])
+        inputs = iter(["m", "6"] + bad_inputs + ["q"])
         with patch("builtins.input", side_effect=inputs):
             interactive_mode()
         captured = capsys.readouterr()
@@ -241,6 +247,87 @@ class TestHistoryInInteractiveMode:
         captured = capsys.readouterr()
         assert "divide" in captured.out
         assert "5.0" in captured.out
+
+
+class TestModeSwitch:
+    """Tests for normal/scientific mode switching in interactive_mode."""
+
+    def test_normal_mode_is_default(self, capsys):
+        with patch("builtins.input", return_value="q"):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "[Normal]" in captured.out
+
+    def test_m_switches_to_scientific_mode(self, capsys):
+        inputs = iter(["m", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "scientific" in captured.out.lower()
+
+    def test_m_twice_returns_to_normal_mode(self, capsys):
+        inputs = iter(["m", "m", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        # After two toggles the session ends back in normal mode
+        assert "Switched to normal mode." in captured.out
+
+    def test_scientific_op_unavailable_in_normal_mode(self, capsys):
+        # Factorial key "5" is not in normal mode
+        inputs = iter(["5", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Unknown operation" in captured.out
+
+    def test_scientific_op_available_after_mode_switch(self, capsys):
+        # Switch to scientific, then use factorial (key "5")
+        inputs = iter(["m", "5", "5", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Result: 120" in captured.out
+
+    def test_mode_switch_message_printed(self, capsys):
+        inputs = iter(["m", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Switched to scientific mode." in captured.out
+
+    def test_mode_switch_back_message_printed(self, capsys):
+        inputs = iter(["m", "m", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Switched to normal mode." in captured.out
+
+    def test_mode_switch_reprints_menu(self, capsys):
+        inputs = iter(["m", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        # Menu is printed at startup and again after mode switch
+        assert captured.out.count("Operations:") >= 2
+
+    def test_scientific_ops_shown_in_scientific_mode_menu(self, capsys):
+        inputs = iter(["m", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "factorial" in captured.out
+        assert "square_root" in captured.out
+
+    def test_scientific_ops_not_shown_in_normal_mode_menu(self, capsys):
+        with patch("builtins.input", return_value="q"):
+            interactive_mode()
+        # Only the initial Normal menu is printed; check it lacks scientific entries
+        captured = capsys.readouterr()
+        # Normal mode menu should not list factorial
+        lines = captured.out.splitlines()
+        # Collect lines printed before any mode switch (there is none here)
+        assert not any("factorial" in line for line in lines)
 
 
 class TestErrorLoggingInUserInput:

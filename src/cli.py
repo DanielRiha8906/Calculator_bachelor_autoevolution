@@ -6,6 +6,11 @@ the shell without entering the interactive REPL:
     python -m src add 3 5
     python -m src factorial 5
     python -m src square_root 16
+
+A ``--mode`` flag controls which operations are accepted:
+
+* ``--mode normal``     — only basic arithmetic (add, subtract, multiply, divide).
+* ``--mode scientific`` — all operations, including scientific ones (default).
 """
 
 import argparse
@@ -19,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 TWO_ARG_OPS = {"add", "subtract", "multiply", "divide", "power"}
 INT_OPS = {"factorial"}
+BASIC_OPS = {"add", "subtract", "multiply", "divide"}
 VALID_OPS = {
     "add",
     "subtract",
@@ -41,6 +47,16 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="python -m src",
         description="Calculator - Bash CLI Mode",
         epilog="Run without arguments to enter interactive mode.",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["normal", "scientific"],
+        default="scientific",
+        help=(
+            "Calculator mode. "
+            "'normal' restricts to basic operations (add, subtract, multiply, divide). "
+            "'scientific' allows all operations (default)."
+        ),
     )
     parser.add_argument(
         "operation",
@@ -78,7 +94,15 @@ def cli_mode(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     op = args.operation
+    mode = args.mode
     operands_str: list[str] = args.operands
+
+    # Enforce mode restriction before executing the operation.
+    if mode == "normal" and op not in BASIC_OPS:
+        msg = f"'{op}' is not available in normal mode. Use --mode scientific to enable it."
+        logger.error(msg)
+        print(f"Error: {msg}", file=sys.stderr)
+        return 1
 
     calc = Calculator()
 
