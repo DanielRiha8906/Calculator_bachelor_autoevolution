@@ -25,7 +25,7 @@ All 90 tests passed: 90 passed in 0.13s (57 existing + 33 new)
 ### Intended PR target
 exp2/structured-generic
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 457.0s | Cost: $1.042459 USD | Turns: 36
 
 ---
 
