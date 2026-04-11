@@ -17,7 +17,7 @@ Update PlantUML diagrams to reflect the tkinter GUI introduced in issue #195. Pr
 ### Test results
 N/A — diagram-only run.
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 152.0s | Cost: $0.440092 USD | Turns: 25
 
 ---
 
