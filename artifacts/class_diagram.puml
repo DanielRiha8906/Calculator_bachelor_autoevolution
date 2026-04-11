@@ -7,18 +7,25 @@ package "src" {
         +subtract(a, b) : number
         +multiply(a, b) : number
         +divide(a, b) : number
-        +factorial(n) : int
-        +square(x) : float
-        +cube(x) : float
-        +square_root(x) : float
-        +cube_root(x) : float
-        +power(base, exp) : float
-        +log(x) : float
-        +ln(x) : float
+        +factorial(n: int) : int
+        +square(x: float) : float
+        +cube(x: float) : float
+        +square_root(x: float) : float
+        +cube_root(x: float) : float
+        +power(base: float, exp: float) : float
+        +log(x: float) : float
+        +ln(x: float) : float
+    }
+
+    class "user_input" as UserInput {
+        OPERATIONS : dict
+        TWO_ARG_OPS : set
+        INT_OPS : set
+        +_print_menu() : void
+        +interactive_mode() : void
     }
 
     class "__main__" as Main {
-        +main() : void
     }
 
     class "__init__" as Init {
@@ -188,9 +195,28 @@ package "tests" {
         +test_ln_of_negative() : void
     }
 
+    class TestInteractiveMode {
+        +test_quit_immediately() : void
+        +test_menu_is_printed() : void
+        +test_add_two_numbers() : void
+        +test_subtract_two_numbers() : void
+        +test_multiply_two_numbers() : void
+        +test_divide_two_numbers() : void
+        +test_factorial_integer() : void
+        +test_square_number() : void
+        +test_cube_number() : void
+        +test_square_root() : void
+        +test_power_operation() : void
+        +test_invalid_choice_shows_error() : void
+        +test_divide_by_zero_shows_error() : void
+        +test_square_root_negative_shows_error() : void
+        +test_multiple_operations_in_session() : void
+    }
+
 }
 
-Main --> Calculator : instantiates
+Main --> UserInput : calls interactive_mode()
+UserInput --> Calculator : creates and invokes
 Init --> Calculator : exports
 TestAddition --> Calculator : tests
 TestSubtraction --> Calculator : tests
@@ -209,5 +235,6 @@ TestLog --> Calculator : tests
 TestLogIncorrectInputs --> Calculator : tests
 TestLn --> Calculator : tests
 TestLnIncorrectInputs --> Calculator : tests
+TestInteractiveMode --> UserInput : tests
 
 @enduml
