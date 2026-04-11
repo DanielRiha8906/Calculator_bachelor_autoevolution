@@ -19,10 +19,15 @@ Calc --> Main : 50
 Main -> Calc : divide(10, 5)
 Calc --> Main : 2.0
 
+Main -> Calc : factorial(5)
+Calc --> Main : 120
+
 note over Main, Calc
   If divide() is called with b == 0,
   ZeroDivisionError is raised instead
   of returning a result.
+  If factorial() is called with a negative
+  integer or non-integer, ValueError is raised.
 end note
 
 @enduml

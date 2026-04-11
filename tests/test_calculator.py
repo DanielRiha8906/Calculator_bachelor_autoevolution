@@ -100,3 +100,31 @@ def test_divide_by_zero_raises():
     calc = Calculator()
     with pytest.raises(ZeroDivisionError, match="Cannot divide by zero"):
         calc.divide(10, 0)
+
+
+# --- factorial ---
+
+def test_factorial_zero(calc):
+    assert calc.factorial(0) == 1
+
+
+def test_factorial_one(calc):
+    assert calc.factorial(1) == 1
+
+
+def test_factorial_positive(calc):
+    assert calc.factorial(5) == 120
+
+
+def test_factorial_large(calc):
+    assert calc.factorial(10) == 3628800
+
+
+def test_factorial_negative_raises(calc):
+    with pytest.raises(ValueError, match="not defined for negative"):
+        calc.factorial(-1)
+
+
+def test_factorial_non_integer_raises(calc):
+    with pytest.raises(ValueError, match="non-negative integer"):
+        calc.factorial(2.5)

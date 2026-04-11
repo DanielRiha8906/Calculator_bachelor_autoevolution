@@ -1,3 +1,34 @@
+## Run: Issue #108 — Add factorial operation
+
+**Branch:** task/issue-108-factorial
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/calculator.py` — Added `factorial(n)` method using `math.factorial`; raises `ValueError` for negative or non-integer inputs
+- `tests/test_calculator.py` — Added 6 tests for factorial: zero, one, positive, large value, negative raises, non-integer raises
+- `src/__main__.py` — Added `factorial(5)` demonstration call
+- `artifacts/class_diagram.puml` — Added `factorial(n) : int` to Calculator class and error note
+- `artifacts/activity_diagram.puml` — Added factorial fork branch with input-validation guard
+- `artifacts/sequence_diagram.puml` — Added `factorial(5)` → `120` interaction and extended note
+
+### Purpose
+Add factorial as a supported calculator operation (issue #108, V2 Task 3 - Structured/generic experiment). The implementation delegates to `math.factorial` and validates that the input is a non-negative integer before delegating.
+
+### Risks
+- Factorial only accepts integers; passing a float raises `ValueError`. This is intentional — factorial is not defined for non-integers in this implementation.
+- `math.factorial` handles arbitrarily large integers natively; no overflow risk.
+
+### Test results
+All 27 tests passed: 27 passed in 0.04s
+
+### Intended PR target
+exp2/structured-generic
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: PlantUML diagram update
 
 **Branch:** task/issue-105-unit-test-suite
