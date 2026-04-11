@@ -8,9 +8,63 @@ participant "perform_operation()" as Op
 participant "history" as Hist
 participant "error_logger" as ErrLog
 participant "cli_main()" as CLI
+participant "gui_main()" as GuiMain
+participant "CalculatorGUI" as GUI
 participant "CalculatorController" as Controller
 participant "Calculator" as Calc
 participant "operations\n(arithmetic/algebraic/\ntranscendental)" as Ops
+
+== GUI Mode (python -m src --gui) ==
+
+User -> GuiMain : python -m src --gui
+GuiMain -> GUI : CalculatorGUI(root)
+GUI -> Hist : clear_history()
+GUI -> User : display window (Normal mode)
+
+loop until User closes the window
+
+  alt User selects an operation button
+    User -> GUI : click operation button (e.g. "Add")
+    GUI -> GUI : _select_operation("add")\n— update op display\n— show/hide entry fields
+
+  else User clicks Calculate (or presses Enter)
+    User -> GUI : click Calculate
+    GUI -> GUI : parse_operand(entry_a)
+    opt binary operation
+      GUI -> GUI : parse_operand(entry_b)
+    end
+    opt log operation
+      GUI -> GUI : parse_operand(entry_base)
+    end
+    GUI -> Controller : execute("add", a=3.0, b=4.0)
+    Controller -> Calc : add(3.0, 4.0)
+    Calc -> Ops : arithmetic.add(3.0, 4.0)
+    Ops --> Calc : 7.0
+    Calc --> Controller : 7.0
+    Controller --> GUI : "7.0"
+    GUI -> GUI : result_label.config(text="7.0")
+    GUI -> Hist : record_entry("Add: 7.0")
+
+  else User clicks Switch Mode
+    User -> GUI : click "Switch to Scientific Mode"
+    GUI -> GUI : _toggle_mode()\n— show/hide scientific buttons
+
+  else User clicks Show History
+    User -> GUI : click Show History
+    GUI -> Hist : load_history()
+    Hist --> GUI : list of entries
+    GUI -> User : display Toplevel popup with history
+
+  else Input or calculation error
+    GUI -> ErrLog : log_error("[gui] <operation>: <message>")
+    GUI -> User : messagebox.showerror(...)
+
+  end
+
+end
+
+User -> GUI : close window
+GUI -> User : window closed
 
 == Interactive Mode (no arguments) ==
 

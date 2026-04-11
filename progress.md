@@ -1,5 +1,53 @@
 ## Run: PlantUML diagram update
 
+**Branch:** task/issue-195-gui-tkinter
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Added `gui` package containing `CalculatorGUI` class (with all attributes and methods), `parse_operand` function, `gui_main` function, and six module-level constants (`NORMAL_OPERATIONS`, `SCIENTIFIC_OPERATIONS`, `OPERATION_LABELS`, `BINARY_OPERATIONS`, `INTEGER_OPERATIONS`, `LOG_OPERATIONS`). Added dependency arrows from `CalculatorGUI` to `CalculatorController`, history functions, `get_error_logger`, `parse_operand`, and operation-set constants. Updated `main` note to include `--gui` flag entry path.
+- `artifacts/activity_diagram.puml` — Refactored top-level branch from two paths (CLI / interactive) to three paths (GUI / CLI / interactive). Added complete GUI activity flow: window creation, CalculatorGUI instantiation, tkinter event loop, and four forked user actions (select operation, calculate, toggle mode, show history) including input parsing, dispatch, error handling, and history recording.
+- `artifacts/sequence_diagram.puml` — Added `gui_main()` and `CalculatorGUI` participants. Added new GUI mode section showing the full interaction: window creation, operation selection, calculation dispatch through Controller → Calculator → operations, result display, history recording, mode toggle, history popup, and error dialogs.
+
+### Purpose
+Update PlantUML diagrams to reflect the tkinter GUI introduced in issue #195. Previously the diagrams had no GUI components. All three diagrams now accurately depict the three-mode architecture: GUI (`--gui` flag), bash CLI (other args), and interactive (no args), with `CalculatorGUI` reusing `CalculatorController` and `src.history`.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: 152.0s | Cost: $0.440092 USD | Turns: 25
+
+---
+
+## Run: Issue #195 — GUI (tkinter)
+
+**Branch:** task/issue-195-gui-tkinter
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/gui.py` — New module. Implements `CalculatorGUI` (tkinter window) and `gui_main()` entry point. Supports normal mode (arithmetic) and scientific mode (all twelve operations), mode toggle, session history popup, and error dialogs. Also exports `parse_operand()` (pure function) and operation-set constants. tkinter is imported lazily so the module can be imported in environments without tkinter installed; `gui_main()` raises `ImportError` with a clear message when tkinter is unavailable.
+- `src/__main__.py` — Added `--gui` flag detection in the `__main__` guard. `python -m src --gui` launches the GUI; existing interactive and CLI modes are unchanged.
+- `tests/test_gui.py` — New test file. 21 non-display tests cover `parse_operand` (11 cases), module constants (8 cases), `gui_main` callable / ImportError guard (2 cases). 22 widget tests (`TestCalculatorGUIWidget`) cover mode switching, field visibility, calculation dispatch, error handling, history recording, and history popup; these are automatically skipped in headless environments.
+
+### Purpose
+Issue #195: add a tkinter GUI that exposes normal and scientific calculator modes, session history, and all twelve operations. The GUI reuses the existing `CalculatorController` and `src.history` modules so computation and history logic are shared across all interfaces.
+
+### Risks
+- Widget tests are skipped in headless CI (no Xvfb). They verify GUI state transitions on machines with a display.
+- `src/gui.py` references `tk.*` at runtime; if tkinter is absent the GUI simply refuses to launch with a clear error — no crash in the rest of the application.
+
+### Test results
+290 tests pass, 22 skipped (headless widget tests). All 269 pre-existing tests continue to pass.
+
+Duration: 480.5s | Cost: $1.485162 USD | Turns: 43
+
+---
+
+## Run: PlantUML diagram update
+
 **Branch:** task/issue-192-scientific-mode-switch
 **Date:** 2026-04-11
 

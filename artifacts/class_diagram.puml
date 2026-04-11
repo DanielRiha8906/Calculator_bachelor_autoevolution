@@ -103,6 +103,53 @@ package "history" {
     }
 }
 
+package "gui" {
+    class NORMAL_OPERATIONS <<constant>> {
+        list[str] — ["add","subtract","multiply","divide"]
+    }
+    class SCIENTIFIC_OPERATIONS <<constant>> {
+        list[str] — all twelve operations
+    }
+    class OPERATION_LABELS <<constant>> {
+        dict[str, str]\n"add"→"Add" … "ln"→"Natural Log"
+    }
+    class BINARY_OPERATIONS <<constant>> {
+        frozenset — ops requiring two operands
+    }
+    class INTEGER_OPERATIONS <<constant>> {
+        frozenset — {"factorial"}
+    }
+    class LOG_OPERATIONS <<constant>> {
+        frozenset — {"log"}
+    }
+    class parse_operand <<function>> {
+        + parse_operand(raw: str, integer: bool = False) : float | int
+    }
+    class CalculatorGUI {
+        - _root : tk.Tk
+        - _controller : CalculatorController
+        - _mode : str
+        - _selected_op : str | None
+        - _op_buttons : dict[str, tk.Button]
+        - _sci_buttons : list[tk.Button]
+        - _op_display : tk.Label
+        - _entry_a : tk.Entry
+        - _entry_b : tk.Entry
+        - _entry_base : tk.Entry
+        - _result_label : tk.Label
+        - _calc_btn : tk.Button
+        - _build_ui() : None
+        - _select_operation(operation: str) : None
+        - _calculate() : None
+        - _toggle_mode() : None
+        - _show_history() : None
+        - _set_sci_buttons_visible(visible: bool) : None
+    }
+    class gui_main <<function>> {
+        + gui_main() : None
+    }
+}
+
 package "__main__" {
     class NORMAL_MENU <<constant>> {
         str — menu text for normal mode
@@ -169,6 +216,19 @@ Calculator ..> ln : delegates
 CalculatorController --> Calculator : uses
 CalculatorController ..> CHOICE_TO_OPERATION : defined alongside
 
+' GUI relationships
+CalculatorGUI --> CalculatorController : uses
+CalculatorGUI ..> clear_history : calls on init
+CalculatorGUI ..> record_entry : calls after result
+CalculatorGUI ..> load_history : calls in _show_history
+CalculatorGUI ..> get_error_logger : calls on error
+CalculatorGUI ..> parse_operand : calls in _calculate
+CalculatorGUI ..> BINARY_OPERATIONS : references
+CalculatorGUI ..> INTEGER_OPERATIONS : references
+CalculatorGUI ..> LOG_OPERATIONS : references
+CalculatorGUI ..> OPERATION_LABELS : references
+gui_main ..> CalculatorGUI : instantiates
+
 main ..> CalculatorController : instantiates
 main ..> display_menu : calls
 main ..> perform_operation : calls
@@ -177,6 +237,7 @@ main ..> record_entry : calls after result
 main ..> display_history : calls for choice 13
 main ..> NORMAL_VALID_CHOICES : initialises with
 main ..> SCIENTIFIC_VALID_CHOICES : switches to on choice 14
+main ..> gui_main : calls when --gui flag present
 display_menu ..> NORMAL_MENU : prints in normal mode
 display_menu ..> SCIENTIFIC_MENU : prints in scientific mode
 perform_operation ..> get_number : calls
@@ -201,8 +262,9 @@ get_error_logger ..> ERROR_LOG_FILE : writes to
 
 note bottom of main
   Entry point selects mode:
-  - no args  → interactive (main)
-  - with args → bash CLI (cli_main)
+  - --gui flag → GUI (gui_main)
+  - other args → bash CLI (cli_main)
+  - no args    → interactive (main)
 end note
 
 note right of main
@@ -218,6 +280,15 @@ note right of Calculator
   src.operations (arithmetic,
   algebraic, or transcendental).
   Public method signatures unchanged.
+end note
+
+note right of CalculatorGUI
+  Tkinter GUI: supports Normal mode
+  (arithmetic only) and Scientific mode
+  (all twelve operations). Reuses
+  CalculatorController and history
+  module for consistency with other
+  UI modes. tkinter imported lazily.
 end note
 
 note right of divide
