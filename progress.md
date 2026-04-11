@@ -472,3 +472,26 @@ Routine diagram maintenance pass following the addition of error logging (Issue 
 No tests modified; all existing 150 tests remain passing from previous run.
 
 Duration: 79.0s | Cost: $0.390289 USD | Turns: 26
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-152-add-error-logging
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass. All three PlantUML diagrams were reviewed against the current source code (`src/calculator.py`, `src/user_input.py`, `src/cli.py`, `src/__main__.py`, `src/__init__.py`) and test suite (`tests/test_calculator.py`, `tests/test_user_input.py`, `tests/test_cli.py`). All diagrams correctly reflect the full codebase: `Calculator` (12 operations + history tracking via `_record`, `get_history`, `clear_history` + error logging via `logging`), `UserInput` module (interactive REPL with retry helpers and error logging), `CLI` module (bash single-shot mode with error logging), `__main__` entry point, `__init__` export, and all 28 test classes (150 test methods total).
+
+### Risks
+- None. No source or test code was modified; only `progress.md` updated.
+
+### Test results
+No tests modified; all existing 150 tests remain passing from previous run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
