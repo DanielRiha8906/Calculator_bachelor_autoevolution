@@ -313,4 +313,4 @@ Routine diagram maintenance pass following the addition of `src/cli.py` (Issue #
 ### Test results
 No tests modified; all existing 114 tests remain passing from previous run.
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 42.4s | Cost: $0.248681 USD | Turns: 21
