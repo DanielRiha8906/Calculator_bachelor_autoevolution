@@ -1,16 +1,63 @@
 @startuml sequence_diagram
 
-title Calculator — Sequence Diagram (interactive session)
+title Calculator — Sequence Diagram
+
+' ── Bash CLI sequence ──────────────────────────────────────────────────────
+
+actor User as User
+participant "main.py\n(CLI)" as CLI
+participant "Calculator" as Calc
+
+== Bash CLI Mode ==
+
+User -> CLI : python main.py <operation> [operands]
+activate CLI
+
+alt no arguments
+    CLI -> User : print usage to stderr\nexit code 1
+else unknown operation
+    CLI -> User : "Error: unknown operation '...'" to stderr\nexit code 1
+else wrong operand count
+    CLI -> User : "Error: '...' requires N operand(s)" to stderr\nexit code 1
+else invalid operand format (e.g. "abc", "3.5" for factorial)
+    CLI -> User : "Error: ..." to stderr\nexit code 1
+else valid arguments
+    CLI -> Calc : Calculator()
+    activate Calc
+    CLI -> CLI : _parse_operand(value, require_int)
+
+    alt arity == 1
+        CLI -> Calc : method(a)
+    else arity == 2
+        CLI -> Calc : method(a, b)
+    end
+
+    alt ValueError / TypeError / ZeroDivisionError raised
+        Calc --> CLI : raises exception
+        CLI -> User : "Error: <message>" to stderr\nexit code 1
+    else success
+        Calc --> CLI : result
+        CLI -> User : print result to stdout\nexit code 0
+    end
+
+    deactivate Calc
+end
+
+deactivate CLI
+
+' ── Interactive session sequence ───────────────────────────────────────────
+
+== Interactive Session Mode ==
 
 actor User
-participant "__main__" as Main
-participant "Calculator" as Calc
+participant "__main__\n(Interactive)" as Main
+participant "Calculator" as Calc2
 
 User -> Main : run program
 activate Main
 
-Main -> Calc : Calculator()
-activate Calc
+Main -> Calc2 : Calculator()
+activate Calc2
 
 Main -> User : "=== Interactive Calculator ==="
 
@@ -28,12 +75,12 @@ loop until user quits
         Main -> User : "Enter value:"
         User -> Main : raw input
         Main -> Main : _parse_number(prompt, require_int)
-        Main -> Calc : method(a)
+        Main -> Calc2 : method(a)
         alt ValueError / TypeError raised
-            Calc --> Main : raises exception
+            Calc2 --> Main : raises exception
             Main -> User : "Error: <message>"
         else success
-            Calc --> Main : result
+            Calc2 --> Main : result
             Main -> User : "Result: <result>"
         end
     else valid choice (arity == 2)
@@ -43,19 +90,19 @@ loop until user quits
         Main -> User : "Enter second value:"
         User -> Main : raw input
         Main -> Main : _parse_number("Enter second value:")
-        Main -> Calc : method(a, b)
+        Main -> Calc2 : method(a, b)
         alt ZeroDivisionError / ValueError / TypeError raised
-            Calc --> Main : raises exception
+            Calc2 --> Main : raises exception
             Main -> User : "Error: <message>"
         else success
-            Calc --> Main : result
+            Calc2 --> Main : result
             Main -> User : "Result: <result>"
         end
     end
 
 end
 
-deactivate Calc
+deactivate Calc2
 deactivate Main
 
 @enduml
