@@ -1,3 +1,36 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-109-add-factorial)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-109-add-factorial
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — added `factorial(n: int) : int` to Calculator class and explanatory note
+- `artifacts/activity_diagram.puml` — added factorial execution path with TypeError/ValueError branches
+- `artifacts/sequence_diagram.puml` — added factorial interaction with TypeError/ValueError/success alt blocks
+
+### Purpose
+
+Updated all three PlantUML diagrams to reflect the addition of `Calculator.factorial()` introduced
+in issue #109. Previous diagrams only covered add/subtract/multiply/divide.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #109 — Add factorial operation (task/issue-109-add-factorial)
 
 **Date:** 2026-04-11

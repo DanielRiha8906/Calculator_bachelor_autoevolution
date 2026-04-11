@@ -26,6 +26,19 @@ else (no)
     :Print "Division: 2.0";
 endif
 
+:Call calc.factorial(n);
+
+if (n is not int OR n is bool?) then (yes)
+    :Raise TypeError;
+    stop
+elseif (n < 0?) then (yes)
+    :Raise ValueError;
+    stop
+else (no)
+    :Return math.factorial(n);
+    :Print "Factorial: <result>";
+endif
+
 stop
 
 @enduml
