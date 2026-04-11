@@ -373,3 +373,26 @@ All tests passed: 1 passed in 0.01s
 exp2/structured-generic
 
 Duration: 83.2s | Cost: $0.243861 USD | Turns: 15
+
+---
+
+## Run: PlantUML diagram update
+
+**Branch:** task/issue-150-session-history
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/activity_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/sequence_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+
+### Purpose
+Verify and maintain PlantUML diagrams against the current source code. All three diagrams (class, activity, sequence) correctly represent the full system as it exists on this branch: `Calculator` class with 12 operations, interactive `__main__` module (display_menu, get_number, get_integer, perform_operation, main, TooManyAttemptsError, MAX_INPUT_ATTEMPTS), `history` module (HISTORY_FILE, clear_history, record_entry, load_history, display_history), and `cli` module (build_parser, _dispatch, cli_main).
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
