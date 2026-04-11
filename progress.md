@@ -1,3 +1,26 @@
+## Run: PlantUML diagram update
+
+**Branch:** task/issue-189-add-documentation
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — No changes required; diagram accurately reflects the current source code.
+- `artifacts/activity_diagram.puml` — No changes required; diagram accurately reflects the current execution flow.
+- `artifacts/sequence_diagram.puml` — No changes required; diagram accurately reflects current component interactions.
+
+### Purpose
+Verify and maintain PlantUML diagrams against the current state of `src/`. All three diagrams were reviewed against the actual source files (`calculator.py`, `controller.py`, `cli.py`, `history.py`, `error_logger.py`, `operations/arithmetic.py`, `operations/algebraic.py`, `operations/transcendental.py`, `__main__.py`) and found to be accurate — no updates were necessary.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #189 — Documentation
 
 **Branch:** task/issue-189-add-documentation
