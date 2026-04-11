@@ -1,3 +1,37 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-112-more-functions)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-112-more-functions
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+
+Reviewed all three PlantUML diagrams against the current state of `src/`. All eleven
+Calculator methods (add, subtract, multiply, divide, factorial, square, cube, sqrt, cbrt,
+power, log10, ln) are correctly represented in every diagram. No updates were required.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #112 — Add more calculator operations (task/issue-112-more-functions)
 
 **Date:** 2026-04-11
