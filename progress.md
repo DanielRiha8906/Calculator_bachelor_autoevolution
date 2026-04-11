@@ -27,4 +27,4 @@ None. The change is additive (new test only) and does not touch the implementati
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 87.3s | Cost: $0.236692 USD | Turns: 17
