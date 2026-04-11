@@ -1,3 +1,35 @@
+## Run: issue-143 — Add bash CLI mode to the calculator
+
+- **Branch:** task/issue-143-add-bash-cli
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/cli.py` — new module with `cli_mode()` function implementing argparse-based single-shot CLI for all 12 calculator operations
+- `src/__main__.py` — updated to route to `cli_mode()` when command-line arguments are present, or `interactive_mode()` when run with no arguments
+- `tests/test_cli.py` — new test file with 25 tests covering all operation types, error cases, operand count validation, and invalid operation handling
+- `artifacts/class_diagram.puml` — added `CLI` class and three new test classes
+- `artifacts/activity_diagram.puml` — added CLI branch at entry point showing argument parsing and per-operation dispatch
+- `artifacts/sequence_diagram.puml` — added CLI participant showing full request/response flow for bash mode
+
+### Purpose
+Implements Issue #143 (V2 Task 7 - Bash mode - Naive/generic): adds a non-interactive CLI mode so the calculator can be used from bash scripts and shell pipelines. When `python -m src` is invoked with arguments (`python -m src add 3 5`), it parses the operation and operands via argparse, executes once, prints the result to stdout, and exits with code 0 (success) or 1 (error). Without arguments the existing interactive REPL is unchanged.
+
+### Risks
+- `factorial` still requires an integer operand; passing a float string (e.g. `3.5`) will raise `ValueError` and exit with code 1 — consistent with the interactive mode behaviour.
+- argparse exits with code 2 for unknown operations or missing required arguments; tests verify `SystemExit` is raised for unknown operations.
+- No new dependencies introduced; only `argparse` and `sys` from the standard library are used.
+
+### Test results
+All 114 tests passed (89 pre-existing + 25 new):
+- `TestCliTwoArgOps` (7 tests) — all PASSED
+- `TestCliSingleArgOps` (8 tests) — all PASSED
+- `TestCliErrorCases` (10 tests) — all PASSED
+
+Duration: 234.8s | Cost: $0.702941 USD | Turns: 30
+
+---
+
 ## Run: issue-113 — Add user input to the calculator
 
 - **Branch:** task/issue-113-add-user-input
@@ -259,3 +291,26 @@ Routine diagram maintenance pass following the addition of `src/user_input.py` (
 No tests modified; all existing 89 tests remain passing from previous run.
 
 Duration: 109.3s | Cost: $0.335366 USD | Turns: 22
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-143-add-bash-cli
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass following the addition of `src/cli.py` (Issue #143). All three PlantUML diagrams were reviewed against the current source code (`src/calculator.py`, `src/user_input.py`, `src/cli.py`, `src/__main__.py`, `src/__init__.py`) and test suite (`tests/test_calculator.py`, `tests/test_user_input.py`, `tests/test_cli.py`). All diagrams correctly reflect the full codebase: `Calculator` (12 methods), `UserInput` module (interactive REPL), `CLI` module (bash single-shot mode), `__main__` entry point, `__init__` export, and all 21 test classes (114 test methods total).
+
+### Risks
+- None. No source or test code was modified; only `progress.md` updated.
+
+### Test results
+No tests modified; all existing 114 tests remain passing from previous run.
+
+Duration: 42.4s | Cost: $0.248681 USD | Turns: 21

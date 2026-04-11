@@ -2,52 +2,106 @@
 
 participant "__main__" as Main
 participant "user_input" as UI
+participant "cli" as CLI
 participant "Calculator" as Calc
 
-Main -> UI : interactive_mode()
-UI -> Calc : <<create>>
-UI -> UI : _print_menu()
+alt sys.argv has arguments (bash / CLI mode)
 
-loop until 'q'
+    Main -> CLI : cli_mode()
+    CLI -> CLI : _build_parser().parse_args()
 
-    UI -> UI : input("Select operation (or 'q' to quit):")
+    alt invalid operation name
+        CLI --> Main : SystemExit(2) via argparse
+    else valid operation
+        CLI -> Calc : <<create>>
 
-    alt choice == 'q'
-        UI -> Main : return
-        note right : prints "Goodbye!" before returning
-    else choice not in OPERATIONS
-        UI -> UI : print("Unknown operation: ...")
-    else op in INT_OPS (e.g. factorial)
-        UI -> UI : input("Enter integer:")
-        UI -> Calc : factorial(n)
-        alt valid input
-            Calc --> UI : result
-            UI -> UI : print("Result: ...")
-        else ValueError / TypeError
-            Calc --> UI : exception
-            UI -> UI : print("Error: ...")
+        alt op in INT_OPS (e.g. factorial)
+            CLI -> CLI : validate operand count == 1
+            CLI -> Calc : factorial(int_value)
+            alt success
+                Calc --> CLI : result
+                CLI -> CLI : print(result)
+                CLI --> Main : return 0
+            else ValueError / TypeError
+                Calc --> CLI : exception
+                CLI -> CLI : print("Error: ...", file=stderr)
+                CLI --> Main : return 1
+            end
+        else op in TWO_ARG_OPS (add, subtract, multiply, divide, power)
+            CLI -> CLI : validate operand count == 2
+            CLI -> Calc : op(a, b)
+            alt success
+                Calc --> CLI : result
+                CLI -> CLI : print(result)
+                CLI --> Main : return 0
+            else ZeroDivisionError / TypeError / ValueError
+                Calc --> CLI : exception
+                CLI -> CLI : print("Error: ...", file=stderr)
+                CLI --> Main : return 1
+            end
+        else single-arg op (square, cube, square_root, cube_root, log, ln)
+            CLI -> CLI : validate operand count == 1
+            CLI -> Calc : op(a)
+            alt success
+                Calc --> CLI : result
+                CLI -> CLI : print(result)
+                CLI --> Main : return 0
+            else ValueError
+                Calc --> CLI : exception
+                CLI -> CLI : print("Error: ...", file=stderr)
+                CLI --> Main : return 1
+            end
         end
-    else op in TWO_ARG_OPS (add, subtract, multiply, divide, power)
-        UI -> UI : input("Enter first number:")
-        UI -> UI : input("Enter second number:")
-        UI -> Calc : op(a, b)
-        alt valid input
-            Calc --> UI : result
-            UI -> UI : print("Result: ...")
-        else ZeroDivisionError / TypeError / ValueError
-            Calc --> UI : exception
-            UI -> UI : print("Error: ...")
+    end
+
+else no arguments (interactive mode)
+
+    Main -> UI : interactive_mode()
+    UI -> Calc : <<create>>
+    UI -> UI : _print_menu()
+
+    loop until 'q'
+
+        UI -> UI : input("Select operation (or 'q' to quit):")
+
+        alt choice == 'q'
+            UI -> Main : return
+            note right : prints "Goodbye!" before returning
+        else choice not in OPERATIONS
+            UI -> UI : print("Unknown operation: ...")
+        else op in INT_OPS (e.g. factorial)
+            UI -> UI : input("Enter integer:")
+            UI -> Calc : factorial(n)
+            alt valid input
+                Calc --> UI : result
+                UI -> UI : print("Result: ...")
+            else ValueError / TypeError
+                Calc --> UI : exception
+                UI -> UI : print("Error: ...")
+            end
+        else op in TWO_ARG_OPS (add, subtract, multiply, divide, power)
+            UI -> UI : input("Enter first number:")
+            UI -> UI : input("Enter second number:")
+            UI -> Calc : op(a, b)
+            alt valid input
+                Calc --> UI : result
+                UI -> UI : print("Result: ...")
+            else ZeroDivisionError / TypeError / ValueError
+                Calc --> UI : exception
+                UI -> UI : print("Error: ...")
+            end
+        else single-arg op (square, cube, square_root, cube_root, log, ln)
+            UI -> UI : input("Enter number:")
+            UI -> Calc : op(a)
+            alt valid input
+                Calc --> UI : result
+                UI -> UI : print("Result: ...")
+            else ValueError
+                Calc --> UI : exception
+                UI -> UI : print("Error: ...")
+            end
         end
-    else single-arg op (square, cube, square_root, cube_root, log, ln)
-        UI -> UI : input("Enter number:")
-        UI -> Calc : op(a)
-        alt valid input
-            Calc --> UI : result
-            UI -> UI : print("Result: ...")
-        else ValueError
-            Calc --> UI : exception
-            UI -> UI : print("Error: ...")
-        end
+
     end
 
 end

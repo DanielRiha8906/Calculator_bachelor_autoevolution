@@ -4,46 +4,101 @@ start
 
 :Invoke \`python -m src\`;
 
-:Call interactive_mode();
+if (Command-line arguments provided?) then (yes)
 
-:Create Calculator instance;
+    :Parse arguments with argparse\n(operation + operands);
 
-:Print menu (OPERATIONS);
-
-repeat
-
-    :Read choice from stdin;
-
-    if (choice == 'q'?) then (yes)
-        :Print "Goodbye!";
+    if (Operation valid?) then (no)
+        :argparse prints error and exits (code 2);
         stop
-    endif
-
-    if (choice in OPERATIONS?) then (no)
-        :Print "Unknown operation: <choice>";
     else (yes)
-        :Look up operation name and method on Calculator;
+        :Create Calculator instance;
 
         if (op in INT_OPS?) then (yes)
-            :Read integer from stdin;
-            :Call op(int_value);
+            if (operand count == 1?) then (no)
+                :Print "Error: requires exactly 1 integer operand" to stderr;
+                :Return exit code 1;
+                stop
+            else (yes)
+                :Parse operand as int;
+                :Call op(int_value);
+            endif
         elseif (op in TWO_ARG_OPS?) then (yes)
-            :Read first float from stdin;
-            :Read second float from stdin;
-            :Call op(a, b);
+            if (operand count == 2?) then (no)
+                :Print "Error: requires exactly 2 operands" to stderr;
+                :Return exit code 1;
+                stop
+            else (yes)
+                :Parse operands as float;
+                :Call op(a, b);
+            endif
         else (no)
-            :Read one float from stdin;
-            :Call op(a);
+            if (operand count == 1?) then (no)
+                :Print "Error: requires exactly 1 operand" to stderr;
+                :Return exit code 1;
+                stop
+            else (yes)
+                :Parse operand as float;
+                :Call op(a);
+            endif
         endif
 
         if (ValueError, ZeroDivisionError, or TypeError raised?) then (yes)
-            :Print "Error: <message>";
+            :Print "Error: <message>" to stderr;
+            :Return exit code 1;
+            stop
         else (no)
-            :Print "Result: <value>";
+            :Print result to stdout;
+            :Return exit code 0;
+            stop
         endif
 
     endif
 
-repeat while (session active)
+else (no)
+
+    :Call interactive_mode();
+
+    :Create Calculator instance;
+
+    :Print menu (OPERATIONS);
+
+    repeat
+
+        :Read choice from stdin;
+
+        if (choice == 'q'?) then (yes)
+            :Print "Goodbye!";
+            stop
+        endif
+
+        if (choice in OPERATIONS?) then (no)
+            :Print "Unknown operation: <choice>";
+        else (yes)
+            :Look up operation name and method on Calculator;
+
+            if (op in INT_OPS?) then (yes)
+                :Read integer from stdin;
+                :Call op(int_value);
+            elseif (op in TWO_ARG_OPS?) then (yes)
+                :Read first float from stdin;
+                :Read second float from stdin;
+                :Call op(a, b);
+            else (no)
+                :Read one float from stdin;
+                :Call op(a);
+            endif
+
+            if (ValueError, ZeroDivisionError, or TypeError raised?) then (yes)
+                :Print "Error: <message>";
+            else (no)
+                :Print "Result: <value>";
+            endif
+
+        endif
+
+    repeat while (session active)
+
+endif
 
 @enduml
