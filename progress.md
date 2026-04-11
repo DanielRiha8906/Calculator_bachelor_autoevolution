@@ -17,7 +17,7 @@ Issue #192: add a scientific mode to the interactive calculator so the user can 
 ### Test results
 All 269 tests pass (pytest, 0.66 s).
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 341.4s | Cost: $1.077123 USD | Turns: 35
 
 ---
 
