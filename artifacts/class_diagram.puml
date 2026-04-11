@@ -25,6 +25,14 @@ package "src" {
         +interactive_mode() : void
     }
 
+    class "cli" as CLI {
+        TWO_ARG_OPS : set
+        INT_OPS : set
+        VALID_OPS : set
+        +_build_parser() : ArgumentParser
+        +cli_mode(argv: list | None) : int
+    }
+
     class "__main__" as Main {
     }
 
@@ -213,10 +221,46 @@ package "tests" {
         +test_multiple_operations_in_session() : void
     }
 
+    class TestCliTwoArgOps {
+        +test_add() : void
+        +test_subtract() : void
+        +test_multiply() : void
+        +test_divide() : void
+        +test_power() : void
+        +test_add_floats() : void
+        +test_add_negative() : void
+    }
+
+    class TestCliSingleArgOps {
+        +test_factorial() : void
+        +test_factorial_zero() : void
+        +test_square() : void
+        +test_cube() : void
+        +test_square_root() : void
+        +test_cube_root() : void
+        +test_log() : void
+        +test_ln() : void
+    }
+
+    class TestCliErrorCases {
+        +test_divide_by_zero_returns_error() : void
+        +test_square_root_negative_returns_error() : void
+        +test_factorial_negative_returns_error() : void
+        +test_log_zero_returns_error() : void
+        +test_ln_negative_returns_error() : void
+        +test_two_arg_op_with_one_operand_returns_error() : void
+        +test_two_arg_op_with_three_operands_returns_error() : void
+        +test_single_arg_op_with_two_operands_returns_error() : void
+        +test_factorial_with_two_operands_returns_error() : void
+        +test_invalid_operation_raises_system_exit() : void
+    }
+
 }
 
-Main --> UserInput : calls interactive_mode()
+Main --> UserInput : calls interactive_mode() (no args)
+Main --> CLI : calls cli_mode() (with args)
 UserInput --> Calculator : creates and invokes
+CLI --> Calculator : creates and invokes
 Init --> Calculator : exports
 TestAddition --> Calculator : tests
 TestSubtraction --> Calculator : tests
@@ -236,5 +280,8 @@ TestLogIncorrectInputs --> Calculator : tests
 TestLn --> Calculator : tests
 TestLnIncorrectInputs --> Calculator : tests
 TestInteractiveMode --> UserInput : tests
+TestCliTwoArgOps --> CLI : tests
+TestCliSingleArgOps --> CLI : tests
+TestCliErrorCases --> CLI : tests
 
 @enduml

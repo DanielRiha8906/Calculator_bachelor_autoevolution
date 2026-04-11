@@ -1,3 +1,35 @@
+## Run: issue-143 — Add bash CLI mode to the calculator
+
+- **Branch:** task/issue-143-add-bash-cli
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/cli.py` — new module with `cli_mode()` function implementing argparse-based single-shot CLI for all 12 calculator operations
+- `src/__main__.py` — updated to route to `cli_mode()` when command-line arguments are present, or `interactive_mode()` when run with no arguments
+- `tests/test_cli.py` — new test file with 25 tests covering all operation types, error cases, operand count validation, and invalid operation handling
+- `artifacts/class_diagram.puml` — added `CLI` class and three new test classes
+- `artifacts/activity_diagram.puml` — added CLI branch at entry point showing argument parsing and per-operation dispatch
+- `artifacts/sequence_diagram.puml` — added CLI participant showing full request/response flow for bash mode
+
+### Purpose
+Implements Issue #143 (V2 Task 7 - Bash mode - Naive/generic): adds a non-interactive CLI mode so the calculator can be used from bash scripts and shell pipelines. When `python -m src` is invoked with arguments (`python -m src add 3 5`), it parses the operation and operands via argparse, executes once, prints the result to stdout, and exits with code 0 (success) or 1 (error). Without arguments the existing interactive REPL is unchanged.
+
+### Risks
+- `factorial` still requires an integer operand; passing a float string (e.g. `3.5`) will raise `ValueError` and exit with code 1 — consistent with the interactive mode behaviour.
+- argparse exits with code 2 for unknown operations or missing required arguments; tests verify `SystemExit` is raised for unknown operations.
+- No new dependencies introduced; only `argparse` and `sys` from the standard library are used.
+
+### Test results
+All 114 tests passed (89 pre-existing + 25 new):
+- `TestCliTwoArgOps` (7 tests) — all PASSED
+- `TestCliSingleArgOps` (8 tests) — all PASSED
+- `TestCliErrorCases` (10 tests) — all PASSED
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-113 — Add user input to the calculator
 
 - **Branch:** task/issue-113-add-user-input
