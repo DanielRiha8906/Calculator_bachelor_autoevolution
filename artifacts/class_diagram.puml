@@ -9,6 +9,7 @@ package "src" {
         + subtract(a, b) : number
         + multiply(a, b) : number
         + divide(a, b) : number
+        + factorial(n: int) : int
     }
 
     class "__main__" as Main <<module>> {
@@ -27,6 +28,13 @@ Init ..> Calculator : exports
 note right of Calculator::divide
   Raises ZeroDivisionError
   when b == 0
+end note
+
+note right of Calculator::factorial
+  Raises TypeError for non-integers
+  (including bool).
+  Raises ValueError for n < 0.
+  Delegates to math.factorial(n).
 end note
 
 @enduml

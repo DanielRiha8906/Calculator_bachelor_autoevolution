@@ -1,3 +1,73 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-109-add-factorial)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-109-add-factorial
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — added `factorial(n: int) : int` to Calculator class and explanatory note
+- `artifacts/activity_diagram.puml` — added factorial execution path with TypeError/ValueError branches
+- `artifacts/sequence_diagram.puml` — added factorial interaction with TypeError/ValueError/success alt blocks
+
+### Purpose
+
+Updated all three PlantUML diagrams to reflect the addition of `Calculator.factorial()` introduced
+in issue #109. Previous diagrams only covered add/subtract/multiply/divide.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 48.2s | Cost: $0.175778 USD | Turns: 18
+
+---
+
+## Run: Issue #109 — Add factorial operation (task/issue-109-add-factorial)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-109-add-factorial
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/calculator.py` — added `factorial(n)` method using `math.factorial`; added `import math`
+- `tests/test_calculator.py` — added 9 tests covering boundary cases (0, 1), positive integers,
+  negative input (ValueError), floats/strings/None/bool (TypeError)
+
+### Purpose
+
+Implemented factorial as a new calculator operation per issue #109. The method:
+- Accepts only `int` values (booleans explicitly rejected despite being int subclasses)
+- Raises `TypeError` for non-integer inputs (float, str, None, bool)
+- Raises `ValueError` for negative integers
+- Delegates computation to `math.factorial` for correctness and efficiency
+
+### Risks
+
+Minimal. The change is additive — no existing methods or tests were modified. The only
+new import (`math`) is from the Python standard library.
+
+### Test results
+
+38 tests collected, 38 passed. No regressions.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 100.4s | Cost: $0.303693 USD | Turns: 16
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-106-unit-test-suite)
 
 **Date:** 2026-04-11

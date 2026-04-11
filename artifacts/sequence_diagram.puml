@@ -25,6 +25,16 @@ else b != 0
     Calc --> Main : 2.0
 end
 
+Main -> Calc : factorial(n)
+alt n is not int or n is bool
+    Calc --> Main : raises TypeError
+else n < 0
+    Calc --> Main : raises ValueError
+else valid n
+    Calc -> Calc : math.factorial(n)
+    Calc --> Main : n!
+end
+
 deactivate Calc
 
 @enduml
