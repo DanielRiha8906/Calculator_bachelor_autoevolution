@@ -19,6 +19,15 @@ package "src" {
     }
 }
 
+package "error_logger" {
+    class ERROR_LOG_FILE <<constant>> {
+        pathlib.Path("calculator_errors.log")
+    }
+    class get_error_logger <<function>> {
+        + get_error_logger() : Logger
+    }
+}
+
 package "history" {
     class HISTORY_FILE <<constant>> {
         pathlib.Path("history.txt")
@@ -90,7 +99,12 @@ load_history ..> HISTORY_FILE : reads
 cli_main ..> build_parser : calls
 cli_main ..> Calculator : instantiates
 cli_main ..> _dispatch : calls
+cli_main ..> get_error_logger : calls on error
 _dispatch ..> Calculator : dispatches to
+
+main ..> get_error_logger : calls on error
+perform_operation ..> get_error_logger : calls on invalid log base
+get_error_logger ..> ERROR_LOG_FILE : writes to
 
 note bottom of main
   Entry point selects mode:
