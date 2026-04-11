@@ -258,4 +258,4 @@ Routine diagram maintenance pass following the addition of `src/user_input.py` (
 ### Test results
 No tests modified; all existing 89 tests remain passing from previous run.
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 109.3s | Cost: $0.335366 USD | Turns: 22
