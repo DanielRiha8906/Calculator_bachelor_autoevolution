@@ -41,7 +41,7 @@ preserved, so test isolation is unaffected.
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 411.5s | Cost: $1.163522 USD | Turns: 29
 
 ---
 
