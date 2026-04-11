@@ -1,3 +1,50 @@
+## Run: Issue #178 — Refactoring: separate core from interface (task/issue-178-separate-core-from-interface)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-178-separate-core-from-interface
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/__main__.py` — introduced `InteractiveSession` class encapsulating session
+  state (`_calc`, `_history`, `_menu_failures`) and control flow (`run()`,
+  `_display_menu()`, `_show_history()`, `_handle_operation()`); `main()` is now a
+  thin one-liner wrapper; all module-level helpers (`_format_history_entry`,
+  `_write_history`, `_parse_number`, `_prompt_number`) are preserved unchanged
+- `main.py` — introduced `CLIHandler` class encapsulating argument validation,
+  operation dispatch, and output formatting (`run()`); `main()` is now a thin
+  wrapper that calls `CLIHandler().run(argv)`; `_parse_operand` is preserved as a
+  module-level helper
+
+### Purpose
+
+Refactored both entry points so that session state and CLI concerns are isolated
+in dedicated classes (`InteractiveSession`, `CLIHandler`), while the `Calculator`
+core remains untouched and independently reusable.  The `InteractiveSession` class
+accepts an optional `Calculator` instance via its constructor, allowing calculator
+operations to be exercised independently of the interactive UI.  `CLIHandler` does
+the same for the bash interface.  No behavior was changed; all 164 tests pass
+without modification.
+
+### Risks
+
+Low.  Both classes wrap logic that existed in the `main()` functions; no new
+external dependencies or interfaces were introduced.  The module-level names
+patched by tests (`_write_history`, `setup_error_logging`, `HISTORY_FILE`) are
+preserved, so test isolation is unaffected.
+
+### Test results
+
+164 passed, 0 failed, 0 skipped.  No tests modified.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #154 — Error logging (task/issue-154-error-logging)
 
 **Date:** 2026-04-11
