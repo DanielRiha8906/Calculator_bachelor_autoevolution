@@ -17,7 +17,7 @@ Update PlantUML diagrams to reflect the `CalculatorController` dispatch layer in
 ### Test results
 N/A — diagram-only run.
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 156.4s | Cost: $0.422030 USD | Turns: 22
 
 ---
 
