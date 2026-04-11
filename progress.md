@@ -1,3 +1,48 @@
+## Run: Issue #115 — Add interactive user input (task/issue-115-user-input)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-115-user-input
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/__main__.py` — replaced static hardcoded demo with a full interactive session loop
+  covering all 11 Calculator operations; added `_parse_number()` helper and `OPERATIONS` table
+- `tests/test_main.py` — new file; 28 tests driving the interactive session via mocked input,
+  covering all operations, error paths, invalid choices, and multi-calculation sessions
+
+### Purpose
+
+Implemented interactive runtime input per issue #115 (V2 Task 5 - User Input - Expert/generic):
+- Menu-driven selection of all 11 operations (add, subtract, multiply, divide, factorial, square,
+  cube, sqrt, cbrt, power, log10, ln)
+- Prompts for one operand (unary operations) or two operands (binary operations) based on the
+  selected operation; factorial enforces integer input at parse time
+- Errors (ValueError, TypeError, ZeroDivisionError) are caught and displayed without terminating
+  the session, allowing the user to continue
+- Session loops until the user enters 'q' to quit
+
+No changes were made to `src/calculator.py` or `tests/test_calculator.py` — the implementation
+is strictly scoped to input-driven execution as required by the issue.
+
+### Risks
+
+Minimal. The Calculator class and its test suite are untouched. The new interactive layer depends
+only on `builtins.input` and the existing Calculator methods, both of which are straightforwardly
+testable via mocking.
+
+### Test results
+
+103 tests collected, 103 passed. No regressions (75 pre-existing + 28 new).
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-112-more-functions)
 
 **Date:** 2026-04-11
