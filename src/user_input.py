@@ -1,4 +1,23 @@
-"""Interactive user input interface for the Calculator."""
+"""Interactive user input interface for the Calculator.
+
+Implements a text-based REPL that lets a user perform calculator operations
+by selecting numbered menu entries.  Input validation retries up to
+:data:`MAX_RETRIES` times before raising a :class:`ValueError`.
+
+Menu choices
+------------
+1–12
+    Named operations (add, subtract, multiply, divide, factorial, square,
+    cube, square_root, cube_root, power, log, ln).
+h
+    Display the full operation history for the current session.
+q
+    Quit the interactive session.
+
+Usage::
+
+    python -m src          # starts this REPL automatically
+"""
 
 import logging
 
