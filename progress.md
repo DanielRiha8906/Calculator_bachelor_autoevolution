@@ -1,3 +1,28 @@
+## Run: Issue #195 — GUI (tkinter)
+
+**Branch:** task/issue-195-gui-tkinter
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/gui.py` — New module. Implements `CalculatorGUI` (tkinter window) and `gui_main()` entry point. Supports normal mode (arithmetic) and scientific mode (all twelve operations), mode toggle, session history popup, and error dialogs. Also exports `parse_operand()` (pure function) and operation-set constants. tkinter is imported lazily so the module can be imported in environments without tkinter installed; `gui_main()` raises `ImportError` with a clear message when tkinter is unavailable.
+- `src/__main__.py` — Added `--gui` flag detection in the `__main__` guard. `python -m src --gui` launches the GUI; existing interactive and CLI modes are unchanged.
+- `tests/test_gui.py` — New test file. 21 non-display tests cover `parse_operand` (11 cases), module constants (8 cases), `gui_main` callable / ImportError guard (2 cases). 22 widget tests (`TestCalculatorGUIWidget`) cover mode switching, field visibility, calculation dispatch, error handling, history recording, and history popup; these are automatically skipped in headless environments.
+
+### Purpose
+Issue #195: add a tkinter GUI that exposes normal and scientific calculator modes, session history, and all twelve operations. The GUI reuses the existing `CalculatorController` and `src.history` modules so computation and history logic are shared across all interfaces.
+
+### Risks
+- Widget tests are skipped in headless CI (no Xvfb). They verify GUI state transitions on machines with a display.
+- `src/gui.py` references `tk.*` at runtime; if tkinter is absent the GUI simply refuses to launch with a clear error — no crash in the rest of the application.
+
+### Test results
+290 tests pass, 22 skipped (headless widget tests). All 269 pre-existing tests continue to pass.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: PlantUML diagram update
 
 **Branch:** task/issue-192-scientific-mode-switch

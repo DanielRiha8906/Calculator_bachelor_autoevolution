@@ -228,7 +228,11 @@ def main() -> None:
 
 if __name__ == "__main__":
     import sys
-    if sys.argv[1:]:
+    args = sys.argv[1:]
+    if "--gui" in args:
+        from .gui import gui_main
+        gui_main()
+    elif args:
         from .cli import cli_main
         cli_main()
     else:
