@@ -1,3 +1,80 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-190-documentation)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-190-documentation
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+
+Reviewed all three PlantUML diagrams against the current state of `src/` and `main.py`.
+The modular structure (`BasicOperations`, `ScientificOperations`, `Calculator`, `CLIHandler`,
+`InteractiveSession`, `error_logger`), all twelve Calculator operations, both entry points
+(interactive `src/__main__.py` and bash CLI `main.py`), the retry logic, session history,
+and error-logging paths are all correctly represented. No updates were required.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 69.4s | Cost: $0.539781 USD | Turns: 26
+
+---
+
+## Run: Issue #190 — Documentation (task/issue-190-documentation)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-190-documentation
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `README.md` — replaced minimal one-line placeholder with full project documentation covering:
+  requirements and setup, CLI mode with all 12 operation examples, interactive mode with menu
+  table and session walkthrough, operation reference tables (basic and scientific) with error
+  conditions, session behaviour (history format, `history.txt` persistence, error log format
+  and prefixes, retry logic for both modes), full code structure tree and module responsibility
+  table, design notes on mixin architecture and thin entry points, test suite description,
+  and architecture diagram references.
+
+### Purpose
+
+Issue #190 requires written documentation for users and developers that accurately reflects the
+current implementation after the modular refactoring in issue #181.  The prior README contained
+only the project title.  The new README documents both entry points, all 12 operations with their
+error conditions, the session history and error logging behaviour, the mixin-based code structure,
+and how to run the test suite — all derived from reading the actual source code and tests rather
+than describing planned or idealised behaviour.
+
+### Risks
+
+None. Only `README.md` was modified; no source or test files were changed.
+
+### Test results
+
+All 164 tests passed (pytest, no failures).
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 205.1s | Cost: $0.601451 USD | Turns: 29
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-181-expert-generic-modular)
 
 **Date:** 2026-04-11
