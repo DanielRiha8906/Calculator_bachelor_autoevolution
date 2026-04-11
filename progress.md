@@ -29,7 +29,7 @@ All 162 tests passed (144 pre-existing + 18 new):
 - `TestScientificCalculatorInheritsScientificOps` (8 tests) — PASSED
 - `TestScientificCalculatorHistory` (3 tests) — PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 280.9s | Cost: $0.897402 USD | Turns: 40
 
 ---
 
