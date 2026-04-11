@@ -72,6 +72,11 @@ else (no)
             stop
         endif
 
+        if (choice == 'h'?) then (yes)
+            :_print_history(calc.get_history())\nPrint each entry as "N. op(args) = result"\nor "No history." if empty;
+        else (no)
+        endif
+
         if (choice in OPERATIONS?) then (no)
             :Print "Unknown operation: <choice>";
         else (yes)

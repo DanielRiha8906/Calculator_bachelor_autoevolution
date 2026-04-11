@@ -394,3 +394,26 @@ Routine diagram maintenance pass following the addition of retry logic (Issue #1
 No tests modified; all existing 123 tests remain passing from previous run.
 
 Duration: 93.6s | Cost: $0.382299 USD | Turns: 26
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-149-add-history
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — added `_history: list[dict]` attribute and `_record()`, `get_history()`, `clear_history()` methods to `Calculator`; added `_print_history()` to `UserInput` module; added `TestHistory` class (8 test methods) and `TestHistoryInInteractiveMode` class (7 test methods) with their relationships
+- `artifacts/activity_diagram.puml` — added `'h'` branch in the interactive loop dispatching to `_print_history(calc.get_history())`
+- `artifacts/sequence_diagram.puml` — added `choice == 'h'` alt branch in the interactive loop showing `get_history()` call and `_print_history()` dispatch
+
+### Purpose
+Routine diagram maintenance pass following the addition of operation history (Issue #149). All three PlantUML diagrams now reflect the current codebase: `Calculator` (12 operations + history tracking via `_record`, `get_history`, `clear_history`), `UserInput` module (interactive REPL with `_print_history` and `'h'` command), `CLI` module (bash single-shot mode), `__main__` entry point, `__init__` export, and all 25 test classes (138 test methods total).
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing 138 tests remain passing from previous run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
