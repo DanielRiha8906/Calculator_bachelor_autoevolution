@@ -29,7 +29,7 @@ Implement Issue #193: add Normal/Scientific mode switching to the interactive se
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 645.5s | Cost: $1.741998 USD | Turns: 40
 
 ---
 
