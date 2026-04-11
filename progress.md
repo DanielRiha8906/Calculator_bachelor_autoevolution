@@ -35,7 +35,7 @@ was preserved (now part of the unified suite).
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 108.7s | Cost: $0.293650 USD | Turns: 18
 
 ---
 
