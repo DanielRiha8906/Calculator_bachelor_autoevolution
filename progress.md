@@ -1,3 +1,26 @@
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-188-add-documentation
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass following the documentation additions in issue-188. All three diagrams were verified against the current state of `src/`: the class diagram correctly reflects all 9 source modules, 31 test classes, the `src.operations` sub-package, and the `ScientificCalculator` subclass; the activity and sequence diagrams accurately represent the CLI/interactive dispatch and inter-component interaction flows. No structural or method-level changes were made to the source since the last diagram update run.
+
+### Risks
+- None. No source or test code was modified; only `progress.md` updated.
+
+### Test results
+No tests modified; all existing 162 tests remain passing from previous run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-188 — Add documentation to the calculator application
 
 - **Branch:** task/issue-188-add-documentation
