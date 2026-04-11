@@ -7,7 +7,7 @@ from src.__main__ import (
     display_menu, get_number, get_integer, perform_operation, main,
     TooManyAttemptsError, MAX_INPUT_ATTEMPTS,
 )
-from src.calculator import Calculator
+from src.controller import CalculatorController
 
 
 @pytest.fixture(autouse=True)
@@ -20,7 +20,7 @@ def tmp_history_file(tmp_path, monkeypatch):
 
 @pytest.fixture
 def calc():
-    return Calculator()
+    return CalculatorController()
 
 
 # --- display_menu ---

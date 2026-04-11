@@ -4,12 +4,12 @@ import sys
 from unittest.mock import patch
 
 from src.cli import build_parser, cli_main, _dispatch
-from src.calculator import Calculator
+from src.controller import CalculatorController
 
 
 @pytest.fixture
 def calc():
-    return Calculator()
+    return CalculatorController()
 
 
 @pytest.fixture

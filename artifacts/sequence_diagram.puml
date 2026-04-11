@@ -8,6 +8,7 @@ participant "perform_operation()" as Op
 participant "history" as Hist
 participant "error_logger" as ErrLog
 participant "cli_main()" as CLI
+participant "CalculatorController" as Controller
 participant "Calculator" as Calc
 
 == Interactive Mode (no arguments) ==
@@ -24,11 +25,13 @@ loop until User enters "0"
     Main -> Hist : display_history()
     Hist -> User : numbered list of history entries
   else choice in 1–12
-    Main -> Op : perform_operation(calc, choice)
+    Main -> Op : perform_operation(controller, choice)
     Op -> User : prompt for operand(s)
     User -> Op : enter value(s) (e.g. "3", "4")
-    Op -> Calc : call method (e.g. add(3.0, 4.0))
-    Calc --> Op : result (e.g. 7.0)
+    Op -> Controller : execute("add", a=3.0, b=4.0)
+    Controller -> Calc : add(3.0, 4.0)
+    Calc --> Controller : 7.0
+    Controller --> Op : "7.0"
     Op --> Main : "7.0"
 
     Main -> Hist : record_entry("Add: 7.0")
@@ -69,8 +72,10 @@ end note
 
 User -> CLI : python -m src add 3 4
 CLI -> CLI : build_parser().parse_args()
-CLI -> Calc : _dispatch(calc, args)\n→ calc.add(3.0, 4.0)
-Calc --> CLI : 7.0
+CLI -> Controller : _dispatch(controller, args)\n→ execute("add", a=3.0, b=4.0)
+Controller -> Calc : add(3.0, 4.0)
+Calc --> Controller : 7.0
+Controller --> CLI : "7.0"
 CLI -> User : "7.0" (stdout)
 
 note over CLI, Calc

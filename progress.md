@@ -1,3 +1,57 @@
+## Run: PlantUML diagram update
+
+**Branch:** task/issue-177-separate-calculation-from-ui
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Added `controller` package with `CalculatorController` class (holds `_calc: Calculator`, exposes `execute(operation, a, b, base): str`) and `CHOICE_TO_OPERATION` constant. Updated all dependency arrows: `main`, `perform_operation`, `cli_main`, and `_dispatch` now point to `CalculatorController` instead of `Calculator` directly. Added `CalculatorController --> Calculator : uses` composition arrow. Added error note on `CalculatorController::execute`. Updated `perform_operation` and `_dispatch` parameter types from `Calculator` to `CalculatorController`.
+- `artifacts/activity_diagram.puml` — Replaced `:Instantiate Calculator;` with `:Instantiate CalculatorController;` in both CLI and interactive branches. Replaced `_dispatch(calc, args)` with `_dispatch(controller, args)` and `:Call Calculator method;` with `:controller.execute() → Calculator method;` to accurately reflect the two-layer dispatch introduced by issue #177.
+- `artifacts/sequence_diagram.puml` — Added `CalculatorController` as an explicit participant between UI layers and `Calculator`. Updated interactive-mode flow: `perform_operation` now calls `execute("add", a=3.0, b=4.0)` on `Controller`, which in turn calls `Calc.add(3.0, 4.0)`. Updated CLI-mode flow similarly: `_dispatch` calls `controller.execute()`, controller calls `Calc`, result propagates back. Notes unchanged as they remain accurate.
+
+### Purpose
+Update PlantUML diagrams to reflect the `CalculatorController` dispatch layer introduced in issue #177. Previously the diagrams showed both UI layers (`__main__` and `cli`) calling `Calculator` methods directly; after this change they correctly show `CalculatorController` as the single dispatch point that sits between UI and computation.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: 156.4s | Cost: $0.422030 USD | Turns: 22
+
+---
+
+## Run: Issue #177 — Refactoring: separate calculation logic from UI
+
+**Branch:** task/issue-177-separate-calculation-from-ui
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/controller.py` — New module; introduces `CalculatorController` class with a `Calculator` instance and an `execute(operation, a, b, base)` method that routes all 12 named operations to the appropriate `Calculator` method. Also exports `CHOICE_TO_OPERATION`, a dict mapping interactive-mode choice strings ("1"–"12") to canonical operation names. This is the single dispatch point for both UIs.
+- `src/__main__.py` — Replaced `from .calculator import Calculator` with `from .controller import CalculatorController, CHOICE_TO_OPERATION`. Changed `perform_operation` parameter from `calc: Calculator` to `controller: CalculatorController`; the function now collects user inputs and delegates computation to `controller.execute()` rather than calling Calculator methods directly. Changed `main()` to instantiate `CalculatorController` instead of `Calculator`.
+- `src/cli.py` — Replaced `from .calculator import Calculator` with `from .controller import CalculatorController`. Changed `_dispatch` parameter from `calc: Calculator` to `controller: CalculatorController`; the function now extracts operands from argparse Namespace and calls `controller.execute()`. Changed `cli_main()` to instantiate `CalculatorController` instead of `Calculator`.
+- `tests/test_controller.py` — New test file with 26 tests covering: `CHOICE_TO_OPERATION` mapping completeness and types, all 12 `execute` operations (including error cases for divide-by-zero, negative factorial, negative square root, non-positive log/ln), unknown operation raises ValueError, and return type is always string.
+- `tests/test_main.py` — Updated import from `src.calculator.Calculator` to `src.controller.CalculatorController`; `calc` fixture now returns `CalculatorController()` to match the new `perform_operation` signature.
+- `tests/test_cli.py` — Updated import from `src.calculator.Calculator` to `src.controller.CalculatorController`; `calc` fixture now returns `CalculatorController()` to match the new `_dispatch` signature.
+
+### Purpose
+Refactor the calculator so computation dispatch is separated from user interaction and argument parsing (issue #177, Task 11 — Refactoring, Structured/generic). Before this change, both `__main__.py` and `cli.py` called Calculator methods directly, duplicating dispatch logic. After this change, `CalculatorController` is the sole dispatch point: each UI layer only collects/presents data and delegates to the controller. Calculator remains a pure computation class.
+
+### Risks
+- The `perform_operation` and `_dispatch` function signatures changed (parameter type from `Calculator` to `CalculatorController`). Any code calling these functions externally would need updating; however, both are internal to the package and no external callers exist.
+- `CalculatorController` uses a lambda dispatch table; each `execute` call constructs this dict regardless of which operation is used. This is acceptable for a single-operation-per-call tool of this scale.
+
+### Test results
+All 199 tests passed: 199 passed in 0.55s (173 existing + 26 new)
+
+### Intended PR target
+exp2/structured-generic
+
+Duration: 528.6s | Cost: $1.460751 USD | Turns: 36
+
+---
+
 ## Run: Issue #153 — Error logging
 
 **Branch:** task/issue-153-error-logging

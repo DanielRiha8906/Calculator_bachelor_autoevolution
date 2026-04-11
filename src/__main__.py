@@ -1,4 +1,4 @@
-from .calculator import Calculator
+from .controller import CalculatorController, CHOICE_TO_OPERATION
 from .error_logger import get_error_logger
 from .history import clear_history, display_history, record_entry
 
@@ -90,49 +90,37 @@ def get_integer(prompt: str, max_attempts: int = MAX_INPUT_ATTEMPTS) -> int:
     raise TooManyAttemptsError(f"Maximum input attempts ({max_attempts}) exceeded.")
 
 
-def perform_operation(calc: Calculator, choice: str) -> "str | None":
-    """Execute the calculator operation identified by *choice*.
+def perform_operation(controller: CalculatorController, choice: str) -> "str | None":
+    """Collect operands from stdin and execute the operation identified by *choice*.
 
-    Prompts for required operands via stdin.  Returns the result as a
-    string, or None if *choice* is not a recognised operation number.
-    Propagates ValueError and ZeroDivisionError raised by the Calculator.
+    Delegates computation to *controller*, keeping user interaction (prompts,
+    input validation) separate from calculation dispatch.  Returns the result
+    as a string, or None if *choice* is not a recognised operation number.
+    Propagates ValueError and ZeroDivisionError raised by the controller.
     """
-    if choice == "1":
+    operation = CHOICE_TO_OPERATION.get(choice)
+    if operation is None:
+        return None
+
+    if operation in ("add", "subtract", "multiply", "divide"):
         a = get_number("Enter first number: ")
         b = get_number("Enter second number: ")
-        return str(calc.add(a, b))
-    if choice == "2":
-        a = get_number("Enter first number: ")
-        b = get_number("Enter second number: ")
-        return str(calc.subtract(a, b))
-    if choice == "3":
-        a = get_number("Enter first number: ")
-        b = get_number("Enter second number: ")
-        return str(calc.multiply(a, b))
-    if choice == "4":
-        a = get_number("Enter first number: ")
-        b = get_number("Enter second number: ")
-        return str(calc.divide(a, b))
-    if choice == "5":
+        return controller.execute(operation, a=a, b=b)
+
+    if operation == "factorial":
         n = get_integer("Enter a non-negative integer: ")
-        return str(calc.factorial(n))
-    if choice == "6":
+        return controller.execute(operation, a=n)
+
+    if operation in ("square", "cube", "square_root", "cube_root", "ln"):
         a = get_number("Enter a number: ")
-        return str(calc.square(a))
-    if choice == "7":
-        a = get_number("Enter a number: ")
-        return str(calc.cube(a))
-    if choice == "8":
-        a = get_number("Enter a number: ")
-        return str(calc.square_root(a))
-    if choice == "9":
-        a = get_number("Enter a number: ")
-        return str(calc.cube_root(a))
-    if choice == "10":
-        base = get_number("Enter base: ")
-        exp = get_number("Enter exponent: ")
-        return str(calc.power(base, exp))
-    if choice == "11":
+        return controller.execute(operation, a=a)
+
+    if operation == "power":
+        base_val = get_number("Enter base: ")
+        exp_val = get_number("Enter exponent: ")
+        return controller.execute(operation, a=base_val, b=exp_val)
+
+    if operation == "log":
         a = get_number("Enter a number: ")
         base_raw = input("Enter log base (press Enter for base 10): ").strip()
         if base_raw:
@@ -146,16 +134,14 @@ def perform_operation(calc: Calculator, choice: str) -> "str | None":
                 log_base = 10.0
         else:
             log_base = 10.0
-        return str(calc.log(a, log_base))
-    if choice == "12":
-        a = get_number("Enter a number: ")
-        return str(calc.ln(a))
-    return None
+        return controller.execute(operation, a=a, base=log_base)
+
+    return None  # unreachable; all operations in CHOICE_TO_OPERATION are handled above
 
 
 def main() -> None:
     """Run the interactive calculator session."""
-    calc = Calculator()
+    controller = CalculatorController()
     clear_history()
     print("Welcome to the Calculator!")
     consecutive_invalid_choices = 0
@@ -187,7 +173,7 @@ def main() -> None:
             continue
 
         try:
-            result = perform_operation(calc, choice)
+            result = perform_operation(controller, choice)
         except TooManyAttemptsError as e:
             get_error_logger().error("[interactive] %s", e)
             print(str(e))

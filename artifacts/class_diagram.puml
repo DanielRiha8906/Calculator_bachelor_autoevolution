@@ -19,6 +19,16 @@ package "src" {
     }
 }
 
+package "controller" {
+    class CHOICE_TO_OPERATION <<constant>> {
+        dict[str, str]\n"1"→"add" … "12"→"ln"
+    }
+    class CalculatorController {
+        - _calc : Calculator
+        + execute(operation, a, b, base) : str
+    }
+}
+
 package "error_logger" {
     class ERROR_LOG_FILE <<constant>> {
         pathlib.Path("calculator_errors.log")
@@ -59,7 +69,7 @@ package "__main__" {
         + get_integer(prompt: str, max_attempts: int) : int
     }
     class perform_operation <<function>> {
-        + perform_operation(calc: Calculator, choice: str) : str | None
+        + perform_operation(controller: CalculatorController, choice: str) : str | None
     }
     class main <<function>> {
         + main() : None
@@ -73,14 +83,17 @@ package "cli" {
         + build_parser() : ArgumentParser
     }
     class _dispatch <<function>> {
-        + _dispatch(calc: Calculator, args: Namespace) : str
+        + _dispatch(controller: CalculatorController, args: Namespace) : str
     }
     class cli_main <<function>> {
         + cli_main() : None
     }
 }
 
-main ..> Calculator : instantiates
+CalculatorController --> Calculator : uses
+CalculatorController ..> CHOICE_TO_OPERATION : defined alongside
+
+main ..> CalculatorController : instantiates
 main ..> display_menu : calls
 main ..> perform_operation : calls
 main ..> clear_history : calls on start
@@ -88,7 +101,7 @@ main ..> record_entry : calls after result
 main ..> display_history : calls for choice 13
 perform_operation ..> get_number : calls
 perform_operation ..> get_integer : calls
-perform_operation ..> Calculator : dispatches to
+perform_operation ..> CalculatorController : dispatches to
 get_number ..> TooManyAttemptsError : raises
 get_integer ..> TooManyAttemptsError : raises
 display_history ..> load_history : calls
@@ -97,10 +110,10 @@ clear_history ..> HISTORY_FILE : clears
 load_history ..> HISTORY_FILE : reads
 
 cli_main ..> build_parser : calls
-cli_main ..> Calculator : instantiates
+cli_main ..> CalculatorController : instantiates
 cli_main ..> _dispatch : calls
 cli_main ..> get_error_logger : calls on error
-_dispatch ..> Calculator : dispatches to
+_dispatch ..> CalculatorController : dispatches to
 
 main ..> get_error_logger : calls on error
 perform_operation ..> get_error_logger : calls on invalid log base
@@ -132,6 +145,12 @@ end note
 
 note right of Calculator::ln
   Raises ValueError when a <= 0
+end note
+
+note right of CalculatorController::execute
+  Raises ValueError for unknown operation.
+  Propagates ValueError / ZeroDivisionError
+  from Calculator to the caller.
 end note
 
 @enduml
