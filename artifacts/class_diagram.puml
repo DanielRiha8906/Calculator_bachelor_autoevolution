@@ -3,6 +3,7 @@
 package "src" {
 
     class Calculator {
+        -_history : list[dict]
         +add(a, b) : number
         +subtract(a, b) : number
         +multiply(a, b) : number
@@ -15,6 +16,9 @@ package "src" {
         +power(base: float, exp: float) : float
         +log(x: float) : float
         +ln(x: float) : float
+        -_record(operation: str, args: list, result) : void
+        +get_history() : list[dict]
+        +clear_history() : void
     }
 
     class "user_input" as UserInput {
@@ -23,6 +27,7 @@ package "src" {
         INT_OPS : set
         MAX_RETRIES : int
         +_print_menu() : void
+        +_print_history(history: list[dict]) : void
         +_get_float(prompt: str) : float
         +_get_int(prompt: str) : int
         +interactive_mode() : void
@@ -206,6 +211,19 @@ package "tests" {
         +test_ln_of_negative() : void
     }
 
+    class TestHistory {
+        -calc : Calculator
+        +setup_method() : void
+        +test_history_starts_empty() : void
+        +test_history_records_successful_operation() : void
+        +test_history_records_multiple_operations() : void
+        +test_history_not_recorded_on_error() : void
+        +test_clear_history_empties_list() : void
+        +test_get_history_returns_copy() : void
+        +test_history_records_single_arg_operation() : void
+        +test_history_records_factorial() : void
+    }
+
     class TestInteractiveMode {
         +test_quit_immediately() : void
         +test_menu_is_printed() : void
@@ -237,6 +255,16 @@ package "tests" {
         +test_invalid_float_then_valid_computes_result() : void
         +test_invalid_int_then_valid_computes_factorial() : void
         +test_exhausted_retries_shows_error_and_returns_to_menu() : void
+    }
+
+    class TestHistoryInInteractiveMode {
+        +test_history_option_shown_in_menu() : void
+        +test_history_empty_shows_no_history() : void
+        +test_history_shows_after_operation() : void
+        +test_history_accumulates_multiple_operations() : void
+        +test_print_history_empty() : void
+        +test_print_history_single_entry() : void
+        +test_print_history_two_arg_entry() : void
     }
 
     class TestCliTwoArgOps {
@@ -297,9 +325,11 @@ TestLog --> Calculator : tests
 TestLogIncorrectInputs --> Calculator : tests
 TestLn --> Calculator : tests
 TestLnIncorrectInputs --> Calculator : tests
+TestHistory --> Calculator : tests
 TestInteractiveMode --> UserInput : tests
 TestRetryLogicHelpers --> UserInput : tests
 TestRetryLogicInInteractiveMode --> UserInput : tests
+TestHistoryInInteractiveMode --> UserInput : tests
 TestCliTwoArgOps --> CLI : tests
 TestCliSingleArgOps --> CLI : tests
 TestCliErrorCases --> CLI : tests

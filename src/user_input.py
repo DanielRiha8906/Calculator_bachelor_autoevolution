@@ -30,7 +30,18 @@ def _print_menu() -> None:
     print("Operations:")
     for key, name in OPERATIONS.items():
         print(f"  {key}: {name}")
+    print("  h: show history")
     print("  q: quit")
+
+
+def _print_history(history: list[dict]) -> None:
+    """Print the operation history to stdout."""
+    if not history:
+        print("No history.")
+        return
+    for i, entry in enumerate(history, start=1):
+        args_str = ", ".join(str(a) for a in entry["args"])
+        print(f"  {i}. {entry['operation']}({args_str}) = {entry['result']}")
 
 
 def _get_float(prompt: str) -> float:
@@ -74,6 +85,10 @@ def interactive_mode() -> None:
         if choice.lower() == "q":
             print("Goodbye!")
             break
+
+        if choice.lower() == "h":
+            _print_history(calc.get_history())
+            continue
 
         if choice not in OPERATIONS:
             print(f"Unknown operation: {choice!r}. Please choose from the menu.")

@@ -323,3 +323,57 @@ class TestLnIncorrectInputs:
     def test_ln_of_negative(self):
         with pytest.raises(ValueError):
             self.calc.ln(-1)
+
+
+class TestHistory:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_history_starts_empty(self):
+        assert self.calc.get_history() == []
+
+    def test_history_records_successful_operation(self):
+        self.calc.add(3, 5)
+        history = self.calc.get_history()
+        assert len(history) == 1
+        assert history[0]["operation"] == "add"
+        assert history[0]["args"] == [3, 5]
+        assert history[0]["result"] == 8
+
+    def test_history_records_multiple_operations(self):
+        self.calc.add(1, 2)
+        self.calc.multiply(3, 4)
+        history = self.calc.get_history()
+        assert len(history) == 2
+        assert history[0]["operation"] == "add"
+        assert history[1]["operation"] == "multiply"
+
+    def test_history_not_recorded_on_error(self):
+        with pytest.raises(ZeroDivisionError):
+            self.calc.divide(1, 0)
+        assert self.calc.get_history() == []
+
+    def test_clear_history_empties_list(self):
+        self.calc.add(1, 2)
+        self.calc.clear_history()
+        assert self.calc.get_history() == []
+
+    def test_get_history_returns_copy(self):
+        self.calc.add(1, 2)
+        returned = self.calc.get_history()
+        returned.clear()
+        assert len(self.calc.get_history()) == 1
+
+    def test_history_records_single_arg_operation(self):
+        self.calc.square(4)
+        history = self.calc.get_history()
+        assert len(history) == 1
+        assert history[0]["operation"] == "square"
+        assert history[0]["args"] == [4]
+        assert history[0]["result"] == 16
+
+    def test_history_records_factorial(self):
+        self.calc.factorial(5)
+        history = self.calc.get_history()
+        assert history[0]["operation"] == "factorial"
+        assert history[0]["result"] == 120

@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch
-from src.user_input import interactive_mode, _get_float, _get_int, MAX_RETRIES
+from src.user_input import interactive_mode, _get_float, _get_int, _print_history, MAX_RETRIES
 
 
 class TestInteractiveMode:
@@ -189,3 +189,54 @@ class TestRetryLogicInInteractiveMode:
         assert "No more retries" in captured.out
         assert "Error:" in captured.out
         assert "Goodbye!" in captured.out
+
+
+class TestHistoryInInteractiveMode:
+    """Tests for the 'h' history command in interactive_mode."""
+
+    def test_history_option_shown_in_menu(self, capsys):
+        with patch("builtins.input", return_value="q"):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "history" in captured.out
+
+    def test_history_empty_shows_no_history(self, capsys):
+        inputs = iter(["h", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "No history" in captured.out
+
+    def test_history_shows_after_operation(self, capsys):
+        # add(3, 5) = 8, then show history
+        inputs = iter(["1", "3", "5", "h", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "add" in captured.out
+        assert "8.0" in captured.out
+
+    def test_history_accumulates_multiple_operations(self, capsys):
+        # add(1, 2), multiply(3, 4), then show history
+        inputs = iter(["1", "1", "2", "3", "3", "4", "h", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "add" in captured.out
+        assert "multiply" in captured.out
+
+    def test_print_history_empty(self, capsys):
+        _print_history([])
+        captured = capsys.readouterr()
+        assert "No history" in captured.out
+
+    def test_print_history_single_entry(self, capsys):
+        _print_history([{"operation": "add", "args": [3, 5], "result": 8}])
+        captured = capsys.readouterr()
+        assert "add(3, 5) = 8" in captured.out
+
+    def test_print_history_two_arg_entry(self, capsys):
+        _print_history([{"operation": "divide", "args": [10.0, 2.0], "result": 5.0}])
+        captured = capsys.readouterr()
+        assert "divide" in captured.out
+        assert "5.0" in captured.out

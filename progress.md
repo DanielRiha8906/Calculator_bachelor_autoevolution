@@ -1,3 +1,33 @@
+## Run: issue-149 — Add history of operations to the calculator
+
+- **Branch:** task/issue-149-add-history
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/calculator.py` — added `__init__` with `_history: list[dict]`; added `_record()`, `get_history()`, and `clear_history()` methods; each of the 12 operation methods now calls `_record()` after a successful computation so that only successful operations appear in history
+- `src/user_input.py` — added `_print_history()` helper that prints each entry as `N. op(args) = result` or "No history." when empty; added `"h: show history"` line to `_print_menu()`; added `"h"` command handler in `interactive_mode()` loop that calls `_print_history(calc.get_history())`; imported `_print_history` is also exported for tests
+- `tests/test_calculator.py` — added `TestHistory` class (8 tests): empty on init, records successful op, records multiple ops, skips failed ops, `clear_history()`, `get_history()` returns a copy, single-arg op, factorial
+- `tests/test_user_input.py` — added `_print_history` to imports; added `TestHistoryInInteractiveMode` class (7 tests): menu shows "history", empty history message, history after one operation, accumulates multiple, `_print_history` with empty/single/two-arg entry
+
+### Purpose
+Implements Issue #149 (V2 Task 9 - History - Naive/generic): adds per-session operation history to the calculator. Every successful calculation is appended to an in-memory list on the `Calculator` instance. In interactive mode the user can press `h` at any time to review all operations performed in the current session, each shown with the operation name, arguments, and result.
+
+### Risks
+- History is in-memory only; it is not persisted between sessions (not required by the issue).
+- Failed operations (errors) are intentionally excluded from history — only successful results are recorded.
+- `get_history()` returns a shallow copy of the list; individual entry dicts are not deep-copied, so mutating a returned entry dict would affect internal state. This is acceptable for the current use case (read-only display).
+- No new dependencies introduced.
+
+### Test results
+All 138 tests passed (123 pre-existing + 15 new):
+- `TestHistory` (8 tests) — all PASSED
+- `TestHistoryInInteractiveMode` (7 tests) — all PASSED
+
+Duration: 207.4s | Cost: $0.835101 USD | Turns: 32
+
+---
+
 ## Run: issue-146 — Add retry logic for bad input in interactive mode
 
 - **Branch:** task/issue-146-retry-logic
@@ -364,3 +394,26 @@ Routine diagram maintenance pass following the addition of retry logic (Issue #1
 No tests modified; all existing 123 tests remain passing from previous run.
 
 Duration: 93.6s | Cost: $0.382299 USD | Turns: 26
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-149-add-history
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — added `_history: list[dict]` attribute and `_record()`, `get_history()`, `clear_history()` methods to `Calculator`; added `_print_history()` to `UserInput` module; added `TestHistory` class (8 test methods) and `TestHistoryInInteractiveMode` class (7 test methods) with their relationships
+- `artifacts/activity_diagram.puml` — added `'h'` branch in the interactive loop dispatching to `_print_history(calc.get_history())`
+- `artifacts/sequence_diagram.puml` — added `choice == 'h'` alt branch in the interactive loop showing `get_history()` call and `_print_history()` dispatch
+
+### Purpose
+Routine diagram maintenance pass following the addition of operation history (Issue #149). All three PlantUML diagrams now reflect the current codebase: `Calculator` (12 operations + history tracking via `_record`, `get_history`, `clear_history`), `UserInput` module (interactive REPL with `_print_history` and `'h'` command), `CLI` module (bash single-shot mode), `__main__` entry point, `__init__` export, and all 25 test classes (138 test methods total).
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing 138 tests remain passing from previous run.
+
+Duration: 91.2s | Cost: $0.426271 USD | Turns: 29

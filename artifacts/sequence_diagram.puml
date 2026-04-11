@@ -67,6 +67,11 @@ else no arguments (interactive mode)
         alt choice == 'q'
             UI -> Main : return
             note right : prints "Goodbye!" before returning
+        else choice == 'h'
+            UI -> Calc : get_history()
+            Calc --> UI : list[dict]
+            UI -> UI : _print_history(history)
+            note right : prints each entry or "No history."
         else choice not in OPERATIONS
             UI -> UI : print("Unknown operation: ...")
         else op in INT_OPS (e.g. factorial)
