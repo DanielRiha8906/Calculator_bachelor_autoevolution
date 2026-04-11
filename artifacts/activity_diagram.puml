@@ -18,6 +18,7 @@ if (Command-line arguments provided?) then (yes)
   :Call Calculator method;
 
   if (ValueError or ZeroDivisionError raised?) then (yes)
+    :log_error("[cli] <operation>: <message>");
     :Print "Error: <message>" to stderr;
     :Exit with code 1;
     stop
@@ -45,6 +46,7 @@ else (no)
 
     if (choice in 1–13?) then (no)
       :consecutive_invalid_choices += 1;
+      :log_error("[interactive] Unknown operation choice");
       :Print "Unknown operation";
       if (consecutive_invalid_choices >= MAX_INPUT_ATTEMPTS?) then (yes)
         :Print "Too many invalid choices.\nEnding session.";
@@ -68,6 +70,7 @@ else (no)
           :Call Calculator method;
 
           if (ValueError or ZeroDivisionError raised?) then (yes)
+            :log_error("[interactive] <operation>: <message>");
             :Print "Error: <message>";
           else (no)
             :record_entry(operation + result)\nto history.txt;

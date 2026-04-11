@@ -1,3 +1,37 @@
+## Run: Issue #153 — Error logging
+
+**Branch:** task/issue-153-error-logging
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/error_logger.py` — New module; implements `get_error_logger()` which returns a `logging.Logger` configured to write `ERROR`-level messages to `calculator_errors.log`. Uses a module-level `ERROR_LOG_FILE` constant (a `pathlib.Path`) for testability. Handler is created lazily on the first call and is never duplicated. Log format includes timestamp and level.
+- `src/cli.py` — Imported `get_error_logger`. In `cli_main()`, the `except (ValueError, ZeroDivisionError)` block now calls `get_error_logger().error("[cli] <operation>: <message>")` before printing to stderr.
+- `src/__main__.py` — Imported `get_error_logger`. Added four logging call-sites: (1) invalid log base in `perform_operation()`, (2) unknown operation choice in `main()`, (3) `TooManyAttemptsError` in `main()`, (4) `ValueError`/`ZeroDivisionError` in `main()`.
+- `tests/conftest.py` — New shared fixture file; `tmp_error_log` autouse fixture redirects `ERROR_LOG_FILE` to a temp path and resets logger handlers before and after every test, preventing writes to the project root and handler leaks between tests.
+- `tests/test_error_logger.py` — New test file with 11 tests covering: logger identity, logger name, file creation, message recording, INFO/WARNING level filtering, multiple error appending, no handler duplication, `propagate=False`, log format, and separation from stdout/stderr.
+- `artifacts/class_diagram.puml` — Added `error_logger` package with `ERROR_LOG_FILE` and `get_error_logger`; added dependency arrows from `main` and `cli_main` to `get_error_logger`, and from `get_error_logger` to `ERROR_LOG_FILE`.
+- `artifacts/activity_diagram.puml` — Added `log_error(...)` steps in the CLI error branch, the interactive invalid-choice branch, and the interactive calculation-error branch.
+- `artifacts/sequence_diagram.puml` — Added `error_logger` participant; updated notes for both interactive and CLI modes to mention that errors are logged to `calculator_errors.log` separately from `history.txt`.
+
+### Purpose
+Add file-based error logging to the calculator so failures and invalid usage are persistently recorded in `calculator_errors.log`, separate from the session operation history in `history.txt` (issue #153, Task 10 — Error logging, Structured/generic). Logged events include: CLI calculation errors (ValueError, ZeroDivisionError), interactive mode calculation errors, invalid operation choices, TooManyAttemptsError, and invalid log base input. Normal successful operations continue to go to history only.
+
+### Risks
+- `calculator_errors.log` is written relative to the current working directory. If the process runs from a read-only directory, the `FileHandler` creation will raise `PermissionError`. This is an acceptable limitation for a locally run tool.
+- The logger uses `if not logger.handlers:` to prevent duplicate handlers across calls. Tests must clear handlers between runs (done via `conftest.py`); if this fixture were omitted, parallel or repeated test invocations could accumulate handlers.
+- `ERROR_LOG_FILE` is a module-level `pathlib.Path`, which makes it straightforward to redirect in tests via `monkeypatch` — the same pattern used for `HISTORY_FILE`.
+
+### Test results
+All 173 tests passed: 173 passed in 0.51s (162 existing + 11 new)
+
+### Intended PR target
+exp2/structured-generic
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #150 — Session history
 
 **Branch:** task/issue-150-session-history

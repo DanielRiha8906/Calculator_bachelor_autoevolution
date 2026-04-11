@@ -17,6 +17,7 @@ import argparse
 import sys
 
 from .calculator import Calculator
+from .error_logger import get_error_logger
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -115,6 +116,7 @@ def cli_main() -> None:
     try:
         result = _dispatch(calc, args)
     except (ValueError, ZeroDivisionError) as exc:
+        get_error_logger().error("[cli] %s: %s", args.operation, exc)
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
 

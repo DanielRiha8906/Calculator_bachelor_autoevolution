@@ -1,4 +1,5 @@
 from .calculator import Calculator
+from .error_logger import get_error_logger
 from .history import clear_history, display_history, record_entry
 
 MAX_INPUT_ATTEMPTS = 3
@@ -138,6 +139,9 @@ def perform_operation(calc: Calculator, choice: str) -> "str | None":
             try:
                 log_base = float(base_raw)
             except ValueError:
+                get_error_logger().error(
+                    "[interactive] Invalid log base '%s': using base 10", base_raw
+                )
                 print(f"Invalid base '{base_raw}': using base 10.")
                 log_base = 10.0
         else:
@@ -167,6 +171,9 @@ def main() -> None:
 
         if choice not in valid_choices:
             consecutive_invalid_choices += 1
+            get_error_logger().error(
+                "[interactive] Unknown operation choice: '%s'", choice
+            )
             print(f"Unknown operation '{choice}'. Please choose a number between 0 and 13.")
             if consecutive_invalid_choices >= MAX_INPUT_ATTEMPTS:
                 print("Too many invalid choices. Ending session.")
@@ -182,9 +189,13 @@ def main() -> None:
         try:
             result = perform_operation(calc, choice)
         except TooManyAttemptsError as e:
+            get_error_logger().error("[interactive] %s", e)
             print(str(e))
             break
         except (ValueError, ZeroDivisionError) as e:
+            get_error_logger().error(
+                "[interactive] %s: %s", OPERATION_NAMES.get(choice, choice), e
+            )
             print(f"Error: {e}")
             continue
 

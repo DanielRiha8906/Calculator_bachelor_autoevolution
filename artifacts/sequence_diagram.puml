@@ -6,6 +6,7 @@ actor User
 participant "main()" as Main
 participant "perform_operation()" as Op
 participant "history" as Hist
+participant "error_logger" as ErrLog
 participant "cli_main()" as CLI
 participant "Calculator" as Calc
 
@@ -43,20 +44,25 @@ Main -> User : "Goodbye!"
 
 note over Main, Calc
   If a ValueError or ZeroDivisionError is raised inside
-  perform_operation(), main() catches it, prints
+  perform_operation(), main() logs the error to
+  calculator_errors.log via error_logger, prints
   "Error: <message>", and continues the loop.
 
   If an unrecognised choice is entered MAX_INPUT_ATTEMPTS times
-  consecutively, main() prints "Too many invalid choices.
-  Ending session." and terminates.
+  consecutively, main() logs the invalid choice, prints
+  "Too many invalid choices. Ending session." and terminates.
 
   If get_number() or get_integer() receives MAX_INPUT_ATTEMPTS
   consecutive invalid inputs, it raises TooManyAttemptsError.
-  main() catches this, prints the message, and terminates.
+  main() logs and prints the message, then terminates.
+
+  Invalid log base input in perform_operation() is also logged
+  before falling back to base 10.
 
   History is stored in history.txt (local file) and cleared
   at the start of each session — it does not persist between
-  separate sessions.
+  separate sessions. Errors are stored in calculator_errors.log,
+  separate from the normal operation history.
 end note
 
 == Bash CLI Mode (with arguments, e.g. "add 3 4") ==
@@ -69,7 +75,8 @@ CLI -> User : "7.0" (stdout)
 
 note over CLI, Calc
   If a ValueError or ZeroDivisionError is raised,
-  cli_main() prints "Error: <message>" to stderr
+  cli_main() logs the error to calculator_errors.log
+  via error_logger, prints "Error: <message>" to stderr,
   and exits with code 1.
 end note
 
