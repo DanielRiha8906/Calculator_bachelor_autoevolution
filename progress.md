@@ -1,3 +1,26 @@
+## Run: PlantUML diagram update
+
+**Branch:** task/issue-147-retry-logic
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Added `TooManyAttemptsError` exception class with `Exception` inheritance; updated `get_number()` and `get_integer()` signatures to include `max_attempts: int` parameter; added dependency arrows from both to `TooManyAttemptsError`
+- `artifacts/activity_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/sequence_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+
+### Purpose
+Update PlantUML diagrams to reflect the retry logic additions from issue #147. The class diagram was missing `TooManyAttemptsError` and the updated `get_number`/`get_integer` signatures that include the `max_attempts` parameter. Activity and sequence diagrams already captured these changes in the previous run.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #147 — Retry logic with max attempts
 
 **Branch:** task/issue-147-retry-logic
