@@ -1,3 +1,26 @@
+## Run: PlantUML diagram update
+
+**Branch:** task/issue-195-gui-tkinter
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Added `gui` package containing `CalculatorGUI` class (with all attributes and methods), `parse_operand` function, `gui_main` function, and six module-level constants (`NORMAL_OPERATIONS`, `SCIENTIFIC_OPERATIONS`, `OPERATION_LABELS`, `BINARY_OPERATIONS`, `INTEGER_OPERATIONS`, `LOG_OPERATIONS`). Added dependency arrows from `CalculatorGUI` to `CalculatorController`, history functions, `get_error_logger`, `parse_operand`, and operation-set constants. Updated `main` note to include `--gui` flag entry path.
+- `artifacts/activity_diagram.puml` — Refactored top-level branch from two paths (CLI / interactive) to three paths (GUI / CLI / interactive). Added complete GUI activity flow: window creation, CalculatorGUI instantiation, tkinter event loop, and four forked user actions (select operation, calculate, toggle mode, show history) including input parsing, dispatch, error handling, and history recording.
+- `artifacts/sequence_diagram.puml` — Added `gui_main()` and `CalculatorGUI` participants. Added new GUI mode section showing the full interaction: window creation, operation selection, calculation dispatch through Controller → Calculator → operations, result display, history recording, mode toggle, history popup, and error dialogs.
+
+### Purpose
+Update PlantUML diagrams to reflect the tkinter GUI introduced in issue #195. Previously the diagrams had no GUI components. All three diagrams now accurately depict the three-mode architecture: GUI (`--gui` flag), bash CLI (other args), and interactive (no args), with `CalculatorGUI` reusing `CalculatorController` and `src.history`.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #195 — GUI (tkinter)
 
 **Branch:** task/issue-195-gui-tkinter

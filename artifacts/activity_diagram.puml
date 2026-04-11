@@ -4,7 +4,56 @@ title Calculator — Activity Diagram
 
 start
 
-if (Command-line arguments provided?) then (yes)
+if (--gui flag in arguments?) then (yes)
+
+  :Create tk.Tk root window;
+  :Instantiate CalculatorGUI(root)\n— clears history, builds UI;
+  :root.mainloop() — enter tkinter event loop;
+
+  fork
+    :User clicks an operation button;
+    :_select_operation(op)\n— update UI fields shown/hidden;
+  fork again
+    :User clicks Calculate\n(or presses Enter);
+    :_calculate();
+
+    :parse_operand(entry_a)\n[integer if factorial];
+    if (parse error?) then (yes)
+      :messagebox.showerror("Input Error");
+    else (no)
+      if (binary operation?) then (yes)
+        :parse_operand(entry_b);
+        if (parse error?) then (yes)
+          :messagebox.showerror("Input Error");
+        endif
+      endif
+      if (log operation?) then (yes)
+        :parse_operand(entry_base, default=10);
+        if (parse error?) then (yes)
+          :messagebox.showerror("Input Error");
+        endif
+      endif
+      :controller.execute(op, a, b, base)\n→ Calculator facade\n→ operations module function;
+      if (ValueError or ZeroDivisionError raised?) then (yes)
+        :log_error("[gui] <operation>: <message>");
+        :messagebox.showerror("Calculation Error");
+      else (no)
+        :result_label.config(text=result);
+        :record_entry(label + ": " + result);
+      endif
+    endif
+  fork again
+    :User clicks Switch Mode button;
+    :_toggle_mode()\n— show/hide scientific buttons\n— deselect op if now unavailable;
+  fork again
+    :User clicks Show History;
+    :_show_history()\n— load_history()\n— display Toplevel popup;
+  end fork
+
+  :User closes the window;
+  stop
+
+elseif (Other command-line arguments provided?) then (yes)
 
   :Parse arguments with argparse\n(operation + operands);
 
@@ -27,7 +76,7 @@ if (Command-line arguments provided?) then (yes)
     stop
   endif
 
-else (no)
+else (no arguments — interactive mode)
 
   :Display "Welcome to the Calculator!";
   :Instantiate CalculatorController;
