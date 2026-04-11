@@ -8,6 +8,7 @@ package "src" {
         + subtract(a, b) : float
         + multiply(a, b) : float
         + divide(a, b) : float
+        + factorial(n) : int
     }
 }
 
@@ -22,6 +23,11 @@ main ..> Calculator : instantiates
 note right of Calculator::divide
   Raises ZeroDivisionError
   when b == 0
+end note
+
+note right of Calculator::factorial
+  Raises ValueError when n < 0
+  or n is not an integer
 end note
 
 @enduml

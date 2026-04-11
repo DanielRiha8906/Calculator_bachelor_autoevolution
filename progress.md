@@ -1,5 +1,59 @@
 ## Run: PlantUML diagram update
 
+**Branch:** task/issue-108-factorial
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/activity_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/sequence_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+
+### Purpose
+Verify and maintain PlantUML diagrams against the current source code. All three diagrams (class, activity, sequence) correctly represent the `Calculator` class and `main()` flow as they exist in `src/`, including the `factorial` method added in the previous run.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: 28.1s | Cost: $0.114785 USD | Turns: 13
+
+---
+
+## Run: Issue #108 — Add factorial operation
+
+**Branch:** task/issue-108-factorial
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/calculator.py` — Added `factorial(n)` method using `math.factorial`; raises `ValueError` for negative or non-integer inputs
+- `tests/test_calculator.py` — Added 6 tests for factorial: zero, one, positive, large value, negative raises, non-integer raises
+- `src/__main__.py` — Added `factorial(5)` demonstration call
+- `artifacts/class_diagram.puml` — Added `factorial(n) : int` to Calculator class and error note
+- `artifacts/activity_diagram.puml` — Added factorial fork branch with input-validation guard
+- `artifacts/sequence_diagram.puml` — Added `factorial(5)` → `120` interaction and extended note
+
+### Purpose
+Add factorial as a supported calculator operation (issue #108, V2 Task 3 - Structured/generic experiment). The implementation delegates to `math.factorial` and validates that the input is a non-negative integer before delegating.
+
+### Risks
+- Factorial only accepts integers; passing a float raises `ValueError`. This is intentional — factorial is not defined for non-integers in this implementation.
+- `math.factorial` handles arbitrarily large integers natively; no overflow risk.
+
+### Test results
+All 27 tests passed: 27 passed in 0.04s
+
+### Intended PR target
+exp2/structured-generic
+
+Duration: 157.9s | Cost: $0.535234 USD | Turns: 34
+
+---
+
+## Run: PlantUML diagram update
+
 **Branch:** task/issue-105-unit-test-suite
 **Date:** 2026-04-11
 

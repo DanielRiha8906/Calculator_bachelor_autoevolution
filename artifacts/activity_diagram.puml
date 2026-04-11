@@ -23,6 +23,14 @@ fork again
   else (no)
     :return a / b;
   endif
+fork again
+  :call factorial(n);
+  if (n < 0 or not int?) then (yes)
+    :raise ValueError;
+    stop
+  else (no)
+    :return n!;
+  endif
 end fork
 
 :Print result;
