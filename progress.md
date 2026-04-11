@@ -43,7 +43,7 @@ dependency added is `src.calculator.Calculator`, already present in the project.
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 363.7s | Cost: $0.893680 USD | Turns: 36
 
 ---
 
