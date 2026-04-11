@@ -30,6 +30,7 @@ else (no)
 
   :Display "Welcome to the Calculator!";
   :Instantiate Calculator;
+  :consecutive_invalid_choices = 0;
 
   repeat
 
@@ -41,23 +42,31 @@ else (no)
       stop
     endif
 
-    :perform_operation(calc, choice);
-
-    if (choice recognised?) then (no)
+    if (choice in 1–12?) then (no)
+      :consecutive_invalid_choices += 1;
       :Print "Unknown operation";
-    else (yes)
-      :Prompt for operand(s)\nvia get_number() / get_integer();
-
-      if (operation requires 2 args?) then (yes)
-        :Read second operand;
+      if (consecutive_invalid_choices >= MAX_INPUT_ATTEMPTS?) then (yes)
+        :Print "Too many invalid choices.\nEnding session.";
+        stop
       endif
+    else (yes)
+      :consecutive_invalid_choices = 0;
+      :perform_operation(calc, choice);
 
-      :Call Calculator method;
+      if (operand input valid?) then (no — retry up to MAX_INPUT_ATTEMPTS)
+        :Print "Invalid input... N attempt(s) remaining";
+        if (attempts exhausted?) then (yes)
+          :Print "Maximum input attempts exceeded.";
+          stop
+        endif
+      else (yes)
+        :Call Calculator method;
 
-      if (ValueError or ZeroDivisionError raised?) then (yes)
-        :Print "Error: <message>";
-      else (no)
-        :Print "Result: <value>";
+        if (ValueError or ZeroDivisionError raised?) then (yes)
+          :Print "Error: <message>";
+        else (no)
+          :Print "Result: <value>";
+        endif
       endif
     endif
 

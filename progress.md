@@ -1,3 +1,32 @@
+## Run: Issue #147 — Retry logic with max attempts
+
+**Branch:** task/issue-147-retry-logic
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/__main__.py` — Added `MAX_INPUT_ATTEMPTS = 3` constant and `TooManyAttemptsError` exception. Modified `get_number()` and `get_integer()` to accept a `max_attempts` parameter (default `MAX_INPUT_ATTEMPTS`) and raise `TooManyAttemptsError` after exhausting all attempts, with a countdown message on each failed retry. Modified `main()` to track consecutive invalid operation choices and terminate after `MAX_INPUT_ATTEMPTS` consecutive invalid choices; also catches `TooManyAttemptsError` from `perform_operation` and terminates the session gracefully.
+- `tests/test_main.py` — Updated imports to include `TooManyAttemptsError` and `MAX_INPUT_ATTEMPTS`. Added 9 new tests covering max-attempt exhaustion, last-attempt success, countdown message display, invalid-choice counter, counter reset on valid choice, and session exit on too many invalid operands.
+- `artifacts/activity_diagram.puml` — Updated interactive mode branch to show the `consecutive_invalid_choices` counter, the max-attempts guard for invalid choices, and the operand retry loop with countdown and exhaustion exit.
+- `artifacts/sequence_diagram.puml` — Updated the interactive-mode note to document the two new termination paths: too many invalid choices, and `TooManyAttemptsError` from operand input.
+
+### Purpose
+Add bounded retry logic to the interactive calculator mode (issue #147, V2 Task 8 — Structured/generic). Previously `get_number()` and `get_integer()` retried indefinitely on invalid input, and invalid operation choices were silently ignored without limit. Now both operand input and operation selection are bounded by `MAX_INPUT_ATTEMPTS = 3`. CLI mode already terminates on invalid input via argparse and domain-error handling; no CLI changes were needed.
+
+### Risks
+- `MAX_INPUT_ATTEMPTS = 3` is a module-level constant. Tests that call `get_number()` or `get_integer()` with fewer than 3 valid inputs and no invalid inputs are unaffected. Tests that relied on infinite retry (passing exactly one invalid then one valid input) continue to pass because one retry is within the 3-attempt limit.
+- `TooManyAttemptsError` is not a subclass of `ValueError` or `ZeroDivisionError`, so it propagates past the existing error handler in `main()` and is caught by the dedicated `except TooManyAttemptsError` clause.
+
+### Test results
+All 148 tests passed: 148 passed in 0.29s (139 existing + 9 new)
+
+### Intended PR target
+exp2/structured-generic
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: PlantUML diagram update
 
 **Branch:** task/issue-144-bash-cli-mode

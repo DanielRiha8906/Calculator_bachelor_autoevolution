@@ -36,8 +36,14 @@ note over Main, Calc
   If a ValueError or ZeroDivisionError is raised inside
   perform_operation(), main() catches it, prints
   "Error: <message>", and continues the loop.
-  If an unrecognised choice is entered, perform_operation()
-  returns None and main() prints "Unknown operation".
+
+  If an unrecognised choice is entered MAX_INPUT_ATTEMPTS times
+  consecutively, main() prints "Too many invalid choices.
+  Ending session." and terminates.
+
+  If get_number() or get_integer() receives MAX_INPUT_ATTEMPTS
+  consecutive invalid inputs, it raises TooManyAttemptsError.
+  main() catches this, prints the message, and terminates.
 end note
 
 == Bash CLI Mode (with arguments, e.g. "add 3 4") ==
