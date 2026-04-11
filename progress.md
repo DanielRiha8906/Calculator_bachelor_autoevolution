@@ -1,3 +1,43 @@
+## Run: issue-113 — Add user input to the calculator
+
+- **Branch:** task/issue-113-add-user-input
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/user_input.py` — new module with `interactive_mode()` function implementing an interactive CLI REPL for the calculator
+- `src/__main__.py` — updated to call `interactive_mode()` instead of the static demo
+- `tests/test_user_input.py` — new test file with 15 tests covering quit, menu display, all operation types, invalid input, and error handling
+
+### Purpose
+Implements Issue #113 (V2 Task 5 - User input - Naive/generic): adds an interactive command-line interface that lets users select an operation from a menu, enter operands, and see the result. The loop repeats until the user quits with 'q'. All 12 calculator operations are accessible; errors (ZeroDivisionError, ValueError, TypeError) are displayed without crashing.
+
+### Risks
+- None. `interactive_mode()` is a pure I/O wrapper over the existing `Calculator` class; no calculator logic was modified.
+- Factorial requires integer input — the function parses with `int()` for that operation and `float()` for all others.
+
+### Test results
+All 89 tests passed (74 pre-existing + 15 new):
+- `TestInteractiveMode::test_quit_immediately` — PASSED
+- `TestInteractiveMode::test_menu_is_printed` — PASSED
+- `TestInteractiveMode::test_add_two_numbers` — PASSED
+- `TestInteractiveMode::test_subtract_two_numbers` — PASSED
+- `TestInteractiveMode::test_multiply_two_numbers` — PASSED
+- `TestInteractiveMode::test_divide_two_numbers` — PASSED
+- `TestInteractiveMode::test_factorial_integer` — PASSED
+- `TestInteractiveMode::test_square_number` — PASSED
+- `TestInteractiveMode::test_cube_number` — PASSED
+- `TestInteractiveMode::test_square_root` — PASSED
+- `TestInteractiveMode::test_power_operation` — PASSED
+- `TestInteractiveMode::test_invalid_choice_shows_error` — PASSED
+- `TestInteractiveMode::test_divide_by_zero_shows_error` — PASSED
+- `TestInteractiveMode::test_square_root_negative_shows_error` — PASSED
+- `TestInteractiveMode::test_multiple_operations_in_session` — PASSED
+
+Duration: 192.8s | Cost: $0.583849 USD | Turns: 21
+
+---
+
 ## Run: issue-110 — Add more math functions to the calculator
 
 - **Branch:** task/issue-110-add-math-functions
@@ -196,3 +236,26 @@ Routine diagram maintenance pass. All three PlantUML diagrams were reviewed agai
 No tests modified; all existing 74 tests remain passing from previous run.
 
 Duration: 25.1s | Cost: $0.125089 USD | Turns: 12
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-113-add-user-input
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — added `UserInput` module class (`OPERATIONS`, `TWO_ARG_OPS`, `INT_OPS`, `_print_menu()`, `interactive_mode()`); added `TestInteractiveMode` with 15 test methods; updated `Main` relationship to reflect it now calls `interactive_mode()` rather than `Calculator` directly
+- `artifacts/activity_diagram.puml` — replaced static demo flow with interactive REPL loop: print menu, read choice, dispatch by op type (INT_OPS / TWO_ARG_OPS / single-arg), handle errors, loop until 'q'
+- `artifacts/sequence_diagram.puml` — replaced static sequence with interactive flow: `__main__` → `user_input::interactive_mode()` → `Calculator`, showing loop, all three input-arity branches, and error handling
+
+### Purpose
+Routine diagram maintenance pass following the addition of `src/user_input.py` (Issue #113). All three PlantUML diagrams now reflect the current codebase: `Calculator` (12 methods), `UserInput` module (interactive REPL), `__main__` entry point, `__init__` export, and all 18 test classes (89 test methods total).
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing 89 tests remain passing from previous run.
+
+Duration: 109.3s | Cost: $0.335366 USD | Turns: 22
