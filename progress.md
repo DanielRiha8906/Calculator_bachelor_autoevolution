@@ -1,3 +1,26 @@
+## Run: PlantUML diagram update
+
+**Branch:** task/issue-177-separate-calculation-from-ui
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Added `controller` package with `CalculatorController` class (holds `_calc: Calculator`, exposes `execute(operation, a, b, base): str`) and `CHOICE_TO_OPERATION` constant. Updated all dependency arrows: `main`, `perform_operation`, `cli_main`, and `_dispatch` now point to `CalculatorController` instead of `Calculator` directly. Added `CalculatorController --> Calculator : uses` composition arrow. Added error note on `CalculatorController::execute`. Updated `perform_operation` and `_dispatch` parameter types from `Calculator` to `CalculatorController`.
+- `artifacts/activity_diagram.puml` — Replaced `:Instantiate Calculator;` with `:Instantiate CalculatorController;` in both CLI and interactive branches. Replaced `_dispatch(calc, args)` with `_dispatch(controller, args)` and `:Call Calculator method;` with `:controller.execute() → Calculator method;` to accurately reflect the two-layer dispatch introduced by issue #177.
+- `artifacts/sequence_diagram.puml` — Added `CalculatorController` as an explicit participant between UI layers and `Calculator`. Updated interactive-mode flow: `perform_operation` now calls `execute("add", a=3.0, b=4.0)` on `Controller`, which in turn calls `Calc.add(3.0, 4.0)`. Updated CLI-mode flow similarly: `_dispatch` calls `controller.execute()`, controller calls `Calc`, result propagates back. Notes unchanged as they remain accurate.
+
+### Purpose
+Update PlantUML diagrams to reflect the `CalculatorController` dispatch layer introduced in issue #177. Previously the diagrams showed both UI layers (`__main__` and `cli`) calling `Calculator` methods directly; after this change they correctly show `CalculatorController` as the single dispatch point that sits between UI and computation.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #177 — Refactoring: separate calculation logic from UI
 
 **Branch:** task/issue-177-separate-calculation-from-ui

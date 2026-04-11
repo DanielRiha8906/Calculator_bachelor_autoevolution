@@ -13,9 +13,9 @@ if (Command-line arguments provided?) then (yes)
     stop
   endif
 
-  :Instantiate Calculator;
-  :_dispatch(calc, args);
-  :Call Calculator method;
+  :Instantiate CalculatorController;
+  :_dispatch(controller, args);
+  :controller.execute() → Calculator method;
 
   if (ValueError or ZeroDivisionError raised?) then (yes)
     :log_error("[cli] <operation>: <message>");
@@ -30,7 +30,7 @@ if (Command-line arguments provided?) then (yes)
 else (no)
 
   :Display "Welcome to the Calculator!";
-  :Instantiate Calculator;
+  :Instantiate CalculatorController;
   :clear_history() — wipe history.txt;
   :consecutive_invalid_choices = 0;
 
@@ -58,7 +58,7 @@ else (no)
       if (choice == "13"?) then (yes)
         :display_history();
       else (no)
-        :perform_operation(calc, choice);
+        :perform_operation(controller, choice);
 
         if (operand input valid?) then (no — retry up to MAX_INPUT_ATTEMPTS)
           :Print "Invalid input... N attempt(s) remaining";
@@ -67,7 +67,7 @@ else (no)
             stop
           endif
         else (yes)
-          :Call Calculator method;
+          :controller.execute() → Calculator method;
 
           if (ValueError or ZeroDivisionError raised?) then (yes)
             :log_error("[interactive] <operation>: <message>");
