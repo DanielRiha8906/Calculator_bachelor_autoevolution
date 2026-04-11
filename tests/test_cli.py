@@ -23,13 +23,17 @@ def _run(args: list[str]) -> tuple[str, str, int]:
 
     Exit code 0 means main() returned normally; 1 (or any non-zero value)
     means sys.exit() was called.
+
+    setup_error_logging is patched to a no-op so tests produce no file
+    side-effects; use test_error_logging.py for logging-specific assertions.
     """
     captured_out = io.StringIO()
     captured_err = io.StringIO()
     exit_code = 0
     try:
         with patch("sys.stdout", captured_out), patch("sys.stderr", captured_err):
-            main(args)
+            with patch("main.setup_error_logging"):
+                main(args)
     except SystemExit as exc:
         exit_code = exc.code if exc.code is not None else 0
     return captured_out.getvalue(), captured_err.getvalue(), exit_code

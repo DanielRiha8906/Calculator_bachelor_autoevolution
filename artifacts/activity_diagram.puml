@@ -9,8 +9,10 @@ partition "Bash CLI (main.py)" {
     start
 
     :Receive argv from command line;
+    :setup_error_logging() → attach FileHandler to error.log;
 
     if (argv is empty?) then (yes)
+        :logger.error("[cli] missing required operation argument");
         :Print usage to stderr;
         :Exit with code 1;
         stop
@@ -19,6 +21,7 @@ partition "Bash CLI (main.py)" {
     :operation = argv[0];
 
     if (operation not in CLI_OPERATIONS?) then (yes)
+        :logger.error("[cli] unknown operation: <op>");
         :Print "Error: unknown operation" to stderr;
         :Print usage to stderr;
         :Exit with code 1;
@@ -28,6 +31,7 @@ partition "Bash CLI (main.py)" {
     :Look up (method_name, arity) from CLI_OPERATIONS;
 
     if (len(argv) != arity + 1?) then (yes)
+        :logger.error("[cli] incorrect argument count for '...'");
         :Print "Error: requires N operand(s)" to stderr;
         :Exit with code 1;
         stop
@@ -36,6 +40,7 @@ partition "Bash CLI (main.py)" {
     :Parse operand strings via _parse_operand()\n(require_int=True for factorial);
 
     if (ValueError during parsing?) then (yes)
+        :logger.error("[cli] invalid operand for '...': <exc>");
         :Print "Error: <message>" to stderr;
         :Exit with code 1;
         stop
@@ -46,6 +51,7 @@ partition "Bash CLI (main.py)" {
     :result = method(*operands);
 
     if (ValueError, TypeError, or\nZeroDivisionError raised?) then (yes)
+        :logger.error("[cli] calculation error in <op>: <exc>");
         :Print "Error: <exception message>" to stderr;
         :Exit with code 1;
         stop
@@ -63,6 +69,7 @@ partition "Interactive Session (src/__main__.py)" {
     start
 
     :Import Calculator from src;
+    :setup_error_logging() → attach FileHandler to error.log;
     :Instantiate Calculator();
     :Print "=== Interactive Calculator ===";
     :history = [];
@@ -86,8 +93,10 @@ partition "Interactive Session (src/__main__.py)" {
             endif
         elseif (choice not in OPERATIONS?) then (yes)
             :menu_failures += 1;
+            :logger.error("[interactive] invalid menu choice: <choice>");
             :Print "Invalid choice" error\n+ list of available options;
             if (menu_failures >= MAX_RETRIES?) then (yes)
+                :logger.error("[interactive] max retries exceeded for menu selection");
                 :Print "Too many invalid selections.\nEnding session.";
                 :_write_history(history) → history.txt;
                 stop
@@ -100,8 +109,9 @@ partition "Interactive Session (src/__main__.py)" {
             :Resolve method via getattr(calc, op_name);
 
             if (arity == 1?) then (yes)
-                :_prompt_number("Enter value:", require_int)\n[retries up to MAX_RETRIES on bad input];
+                :_prompt_number("Enter value:", require_int)\n[retries up to MAX_RETRIES;\nlogger.error("[interactive] invalid operand input") on each bad input];
                 if (None returned — retries exhausted?) then (yes)
+                    :logger.error("[interactive] max retries exceeded for operand input in <op>");
                     :Print "Too many invalid inputs.\nEnding session.";
                     :_write_history(history) → history.txt;
                     stop
@@ -109,15 +119,17 @@ partition "Interactive Session (src/__main__.py)" {
                 :a = parsed value;
                 :result = method(a);
             else (arity == 2)
-                :_prompt_number("Enter first value:")\n[retries up to MAX_RETRIES on bad input];
+                :_prompt_number("Enter first value:")\n[retries up to MAX_RETRIES;\nlogger.error("[interactive] invalid operand input") on each bad input];
                 if (None returned — retries exhausted?) then (yes)
+                    :logger.error("[interactive] max retries exceeded for operand input in <op>");
                     :Print "Too many invalid inputs.\nEnding session.";
                     :_write_history(history) → history.txt;
                     stop
                 endif
                 :a = parsed value;
-                :_prompt_number("Enter second value:")\n[retries up to MAX_RETRIES on bad input];
+                :_prompt_number("Enter second value:")\n[retries up to MAX_RETRIES;\nlogger.error("[interactive] invalid operand input") on each bad input];
                 if (None returned — retries exhausted?) then (yes)
+                    :logger.error("[interactive] max retries exceeded for operand input in <op>");
                     :Print "Too many invalid inputs.\nEnding session.";
                     :_write_history(history) → history.txt;
                     stop
@@ -127,6 +139,7 @@ partition "Interactive Session (src/__main__.py)" {
             endif
 
             if (ValueError, TypeError, or\nZeroDivisionError raised?) then (yes)
+                :logger.error("[interactive] calculation error in <op>: <exc>");
                 :Print "Error: <exception message>";
             else (no)
                 :Print "Result: <result>";

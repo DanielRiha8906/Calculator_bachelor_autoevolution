@@ -1,3 +1,87 @@
+## Run: Issue #154 — Error logging (task/issue-154-error-logging)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-154-error-logging
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/error_logger.py` — new module; defines `ERROR_LOG_FILE = "error.log"`,
+  `setup_error_logging(log_file)` which attaches a `FileHandler` to the shared logger
+  exactly once (guarded against double-registration), and `get_error_logger()` which
+  returns the `"calculator.errors"` logger; logger level is set at import time so pytest
+  `caplog` can capture records even when `setup_error_logging` is patched in tests
+- `main.py` — imports `setup_error_logging` and `get_error_logger`; calls
+  `setup_error_logging()` at the top of `main()`; adds `logger.error(...)` calls with
+  `[cli]` prefix for: missing operation argument, unknown operation, incorrect argument
+  count, invalid operand parse error, and calculation exceptions (ValueError, TypeError,
+  ZeroDivisionError)
+- `src/__main__.py` — imports `setup_error_logging` and `get_error_logger`; calls
+  `setup_error_logging()` at the top of `main()`; adds `logger.error(...)` calls with
+  `[interactive]` prefix for: invalid menu choice, max-retries-exceeded for menu,
+  invalid operand input (inside `_prompt_number`), max-retries-exceeded for operand
+  input, and calculation exceptions
+- `tests/test_cli.py` — updated `_run()` helper to patch `main.setup_error_logging`
+  preventing file side-effects in existing tests
+- `tests/test_main.py` — updated `_run()` helper and the three direct-`main()` file
+  tests to patch `src.__main__.setup_error_logging`, preventing file side-effects
+- `tests/test_error_logging.py` — new file; 16 tests covering: CLI logs for all error
+  scenarios (missing op, unknown op, wrong arg count, invalid operand, divide-by-zero,
+  sqrt negative, factorial negative, log10 non-positive); interactive logs for all error
+  scenarios (invalid menu choice, max retries menu, invalid operand, divide-by-zero,
+  sqrt negative, ln non-positive); two file-writing tests using `tmp_path` that verify
+  errors are actually written to `error.log`
+- `artifacts/class_diagram.puml` — added `error_logger` module with `ERROR_LOG_FILE`,
+  `setup_error_logging`, and `get_error_logger`; updated notes for `CLI::main`,
+  `Main::main`, and `Main::_prompt_number` to describe error logging behavior
+- `artifacts/activity_diagram.puml` — added `setup_error_logging()` calls at session
+  start in both flows; added `logger.error(...)` steps at every error branch
+- `artifacts/sequence_diagram.puml` — added `error.log` participant in both flows;
+  added `logger.error(...)` messages at every error point in both CLI and interactive
+  sequences
+
+### Purpose
+
+Implemented issue #154 (Task 10 — Error logging — Expert/generic):
+- A dedicated `src/error_logger.py` module provides the shared `"calculator.errors"`
+  logger and a `setup_error_logging()` factory that attaches a single `FileHandler`
+  writing ERROR-level records to `error.log`
+- Both the bash CLI (`main.py`) and the interactive session (`src/__main__.py`) call
+  `setup_error_logging()` at startup and log every error with a `[cli]` or
+  `[interactive]` prefix so the two modes are distinguishable in the shared file
+- Logged events cover all required scenarios: unsupported operations, invalid operand
+  input, incorrect argument counts, and runtime calculation errors (ZeroDivisionError,
+  invalid mathematical domains via ValueError/TypeError)
+- Error logging is entirely separate from the session history mechanism — history tracks
+  successful calculations; error.log tracks failures only
+- `setup_error_logging` is patched in all test helpers to prevent file side-effects;
+  dedicated tests in `test_error_logging.py` use `caplog` for in-memory assertions and
+  `tmp_path` for file-write verification
+
+### Risks
+
+Low. `src/error_logger.py` is a new file with no changes to Calculator logic.
+Changes to `main.py` and `src/__main__.py` add only logging calls alongside the
+existing stderr/print error paths — no control flow is modified.  The `propagate=True`
+setting on the logger ensures pytest `caplog` works without requiring a real file, and
+the FileHandler guard prevents duplicate handlers if `setup_error_logging` is called
+more than once.
+
+### Test results
+
+164 tests collected; 164 passed; 0 failed; 0 skipped.
+No regressions in `test_calculator.py` (75), `test_cli.py` (43), or `test_main.py` (43).
+`test_error_logging.py` is new: 16 tests (8 CLI + 6 interactive logging assertions +
+2 file-write integration tests).
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-151-history)
 
 **Date:** 2026-04-11

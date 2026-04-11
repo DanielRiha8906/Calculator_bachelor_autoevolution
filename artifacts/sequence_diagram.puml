@@ -7,19 +7,26 @@ title Calculator — Sequence Diagram
 actor User as User
 participant "main.py\n(CLI)" as CLI
 participant "Calculator" as Calc
+participant "error.log" as ELog
 
 == Bash CLI Mode ==
 
 User -> CLI : python main.py <operation> [operands]
 activate CLI
 
+CLI -> ELog : setup_error_logging()\n(attach FileHandler)
+
 alt no arguments
+    CLI -> ELog : logger.error("[cli] missing required operation argument")
     CLI -> User : print usage to stderr\nexit code 1
 else unknown operation
+    CLI -> ELog : logger.error("[cli] unknown operation: ...")
     CLI -> User : "Error: unknown operation '...'" to stderr\nexit code 1
 else wrong operand count
+    CLI -> ELog : logger.error("[cli] incorrect argument count for '...'")
     CLI -> User : "Error: '...' requires N operand(s)" to stderr\nexit code 1
 else invalid operand format (e.g. "abc", "3.5" for factorial)
+    CLI -> ELog : logger.error("[cli] invalid operand for '...': ...")
     CLI -> User : "Error: ..." to stderr\nexit code 1
 else valid arguments
     CLI -> Calc : Calculator()
@@ -34,6 +41,7 @@ else valid arguments
 
     alt ValueError / TypeError / ZeroDivisionError raised
         Calc --> CLI : raises exception
+        CLI -> ELog : logger.error("[cli] calculation error in <op>: ...")
         CLI -> User : "Error: <message>" to stderr\nexit code 1
     else success
         Calc --> CLI : result
@@ -53,10 +61,12 @@ actor User
 participant "__main__\n(Interactive)" as Main
 participant "Calculator" as Calc2
 participant "history.txt" as File
+participant "error.log" as ELog2
 
 User -> Main : run program
 activate Main
 
+Main -> ELog2 : setup_error_logging()\n(attach FileHandler)
 Main -> Calc2 : Calculator()
 activate Calc2
 
@@ -80,8 +90,10 @@ loop until user quits or retry limit reached
         end
     else choice not in OPERATIONS
         Main -> Main : menu_failures += 1
+        Main -> ELog2 : logger.error("[interactive] invalid menu choice: ...")
         Main -> User : "Invalid choice '...'. Available options: ..."
         alt menu_failures >= MAX_RETRIES
+            Main -> ELog2 : logger.error("[interactive] max retries exceeded for menu selection")
             Main -> File : _write_history(history)
             Main -> User : "Too many invalid selections. Ending session."
             Main -> Main : break
@@ -96,10 +108,12 @@ loop until user quits or retry limit reached
             alt input is valid number
                 Main -> Main : _prompt_number returns parsed value
             else input is invalid
+                Main -> ELog2 : logger.error("[interactive] invalid operand input: ...")
                 Main -> User : "Error: <message>. <N> attempt(s) remaining."
             end
         end
         alt retries exhausted (returns None)
+            Main -> ELog2 : logger.error("[interactive] max retries exceeded for operand input in <op>")
             Main -> File : _write_history(history)
             Main -> User : "Too many invalid inputs. Ending session."
             Main -> Main : break
@@ -107,6 +121,7 @@ loop until user quits or retry limit reached
             Main -> Calc2 : method(a)
             alt ValueError / TypeError raised
                 Calc2 --> Main : raises exception
+                Main -> ELog2 : logger.error("[interactive] calculation error in <op>: ...")
                 Main -> User : "Error: <message>"
             else success
                 Calc2 --> Main : result
@@ -122,10 +137,12 @@ loop until user quits or retry limit reached
             alt input is valid number
                 Main -> Main : _prompt_number returns parsed value
             else input is invalid
+                Main -> ELog2 : logger.error("[interactive] invalid operand input: ...")
                 Main -> User : "Error: <message>. <N> attempt(s) remaining."
             end
         end
         alt retries exhausted for first operand
+            Main -> ELog2 : logger.error("[interactive] max retries exceeded for operand input in <op>")
             Main -> File : _write_history(history)
             Main -> User : "Too many invalid inputs. Ending session."
             Main -> Main : break
@@ -136,10 +153,12 @@ loop until user quits or retry limit reached
             alt input is valid number
                 Main -> Main : _prompt_number returns parsed value
             else input is invalid
+                Main -> ELog2 : logger.error("[interactive] invalid operand input: ...")
                 Main -> User : "Error: <message>. <N> attempt(s) remaining."
             end
         end
         alt retries exhausted for second operand
+            Main -> ELog2 : logger.error("[interactive] max retries exceeded for operand input in <op>")
             Main -> File : _write_history(history)
             Main -> User : "Too many invalid inputs. Ending session."
             Main -> Main : break
@@ -147,6 +166,7 @@ loop until user quits or retry limit reached
         Main -> Calc2 : method(a, b)
         alt ZeroDivisionError / ValueError / TypeError raised
             Calc2 --> Main : raises exception
+            Main -> ELog2 : logger.error("[interactive] calculation error in <op>: ...")
             Main -> User : "Error: <message>"
         else success
             Calc2 --> Main : result
