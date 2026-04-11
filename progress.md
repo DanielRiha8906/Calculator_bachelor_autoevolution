@@ -22,4 +22,4 @@ All 6 tests passed:
 - `test_divide_none_numerator` — PASSED
 - `test_divide_none_denominator` — PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 83.2s | Cost: $0.244124 USD | Turns: 16
