@@ -1,3 +1,35 @@
+## Run: issue-194 — Add tkinter GUI for the calculator
+
+- **Branch:** task/issue-194-add-gui
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/gui.py` — new module: `CalculatorGUI` tkinter class and `launch_gui()` entry point; exposes all 12 Calculator operations via buttons; supports normal/scientific mode toggle (scientific buttons disabled in normal mode); displays operation history in a Toplevel dialog; handles errors with `messagebox.showerror`
+- `src/__main__.py` — added `--gui` flag: `python -m src --gui` now launches the tkinter window; existing CLI and interactive REPL modes are unchanged
+- `tests/test_gui.py` — 54 new tests covering: init defaults, digit input, clear, binary operator flow, equals, unary scientific ops, mode toggle, display formatting, history integration, and launch_gui; tkinter is mocked via `sys.modules` patching so tests run headless in CI
+- `artifacts/class_diagram.puml` — added `CalculatorGUI` class, `gui` module, 9 new test classes, and their relationships
+
+### Purpose
+Implements Issue #194 (V2 Task 15 - GUI - Naive/generic): adds a tkinter-based graphical calculator window. The GUI uses the same `Calculator` backend as the CLI and interactive REPL, so all 12 operations (add, subtract, multiply, divide, factorial, square, cube, square_root, cube_root, power, log, ln) are available. Existing interfaces are fully preserved.
+
+### Risks
+- tkinter requires a graphical display at runtime; tests mock the module to run headless. The `--gui` flag will fail on servers/CI without a display, but this is expected for a GUI application.
+- No new dependencies: tkinter ships with the Python standard library.
+- No changes to `Calculator`, `ScientificCalculator`, `cli.py`, or `user_input.py` — only the entry point and a new module were added.
+
+### Test results
+All 237 tests passed (183 existing + 54 new):
+- `TestCalculator*` suite (84 tests) — PASSED
+- `TestCli*` suite (50 tests) — PASSED
+- `TestScientificCalculator*` suite (18 tests) — PASSED
+- `TestInteractiveMode`, `TestModeSwitch`, `TestRetryLogic*`, `TestHistoryInInteractiveMode`, `TestErrorLoggingInUserInput` (61 tests) — PASSED
+- `TestCalculatorGUIInit`, `TestDigitInput`, `TestClear`, `TestBinaryOp`, `TestEquals`, `TestUnaryOp`, `TestModeToggle`, `TestDisplayFloat`, `TestHistoryIntegration`, `TestLaunchGui` (54 new tests) — PASSED
+
+Duration: 728.8s | Cost: $1.800764 USD | Turns: 40
+
+---
+
 ## Run: issue-191 — Add scientific mode switch to calculator
 
 - **Branch:** task/issue-191-scientific-mode-switch
@@ -711,3 +743,26 @@ Routine diagram maintenance pass following issue-191 (scientific mode switch). T
 No tests modified; all existing 183 tests remain passing from previous run.
 
 Duration: 172.2s | Cost: $0.522879 USD | Turns: 21
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-194-add-gui
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed (already reflects GUI and ScientificCalculator additions from this branch)
+- `artifacts/activity_diagram.puml` — added `--gui` flag check as top-level branch; added full GUI event-loop activity (digit, clear, binary op, equals, unary op, mode toggle, history) before the existing CLI and interactive branches
+- `artifacts/sequence_diagram.puml` — added `gui` and `CalculatorGUI` participants; added `--gui` alt block showing `launch_gui()` → `CalculatorGUI.__init__` → `Calculator.__create__` → `_build_ui()` → `mainloop()` with all user interaction flows (digit, clear, binary op, equals, unary op, mode toggle, history); existing CLI and interactive blocks preserved unchanged
+
+### Purpose
+Routine diagram maintenance pass following the addition of the tkinter GUI (Issue #194). The activity and sequence diagrams now reflect the three-way entry-point dispatch in `__main__`: `--gui` → GUI mode, arguments present → CLI mode, no arguments → interactive REPL. The class diagram was already up to date: it correctly reflects `gui.py` (`GUI` module + `CalculatorGUI` class), `scientific_calculator.py` (`ScientificCalculator` subclass), all 43 test classes, and all relationships.
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing tests remain passing from previous run.
+
+Duration: 279.2s | Cost: $0.663940 USD | Turns: 13

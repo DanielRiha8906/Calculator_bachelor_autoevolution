@@ -1,11 +1,75 @@
 @startuml sequence_diagram
 
 participant "__main__" as Main
+participant "gui" as GUI
+participant "CalculatorGUI" as CGUI
 participant "user_input" as UI
 participant "cli" as CLI
 participant "Calculator" as Calc
 
-alt sys.argv has arguments (bash / CLI mode)
+alt --gui flag in sys.argv
+
+    Main -> GUI : launch_gui()
+    GUI -> GUI : tk.Tk() — create root window
+    GUI -> CGUI : <<create>>(root)
+    CGUI -> Calc : <<create>>
+    CGUI -> CGUI : _build_ui()\nnote: display, mode toggle, history, digit pad, basic ops, sci ops
+    GUI -> GUI : root.mainloop()
+
+    loop until window closed
+
+        alt user clicks digit or decimal
+            GUI -> CGUI : _on_digit(digit)
+            note right : resets display if _should_reset;\nappends digit; skips duplicate decimal
+        else user clicks Clear
+            GUI -> CGUI : _on_clear()
+            note right : display = "0"; clears _pending_op, _pending_value, _should_reset
+        else user clicks binary op (+, -, ×, ÷, x^y)
+            GUI -> CGUI : _on_binary_op(op)
+            CGUI -> CGUI : _pending_value = float(display)
+            CGUI -> CGUI : _pending_op = op
+            CGUI -> CGUI : _should_reset = True
+        else user clicks equals
+            GUI -> CGUI : _on_equals()
+            alt _pending_op is not None
+                CGUI -> Calc : op(_pending_value, second_operand)
+                alt success
+                    Calc --> CGUI : result
+                    CGUI -> CGUI : _display_float(result)
+                    CGUI -> CGUI : clear pending state; _should_reset = True
+                else ZeroDivisionError / ValueError
+                    Calc --> CGUI : exception
+                    CGUI -> CGUI : messagebox.showerror(...)
+                    CGUI -> CGUI : _on_clear()
+                end
+            else _pending_op is None
+                CGUI -> CGUI : (no-op)
+            end
+        else user clicks unary op (x², x³, √x, ∛x, n!, log, ln)
+            GUI -> CGUI : _on_unary_op(op)
+            CGUI -> Calc : op(operand)
+            alt success
+                Calc --> CGUI : result
+                CGUI -> CGUI : _display_float(result)
+                CGUI -> CGUI : _should_reset = True
+            else ValueError / TypeError
+                Calc --> CGUI : exception
+                CGUI -> CGUI : messagebox.showerror(...)
+            end
+        else user clicks mode toggle
+            GUI -> CGUI : _toggle_mode()
+            CGUI -> CGUI : scientific_mode = not scientific_mode
+            CGUI -> CGUI : update title; _update_sci_buttons_state()
+        else user clicks History
+            GUI -> CGUI : _show_history()
+            CGUI -> Calc : get_history()
+            Calc --> CGUI : list[dict]
+            CGUI -> CGUI : open Toplevel modal; display entries
+        end
+
+    end
+
+else sys.argv has arguments (bash / CLI mode)
 
     Main -> CLI : cli_mode()
     CLI -> CLI : _build_parser().parse_args()\nnote: includes --mode flag (default: scientific)

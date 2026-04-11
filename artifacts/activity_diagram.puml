@@ -2,127 +2,188 @@
 
 start
 
-:Invoke \`python -m src\`;
+:Invoke `python -m src`;
 
-if (Command-line arguments provided?) then (yes)
+if (--gui flag in sys.argv?) then (yes)
 
-    :Parse arguments with argparse\n(operation + operands + --mode flag);
-
-    if (Operation valid?) then (no)
-        :argparse prints error and exits (code 2);
-        stop
-    else (yes)
-        :Resolve mode: --mode normal | scientific\n(default: scientific);
-
-        if (mode == normal AND op not in BASIC_OPS?) then (yes)
-            :Print "Error: operation not available in normal mode" to stderr;
-            :Return exit code 1;
-            stop
-        else (no)
-            :Create Calculator instance;
-
-            if (op in INT_OPS?) then (yes)
-                if (operand count == 1?) then (no)
-                    :Print "Error: requires exactly 1 integer operand" to stderr;
-                    :Return exit code 1;
-                    stop
-                else (yes)
-                    :Parse operand as int;
-                    :Call op(int_value);
-                endif
-            elseif (op in TWO_ARG_OPS?) then (yes)
-                if (operand count == 2?) then (no)
-                    :Print "Error: requires exactly 2 operands" to stderr;
-                    :Return exit code 1;
-                    stop
-                else (yes)
-                    :Parse operands as float;
-                    :Call op(a, b);
-                endif
-            else (no)
-                if (operand count == 1?) then (no)
-                    :Print "Error: requires exactly 1 operand" to stderr;
-                    :Return exit code 1;
-                    stop
-                else (yes)
-                    :Parse operand as float;
-                    :Call op(a);
-                endif
-            endif
-
-            if (ValueError, ZeroDivisionError, or TypeError raised?) then (yes)
-                :Print "Error: <message>" to stderr;
-                :Return exit code 1;
-                stop
-            else (no)
-                :Print result to stdout;
-                :Return exit code 0;
-                stop
-            endif
-        endif
-    endif
-
-else (no)
-
-    :Call interactive_mode();
-
-    :Create Calculator instance;
-    :Set scientific_mode = False;
-
-    :Print menu (BASIC_OPERATIONS only);
+    :Call launch_gui();
+    :Create tk.Tk() root window;
+    :Instantiate CalculatorGUI(root)\n(creates Calculator, builds UI);
+    :Enter root.mainloop();
 
     repeat
 
-        :Read choice from stdin;
+        :User triggers a UI event;
 
-        if (choice == 'q'?) then (yes)
-            :Print "Goodbye!";
-            stop
-        endif
-
-        if (choice == 'm'?) then (yes)
-            :Toggle scientific_mode;
-            :Print menu reflecting new mode\n(BASIC_OPERATIONS or all OPERATIONS);
-        else (no)
-        endif
-
-        if (choice == 'h'?) then (yes)
-            :_print_history(calc.get_history())\nPrint each entry as "N. op(args) = result"\nor "No history." if empty;
-        else (no)
-        endif
-
-        :Determine active_ops = BASIC_OPERATIONS if not scientific_mode\nelse OPERATIONS;
-
-        if (choice in active_ops?) then (no)
-            :Print "Unknown operation: <choice>";
-        else (yes)
-            :Look up operation name and method on Calculator;
-
-            if (op in INT_OPS?) then (yes)
-                :_get_int(): prompt for integer\n(retry up to MAX_RETRIES times);
-                if (valid integer obtained?) then (no)
-                    :Raise ValueError\n"Failed after MAX_RETRIES attempts";
-                else (yes)
-                    :Call op(int_value);
+        if (digit or decimal button clicked?) then (yes)
+            if (_should_reset == True?) then (yes)
+                :Clear display to begin new value;
+                :_should_reset = False;
+            else (no)
+            endif
+            :Append digit to display\n(skip duplicate decimal point);
+        elseif (Clear button clicked?) then (yes)
+            :Reset display to "0";\n:Clear _pending_op, _pending_value, _should_reset;
+        elseif (binary op button clicked (+, -, ×, ÷, x^y)?) then (yes)
+            :Store current display value as _pending_value;\n:Store op name as _pending_op;\n:Set _should_reset = True;
+        elseif (equals button clicked?) then (yes)
+            if (_pending_op is not None?) then (yes)
+                :Read second operand from display;
+                :Call calc.op(_pending_value, second_operand);
+                if (success?) then (yes)
+                    :Display result;\n:Clear pending state;\n:Set _should_reset = True;
+                else (no)
+                    :Show error messagebox;\n:Call _on_clear();
                 endif
-            elseif (op in TWO_ARG_OPS?) then (yes)
-                :_get_float(): prompt for first float\n(retry up to MAX_RETRIES times);
-                :_get_float(): prompt for second float\n(retry up to MAX_RETRIES times);
-                :Call op(a, b);
             else (no)
-                :_get_float(): prompt for float\n(retry up to MAX_RETRIES times);
-                :Call op(a);
+                :No-op;
             endif
-
-            if (ValueError, ZeroDivisionError, or TypeError raised?) then (yes)
-                :Print "Error: <message>";
+        elseif (unary op button clicked (x², x³, √x, ∛x, n!, log, ln)?) then (yes)
+            :Read operand from display\n(int for factorial, float otherwise);
+            :Call calc.op(operand);
+            if (success?) then (yes)
+                :Display result;\n:Set _should_reset = True;
             else (no)
-                :Print "Result: <value>";
+                :Show error messagebox;
             endif
-
+        elseif (mode toggle button clicked?) then (yes)
+            :Toggle scientific_mode;
+            :Update window title to show current mode;
+            :Enable or disable scientific op buttons;
+        elseif (History button clicked?) then (yes)
+            :Open Toplevel modal window;
+            :Retrieve calc.get_history();
+            :Display all entries or "No history yet.";
+        else (other / close window)
         endif
 
-    repeat while (session active)
+    repeat while (window is open?)
+
+    stop
+
+else (no)
+
+    if (Command-line arguments provided?) then (yes)
+
+        :Parse arguments with argparse\n(operation + operands + --mode flag);
+
+        if (Operation valid?) then (no)
+            :argparse prints error and exits (code 2);
+            stop
+        else (yes)
+            :Resolve mode: --mode normal | scientific\n(default: scientific);
+
+            if (mode == normal AND op not in BASIC_OPS?) then (yes)
+                :Print "Error: operation not available in normal mode" to stderr;
+                :Return exit code 1;
+                stop
+            else (no)
+                :Create Calculator instance;
+
+                if (op in INT_OPS?) then (yes)
+                    if (operand count == 1?) then (no)
+                        :Print "Error: requires exactly 1 integer operand" to stderr;
+                        :Return exit code 1;
+                        stop
+                    else (yes)
+                        :Parse operand as int;
+                        :Call op(int_value);
+                    endif
+                elseif (op in TWO_ARG_OPS?) then (yes)
+                    if (operand count == 2?) then (no)
+                        :Print "Error: requires exactly 2 operands" to stderr;
+                        :Return exit code 1;
+                        stop
+                    else (yes)
+                        :Parse operands as float;
+                        :Call op(a, b);
+                    endif
+                else (no)
+                    if (operand count == 1?) then (no)
+                        :Print "Error: requires exactly 1 operand" to stderr;
+                        :Return exit code 1;
+                        stop
+                    else (yes)
+                        :Parse operand as float;
+                        :Call op(a);
+                    endif
+                endif
+
+                if (ValueError, ZeroDivisionError, or TypeError raised?) then (yes)
+                    :Print "Error: <message>" to stderr;
+                    :Return exit code 1;
+                    stop
+                else (no)
+                    :Print result to stdout;
+                    :Return exit code 0;
+                    stop
+                endif
+            endif
+        endif
+
+    else (no)
+
+        :Call interactive_mode();
+
+        :Create Calculator instance;
+        :Set scientific_mode = False;
+
+        :Print menu (BASIC_OPERATIONS only);
+
+        repeat
+
+            :Read choice from stdin;
+
+            if (choice == 'q'?) then (yes)
+                :Print "Goodbye!";
+                stop
+            endif
+
+            if (choice == 'm'?) then (yes)
+                :Toggle scientific_mode;
+                :Print menu reflecting new mode\n(BASIC_OPERATIONS or all OPERATIONS);
+            else (no)
+            endif
+
+            if (choice == 'h'?) then (yes)
+                :_print_history(calc.get_history())\nPrint each entry as "N. op(args) = result"\nor "No history." if empty;
+            else (no)
+            endif
+
+            :Determine active_ops = BASIC_OPERATIONS if not scientific_mode\nelse OPERATIONS;
+
+            if (choice in active_ops?) then (no)
+                :Print "Unknown operation: <choice>";
+            else (yes)
+                :Look up operation name and method on Calculator;
+
+                if (op in INT_OPS?) then (yes)
+                    :_get_int(): prompt for integer\n(retry up to MAX_RETRIES times);
+                    if (valid integer obtained?) then (no)
+                        :Raise ValueError\n"Failed after MAX_RETRIES attempts";
+                    else (yes)
+                        :Call op(int_value);
+                    endif
+                elseif (op in TWO_ARG_OPS?) then (yes)
+                    :_get_float(): prompt for first float\n(retry up to MAX_RETRIES times);
+                    :_get_float(): prompt for second float\n(retry up to MAX_RETRIES times);
+                    :Call op(a, b);
+                else (no)
+                    :_get_float(): prompt for float\n(retry up to MAX_RETRIES times);
+                    :Call op(a);
+                endif
+
+                if (ValueError, ZeroDivisionError, or TypeError raised?) then (yes)
+                    :Print "Error: <message>";
+                else (no)
+                    :Print "Result: <value>";
+                endif
+
+            endif
+
+        repeat while (session active)
+
+    endif
 
 endif
 
