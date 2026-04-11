@@ -20,8 +20,10 @@ package "src" {
     }
 
     class "__main__" as Main <<module>> {
+        + MAX_RETRIES : int
         + OPERATIONS : dict
         + _parse_number(prompt: str, require_int: bool) : int | float
+        + _prompt_number(prompt: str, require_int: bool) : int | float | None
         + main() : void
     }
 
@@ -63,6 +65,14 @@ note right of CLI::main
   Reads operation and operands from argv.
   Prints result to stdout; errors to stderr.
   Exits with code 1 on any failure.
+  No retry — fails fast on invalid input.
+end note
+
+note right of Main::MAX_RETRIES
+  Maximum consecutive invalid inputs
+  allowed before the session terminates.
+  Applies to both menu selection and
+  operand entry.
 end note
 
 note right of Main::OPERATIONS
@@ -78,12 +88,24 @@ note right of Main::_parse_number
   as int (used for factorial).
 end note
 
+note right of Main::_prompt_number
+  Wraps _parse_number with retry logic.
+  Re-prompts up to MAX_RETRIES times on
+  invalid (unparseable) input, showing
+  remaining attempts.
+  Returns None when retries are exhausted.
+end note
+
 note right of Main::main
   Interactive session loop.
-  Displays menu, reads choice,
-  collects operands, calls Calculator,
-  prints result or error.
-  Exits when user enters 'q'.
+  Displays menu, reads choice, collects operands,
+  calls Calculator, prints result or error.
+  Tracks consecutive invalid menu choices;
+  terminates after MAX_RETRIES failures.
+  Uses _prompt_number for operand input so
+  non-numeric values trigger a retry rather
+  than immediately ending the calculation.
+  Exits when user enters 'q' or retry limit hit.
 end note
 
 note right of Calculator::divide

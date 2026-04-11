@@ -1,3 +1,94 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-148-retry-logic-interactive)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-148-retry-logic-interactive
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+
+Reviewed all three PlantUML diagrams against the current state of `src/` and `main.py`.
+All twelve Calculator methods, both entry points (interactive `src/__main__.py` and bash
+CLI `main.py`), and the retry logic introduced in issue #148 (`MAX_RETRIES`, `_prompt_number`,
+menu failure counter) are correctly represented in every diagram. No updates were required.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 60.6s | Cost: $0.246579 USD | Turns: 17
+
+---
+
+## Run: Issue #148 — Retry logic for interactive mode (task/issue-148-retry-logic-interactive)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-148-retry-logic-interactive
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/__main__.py` — added `MAX_RETRIES = 5` constant and `_prompt_number()` helper;
+  updated `main()` to track consecutive invalid menu selections (up to MAX_RETRIES before
+  terminating) and to use `_prompt_number` for operand input so invalid entries trigger
+  a retry with a remaining-attempts message instead of jumping straight back to the menu
+- `tests/test_main.py` — updated `test_factorial_float_input_shows_error` to provide a
+  valid retry input after the invalid one (matches new retry behavior); added 5 new tests
+  covering: available-options display on bad menu choice, session termination after
+  MAX_RETRIES invalid menu choices, failure-counter reset on valid choice, operand retry
+  succeeding after one bad input, and session termination after MAX_RETRIES bad operands
+- `artifacts/class_diagram.puml` — added `MAX_RETRIES` attribute and `_prompt_number`
+  method to the `__main__` class; updated notes for `main()` to describe retry policy
+- `artifacts/activity_diagram.puml` — added retry-loop and termination branches for
+  both invalid menu selections and invalid operand inputs in the interactive partition
+- `artifacts/sequence_diagram.puml` — updated interactive-mode sequence to show the
+  retry counter increment, available-options message, and per-operand retry loops
+
+### Purpose
+
+Implemented issue #148 (Task 8 — Retry logic — Expert/guided):
+- Invalid menu choice: shows error + lists available operation keys; increments a
+  consecutive-failure counter; terminates the session after MAX_RETRIES (5) failures
+- Valid menu choice resets the failure counter to zero
+- Invalid operand (non-parseable string): `_prompt_number` re-prompts up to MAX_RETRIES
+  times, printing remaining attempts; returns None when exhausted, causing `main()` to
+  terminate with a "Ending session" message
+- Bash CLI mode (`main.py`) is unchanged — it already fails fast with stderr + exit 1
+
+### Risks
+
+Low. Changes are confined to `src/__main__.py` input-handling logic. The `Calculator`
+class and bash CLI are not touched. Mathematical errors (e.g. divide-by-zero) continue
+to show an error and return to the menu rather than consuming retry attempts, preserving
+the existing `test_error_does_not_terminate_session` behaviour.
+
+### Test results
+
+138 tests collected; 138 passed; 0 failed; 0 skipped.
+No regressions in `test_calculator.py` (75) or `test_cli.py` (30).
+`test_main.py` grew from 28 to 33 tests (+5 retry-specific tests).
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 544.0s | Cost: $1.293858 USD | Turns: 35
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-145-bash-cli)
 
 **Date:** 2026-04-11

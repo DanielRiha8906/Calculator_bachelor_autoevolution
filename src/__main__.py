@@ -1,5 +1,7 @@
 from .calculator import Calculator
 
+MAX_RETRIES = 5
+
 # Maps menu key -> (method_name, display_label, number_of_operands)
 OPERATIONS = {
     "1":  ("add",       "Add             (a + b)",    2),
@@ -39,15 +41,44 @@ def _parse_number(prompt: str, require_int: bool = False):
         return float(raw)
 
 
+def _prompt_number(prompt: str, require_int: bool = False) -> int | float | None:
+    """Prompt for a number with retry logic up to MAX_RETRIES attempts.
+
+    Re-prompts on invalid input and shows how many attempts remain.
+    Returns None after MAX_RETRIES consecutive failures.
+
+    Args:
+        prompt: Text displayed before the cursor.
+        require_int: When True, only accept integer input.
+
+    Returns:
+        Parsed number on success, or None if max retries are exceeded.
+    """
+    for attempt in range(MAX_RETRIES):
+        try:
+            return _parse_number(prompt, require_int=require_int)
+        except ValueError as exc:
+            remaining = MAX_RETRIES - attempt - 1
+            if remaining > 0:
+                print(f"Error: {exc}. {remaining} attempt(s) remaining.")
+            else:
+                print(f"Error: {exc}.")
+    return None
+
+
 def main() -> None:
     """Run the interactive calculator session.
 
     Displays a menu of all available operations, reads the user's selection,
     collects the required operand(s), and prints the result.  The loop
-    continues until the user enters 'q' to quit.
+    continues until the user enters 'q' to quit or the maximum number of
+    consecutive invalid inputs (MAX_RETRIES) is reached.
     """
     calc = Calculator()
     print("=== Interactive Calculator ===")
+
+    available_keys = ", ".join(OPERATIONS.keys())
+    menu_failures = 0
 
     while True:
         print("\nAvailable operations:")
@@ -62,24 +93,48 @@ def main() -> None:
             break
 
         if choice not in OPERATIONS:
-            print("Invalid choice. Please enter a number from the list or 'q' to quit.")
+            menu_failures += 1
+            print(
+                f"Invalid choice '{choice}'. "
+                f"Available options: {available_keys}, q."
+            )
+            if menu_failures >= MAX_RETRIES:
+                print("Too many invalid selections. Ending session.")
+                break
+            remaining = MAX_RETRIES - menu_failures
+            print(f"{remaining} attempt(s) remaining.")
             continue
+
+        menu_failures = 0  # reset counter on a valid choice
 
         op_name, _label, arity = OPERATIONS[choice]
         method = getattr(calc, op_name)
         require_int = op_name == "factorial"
 
-        try:
-            if arity == 1:
-                a = _parse_number("Enter value: ", require_int=require_int)
+        if arity == 1:
+            a = _prompt_number("Enter value: ", require_int=require_int)
+            if a is None:
+                print("Too many invalid inputs. Ending session.")
+                break
+            try:
                 result = method(a)
-            else:
-                a = _parse_number("Enter first value: ")
-                b = _parse_number("Enter second value: ")
+                print(f"Result: {result}")
+            except (ValueError, TypeError, ZeroDivisionError) as exc:
+                print(f"Error: {exc}")
+        else:
+            a = _prompt_number("Enter first value: ")
+            if a is None:
+                print("Too many invalid inputs. Ending session.")
+                break
+            b = _prompt_number("Enter second value: ")
+            if b is None:
+                print("Too many invalid inputs. Ending session.")
+                break
+            try:
                 result = method(a, b)
-            print(f"Result: {result}")
-        except (ValueError, TypeError, ZeroDivisionError) as exc:
-            print(f"Error: {exc}")
+                print(f"Result: {result}")
+            except (ValueError, TypeError, ZeroDivisionError) as exc:
+                print(f"Error: {exc}")
 
 
 if __name__ == "__main__":
