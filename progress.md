@@ -1,3 +1,30 @@
+## Run: issue-146 — Add retry logic for bad input in interactive mode
+
+- **Branch:** task/issue-146-retry-logic
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/user_input.py` — added `MAX_RETRIES = 3` constant and two helpers `_get_float()` and `_get_int()` that prompt for valid numeric input and retry up to `MAX_RETRIES` times before raising `ValueError`; replaced bare `input()` calls in `interactive_mode()` with these helpers
+- `tests/test_user_input.py` — added 9 new tests across two classes (`TestRetryLogicHelpers`, `TestRetryLogicInInteractiveMode`) covering successful retry after bad input, exhausting all retries, and correct error messages
+
+### Purpose
+Implements Issue #146 (V2 Task 8 - Retry logic - Naive/generic): when the user enters invalid input (non-numeric or non-integer) for an operand, the system prints a descriptive error with remaining attempts and prompts again, up to 3 times, before reporting failure and returning to the operation selection menu.
+
+### Risks
+- Only operand input has retry logic; operation selection continues to use the existing `continue` path on invalid choice (different UX, already sufficient).
+- `MAX_RETRIES = 3` is a module-level constant — easy to adjust, but changing it affects all callers at once.
+- No new dependencies introduced.
+
+### Test results
+All 123 tests passed (114 pre-existing + 9 new):
+- `TestRetryLogicHelpers` (6 tests) — all PASSED
+- `TestRetryLogicInInteractiveMode` (3 tests) — all PASSED
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-143 — Add bash CLI mode to the calculator
 
 - **Branch:** task/issue-143-add-bash-cli

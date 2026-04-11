@@ -21,6 +21,8 @@ OPERATIONS = {
 TWO_ARG_OPS = {"add", "subtract", "multiply", "divide", "power"}
 INT_OPS = {"factorial"}
 
+MAX_RETRIES = 3
+
 
 def _print_menu() -> None:
     """Print the operations menu."""
@@ -29,6 +31,36 @@ def _print_menu() -> None:
     for key, name in OPERATIONS.items():
         print(f"  {key}: {name}")
     print("  q: quit")
+
+
+def _get_float(prompt: str) -> float:
+    """Prompt for a float, retrying up to MAX_RETRIES times on invalid input."""
+    for attempt in range(1, MAX_RETRIES + 1):
+        raw = input(prompt)
+        try:
+            return float(raw)
+        except ValueError:
+            remaining = MAX_RETRIES - attempt
+            if remaining > 0:
+                print(f"Invalid input: {raw!r}. Please enter a number. ({remaining} attempt(s) remaining)")
+            else:
+                print(f"Invalid input: {raw!r}. No more retries.")
+    raise ValueError(f"Failed to get a valid number after {MAX_RETRIES} attempts.")
+
+
+def _get_int(prompt: str) -> int:
+    """Prompt for an integer, retrying up to MAX_RETRIES times on invalid input."""
+    for attempt in range(1, MAX_RETRIES + 1):
+        raw = input(prompt)
+        try:
+            return int(raw)
+        except ValueError:
+            remaining = MAX_RETRIES - attempt
+            if remaining > 0:
+                print(f"Invalid input: {raw!r}. Please enter an integer. ({remaining} attempt(s) remaining)")
+            else:
+                print(f"Invalid input: {raw!r}. No more retries.")
+    raise ValueError(f"Failed to get a valid integer after {MAX_RETRIES} attempts.")
 
 
 def interactive_mode() -> None:
@@ -52,14 +84,14 @@ def interactive_mode() -> None:
 
         try:
             if op_name in INT_OPS:
-                a = int(input("Enter integer: "))
+                a = _get_int("Enter integer: ")
                 result = op(a)
             elif op_name in TWO_ARG_OPS:
-                a = float(input("Enter first number: "))
-                b = float(input("Enter second number: "))
+                a = _get_float("Enter first number: ")
+                b = _get_float("Enter second number: ")
                 result = op(a, b)
             else:
-                a = float(input("Enter number: "))
+                a = _get_float("Enter number: ")
                 result = op(a)
             print(f"Result: {result}")
         except (ValueError, ZeroDivisionError, TypeError) as e:
