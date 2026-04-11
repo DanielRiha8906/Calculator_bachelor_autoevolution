@@ -26,4 +26,12 @@ else b != 0
     Main -> Main : print("Division: 2.0")
 end
 
+Main -> Calc : factorial(5)
+alt n < 0 or not integer
+    Calc --> Main : ValueError or TypeError
+else valid n
+    Calc --> Main : 120
+    Main -> Main : print("Factorial: 120")
+end
+
 @enduml

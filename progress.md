@@ -74,3 +74,39 @@ Routine diagram maintenance pass. All three PlantUML diagrams were reviewed agai
 No tests modified; all existing 30 tests remain passing from previous run.
 
 Duration: 37.6s | Cost: $0.161423 USD | Turns: 16
+
+---
+
+## Run: issue-107 — Add factorial to the calculator
+
+- **Branch:** task/issue-107-add-factorial
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/calculator.py` — added `import math` and `factorial(n: int) -> int` method using `math.factorial()`
+- `tests/test_calculator.py` — added `TestFactorial` (4 happy-path tests) and `TestFactorialIncorrectInputs` (4 error-case tests)
+- `src/__main__.py` — added `calc.factorial(5)` demo call
+- `artifacts/class_diagram.puml` — added `factorial` method to `Calculator` class; added `TestFactorial` and `TestFactorialIncorrectInputs` test classes
+- `artifacts/activity_diagram.puml` — added factorial activity block with error branch
+- `artifacts/sequence_diagram.puml` — added factorial sequence with error/success branches
+
+### Purpose
+Implements Issue #107 (V2 Task 3 - Factorial - Naive/generic): adds a `factorial(n)` method to the `Calculator` class backed by `math.factorial()`. The implementation delegates to the standard library to ensure correctness and leverage Python's built-in large-integer arithmetic.
+
+### Risks
+- `math.factorial` in Python 3.12 raises `TypeError` (not `ValueError`) for float arguments — tests reflect this actual runtime behavior.
+- No new dependencies introduced; `math` is a standard library module.
+
+### Test results
+All 38 tests passed (30 pre-existing + 8 new):
+- `TestFactorial::test_factorial_zero` — PASSED
+- `TestFactorial::test_factorial_one` — PASSED
+- `TestFactorial::test_factorial_small_positive` — PASSED
+- `TestFactorial::test_factorial_larger_positive` — PASSED
+- `TestFactorialIncorrectInputs::test_factorial_negative` — PASSED
+- `TestFactorialIncorrectInputs::test_factorial_float` — PASSED
+- `TestFactorialIncorrectInputs::test_factorial_string` — PASSED
+- `TestFactorialIncorrectInputs::test_factorial_none` — PASSED
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING

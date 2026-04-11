@@ -1,3 +1,6 @@
+import math
+
+
 class Calculator:
     def add(self, a, b):
         return a + b
@@ -10,4 +13,7 @@ class Calculator:
 
     def divide(self, a, b):
         return a / b
+
+    def factorial(self, n: int) -> int:
+        return math.factorial(n)
 
