@@ -24,7 +24,7 @@ All 138 tests passed (123 pre-existing + 15 new):
 - `TestHistory` (8 tests) — all PASSED
 - `TestHistoryInInteractiveMode` (7 tests) — all PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 207.4s | Cost: $0.835101 USD | Turns: 32
 
 ---
 
