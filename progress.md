@@ -30,7 +30,7 @@ All 191 tests passed (up from 162 on previous run; 29 new tests added):
 - `test_scientific_calculator.py`: 31 tests (18 existing + 13 new trig tests) — PASSED
 - `test_user_input.py`: 46 tests (30 existing + 16 new mode-switch tests) — PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 365.0s | Cost: $1.187484 USD | Turns: 45
 
 ---
 
