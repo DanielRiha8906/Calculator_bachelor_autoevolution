@@ -1,3 +1,26 @@
+## Run: PlantUML diagram update
+
+**Branch:** task/issue-192-scientific-mode-switch
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Added `NORMAL_MENU`, `SCIENTIFIC_MENU`, `NORMAL_VALID_CHOICES`, `SCIENTIFIC_VALID_CHOICES`, and `OPERATION_NAMES` constants in the `__main__` package. Updated `display_menu` signature to `display_menu(mode: str = "normal")`. Added dependency arrows from `main` to the new choice sets and from `display_menu` to the two menu constants. Added a note on `main` describing the mode state machine.
+- `artifacts/activity_diagram.puml` — Added mode initialisation step (`mode = "normal"`, `valid_choices = NORMAL_VALID_CHOICES`). Replaced fixed "choice in 1–13" guard with `choice in valid_choices`. Added an `elseif` branch for choice `"14"` that toggles mode and updates `valid_choices`. Updated `display_menu` call to pass `mode`.
+- `artifacts/sequence_diagram.puml` — Added mode initialisation step in interactive-mode header. Added `choice == "14" (Toggle Mode)` `alt` branch showing mode toggle and confirmation message. Updated `display_menu` call to pass `mode`. Extended the interactive-mode note with mode state machine description.
+
+### Purpose
+Update PlantUML diagrams to reflect the scientific/normal mode switch introduced in issue #192. Previously the diagrams showed a single menu and a flat choice range of 1–13. After this change, all three diagrams accurately depict the two-mode architecture: `NORMAL_VALID_CHOICES` (1–4, 13, 14) and `SCIENTIFIC_VALID_CHOICES` (1–14), with choice 14 toggling between modes.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #192 — Scientific Mode Switch
 
 **Branch:** task/issue-192-scientific-mode-switch
