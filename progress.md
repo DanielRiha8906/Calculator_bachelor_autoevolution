@@ -32,7 +32,7 @@ N/A — diagram-only run.
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 234.2s | Cost: $0.637181 USD | Turns: 28
 
 ---
 
