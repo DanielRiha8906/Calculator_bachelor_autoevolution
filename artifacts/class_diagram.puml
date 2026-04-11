@@ -1,0 +1,27 @@
+@startuml class_diagram
+
+title Calculator — Class Diagram
+
+package "src" {
+    class Calculator {
+        + add(a, b) : float
+        + subtract(a, b) : float
+        + multiply(a, b) : float
+        + divide(a, b) : float
+    }
+}
+
+package "__main__" {
+    class main <<function>> {
+        + main() : None
+    }
+}
+
+main ..> Calculator : instantiates
+
+note right of Calculator::divide
+  Raises ZeroDivisionError
+  when b == 0
+end note
+
+@enduml

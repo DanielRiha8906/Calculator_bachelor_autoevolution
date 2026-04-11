@@ -1,0 +1,32 @@
+@startuml activity_diagram
+
+title Calculator — Activity Diagram
+
+start
+
+:Instantiate Calculator;
+
+fork
+  :call add(a, b);
+  :return a + b;
+fork again
+  :call subtract(a, b);
+  :return a - b;
+fork again
+  :call multiply(a, b);
+  :return a * b;
+fork again
+  :call divide(a, b);
+  if (b == 0?) then (yes)
+    :raise ZeroDivisionError;
+    stop
+  else (no)
+    :return a / b;
+  endif
+end fork
+
+:Print result;
+
+stop
+
+@enduml
