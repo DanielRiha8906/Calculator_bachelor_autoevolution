@@ -109,4 +109,4 @@ All 38 tests passed (30 pre-existing + 8 new):
 - `TestFactorialIncorrectInputs::test_factorial_string` — PASSED
 - `TestFactorialIncorrectInputs::test_factorial_none` — PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 186.4s | Cost: $0.693774 USD | Turns: 38
