@@ -132,4 +132,4 @@ Routine diagram maintenance pass. All three PlantUML diagrams were reviewed agai
 ### Test results
 No tests modified; all existing 38 tests remain passing from previous run.
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 36.5s | Cost: $0.156808 USD | Turns: 15
