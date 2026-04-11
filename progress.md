@@ -1,3 +1,43 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-193-scientific-mode-switch)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-193-scientific-mode-switch
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — added six trig methods (`sin`, `cos`, `tan`, `cot`,
+  `asin`, `acos`) to `ScientificOperations`; added `_mode` attribute and `_select_mode()`
+  to `InteractiveSession`; split `OPERATIONS` note into `NORMAL_OPERATIONS` and
+  `SCIENTIFIC_OPERATIONS`; added per-method notes for all six trig operations
+- `artifacts/activity_diagram.puml` — added mode selection flow before the main loop;
+  added `s` (switch mode) branch in the main loop; updated ops-dict references to use
+  mode-specific dicts
+- `artifacts/sequence_diagram.puml` — added mode selection sequence after session start;
+  added `choice == 's'` branch with mode-switch sub-flow; updated ops-dict label
+
+### Purpose
+
+Brought all three PlantUML diagrams in sync with issue #193 changes: `ScientificOperations`
+gained six trigonometric methods, and `InteractiveSession` gained mode selection and mode
+switching (`_mode`, `_select_mode()`, `NORMAL_OPERATIONS`/`SCIENTIFIC_OPERATIONS` split).
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #193 — Scientific mode switch (task/issue-193-scientific-mode-switch)
 
 **Date:** 2026-04-11

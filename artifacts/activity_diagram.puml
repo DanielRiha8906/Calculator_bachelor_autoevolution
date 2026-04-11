@@ -76,9 +76,28 @@ partition "Interactive Session (src/__main__.py → src.session.InteractiveSessi
     :_history = [];
     :_menu_failures = 0;
 
+    repeat : _select_mode() — up to MAX_RETRIES attempts
+        :Print mode selection prompt (1=Normal / 2=Scientific);
+        :Read mode choice from stdin;
+        if (choice == '1'?) then (yes)
+            :_mode = "normal";
+        elseif (choice == '2'?) then (yes)
+            :_mode = "scientific";
+        else (invalid)
+            :logger.error("[interactive] invalid mode choice: <choice>");
+            :Print error + remaining attempts;
+        endif
+    repeat while (valid mode selected?)
+    if (retries exhausted?) then (yes)
+        :logger.error("[interactive] max retries exceeded for mode selection");
+        :Print "Too many invalid mode selections. Ending session.";
+        :_write_history(_history) → history.txt;
+        stop
+    endif
+
     repeat
 
-        :_display_menu() — print options 1–12, h, q;
+        :_display_menu() — print mode-specific options (1–6 Normal / 1–12 Scientific), s, h, q;
         :Read user choice from stdin;
 
         if (choice == 'q'?) then (yes)
@@ -91,7 +110,14 @@ partition "Interactive Session (src/__main__.py → src.session.InteractiveSessi
             else (no)
                 :_show_history() — print each entry;
             endif
-        elseif (choice not in OPERATIONS?) then (yes)
+        elseif (choice == 's'?) then (yes)
+            :_select_mode() — up to MAX_RETRIES attempts;
+            if (retries exhausted?) then (yes)
+                :_write_history(_history) → history.txt;
+                stop
+            endif
+            :_mode = selected mode;
+        elseif (choice not in active ops dict?) then (yes)
             :_menu_failures += 1;
             :logger.error("[interactive] invalid menu choice: <choice>");
             :Print "Invalid choice" error\n+ list of available options;
@@ -106,7 +132,7 @@ partition "Interactive Session (src/__main__.py → src.session.InteractiveSessi
         else (valid choice)
             :_menu_failures = 0;
             :_handle_operation(choice);
-            :Look up (op_name, label, arity) from OPERATIONS;
+            :Look up (op_name, label, arity) from active ops dict\n(NORMAL_OPERATIONS or SCIENTIFIC_OPERATIONS);
             :Resolve method via getattr(_calc, op_name);
 
             if (arity == 1?) then (yes)
