@@ -19,7 +19,7 @@ Implements Issue #176 (V2 Task 11 - Refactoring - Naive/generic): separates calc
 All 144 tests passed (6 `TestCalculatorErrorLogging` tests removed as their tested behaviour was intentionally eliminated):
 - All pre-existing operation, history, CLI, interactive-mode, and retry-logic tests — PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 215.1s | Cost: $0.956924 USD | Turns: 35
 
 ---
 
