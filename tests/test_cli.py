@@ -166,3 +166,64 @@ class TestCliErrorLogging:
             exit_code = cli_mode(["add", "3", "5"])
         assert exit_code == 0
         assert len(caplog.records) == 0
+
+
+class TestCliMode:
+    """Tests for the --mode flag in CLI mode."""
+
+    def test_normal_mode_allows_basic_add(self, capsys):
+        exit_code = cli_mode(["--mode", "normal", "add", "3", "5"])
+        assert exit_code == 0
+        assert capsys.readouterr().out.strip() == "8.0"
+
+    def test_normal_mode_allows_basic_subtract(self, capsys):
+        exit_code = cli_mode(["--mode", "normal", "subtract", "10", "3"])
+        assert exit_code == 0
+        assert capsys.readouterr().out.strip() == "7.0"
+
+    def test_normal_mode_allows_basic_multiply(self, capsys):
+        exit_code = cli_mode(["--mode", "normal", "multiply", "4", "5"])
+        assert exit_code == 0
+        assert capsys.readouterr().out.strip() == "20.0"
+
+    def test_normal_mode_allows_basic_divide(self, capsys):
+        exit_code = cli_mode(["--mode", "normal", "divide", "10", "2"])
+        assert exit_code == 0
+        assert capsys.readouterr().out.strip() == "5.0"
+
+    def test_normal_mode_rejects_factorial(self, capsys):
+        exit_code = cli_mode(["--mode", "normal", "factorial", "5"])
+        assert exit_code == 1
+        assert "Error:" in capsys.readouterr().err
+
+    def test_normal_mode_rejects_square(self, capsys):
+        exit_code = cli_mode(["--mode", "normal", "square", "4"])
+        assert exit_code == 1
+        assert "Error:" in capsys.readouterr().err
+
+    def test_normal_mode_rejects_power(self, capsys):
+        exit_code = cli_mode(["--mode", "normal", "power", "2", "3"])
+        assert exit_code == 1
+        assert "Error:" in capsys.readouterr().err
+
+    def test_scientific_mode_allows_factorial(self, capsys):
+        exit_code = cli_mode(["--mode", "scientific", "factorial", "5"])
+        assert exit_code == 0
+        assert capsys.readouterr().out.strip() == "120"
+
+    def test_scientific_mode_allows_square(self, capsys):
+        exit_code = cli_mode(["--mode", "scientific", "square", "4"])
+        assert exit_code == 0
+        assert capsys.readouterr().out.strip() == "16.0"
+
+    def test_default_mode_allows_all_ops(self, capsys):
+        # Default is scientific — all existing tests rely on this
+        exit_code = cli_mode(["factorial", "5"])
+        assert exit_code == 0
+        assert capsys.readouterr().out.strip() == "120"
+
+    def test_normal_mode_error_message_mentions_scientific(self, capsys):
+        exit_code = cli_mode(["--mode", "normal", "log", "100"])
+        assert exit_code == 1
+        err = capsys.readouterr().err
+        assert "scientific" in err.lower()

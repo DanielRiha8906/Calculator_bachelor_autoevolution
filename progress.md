@@ -1,3 +1,36 @@
+## Run: issue-191 — Add scientific mode switch to calculator
+
+- **Branch:** task/issue-191-scientific-mode-switch
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/user_input.py` — split `OPERATIONS` into `BASIC_OPERATIONS` (add, subtract, multiply, divide) and `SCIENTIFIC_OPERATIONS` (factorial, square, cube, square_root, cube_root, power, log, ln); updated `_print_menu` to accept `scientific_mode: bool` and display mode label; updated `interactive_mode` to start in normal mode and toggle between modes on `m` input
+- `src/cli.py` — added `BASIC_OPS` constant; added `--mode` argument (`normal`/`scientific`, default `scientific`); enforced mode restriction before executing operations
+- `tests/test_user_input.py` — updated 8 existing tests that select scientific operations to first issue `m` (mode switch) before the operation key; added `TestModeSwitch` class with 10 new tests covering default normal mode, toggle to scientific, toggle back, unknown-op guard in normal mode, and menu content per mode
+- `tests/test_cli.py` — added `TestCliMode` class with 11 new tests covering normal-mode acceptance of basic ops, normal-mode rejection of scientific ops, scientific-mode acceptance, default-mode backward compatibility
+
+### Purpose
+Implements Issue #191 (V2 Task 14 - Scientific mode switch - Naive/generic): adds a mode-aware UI layer so the interactive session starts in normal mode (basic operations only) and users can toggle to scientific mode with `m`. The CLI gains a `--mode` flag (default `scientific` preserves backward compatibility).
+
+### Risks
+- Interactive mode now starts in normal mode; users must switch to see scientific operations. Existing interactive tests were updated to account for this.
+- CLI default is `scientific` for backward compatibility; no existing CLI test required changes.
+- No changes to `Calculator`, `ScientificCalculator`, or `operations/` — only the interface layer changed.
+
+### Test results
+All 183 tests passed (162 existing + 21 new):
+- `TestCalculator` suite (84 tests) — PASSED
+- `TestCli*` suite (30 tests) — PASSED
+- `TestCliMode` (11 new tests) — PASSED
+- `TestScientificCalculator*` suite (18 tests) — PASSED
+- `TestInteractiveMode`, `TestRetryLogicHelpers`, `TestRetryLogicInInteractiveMode`, `TestHistoryInInteractiveMode`, `TestErrorLoggingInUserInput` (30 tests, updated) — PASSED
+- `TestModeSwitch` (10 new tests) — PASSED
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: diagram-update — Update PlantUML diagrams
 
 - **Branch:** task/issue-188-add-documentation
