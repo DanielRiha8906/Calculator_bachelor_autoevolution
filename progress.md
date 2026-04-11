@@ -17,7 +17,7 @@ Update PlantUML diagrams to reflect the `src/operations/` sub-package introduced
 ### Test results
 N/A — diagram-only run.
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 114.8s | Cost: $0.403721 USD | Turns: 24
 
 ---
 
