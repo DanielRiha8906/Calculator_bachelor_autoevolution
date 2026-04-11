@@ -6,6 +6,8 @@ import src.history as history_module
 from src.__main__ import (
     display_menu, get_number, get_integer, perform_operation, main,
     TooManyAttemptsError, MAX_INPUT_ATTEMPTS,
+    NORMAL_MENU, SCIENTIFIC_MENU,
+    NORMAL_VALID_CHOICES, SCIENTIFIC_VALID_CHOICES,
 )
 from src.controller import CalculatorController
 
@@ -25,8 +27,28 @@ def calc():
 
 # --- display_menu ---
 
-def test_display_menu_contains_all_operations(capsys):
-    display_menu()
+def test_display_normal_menu_contains_basic_operations(capsys):
+    display_menu("normal")
+    captured = capsys.readouterr()
+    for label in ["Add", "Subtract", "Multiply", "Divide", "History", "Exit"]:
+        assert label in captured.out
+
+
+def test_display_normal_menu_excludes_scientific_operations(capsys):
+    display_menu("normal")
+    captured = capsys.readouterr()
+    for label in ["Factorial", "Square Root", "Cube Root", "Power", "Natural Log"]:
+        assert label not in captured.out
+
+
+def test_display_normal_menu_shows_switch_to_scientific(capsys):
+    display_menu("normal")
+    captured = capsys.readouterr()
+    assert "Scientific" in captured.out
+
+
+def test_display_scientific_menu_contains_all_operations(capsys):
+    display_menu("scientific")
     captured = capsys.readouterr()
     for label in [
         "Add", "Subtract", "Multiply", "Divide", "Factorial",
@@ -34,6 +56,30 @@ def test_display_menu_contains_all_operations(capsys):
         "Log", "Natural Log", "History", "Exit",
     ]:
         assert label in captured.out
+
+
+def test_display_scientific_menu_shows_switch_to_normal(capsys):
+    display_menu("scientific")
+    captured = capsys.readouterr()
+    assert "Normal" in captured.out
+
+
+def test_display_menu_defaults_to_normal(capsys):
+    display_menu()
+    captured = capsys.readouterr()
+    assert "Normal Mode" in captured.out
+    assert "Factorial" not in captured.out
+
+
+# --- valid choices sets ---
+
+def test_normal_valid_choices_contains_only_arithmetic_and_control():
+    assert NORMAL_VALID_CHOICES == {"1", "2", "3", "4", "13", "14"}
+
+
+def test_scientific_valid_choices_contains_all_operations():
+    for i in range(1, 15):
+        assert str(i) in SCIENTIFIC_VALID_CHOICES
 
 
 # --- get_number ---
@@ -240,6 +286,12 @@ def test_main_exits_on_zero(capsys):
     assert "Goodbye!" in capsys.readouterr().out
 
 
+def test_main_starts_in_normal_mode(capsys):
+    with patch("builtins.input", return_value="0"):
+        main()
+    assert "Normal Mode" in capsys.readouterr().out
+
+
 def test_main_add_then_exit(capsys):
     with patch("builtins.input", side_effect=["1", "3", "4", "0"]):
         main()
@@ -265,9 +317,9 @@ def test_main_error_caught_loop_continues(capsys):
     assert "Goodbye!" in captured.out
 
 
-def test_main_multiple_operations(capsys):
-    # Factorial then square root then exit
-    with patch("builtins.input", side_effect=["5", "4", "8", "9", "0"]):
+def test_main_multiple_operations_in_scientific_mode(capsys):
+    # Switch to scientific mode, then factorial(4)=24, sqrt(9)=3.0, then exit
+    with patch("builtins.input", side_effect=["14", "5", "4", "8", "9", "0"]):
         main()
     captured = capsys.readouterr()
     assert "Result: 24" in captured.out   # factorial(4) = 24
@@ -301,6 +353,52 @@ def test_main_exits_after_too_many_invalid_operands(capsys):
         main()
     captured = capsys.readouterr()
     assert "Maximum input attempts" in captured.out
+
+
+# --- mode switching ---
+
+def test_main_switch_to_scientific_mode(capsys):
+    # Press 14 to switch to scientific mode, then exit
+    with patch("builtins.input", side_effect=["14", "0"]):
+        main()
+    captured = capsys.readouterr()
+    assert "Switched to Scientific Mode" in captured.out
+    assert "Scientific Mode" in captured.out
+
+
+def test_main_switch_back_to_normal_mode(capsys):
+    # Switch to scientific, then back to normal, then exit
+    with patch("builtins.input", side_effect=["14", "14", "0"]):
+        main()
+    captured = capsys.readouterr()
+    assert "Switched to Scientific Mode" in captured.out
+    assert "Switched to Normal Mode" in captured.out
+
+
+def test_main_scientific_op_invalid_in_normal_mode(capsys):
+    # In normal mode, choice "5" (factorial) should be treated as unknown
+    with patch("builtins.input", side_effect=["5", "0"]):
+        main()
+    captured = capsys.readouterr()
+    assert "Unknown operation" in captured.out
+    assert "Goodbye!" in captured.out
+
+
+def test_main_scientific_op_available_after_mode_switch(capsys):
+    # Switch to scientific mode, then use factorial (choice 5)
+    with patch("builtins.input", side_effect=["14", "5", "4", "0"]):
+        main()
+    captured = capsys.readouterr()
+    assert "Result: 24" in captured.out   # factorial(4) = 24
+
+
+def test_main_scientific_op_blocked_after_switching_back(capsys):
+    # Switch to scientific, back to normal, then attempt factorial — should be blocked
+    with patch("builtins.input", side_effect=["14", "14", "5", "0"]):
+        main()
+    captured = capsys.readouterr()
+    assert "Unknown operation" in captured.out
+    assert "Goodbye!" in captured.out
 
 
 # --- history integration ---

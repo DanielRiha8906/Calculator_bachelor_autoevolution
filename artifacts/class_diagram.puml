@@ -104,10 +104,25 @@ package "history" {
 }
 
 package "__main__" {
+    class NORMAL_MENU <<constant>> {
+        str — menu text for normal mode
+    }
+    class SCIENTIFIC_MENU <<constant>> {
+        str — menu text for scientific mode
+    }
+    class NORMAL_VALID_CHOICES <<constant>> {
+        set[str] — {"1","2","3","4","13","14"}
+    }
+    class SCIENTIFIC_VALID_CHOICES <<constant>> {
+        set[str] — {"1"…"14"}
+    }
+    class OPERATION_NAMES <<constant>> {
+        dict[str, str]\n"1"→"Add" … "12"→"Natural Log"
+    }
     class TooManyAttemptsError <<exception>> {
     }
     class display_menu <<function>> {
-        + display_menu() : None
+        + display_menu(mode: str = "normal") : None
     }
     class get_number <<function>> {
         + get_number(prompt: str, max_attempts: int) : float
@@ -160,6 +175,10 @@ main ..> perform_operation : calls
 main ..> clear_history : calls on start
 main ..> record_entry : calls after result
 main ..> display_history : calls for choice 13
+main ..> NORMAL_VALID_CHOICES : initialises with
+main ..> SCIENTIFIC_VALID_CHOICES : switches to on choice 14
+display_menu ..> NORMAL_MENU : prints in normal mode
+display_menu ..> SCIENTIFIC_MENU : prints in scientific mode
 perform_operation ..> get_number : calls
 perform_operation ..> get_integer : calls
 perform_operation ..> CalculatorController : dispatches to
@@ -184,6 +203,13 @@ note bottom of main
   Entry point selects mode:
   - no args  → interactive (main)
   - with args → bash CLI (cli_main)
+end note
+
+note right of main
+  Mode state machine:
+  Starts in "normal" mode (choices 1-4, 13, 14).
+  Choice 14 toggles to "scientific" mode
+  (choices 1-14) and back.
 end note
 
 note right of Calculator

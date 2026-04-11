@@ -32,11 +32,11 @@ else (no)
   :Display "Welcome to the Calculator!";
   :Instantiate CalculatorController;
   :clear_history() — wipe history.txt;
-  :consecutive_invalid_choices = 0;
+  :mode = "normal"\nconsecutive_invalid_choices = 0\nvalid_choices = NORMAL_VALID_CHOICES;
 
   repeat
 
-    :display_menu();
+    :display_menu(mode);
     :Read user choice;
 
     if (choice == "0"?) then (yes)
@@ -44,7 +44,7 @@ else (no)
       stop
     endif
 
-    if (choice in 1–13?) then (no)
+    if (choice in valid_choices?) then (no)
       :consecutive_invalid_choices += 1;
       :log_error("[interactive] Unknown operation choice");
       :Print "Unknown operation";
@@ -57,7 +57,15 @@ else (no)
 
       if (choice == "13"?) then (yes)
         :display_history();
-      else (no)
+      elseif (choice == "14"?) then (yes)
+        if (mode == "normal"?) then (yes)
+          :mode = "scientific"\nvalid_choices = SCIENTIFIC_VALID_CHOICES;
+          :Print "Switched to Scientific Mode.";
+        else (no)
+          :mode = "normal"\nvalid_choices = NORMAL_VALID_CHOICES;
+          :Print "Switched to Normal Mode.";
+        endif
+      else (no — choice 1–12)
         :perform_operation(controller, choice);
 
         if (operand input valid?) then (no — retry up to MAX_INPUT_ATTEMPTS)

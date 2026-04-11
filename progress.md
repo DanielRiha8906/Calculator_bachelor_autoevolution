@@ -1,5 +1,51 @@
 ## Run: PlantUML diagram update
 
+**Branch:** task/issue-192-scientific-mode-switch
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Added `NORMAL_MENU`, `SCIENTIFIC_MENU`, `NORMAL_VALID_CHOICES`, `SCIENTIFIC_VALID_CHOICES`, and `OPERATION_NAMES` constants in the `__main__` package. Updated `display_menu` signature to `display_menu(mode: str = "normal")`. Added dependency arrows from `main` to the new choice sets and from `display_menu` to the two menu constants. Added a note on `main` describing the mode state machine.
+- `artifacts/activity_diagram.puml` — Added mode initialisation step (`mode = "normal"`, `valid_choices = NORMAL_VALID_CHOICES`). Replaced fixed "choice in 1–13" guard with `choice in valid_choices`. Added an `elseif` branch for choice `"14"` that toggles mode and updates `valid_choices`. Updated `display_menu` call to pass `mode`.
+- `artifacts/sequence_diagram.puml` — Added mode initialisation step in interactive-mode header. Added `choice == "14" (Toggle Mode)` `alt` branch showing mode toggle and confirmation message. Updated `display_menu` call to pass `mode`. Extended the interactive-mode note with mode state machine description.
+
+### Purpose
+Update PlantUML diagrams to reflect the scientific/normal mode switch introduced in issue #192. Previously the diagrams showed a single menu and a flat choice range of 1–13. After this change, all three diagrams accurately depict the two-mode architecture: `NORMAL_VALID_CHOICES` (1–4, 13, 14) and `SCIENTIFIC_VALID_CHOICES` (1–14), with choice 14 toggling between modes.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: 130.2s | Cost: $0.373848 USD | Turns: 25
+
+---
+
+## Run: Issue #192 — Scientific Mode Switch
+
+**Branch:** task/issue-192-scientific-mode-switch
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/__main__.py` — Replaced the single `MENU` constant with `NORMAL_MENU` and `SCIENTIFIC_MENU`. Added `NORMAL_VALID_CHOICES` and `SCIENTIFIC_VALID_CHOICES` sets. Updated `display_menu()` to accept a `mode` parameter (`"normal"` or `"scientific"`). Updated `main()` to track the active mode, display the appropriate menu, restrict valid choices per mode, and handle choice `"14"` to toggle between modes.
+- `tests/test_main.py` — Replaced `test_display_menu_contains_all_operations` with mode-specific tests for normal and scientific menus. Updated `test_main_multiple_operations` to switch to scientific mode before using scientific operations. Added 8 new tests covering mode-switching behaviour, mode-restricted operation availability, and mode toggle messages.
+
+### Purpose
+Issue #192: add a scientific mode to the interactive calculator so the user can switch between normal mode (arithmetic only: add, subtract, multiply, divide) and scientific mode (all 12 operations). Mode switching is triggered by choice `"14"` in both menus.
+
+### Risks
+- None; no controller, calculator, or CLI logic was modified. The mode restriction is enforced only in the interactive `main()` loop via `valid_choices`.
+
+### Test results
+All 269 tests pass (pytest, 0.66 s).
+
+Duration: 341.4s | Cost: $1.077123 USD | Turns: 35
+
+---
+
+## Run: PlantUML diagram update
+
 **Branch:** task/issue-189-add-documentation
 **Date:** 2026-04-11
 

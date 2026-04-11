@@ -16,7 +16,8 @@ participant "operations\n(arithmetic/algebraic/\ntranscendental)" as Ops
 
 Main -> Hist : clear_history() — wipe history.txt
 Main -> User : "Welcome to the Calculator!"
-Main -> User : display_menu()
+Main -> Main : mode = "normal"\nvalid_choices = NORMAL_VALID_CHOICES
+Main -> User : display_menu("normal")
 
 loop until User enters "0"
 
@@ -25,7 +26,12 @@ loop until User enters "0"
   alt choice == "13" (Show History)
     Main -> Hist : display_history()
     Hist -> User : numbered list of history entries
-  else choice in 1–12
+
+  else choice == "14" (Toggle Mode)
+    Main -> Main : toggle mode between "normal" / "scientific"\nupdate valid_choices accordingly
+    Main -> User : "Switched to Scientific Mode." or\n"Switched to Normal Mode."
+
+  else choice in 1–12 (Compute)
     Main -> Op : perform_operation(controller, choice)
     Op -> User : prompt for operand(s)
     User -> Op : enter value(s) (e.g. "3", "4")
@@ -41,7 +47,7 @@ loop until User enters "0"
     Main -> User : "Result: 7.0"
   end
 
-  Main -> User : display_menu()
+  Main -> User : display_menu(mode)
 
 end
 
@@ -49,6 +55,12 @@ User -> Main : "0" (Exit)
 Main -> User : "Goodbye!"
 
 note over Main, Ops
+  Mode state machine:
+  - Starts in "normal" mode: only choices 1–4, 13, and 14 are valid.
+  - Choice 14 switches to "scientific" mode: choices 1–14 all become valid.
+  - Choosing 14 again switches back to "normal" mode.
+  - In scientific mode, choices 5–12 expose algebraic and transcendental ops.
+
   If a ValueError or ZeroDivisionError is raised inside
   perform_operation(), main() logs the error to
   calculator_errors.log via error_logger, prints
