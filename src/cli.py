@@ -16,7 +16,7 @@ printed to stderr and the process exits with code 1.
 import argparse
 import sys
 
-from .calculator import Calculator
+from .controller import CalculatorController
 from .error_logger import get_error_logger
 
 
@@ -68,37 +68,31 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _dispatch(calc: Calculator, args: argparse.Namespace) -> str:
-    """Dispatch parsed arguments to the appropriate Calculator method.
+def _dispatch(controller: CalculatorController, args: argparse.Namespace) -> str:
+    """Dispatch parsed CLI arguments to the controller and return the result.
+
+    Extracts operands from *args* and forwards them to
+    :meth:`~src.controller.CalculatorController.execute`, keeping argument
+    parsing separate from computation dispatch.
 
     Returns the result as a string.  Raises ValueError or ZeroDivisionError
     when the Calculator detects an invalid input.
     """
     op = args.operation
-    if op == "add":
-        return str(calc.add(args.a, args.b))
-    if op == "subtract":
-        return str(calc.subtract(args.a, args.b))
-    if op == "multiply":
-        return str(calc.multiply(args.a, args.b))
-    if op == "divide":
-        return str(calc.divide(args.a, args.b))
+    if op in ("add", "subtract", "multiply", "divide"):
+        return controller.execute(op, a=args.a, b=args.b)
     if op == "power":
-        return str(calc.power(args.base, args.exp))
-    if op == "square":
-        return str(calc.square(args.a))
-    if op == "cube":
-        return str(calc.cube(args.a))
+        return controller.execute("power", a=args.base, b=args.exp)
+    if op in ("square", "cube", "ln"):
+        return controller.execute(op, a=args.a)
     if op == "sqrt":
-        return str(calc.square_root(args.a))
+        return controller.execute("square_root", a=args.a)
     if op == "cbrt":
-        return str(calc.cube_root(args.a))
-    if op == "ln":
-        return str(calc.ln(args.a))
+        return controller.execute("cube_root", a=args.a)
     if op == "log":
-        return str(calc.log(args.a, args.base))
+        return controller.execute("log", a=args.a, base=args.base)
     if op == "factorial":
-        return str(calc.factorial(args.n))
+        return controller.execute("factorial", a=args.n)
     # Unreachable: argparse enforces valid subcommands
     raise ValueError(f"Unknown operation: {op}")
 
@@ -106,15 +100,16 @@ def _dispatch(calc: Calculator, args: argparse.Namespace) -> str:
 def cli_main() -> None:
     """Entry point for bash CLI mode.
 
-    Parses sys.argv, dispatches the operation, and prints the result.
-    Errors are written to stderr; the process exits with code 1 on failure.
+    Parses sys.argv, dispatches the operation via the controller, and prints
+    the result.  Errors are written to stderr; the process exits with code 1
+    on failure.
     """
     parser = build_parser()
     args = parser.parse_args()
-    calc = Calculator()
+    controller = CalculatorController()
 
     try:
-        result = _dispatch(calc, args)
+        result = _dispatch(controller, args)
     except (ValueError, ZeroDivisionError) as exc:
         get_error_logger().error("[cli] %s: %s", args.operation, exc)
         print(f"Error: {exc}", file=sys.stderr)

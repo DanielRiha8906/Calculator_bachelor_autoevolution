@@ -1,3 +1,34 @@
+## Run: Issue #177 — Refactoring: separate calculation logic from UI
+
+**Branch:** task/issue-177-separate-calculation-from-ui
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/controller.py` — New module; introduces `CalculatorController` class with a `Calculator` instance and an `execute(operation, a, b, base)` method that routes all 12 named operations to the appropriate `Calculator` method. Also exports `CHOICE_TO_OPERATION`, a dict mapping interactive-mode choice strings ("1"–"12") to canonical operation names. This is the single dispatch point for both UIs.
+- `src/__main__.py` — Replaced `from .calculator import Calculator` with `from .controller import CalculatorController, CHOICE_TO_OPERATION`. Changed `perform_operation` parameter from `calc: Calculator` to `controller: CalculatorController`; the function now collects user inputs and delegates computation to `controller.execute()` rather than calling Calculator methods directly. Changed `main()` to instantiate `CalculatorController` instead of `Calculator`.
+- `src/cli.py` — Replaced `from .calculator import Calculator` with `from .controller import CalculatorController`. Changed `_dispatch` parameter from `calc: Calculator` to `controller: CalculatorController`; the function now extracts operands from argparse Namespace and calls `controller.execute()`. Changed `cli_main()` to instantiate `CalculatorController` instead of `Calculator`.
+- `tests/test_controller.py` — New test file with 26 tests covering: `CHOICE_TO_OPERATION` mapping completeness and types, all 12 `execute` operations (including error cases for divide-by-zero, negative factorial, negative square root, non-positive log/ln), unknown operation raises ValueError, and return type is always string.
+- `tests/test_main.py` — Updated import from `src.calculator.Calculator` to `src.controller.CalculatorController`; `calc` fixture now returns `CalculatorController()` to match the new `perform_operation` signature.
+- `tests/test_cli.py` — Updated import from `src.calculator.Calculator` to `src.controller.CalculatorController`; `calc` fixture now returns `CalculatorController()` to match the new `_dispatch` signature.
+
+### Purpose
+Refactor the calculator so computation dispatch is separated from user interaction and argument parsing (issue #177, Task 11 — Refactoring, Structured/generic). Before this change, both `__main__.py` and `cli.py` called Calculator methods directly, duplicating dispatch logic. After this change, `CalculatorController` is the sole dispatch point: each UI layer only collects/presents data and delegates to the controller. Calculator remains a pure computation class.
+
+### Risks
+- The `perform_operation` and `_dispatch` function signatures changed (parameter type from `Calculator` to `CalculatorController`). Any code calling these functions externally would need updating; however, both are internal to the package and no external callers exist.
+- `CalculatorController` uses a lambda dispatch table; each `execute` call constructs this dict regardless of which operation is used. This is acceptable for a single-operation-per-call tool of this scale.
+
+### Test results
+All 199 tests passed: 199 passed in 0.55s (173 existing + 26 new)
+
+### Intended PR target
+exp2/structured-generic
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #153 — Error logging
 
 **Branch:** task/issue-153-error-logging
