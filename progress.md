@@ -1,3 +1,34 @@
+## Run: Issue #114 — Interactive user input
+
+**Branch:** task/issue-114-user-input
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/__main__.py` — Replaced static demo with interactive loop; added `display_menu()`, `get_number()`, `get_integer()`, `perform_operation()`, and updated `main()` to a `while True` session loop
+- `tests/test_main.py` — New test file with 33 tests covering all interactive helpers and the main loop (mocked I/O via `unittest.mock.patch`)
+- `artifacts/activity_diagram.puml` — Updated to show interactive loop flow with menu, dispatch, error handling
+- `artifacts/sequence_diagram.puml` — Updated to show User/main/perform_operation/Calculator interaction in a loop
+- `artifacts/class_diagram.puml` — Updated `__main__` package to reflect all four new functions and their relationships
+
+### Purpose
+Add interactive user input to the calculator so the user can select an operation and supply operands at runtime, see the result, and continue using the calculator without restarting (issue #114, V2 Task 5 - Structured/generic experiment). Input validation retries on bad values; errors from the Calculator (ValueError, ZeroDivisionError) are caught and displayed without crashing the session.
+
+### Risks
+- `get_integer` uses `int(raw)` which rejects floats like `"2.5"` — intentional, as factorial only accepts integers.
+- `log` base input uses a separate `input()` call (not `get_number`) so the user can press Enter for the default; an invalid base falls back to 10 with a warning rather than looping.
+- The type hint `str | None` in `perform_operation` uses a string literal for Python < 3.10 compatibility (`"str | None"`).
+
+### Test results
+All 90 tests passed: 90 passed in 0.13s (57 existing + 33 new)
+
+### Intended PR target
+exp2/structured-generic
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: PlantUML diagram update
 
 **Branch:** task/issue-111-more-functions
