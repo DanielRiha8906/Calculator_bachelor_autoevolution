@@ -16,7 +16,7 @@ Issue #189 requested written documentation for the calculator so its features, u
 ### Test results
 All 256 existing tests pass (pytest, 0.67 s).
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 185.0s | Cost: $0.616231 USD | Turns: 29
 
 ---
 
