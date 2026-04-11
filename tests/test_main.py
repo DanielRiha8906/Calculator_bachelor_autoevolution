@@ -1,0 +1,223 @@
+import math
+import pytest
+from unittest.mock import patch
+
+from src.__main__ import display_menu, get_number, get_integer, perform_operation, main
+from src.calculator import Calculator
+
+
+@pytest.fixture
+def calc():
+    return Calculator()
+
+
+# --- display_menu ---
+
+def test_display_menu_contains_all_operations(capsys):
+    display_menu()
+    captured = capsys.readouterr()
+    for label in [
+        "Add", "Subtract", "Multiply", "Divide", "Factorial",
+        "Square", "Cube", "Square Root", "Cube Root", "Power",
+        "Log", "Natural Log", "Exit",
+    ]:
+        assert label in captured.out
+
+
+# --- get_number ---
+
+def test_get_number_integer_input():
+    with patch("builtins.input", return_value="42"):
+        assert get_number("prompt: ") == 42.0
+
+
+def test_get_number_float_input():
+    with patch("builtins.input", return_value="3.14"):
+        assert get_number("prompt: ") == pytest.approx(3.14)
+
+
+def test_get_number_negative_input():
+    with patch("builtins.input", return_value="-7"):
+        assert get_number("prompt: ") == -7.0
+
+
+def test_get_number_retries_on_invalid(capsys):
+    with patch("builtins.input", side_effect=["abc", "5"]):
+        result = get_number("prompt: ")
+    assert result == 5.0
+    assert "Invalid input" in capsys.readouterr().out
+
+
+# --- get_integer ---
+
+def test_get_integer_valid():
+    with patch("builtins.input", return_value="7"):
+        assert get_integer("prompt: ") == 7
+
+
+def test_get_integer_retries_on_float(capsys):
+    with patch("builtins.input", side_effect=["2.5", "4"]):
+        result = get_integer("prompt: ")
+    assert result == 4
+    assert "Invalid input" in capsys.readouterr().out
+
+
+def test_get_integer_retries_on_text(capsys):
+    with patch("builtins.input", side_effect=["hello", "3"]):
+        result = get_integer("prompt: ")
+    assert result == 3
+    assert "Invalid input" in capsys.readouterr().out
+
+
+# --- perform_operation ---
+
+def test_perform_add(calc):
+    with patch("builtins.input", side_effect=["3", "4"]):
+        assert perform_operation(calc, "1") == "7.0"
+
+
+def test_perform_subtract(calc):
+    with patch("builtins.input", side_effect=["10", "3"]):
+        assert perform_operation(calc, "2") == "7.0"
+
+
+def test_perform_multiply(calc):
+    with patch("builtins.input", side_effect=["3", "4"]):
+        assert perform_operation(calc, "3") == "12.0"
+
+
+def test_perform_divide(calc):
+    with patch("builtins.input", side_effect=["10", "2"]):
+        assert perform_operation(calc, "4") == "5.0"
+
+
+def test_perform_divide_by_zero_raises(calc):
+    with patch("builtins.input", side_effect=["10", "0"]):
+        with pytest.raises(ZeroDivisionError):
+            perform_operation(calc, "4")
+
+
+def test_perform_factorial(calc):
+    with patch("builtins.input", return_value="5"):
+        assert perform_operation(calc, "5") == "120"
+
+
+def test_perform_factorial_negative_raises(calc):
+    with patch("builtins.input", return_value="-1"):
+        with pytest.raises(ValueError):
+            perform_operation(calc, "5")
+
+
+def test_perform_square(calc):
+    with patch("builtins.input", return_value="4"):
+        assert perform_operation(calc, "6") == "16.0"
+
+
+def test_perform_cube(calc):
+    with patch("builtins.input", return_value="3"):
+        assert perform_operation(calc, "7") == "27.0"
+
+
+def test_perform_square_root(calc):
+    with patch("builtins.input", return_value="9"):
+        assert perform_operation(calc, "8") == "3.0"
+
+
+def test_perform_square_root_negative_raises(calc):
+    with patch("builtins.input", return_value="-4"):
+        with pytest.raises(ValueError):
+            perform_operation(calc, "8")
+
+
+def test_perform_cube_root(calc):
+    with patch("builtins.input", return_value="27"):
+        result = perform_operation(calc, "9")
+        assert float(result) == pytest.approx(3.0)
+
+
+def test_perform_power(calc):
+    with patch("builtins.input", side_effect=["2", "10"]):
+        assert perform_operation(calc, "10") == "1024.0"
+
+
+def test_perform_log_default_base(calc):
+    with patch("builtins.input", side_effect=["100", ""]):
+        result = perform_operation(calc, "11")
+        assert float(result) == pytest.approx(2.0)
+
+
+def test_perform_log_custom_base(calc):
+    with patch("builtins.input", side_effect=["8", "2"]):
+        result = perform_operation(calc, "11")
+        assert float(result) == pytest.approx(3.0)
+
+
+def test_perform_log_invalid_base_defaults_to_10(calc, capsys):
+    with patch("builtins.input", side_effect=["100", "abc"]):
+        result = perform_operation(calc, "11")
+    assert float(result) == pytest.approx(2.0)
+    assert "Invalid base" in capsys.readouterr().out
+
+
+def test_perform_ln(calc):
+    with patch("builtins.input", return_value=str(math.e)):
+        result = perform_operation(calc, "12")
+        assert float(result) == pytest.approx(1.0)
+
+
+def test_perform_unknown_operation_returns_none(calc):
+    assert perform_operation(calc, "99") is None
+
+
+def test_perform_exit_choice_returns_none(calc):
+    # "0" is the exit sentinel handled by main(); perform_operation returns None for it
+    assert perform_operation(calc, "0") is None
+
+
+# --- main ---
+
+def test_main_shows_welcome_message(capsys):
+    with patch("builtins.input", return_value="0"):
+        main()
+    assert "Welcome" in capsys.readouterr().out
+
+
+def test_main_exits_on_zero(capsys):
+    with patch("builtins.input", return_value="0"):
+        main()
+    assert "Goodbye!" in capsys.readouterr().out
+
+
+def test_main_add_then_exit(capsys):
+    with patch("builtins.input", side_effect=["1", "3", "4", "0"]):
+        main()
+    captured = capsys.readouterr()
+    assert "Result: 7.0" in captured.out
+    assert "Goodbye!" in captured.out
+
+
+def test_main_unknown_choice_then_exit(capsys):
+    with patch("builtins.input", side_effect=["99", "0"]):
+        main()
+    captured = capsys.readouterr()
+    assert "Unknown operation" in captured.out
+    assert "Goodbye!" in captured.out
+
+
+def test_main_error_caught_loop_continues(capsys):
+    # Divide by zero should print error then allow exit on next iteration
+    with patch("builtins.input", side_effect=["4", "10", "0", "0"]):
+        main()
+    captured = capsys.readouterr()
+    assert "Error:" in captured.out
+    assert "Goodbye!" in captured.out
+
+
+def test_main_multiple_operations(capsys):
+    # Factorial then square root then exit
+    with patch("builtins.input", side_effect=["5", "4", "8", "9", "0"]):
+        main()
+    captured = capsys.readouterr()
+    assert "Result: 24" in captured.out   # factorial(4) = 24
+    assert "Result: 3.0" in captured.out  # sqrt(9) = 3.0
+    assert "Goodbye!" in captured.out

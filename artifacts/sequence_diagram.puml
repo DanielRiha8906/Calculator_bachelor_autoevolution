@@ -2,57 +2,39 @@
 
 title Calculator — Sequence Diagram
 
+actor User
 participant "main()" as Main
+participant "perform_operation()" as Op
 participant "Calculator" as Calc
 
-Main -> Calc : <<create>>
+Main -> User : "Welcome to the Calculator!"
+Main -> User : display_menu()
 
-Main -> Calc : add(10, 5)
-Calc --> Main : 15
+loop until User enters "0"
 
-Main -> Calc : subtract(10, 5)
-Calc --> Main : 5
+  User -> Main : select operation (e.g. "1")
 
-Main -> Calc : multiply(10, 5)
-Calc --> Main : 50
+  Main -> Op : perform_operation(calc, choice)
+  Op -> User : prompt for operand(s)
+  User -> Op : enter value(s) (e.g. "3", "4")
+  Op -> Calc : call method (e.g. add(3.0, 4.0))
+  Calc --> Op : result (e.g. 7.0)
+  Op --> Main : "7.0"
 
-Main -> Calc : divide(10, 5)
-Calc --> Main : 2.0
+  Main -> User : "Result: 7.0"
+  Main -> User : display_menu()
 
-Main -> Calc : factorial(5)
-Calc --> Main : 120
+end
 
-Main -> Calc : square(4)
-Calc --> Main : 16
-
-Main -> Calc : cube(3)
-Calc --> Main : 27
-
-Main -> Calc : square_root(9)
-Calc --> Main : 3.0
-
-Main -> Calc : cube_root(27)
-Calc --> Main : 3.0
-
-Main -> Calc : power(2, 10)
-Calc --> Main : 1024
-
-Main -> Calc : log(100)
-Calc --> Main : 2.0
-
-Main -> Calc : ln(1)
-Calc --> Main : 0.0
+User -> Main : "0" (Exit)
+Main -> User : "Goodbye!"
 
 note over Main, Calc
-  If divide() is called with b == 0,
-  ZeroDivisionError is raised instead
-  of returning a result.
-  If factorial() is called with a negative
-  integer or non-integer, ValueError is raised.
-  If square_root() is called with a < 0,
-  ValueError is raised.
-  If log() or ln() is called with a <= 0,
-  ValueError is raised.
+  If a ValueError or ZeroDivisionError is raised inside
+  perform_operation(), main() catches it, prints
+  "Error: <message>", and continues the loop.
+  If an unrecognised choice is entered, perform_operation()
+  returns None and main() prints "Unknown operation".
 end note
 
 @enduml

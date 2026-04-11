@@ -4,73 +4,39 @@ title Calculator — Activity Diagram
 
 start
 
+:Display "Welcome to the Calculator!";
 :Instantiate Calculator;
 
-fork
-  :call add(a, b);
-  :return a + b;
-fork again
-  :call subtract(a, b);
-  :return a - b;
-fork again
-  :call multiply(a, b);
-  :return a * b;
-fork again
-  :call divide(a, b);
-  if (b == 0?) then (yes)
-    :raise ZeroDivisionError;
-    stop
-  else (no)
-    :return a / b;
-  endif
-fork again
-  :call factorial(n);
-  if (n < 0 or not int?) then (yes)
-    :raise ValueError;
-    stop
-  else (no)
-    :return n!;
-  endif
-fork again
-  :call square(a);
-  :return a ** 2;
-fork again
-  :call cube(a);
-  :return a ** 3;
-fork again
-  :call square_root(a);
-  if (a < 0?) then (yes)
-    :raise ValueError;
-    stop
-  else (no)
-    :return sqrt(a);
-  endif
-fork again
-  :call cube_root(a);
-  :return a ** (1/3);
-fork again
-  :call power(base, exp);
-  :return base ** exp;
-fork again
-  :call log(a, base=10);
-  if (a <= 0?) then (yes)
-    :raise ValueError;
-    stop
-  else (no)
-    :return log(a, base);
-  endif
-fork again
-  :call ln(a);
-  if (a <= 0?) then (yes)
-    :raise ValueError;
-    stop
-  else (no)
-    :return log(a);
-  endif
-end fork
+repeat
 
-:Print result;
+  :display_menu();
+  :Read user choice;
 
-stop
+  if (choice == "0"?) then (yes)
+    :Print "Goodbye!";
+    stop
+  endif
+
+  :perform_operation(calc, choice);
+
+  if (choice recognised?) then (no)
+    :Print "Unknown operation";
+  else (yes)
+    :Prompt for operand(s)\nvia get_number() / get_integer();
+
+    if (operation requires 2 args?) then (yes)
+      :Read second operand;
+    endif
+
+    :Call Calculator method;
+
+    if (ValueError or ZeroDivisionError raised?) then (yes)
+      :Print "Error: <message>";
+    else (no)
+      :Print "Result: <value>";
+    endif
+  endif
+
+repeat while (user has not exited)
 
 @enduml

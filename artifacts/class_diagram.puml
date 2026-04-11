@@ -20,12 +20,29 @@ package "src" {
 }
 
 package "__main__" {
+    class display_menu <<function>> {
+        + display_menu() : None
+    }
+    class get_number <<function>> {
+        + get_number(prompt: str) : float
+    }
+    class get_integer <<function>> {
+        + get_integer(prompt: str) : int
+    }
+    class perform_operation <<function>> {
+        + perform_operation(calc: Calculator, choice: str) : str | None
+    }
     class main <<function>> {
         + main() : None
     }
 }
 
 main ..> Calculator : instantiates
+main ..> display_menu : calls
+main ..> perform_operation : calls
+perform_operation ..> get_number : calls
+perform_operation ..> get_integer : calls
+perform_operation ..> Calculator : dispatches to
 
 note right of Calculator::divide
   Raises ZeroDivisionError
