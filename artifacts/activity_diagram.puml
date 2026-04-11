@@ -31,6 +31,42 @@ fork again
   else (no)
     :return n!;
   endif
+fork again
+  :call square(a);
+  :return a ** 2;
+fork again
+  :call cube(a);
+  :return a ** 3;
+fork again
+  :call square_root(a);
+  if (a < 0?) then (yes)
+    :raise ValueError;
+    stop
+  else (no)
+    :return sqrt(a);
+  endif
+fork again
+  :call cube_root(a);
+  :return a ** (1/3);
+fork again
+  :call power(base, exp);
+  :return base ** exp;
+fork again
+  :call log(a, base=10);
+  if (a <= 0?) then (yes)
+    :raise ValueError;
+    stop
+  else (no)
+    :return log(a, base);
+  endif
+fork again
+  :call ln(a);
+  if (a <= 0?) then (yes)
+    :raise ValueError;
+    stop
+  else (no)
+    :return log(a);
+  endif
 end fork
 
 :Print result;

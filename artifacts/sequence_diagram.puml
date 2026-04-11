@@ -22,12 +22,37 @@ Calc --> Main : 2.0
 Main -> Calc : factorial(5)
 Calc --> Main : 120
 
+Main -> Calc : square(4)
+Calc --> Main : 16
+
+Main -> Calc : cube(3)
+Calc --> Main : 27
+
+Main -> Calc : square_root(9)
+Calc --> Main : 3.0
+
+Main -> Calc : cube_root(27)
+Calc --> Main : 3.0
+
+Main -> Calc : power(2, 10)
+Calc --> Main : 1024
+
+Main -> Calc : log(100)
+Calc --> Main : 2.0
+
+Main -> Calc : ln(1)
+Calc --> Main : 0.0
+
 note over Main, Calc
   If divide() is called with b == 0,
   ZeroDivisionError is raised instead
   of returning a result.
   If factorial() is called with a negative
   integer or non-integer, ValueError is raised.
+  If square_root() is called with a < 0,
+  ValueError is raised.
+  If log() or ln() is called with a <= 0,
+  ValueError is raised.
 end note
 
 @enduml

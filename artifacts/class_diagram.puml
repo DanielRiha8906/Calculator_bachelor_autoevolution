@@ -9,6 +9,13 @@ package "src" {
         + multiply(a, b) : float
         + divide(a, b) : float
         + factorial(n) : int
+        + square(a) : float
+        + cube(a) : float
+        + square_root(a) : float
+        + cube_root(a) : float
+        + power(base, exp) : float
+        + log(a, base=10) : float
+        + ln(a) : float
     }
 }
 
@@ -28,6 +35,18 @@ end note
 note right of Calculator::factorial
   Raises ValueError when n < 0
   or n is not an integer
+end note
+
+note right of Calculator::square_root
+  Raises ValueError when a < 0
+end note
+
+note right of Calculator::log
+  Raises ValueError when a <= 0
+end note
+
+note right of Calculator::ln
+  Raises ValueError when a <= 0
 end note
 
 @enduml
