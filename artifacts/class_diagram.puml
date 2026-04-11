@@ -1,0 +1,41 @@
+@startuml class_diagram
+
+package "src" {
+
+    class Calculator {
+        +add(a, b) : number
+        +subtract(a, b) : number
+        +multiply(a, b) : number
+        +divide(a, b) : number
+    }
+
+    class "__main__" as Main {
+        +main() : void
+    }
+
+    class "__init__" as Init {
+        __all__ : list
+    }
+
+}
+
+package "tests" {
+
+    class TestDivisionIncorrectInputs {
+        -calc : Calculator
+        +setup_method() : void
+        +test_divide_by_zero() : void
+        +test_divide_by_zero_float() : void
+        +test_divide_string_numerator() : void
+        +test_divide_string_denominator() : void
+        +test_divide_none_numerator() : void
+        +test_divide_none_denominator() : void
+    }
+
+}
+
+Main --> Calculator : instantiates
+Init --> Calculator : exports
+TestDivisionIncorrectInputs --> Calculator : tests
+
+@enduml
