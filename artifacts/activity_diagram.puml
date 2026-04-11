@@ -4,13 +4,13 @@ title Calculator — Activity Diagram
 
 ' ── Bash CLI flow ──────────────────────────────────────────────────────────
 
-partition "Bash CLI (main.py → CLIHandler)" {
+partition "Bash CLI (main.py → src.cli.CLIHandler)" {
 
     start
 
     :Receive argv from command line;
     :setup_error_logging() → attach FileHandler to error.log;
-    :Instantiate CLIHandler();
+    :Instantiate src.cli.CLIHandler();
     :CLIHandler.run(argv);
 
     if (argv is empty?) then (yes)
@@ -65,11 +65,11 @@ partition "Bash CLI (main.py → CLIHandler)" {
 
 ' ── Interactive session flow ────────────────────────────────────────────────
 
-partition "Interactive Session (src/__main__.py → InteractiveSession)" {
+partition "Interactive Session (src/__main__.py → src.session.InteractiveSession)" {
 
     start
 
-    :Instantiate InteractiveSession();
+    :Instantiate src.session.InteractiveSession();
     :InteractiveSession.run();
     :setup_error_logging() → attach FileHandler to error.log;
     :Print "=== Interactive Calculator ===";

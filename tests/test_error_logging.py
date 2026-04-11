@@ -35,8 +35,8 @@ def _run_interactive(inputs, caplog, capsys):
     """Run interactive main() with log capture but no file side-effects."""
     with caplog.at_level(logging.ERROR, logger=_LOGGER_NAME):
         with patch("builtins.input", side_effect=inputs):
-            with patch("src.__main__._write_history"):
-                with patch("src.__main__.setup_error_logging"):
+            with patch("src.session._write_history"):
+                with patch("src.session.setup_error_logging"):
                     interactive_main()
     capsys.readouterr()
 
@@ -183,8 +183,8 @@ def test_interactive_errors_written_to_log_file(tmp_path, capsys):
     _isolated_setup(log_file)
     try:
         with patch("builtins.input", side_effect=["4", "5", "0", "q"]):
-            with patch("src.__main__._write_history"):
-                with patch("src.__main__.setup_error_logging"):
+            with patch("src.session._write_history"):
+                with patch("src.session.setup_error_logging"):
                     # setup_error_logging already called above via _isolated_setup
                     interactive_main()
         capsys.readouterr()
