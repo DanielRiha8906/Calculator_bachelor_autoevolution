@@ -1,6 +1,7 @@
 import pathlib
 
 from .calculator import Calculator
+from .error_logger import get_error_logger, setup_error_logging
 
 MAX_RETRIES = 5
 HISTORY_FILE = "history.txt"
@@ -84,10 +85,12 @@ def _prompt_number(prompt: str, require_int: bool = False) -> int | float | None
     Returns:
         Parsed number on success, or None if max retries are exceeded.
     """
+    logger = get_error_logger()
     for attempt in range(MAX_RETRIES):
         try:
             return _parse_number(prompt, require_int=require_int)
         except ValueError as exc:
+            logger.error("[interactive] invalid operand input: %s", exc)
             remaining = MAX_RETRIES - attempt - 1
             if remaining > 0:
                 print(f"Error: {exc}. {remaining} attempt(s) remaining.")
@@ -108,6 +111,9 @@ def main() -> None:
     the user enters 'q' to quit or the maximum number of consecutive invalid
     inputs (MAX_RETRIES) is reached.
     """
+    setup_error_logging()
+    _logger = get_error_logger()
+
     calc = Calculator()
     history: list[str] = []
     print("=== Interactive Calculator ===")
@@ -140,11 +146,13 @@ def main() -> None:
 
         if choice not in OPERATIONS:
             menu_failures += 1
+            _logger.error("[interactive] invalid menu choice: %s", choice)
             print(
                 f"Invalid choice '{choice}'. "
                 f"Available options: {available_keys}, h, q."
             )
             if menu_failures >= MAX_RETRIES:
+                _logger.error("[interactive] max retries exceeded for menu selection")
                 print("Too many invalid selections. Ending session.")
                 _write_history(history)
                 break
@@ -161,6 +169,7 @@ def main() -> None:
         if arity == 1:
             a = _prompt_number("Enter value: ", require_int=require_int)
             if a is None:
+                _logger.error("[interactive] max retries exceeded for operand input in %s", op_name)
                 print("Too many invalid inputs. Ending session.")
                 _write_history(history)
                 break
@@ -169,15 +178,18 @@ def main() -> None:
                 print(f"Result: {result}")
                 history.append(_format_history_entry(op_name, (a,), result))
             except (ValueError, TypeError, ZeroDivisionError) as exc:
+                _logger.error("[interactive] calculation error in %s: %s", op_name, exc)
                 print(f"Error: {exc}")
         else:
             a = _prompt_number("Enter first value: ")
             if a is None:
+                _logger.error("[interactive] max retries exceeded for operand input in %s", op_name)
                 print("Too many invalid inputs. Ending session.")
                 _write_history(history)
                 break
             b = _prompt_number("Enter second value: ")
             if b is None:
+                _logger.error("[interactive] max retries exceeded for operand input in %s", op_name)
                 print("Too many invalid inputs. Ending session.")
                 _write_history(history)
                 break
@@ -186,6 +198,7 @@ def main() -> None:
                 print(f"Result: {result}")
                 history.append(_format_history_entry(op_name, (a, b), result))
             except (ValueError, TypeError, ZeroDivisionError) as exc:
+                _logger.error("[interactive] calculation error in %s: %s", op_name, exc)
                 print(f"Error: {exc}")
 
 

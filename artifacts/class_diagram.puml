@@ -34,6 +34,12 @@ package "src" {
         + __all__ : list
     }
 
+    class "error_logger" as ErrLog <<module>> {
+        + ERROR_LOG_FILE : str
+        + setup_error_logging(log_file: str) : void
+        + get_error_logger() : Logger
+    }
+
 }
 
 package "root" {
@@ -49,6 +55,8 @@ package "root" {
 Main --> Calculator : instantiates & calls
 Init ..> Calculator : exports
 CLI --> Calculator : instantiates & calls
+Main --> ErrLog : setup_error_logging()\nget_error_logger()
+CLI --> ErrLog : setup_error_logging()\nget_error_logger()
 
 note right of CLI::CLI_OPERATIONS
   Maps operation name -> (method_name, arity).
@@ -65,7 +73,9 @@ end note
 
 note right of CLI::main
   Bash CLI entry point.
+  Calls setup_error_logging() on startup.
   Reads operation and operands from argv.
+  Logs each error via get_error_logger() with [cli] prefix.
   Prints result to stdout; errors to stderr.
   Exits with code 1 on any failure.
   No retry — fails fast on invalid input.
@@ -115,13 +125,17 @@ note right of Main::_prompt_number
   Re-prompts up to MAX_RETRIES times on
   invalid (unparseable) input, showing
   remaining attempts.
+  Logs each invalid input via get_error_logger()
+  with [interactive] prefix.
   Returns None when retries are exhausted.
 end note
 
 note right of Main::main
   Interactive session loop.
+  Calls setup_error_logging() on startup.
   Displays menu, reads choice, collects operands,
   calls Calculator, prints result or error.
+  Logs each error via get_error_logger() with [interactive] prefix.
   Successful results are appended to the session
   history list (formatted via _format_history_entry).
   'h' displays the current session history.
@@ -131,6 +145,25 @@ note right of Main::main
   Uses _prompt_number for operand input so
   non-numeric values trigger a retry rather
   than immediately ending the calculation.
+end note
+
+note right of ErrLog::ERROR_LOG_FILE
+  Default path for the error log file.
+  Value: "error.log" in the working directory.
+end note
+
+note right of ErrLog::setup_error_logging
+  Attaches a FileHandler to the shared logger.
+  Safe to call multiple times — handler added only once.
+  Called at application startup inside main().
+  Can be patched in tests to prevent file side-effects.
+end note
+
+note right of ErrLog::get_error_logger
+  Returns the shared "calculator.errors" Logger.
+  Level is set to ERROR at import time so
+  pytest caplog can capture records in tests.
+  Logged events are tagged [cli] or [interactive].
 end note
 
 note right of Calculator::divide

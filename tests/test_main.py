@@ -23,10 +23,15 @@ from src.__main__ import main, MAX_RETRIES
 # ---------------------------------------------------------------------------
 
 def _run(inputs: list[str], capsys) -> str:
-    """Invoke main() with mocked input and no-op file writes, return captured stdout."""
+    """Invoke main() with mocked input and no-op file writes, return captured stdout.
+
+    setup_error_logging is patched to a no-op so tests produce no file
+    side-effects; use test_error_logging.py for logging-specific assertions.
+    """
     with patch("builtins.input", side_effect=inputs):
         with patch("src.__main__._write_history"):
-            main()
+            with patch("src.__main__.setup_error_logging"):
+                main()
     return capsys.readouterr().out
 
 
@@ -298,7 +303,8 @@ def test_history_written_to_file_on_quit(tmp_path, capsys):
     history_file = tmp_path / "history.txt"
     with patch("src.__main__.HISTORY_FILE", str(history_file)):
         with patch("builtins.input", side_effect=["1", "2", "3", "q"]):
-            main()
+            with patch("src.__main__.setup_error_logging"):
+                main()
     capsys.readouterr()
     assert history_file.exists()
     assert "add(2, 3) = 5" in history_file.read_text()
@@ -310,7 +316,8 @@ def test_history_fresh_each_session(tmp_path, capsys):
     history_file.write_text("old_op(1) = 999\n")
     with patch("src.__main__.HISTORY_FILE", str(history_file)):
         with patch("builtins.input", side_effect=["1", "4", "5", "q"]):
-            main()
+            with patch("src.__main__.setup_error_logging"):
+                main()
     capsys.readouterr()
     content = history_file.read_text()
     assert "old_op" not in content
@@ -323,7 +330,8 @@ def test_history_written_on_retry_termination(tmp_path, capsys):
     with patch("src.__main__.HISTORY_FILE", str(history_file)):
         # do one valid calculation then exhaust menu retries
         with patch("builtins.input", side_effect=["1", "3", "4"] + ["bad"] * MAX_RETRIES):
-            main()
+            with patch("src.__main__.setup_error_logging"):
+                main()
     capsys.readouterr()
     assert history_file.exists()
     assert "add(3, 4) = 7" in history_file.read_text()

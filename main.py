@@ -21,6 +21,7 @@ Examples:
 import sys
 
 from src.calculator import Calculator
+from src.error_logger import get_error_logger, setup_error_logging
 
 # Maps operation name -> (method_name, arity)
 CLI_OPERATIONS = {
@@ -90,13 +91,18 @@ def main(argv: list[str] | None = None) -> None:
     if argv is None:
         argv = sys.argv[1:]
 
+    setup_error_logging()
+    logger = get_error_logger()
+
     if not argv:
+        logger.error("[cli] missing required operation argument")
         print(USAGE, end="", file=sys.stderr)
         sys.exit(1)
 
     operation = argv[0]
 
     if operation not in CLI_OPERATIONS:
+        logger.error("[cli] unknown operation: %s", operation)
         print(f"Error: unknown operation '{operation}'", file=sys.stderr)
         print(USAGE, end="", file=sys.stderr)
         sys.exit(1)
@@ -105,6 +111,10 @@ def main(argv: list[str] | None = None) -> None:
     expected_total = arity + 1  # operation name + operands
     if len(argv) != expected_total:
         operand_word = "operand" if arity == 1 else "operands"
+        logger.error(
+            "[cli] incorrect argument count for '%s': expected %d, got %d",
+            operation, arity, len(argv) - 1,
+        )
         print(
             f"Error: '{operation}' requires {arity} {operand_word}.",
             file=sys.stderr,
@@ -116,6 +126,7 @@ def main(argv: list[str] | None = None) -> None:
     try:
         operands = [_parse_operand(v, require_int=require_int) for v in argv[1:]]
     except ValueError as exc:
+        logger.error("[cli] invalid operand for '%s': %s", operation, exc)
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
 
@@ -126,6 +137,7 @@ def main(argv: list[str] | None = None) -> None:
         result = method(*operands)
         print(result)
     except (ValueError, TypeError, ZeroDivisionError) as exc:
+        logger.error("[cli] calculation error in %s: %s", operation, exc)
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
 
