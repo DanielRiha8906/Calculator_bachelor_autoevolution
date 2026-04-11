@@ -2,7 +2,10 @@ import math
 import pytest
 from unittest.mock import patch
 
-from src.__main__ import display_menu, get_number, get_integer, perform_operation, main
+from src.__main__ import (
+    display_menu, get_number, get_integer, perform_operation, main,
+    TooManyAttemptsError, MAX_INPUT_ATTEMPTS,
+)
 from src.calculator import Calculator
 
 
@@ -48,6 +51,26 @@ def test_get_number_retries_on_invalid(capsys):
     assert "Invalid input" in capsys.readouterr().out
 
 
+def test_get_number_raises_after_max_attempts():
+    invalid_inputs = ["abc"] * MAX_INPUT_ATTEMPTS
+    with patch("builtins.input", side_effect=invalid_inputs):
+        with pytest.raises(TooManyAttemptsError):
+            get_number("prompt: ")
+
+
+def test_get_number_succeeds_on_last_attempt():
+    inputs = ["bad"] * (MAX_INPUT_ATTEMPTS - 1) + ["42"]
+    with patch("builtins.input", side_effect=inputs):
+        assert get_number("prompt: ") == 42.0
+
+
+def test_get_number_remaining_attempts_shown(capsys):
+    with patch("builtins.input", side_effect=["abc", "5"]):
+        get_number("prompt: ", max_attempts=3)
+    out = capsys.readouterr().out
+    assert "2 attempt(s) remaining" in out
+
+
 # --- get_integer ---
 
 def test_get_integer_valid():
@@ -67,6 +90,26 @@ def test_get_integer_retries_on_text(capsys):
         result = get_integer("prompt: ")
     assert result == 3
     assert "Invalid input" in capsys.readouterr().out
+
+
+def test_get_integer_raises_after_max_attempts():
+    invalid_inputs = ["abc"] * MAX_INPUT_ATTEMPTS
+    with patch("builtins.input", side_effect=invalid_inputs):
+        with pytest.raises(TooManyAttemptsError):
+            get_integer("prompt: ")
+
+
+def test_get_integer_succeeds_on_last_attempt():
+    inputs = ["bad"] * (MAX_INPUT_ATTEMPTS - 1) + ["7"]
+    with patch("builtins.input", side_effect=inputs):
+        assert get_integer("prompt: ") == 7
+
+
+def test_get_integer_remaining_attempts_shown(capsys):
+    with patch("builtins.input", side_effect=["abc", "5"]):
+        get_integer("prompt: ", max_attempts=3)
+    out = capsys.readouterr().out
+    assert "2 attempt(s) remaining" in out
 
 
 # --- perform_operation ---
@@ -221,3 +264,31 @@ def test_main_multiple_operations(capsys):
     assert "Result: 24" in captured.out   # factorial(4) = 24
     assert "Result: 3.0" in captured.out  # sqrt(9) = 3.0
     assert "Goodbye!" in captured.out
+
+
+def test_main_exits_after_max_invalid_choices(capsys):
+    # MAX_INPUT_ATTEMPTS consecutive invalid choices should end the session
+    invalid_sequence = ["99"] * MAX_INPUT_ATTEMPTS
+    with patch("builtins.input", side_effect=invalid_sequence):
+        main()
+    captured = capsys.readouterr()
+    assert "Unknown operation" in captured.out
+    assert "Too many invalid choices" in captured.out
+
+
+def test_main_invalid_choice_counter_resets_after_valid(capsys):
+    # Two invalid choices, then a valid operation, then exit — should not terminate early
+    with patch("builtins.input", side_effect=["99", "99", "1", "3", "4", "0"]):
+        main()
+    captured = capsys.readouterr()
+    assert "Result: 7.0" in captured.out
+    assert "Goodbye!" in captured.out
+
+
+def test_main_exits_after_too_many_invalid_operands(capsys):
+    # Valid operation choice followed by MAX_INPUT_ATTEMPTS invalid numeric inputs
+    invalid_operands = ["abc"] * MAX_INPUT_ATTEMPTS
+    with patch("builtins.input", side_effect=["1"] + invalid_operands):
+        main()
+    captured = capsys.readouterr()
+    assert "Maximum input attempts" in captured.out

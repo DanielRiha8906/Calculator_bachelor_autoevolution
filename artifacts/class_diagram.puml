@@ -20,14 +20,16 @@ package "src" {
 }
 
 package "__main__" {
+    class TooManyAttemptsError <<exception>> {
+    }
     class display_menu <<function>> {
         + display_menu() : None
     }
     class get_number <<function>> {
-        + get_number(prompt: str) : float
+        + get_number(prompt: str, max_attempts: int) : float
     }
     class get_integer <<function>> {
-        + get_integer(prompt: str) : int
+        + get_integer(prompt: str, max_attempts: int) : int
     }
     class perform_operation <<function>> {
         + perform_operation(calc: Calculator, choice: str) : str | None
@@ -35,6 +37,8 @@ package "__main__" {
     class main <<function>> {
         + main() : None
     }
+
+    TooManyAttemptsError --|> Exception
 }
 
 package "cli" {
@@ -55,6 +59,8 @@ main ..> perform_operation : calls
 perform_operation ..> get_number : calls
 perform_operation ..> get_integer : calls
 perform_operation ..> Calculator : dispatches to
+get_number ..> TooManyAttemptsError : raises
+get_integer ..> TooManyAttemptsError : raises
 
 cli_main ..> build_parser : calls
 cli_main ..> Calculator : instantiates

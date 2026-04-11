@@ -1,5 +1,12 @@
 from .calculator import Calculator
 
+MAX_INPUT_ATTEMPTS = 3
+
+
+class TooManyAttemptsError(Exception):
+    """Raised when the user exceeds the maximum number of invalid input attempts."""
+
+
 MENU = (
     "\nCalculator Operations:\n"
     "  1.  Add              (a + b)\n"
@@ -23,24 +30,46 @@ def display_menu() -> None:
     print(MENU)
 
 
-def get_number(prompt: str) -> float:
-    """Read a numeric value from stdin, retrying on invalid input."""
-    while True:
+def get_number(prompt: str, max_attempts: int = MAX_INPUT_ATTEMPTS) -> float:
+    """Read a numeric value from stdin, retrying on invalid input.
+
+    Raises TooManyAttemptsError after *max_attempts* consecutive invalid inputs.
+    """
+    for attempt in range(1, max_attempts + 1):
         raw = input(prompt).strip()
         try:
             return float(raw)
         except ValueError:
-            print(f"Invalid input '{raw}': please enter a numeric value.")
+            remaining = max_attempts - attempt
+            if remaining > 0:
+                print(
+                    f"Invalid input '{raw}': please enter a numeric value."
+                    f" {remaining} attempt(s) remaining."
+                )
+            else:
+                print(f"Invalid input '{raw}': please enter a numeric value.")
+    raise TooManyAttemptsError(f"Maximum input attempts ({max_attempts}) exceeded.")
 
 
-def get_integer(prompt: str) -> int:
-    """Read an integer value from stdin, retrying on invalid input."""
-    while True:
+def get_integer(prompt: str, max_attempts: int = MAX_INPUT_ATTEMPTS) -> int:
+    """Read an integer value from stdin, retrying on invalid input.
+
+    Raises TooManyAttemptsError after *max_attempts* consecutive invalid inputs.
+    """
+    for attempt in range(1, max_attempts + 1):
         raw = input(prompt).strip()
         try:
             return int(raw)
         except ValueError:
-            print(f"Invalid input '{raw}': please enter a whole number.")
+            remaining = max_attempts - attempt
+            if remaining > 0:
+                print(
+                    f"Invalid input '{raw}': please enter a whole number."
+                    f" {remaining} attempt(s) remaining."
+                )
+            else:
+                print(f"Invalid input '{raw}': please enter a whole number.")
+    raise TooManyAttemptsError(f"Maximum input attempts ({max_attempts}) exceeded.")
 
 
 def perform_operation(calc: Calculator, choice: str) -> "str | None":
@@ -107,6 +136,8 @@ def main() -> None:
     """Run the interactive calculator session."""
     calc = Calculator()
     print("Welcome to the Calculator!")
+    consecutive_invalid_choices = 0
+    valid_choices = {str(i) for i in range(1, 13)}
 
     while True:
         display_menu()
@@ -116,8 +147,21 @@ def main() -> None:
             print("Goodbye!")
             break
 
+        if choice not in valid_choices:
+            consecutive_invalid_choices += 1
+            print(f"Unknown operation '{choice}'. Please choose a number between 0 and 12.")
+            if consecutive_invalid_choices >= MAX_INPUT_ATTEMPTS:
+                print("Too many invalid choices. Ending session.")
+                break
+            continue
+
+        consecutive_invalid_choices = 0
+
         try:
             result = perform_operation(calc, choice)
+        except TooManyAttemptsError as e:
+            print(str(e))
+            break
         except (ValueError, ZeroDivisionError) as e:
             print(f"Error: {e}")
             continue
