@@ -17,7 +17,7 @@ Update PlantUML diagrams to reflect the retry logic additions from issue #147. T
 ### Test results
 N/A — diagram-only run.
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 74.6s | Cost: $0.253398 USD | Turns: 18
 
 ---
 
