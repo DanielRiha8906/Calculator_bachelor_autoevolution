@@ -2,6 +2,28 @@
 
 package "src" {
 
+    package "src.operations" {
+
+        class "basic" as BasicOps {
+            +add(a, b) : number
+            +subtract(a, b) : number
+            +multiply(a, b) : number
+            +divide(a, b) : number
+        }
+
+        class "scientific" as ScientificOps {
+            +factorial(n: int) : int
+            +square(x: float) : float
+            +cube(x: float) : float
+            +square_root(x: float) : float
+            +cube_root(x: float) : float
+            +power(base: float, exp: float) : float
+            +log(x: float) : float
+            +ln(x: float) : float
+        }
+
+    }
+
     class Calculator {
         -_history : list[dict]
         +add(a, b) : number
@@ -19,6 +41,9 @@ package "src" {
         -_record(operation: str, args: list, result) : void
         +get_history() : list[dict]
         +clear_history() : void
+    }
+
+    class ScientificCalculator {
     }
 
     class "user_input" as UserInput {
@@ -301,17 +326,6 @@ package "tests" {
         +test_invalid_operation_raises_system_exit() : void
     }
 
-    class TestCalculatorErrorLogging {
-        -calc : Calculator
-        +setup_method() : void
-        +test_divide_by_zero_is_logged() : void
-        +test_square_root_negative_is_logged() : void
-        +test_log_zero_is_logged() : void
-        +test_ln_negative_is_logged() : void
-        +test_factorial_negative_is_logged() : void
-        +test_successful_operation_does_not_log_error() : void
-    }
-
     class TestErrorLoggingInUserInput {
         +test_get_float_exhausted_retries_logs_error() : void
         +test_get_int_exhausted_retries_logs_error() : void
@@ -324,13 +338,53 @@ package "tests" {
         +test_successful_operation_does_not_log_error() : void
     }
 
+    class TestScientificCalculatorIsSubclass {
+        +test_is_subclass_of_calculator() : void
+        +test_instance_is_calculator() : void
+    }
+
+    class TestScientificCalculatorInheritsBasicOps {
+        -calc : ScientificCalculator
+        +setup_method() : void
+        +test_add() : void
+        +test_subtract() : void
+        +test_multiply() : void
+        +test_divide() : void
+        +test_divide_by_zero_raises() : void
+    }
+
+    class TestScientificCalculatorInheritsScientificOps {
+        -calc : ScientificCalculator
+        +setup_method() : void
+        +test_factorial() : void
+        +test_square() : void
+        +test_cube() : void
+        +test_square_root() : void
+        +test_cube_root() : void
+        +test_power() : void
+        +test_log() : void
+        +test_ln() : void
+    }
+
+    class TestScientificCalculatorHistory {
+        -calc : ScientificCalculator
+        +setup_method() : void
+        +test_history_starts_empty() : void
+        +test_history_records_inherited_ops() : void
+        +test_clear_history() : void
+    }
+
 }
 
+ScientificCalculator --|> Calculator : extends
+Calculator ..> BasicOps : delegates basic ops
+Calculator ..> ScientificOps : delegates scientific ops
 Main --> UserInput : calls interactive_mode() (no args)
 Main --> CLI : calls cli_mode() (with args)
 UserInput --> Calculator : creates and invokes
 CLI --> Calculator : creates and invokes
 Init --> Calculator : exports
+Init --> ScientificCalculator : exports
 TestAddition --> Calculator : tests
 TestSubtraction --> Calculator : tests
 TestMultiplication --> Calculator : tests
@@ -356,8 +410,11 @@ TestHistoryInInteractiveMode --> UserInput : tests
 TestCliTwoArgOps --> CLI : tests
 TestCliSingleArgOps --> CLI : tests
 TestCliErrorCases --> CLI : tests
-TestCalculatorErrorLogging --> Calculator : tests
 TestErrorLoggingInUserInput --> UserInput : tests
 TestCliErrorLogging --> CLI : tests
+TestScientificCalculatorIsSubclass --> ScientificCalculator : tests
+TestScientificCalculatorInheritsBasicOps --> ScientificCalculator : tests
+TestScientificCalculatorInheritsScientificOps --> ScientificCalculator : tests
+TestScientificCalculatorHistory --> ScientificCalculator : tests
 
 @enduml

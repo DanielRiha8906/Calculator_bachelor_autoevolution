@@ -1,3 +1,140 @@
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-188-add-documentation
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass following the documentation additions in issue-188. All three diagrams were verified against the current state of `src/`: the class diagram correctly reflects all 9 source modules, 31 test classes, the `src.operations` sub-package, and the `ScientificCalculator` subclass; the activity and sequence diagrams accurately represent the CLI/interactive dispatch and inter-component interaction flows. No structural or method-level changes were made to the source since the last diagram update run.
+
+### Risks
+- None. No source or test code was modified; only `progress.md` updated.
+
+### Test results
+No tests modified; all existing 162 tests remain passing from previous run.
+
+Duration: 98.5s | Cost: $0.348791 USD | Turns: 26
+
+---
+
+## Run: issue-188 — Add documentation to the calculator application
+
+- **Branch:** task/issue-188-add-documentation
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/__init__.py` — added package-level docstring describing the public API (`Calculator`, `ScientificCalculator`) with a usage example
+- `src/__main__.py` — added module docstring explaining the CLI/interactive dispatch logic with usage examples
+- `src/calculator.py` — expanded module docstring with a supported-operations overview; added class docstring for `Calculator`; added full docstrings (Args, Returns, Raises) to all 12 operation methods (`add`, `subtract`, `multiply`, `divide`, `factorial`, `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln`) plus `__init__`; added type hints to `add`, `subtract`, `multiply`, `divide`
+- `src/operations/basic.py` — added `float` type hints to all four function signatures (`add`, `subtract`, `multiply`, `divide`)
+- `src/user_input.py` — expanded module docstring with menu-choice reference and usage example
+
+### Purpose
+Implements Issue #188 (V2 Task 13 - Documentation - Naive/generic): adds comprehensive, consistent documentation across all public modules and classes so that the calculator application is self-explaining from `help()`, IDEs, and auto-documentation tools.
+
+### Risks
+- Documentation-only change; no logic was modified.
+- No new dependencies introduced.
+
+### Test results
+All 162 tests passed unchanged:
+- `TestAddition` through `TestHistory` (84 tests) — PASSED
+- `TestCliTwoArgOps`, `TestCliSingleArgOps`, `TestCliErrorCases`, `TestCliErrorLogging` (30 tests) — PASSED
+- `TestScientificCalculatorIsSubclass`, `TestScientificCalculatorInheritsBasicOps`, `TestScientificCalculatorInheritsScientificOps`, `TestScientificCalculatorHistory` (18 tests) — PASSED
+- `TestInteractiveMode`, `TestRetryLogicHelpers`, `TestRetryLogicInInteractiveMode`, `TestHistoryInInteractiveMode`, `TestErrorLoggingInUserInput` (30 tests) — PASSED
+
+Duration: 230.9s | Cost: $0.867551 USD | Turns: 40
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-179-modularize-calculator
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — added `src.operations` package containing `basic` and `scientific` modules with their pure functions; added `ScientificCalculator` class inheriting from `Calculator`; added delegation arrows from `Calculator` to `BasicOps` and `ScientificOps`; added `Init --> ScientificCalculator` export relationship; added `TestScientificCalculatorIsSubclass` (2 test methods), `TestScientificCalculatorInheritsBasicOps` (5 test methods), `TestScientificCalculatorInheritsScientificOps` (8 test methods), and `TestScientificCalculatorHistory` (3 test methods) with their relationships
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass following the modularization of the calculator (Issue #179). The class diagram now reflects all 31 test classes (162 test methods total), the new `operations` sub-package structure, and the `ScientificCalculator` subclass. The activity and sequence diagrams remain accurate: internal delegation to `operations.*` does not alter the inter-component flow, and `ScientificCalculator` is not yet wired into any interface.
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing 162 tests remain passing from previous run.
+
+Duration: 107.8s | Cost: $0.481981 USD | Turns: 24
+
+---
+
+## Run: issue-179 — Modularize calculator and prepare scientific mode structure
+
+- **Branch:** task/issue-179-modularize-calculator
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/operations/__init__.py` — new package marker with docstring describing submodules
+- `src/operations/basic.py` — new module with pure arithmetic functions: `add`, `subtract`, `multiply`, `divide`
+- `src/operations/scientific.py` — new module with pure scientific functions: `factorial`, `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln`
+- `src/calculator.py` — refactored to delegate all math computation to `operations.basic` and `operations.scientific`; history tracking and public API unchanged
+- `src/scientific_calculator.py` — new stub class `ScientificCalculator(Calculator)` as the designated extension point for future scientific-only operations
+- `src/__init__.py` — added export of `ScientificCalculator` alongside `Calculator`
+- `tests/test_scientific_calculator.py` — new test module (18 tests): verifies `ScientificCalculator` is a proper `Calculator` subclass, inherits all basic and scientific operations correctly, and tracks history
+
+### Purpose
+Implements Issue #179 (V2 Task 12 - Naive/generic): refactors the single-file `calculator.py` into a modular structure and prepares the project for a future scientific mode. The `operations/` sub-package separates pure math functions from the stateful `Calculator` class, making each layer independently testable and reusable. `ScientificCalculator` gives future scientific-only functions a clear, reviewed home without requiring structural changes to existing code.
+
+### Risks
+- No behaviour changes: all 144 pre-existing tests pass unchanged; 18 new tests added.
+- Relative import `from .operations import basic, scientific` inside `calculator.py` is consistent with the rest of the package.
+- No new external dependencies introduced.
+
+### Test results
+All 162 tests passed (144 pre-existing + 18 new):
+- All pre-existing operation, history, CLI, interactive-mode, and retry-logic tests — PASSED
+- `TestScientificCalculatorIsSubclass` (2 tests) — PASSED
+- `TestScientificCalculatorInheritsBasicOps` (5 tests) — PASSED
+- `TestScientificCalculatorInheritsScientificOps` (8 tests) — PASSED
+- `TestScientificCalculatorHistory` (3 tests) — PASSED
+
+Duration: 280.9s | Cost: $0.897402 USD | Turns: 40
+
+---
+
+## Run: issue-176 — Separate calculator logic from interface
+
+- **Branch:** task/issue-176-separate-logic-from-interface
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/calculator.py` — removed `import logging` and `logger = logging.getLogger(__name__)`; removed all try-except-logger wrappers from the 12 operation methods; each method now calls its math expression directly and delegates to `_record()` on success; exceptions propagate naturally to callers
+- `tests/test_calculator.py` — removed `import logging`; removed `TestCalculatorErrorLogging` class (6 tests) whose sole purpose was asserting that calculator operations emit log records — behaviour that has been intentionally moved to the interface layer
+
+### Purpose
+Implements Issue #176 (V2 Task 11 - Refactoring - Naive/generic): separates calculator business logic from interface-layer concerns. Before this change, `Calculator` mixed math computation with error logging via Python's `logging` module. After this change the class is pure logic: it computes, records history, and raises exceptions. Interface modules (`cli.py`, `user_input.py`) already catch and log exceptions at their own level (`src.cli`, `src.user_input`), so no externally visible behaviour changes.
+
+### Risks
+- Error log records from `src.calculator` will no longer appear in application logs. Errors are still logged at `src.cli` level for CLI mode. Interactive mode does not log calculator errors (it prints them) — this was already the case before this change.
+- No new dependencies introduced or removed.
+
+### Test results
+All 144 tests passed (6 `TestCalculatorErrorLogging` tests removed as their tested behaviour was intentionally eliminated):
+- All pre-existing operation, history, CLI, interactive-mode, and retry-logic tests — PASSED
+
+Duration: 215.1s | Cost: $0.956924 USD | Turns: 35
+
+---
+
 ## Run: issue-152 — Add error logging to the calculator
 
 - **Branch:** task/issue-152-add-error-logging
@@ -495,3 +632,26 @@ Routine diagram maintenance pass. All three PlantUML diagrams were reviewed agai
 No tests modified; all existing 150 tests remain passing from previous run.
 
 Duration: 57.4s | Cost: $0.297489 USD | Turns: 23
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-176-separate-logic-from-interface
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — removed `TestCalculatorErrorLogging` class (6 test methods) and its `tests` relationship to `Calculator`; this class was eliminated in issue-176 when calculator error logging was removed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass following the separation of calculator logic from interface concerns (Issue #176). The class diagram now reflects all 27 test classes (144 test methods total): `TestCalculatorErrorLogging` has been removed as it tested behaviour that was intentionally eliminated. The activity and sequence diagrams remain accurate since error logging was internal to existing error paths and does not alter the flow between components.
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing 144 tests remain passing from previous run.
+
+Duration: 52.2s | Cost: $0.304402 USD | Turns: 23
