@@ -1,5 +1,50 @@
 ## Run: PlantUML diagram update
 
+**Branch:** task/issue-189-add-documentation
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — No changes required; diagram accurately reflects the current source code.
+- `artifacts/activity_diagram.puml` — No changes required; diagram accurately reflects the current execution flow.
+- `artifacts/sequence_diagram.puml` — No changes required; diagram accurately reflects current component interactions.
+
+### Purpose
+Verify and maintain PlantUML diagrams against the current state of `src/`. All three diagrams were reviewed against the actual source files (`calculator.py`, `controller.py`, `cli.py`, `history.py`, `error_logger.py`, `operations/arithmetic.py`, `operations/algebraic.py`, `operations/transcendental.py`, `__main__.py`) and found to be accurate — no updates were necessary.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: 50.6s | Cost: $0.223777 USD | Turns: 23
+
+---
+
+## Run: Issue #189 — Documentation
+
+**Branch:** task/issue-189-add-documentation
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `README.md` — Replaced the single-line placeholder with full project documentation covering: project overview, all 12 supported operations (arithmetic, algebraic, transcendental) with examples, installation instructions, interactive mode walkthrough, CLI mode usage with all subcommands and flags, error-handling table, project structure tree with module descriptions, architecture overview, instructions for running the test suite, and a table of runtime-generated files.
+
+### Purpose
+Issue #189 requested written documentation for the calculator so its features, usage, and project structure are easier to understand. The previous README contained only the title "Bakalar_part_one". The new README provides a complete, accurate reference without changing any source code or tests.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+All 256 existing tests pass (pytest, 0.67 s).
+
+Duration: 185.0s | Cost: $0.616231 USD | Turns: 29
+
+---
+
+## Run: PlantUML diagram update
+
 **Branch:** task/issue-180-modular-operations
 **Date:** 2026-04-11
 
