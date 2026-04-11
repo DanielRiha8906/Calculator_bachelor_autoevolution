@@ -39,7 +39,7 @@ testable via mocking.
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 206.8s | Cost: $0.499660 USD | Turns: 19
 
 ---
 
