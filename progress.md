@@ -50,4 +50,4 @@ All 30 tests passed:
 - `TestDivision` (6 tests) — all PASSED
 - `TestDivisionIncorrectInputs` (6 tests) — all PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 142.9s | Cost: $0.416957 USD | Turns: 19
