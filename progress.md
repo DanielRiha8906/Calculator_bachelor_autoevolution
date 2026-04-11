@@ -1,3 +1,34 @@
+## Run: issue-188 — Add documentation to the calculator application
+
+- **Branch:** task/issue-188-add-documentation
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/__init__.py` — added package-level docstring describing the public API (`Calculator`, `ScientificCalculator`) with a usage example
+- `src/__main__.py` — added module docstring explaining the CLI/interactive dispatch logic with usage examples
+- `src/calculator.py` — expanded module docstring with a supported-operations overview; added class docstring for `Calculator`; added full docstrings (Args, Returns, Raises) to all 12 operation methods (`add`, `subtract`, `multiply`, `divide`, `factorial`, `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln`) plus `__init__`; added type hints to `add`, `subtract`, `multiply`, `divide`
+- `src/operations/basic.py` — added `float` type hints to all four function signatures (`add`, `subtract`, `multiply`, `divide`)
+- `src/user_input.py` — expanded module docstring with menu-choice reference and usage example
+
+### Purpose
+Implements Issue #188 (V2 Task 13 - Documentation - Naive/generic): adds comprehensive, consistent documentation across all public modules and classes so that the calculator application is self-explaining from `help()`, IDEs, and auto-documentation tools.
+
+### Risks
+- Documentation-only change; no logic was modified.
+- No new dependencies introduced.
+
+### Test results
+All 162 tests passed unchanged:
+- `TestAddition` through `TestHistory` (84 tests) — PASSED
+- `TestCliTwoArgOps`, `TestCliSingleArgOps`, `TestCliErrorCases`, `TestCliErrorLogging` (30 tests) — PASSED
+- `TestScientificCalculatorIsSubclass`, `TestScientificCalculatorInheritsBasicOps`, `TestScientificCalculatorInheritsScientificOps`, `TestScientificCalculatorHistory` (18 tests) — PASSED
+- `TestInteractiveMode`, `TestRetryLogicHelpers`, `TestRetryLogicInInteractiveMode`, `TestHistoryInInteractiveMode`, `TestErrorLoggingInUserInput` (30 tests) — PASSED
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: diagram-update — Update PlantUML diagrams
 
 - **Branch:** task/issue-179-modularize-calculator
