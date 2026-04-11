@@ -178,4 +178,66 @@ partition "Interactive Session (src/__main__.py → src.session.InteractiveSessi
 
 }
 
+' ── Tkinter GUI flow ───────────────────────────────────────────────────────
+
+partition "Tkinter GUI (src.gui.run → src.gui.CalculatorApp)" {
+
+    start
+
+    :src.gui.run() called;
+    :Instantiate CalculatorApp();
+    :__init__:\n  - Create Calculator()\n  - Create [SimpleMode(), ScientificMode()]\n  - current_mode = SimpleMode\n  - _build_ui(): build all frames and widgets\n  - _refresh_operations(): populate combobox;
+    :app.mainloop() — enter tkinter event loop;
+
+    fork
+        :User selects a different mode\n(radio button click);
+        :_on_mode_change();
+        :current_mode = matching CalculatorMode;
+        :_refresh_operations():\n  - repopulate op_combo with mode's operation names\n  - select first op; call _update_inputs(ops[0])\n  - reset result_var to "—";
+    fork again
+        :User selects a different operation\n(combobox selection);
+        :_on_operation_change();
+        :_selected_operation() → look up OperationSpec by name;
+        :_update_inputs(op):\n  - set label_a to op.label_a\n  - clear entry_a\n  - if arity==2: set label_b, enable entry_b\n  - if arity==1: clear label_b, disable entry_b;
+    fork again
+        :User clicks "Calculate";
+        :_calculate();
+        :_selected_operation() → op;
+        if (op is None?) then (yes)
+            :return (no-op);
+        endif
+        :parse_number(entry_a.get(),\nrequire_int=op.require_int);
+        if (ValueError?) then (yes)
+            :messagebox.showerror("Input Error", "First input — <msg>");
+            :return;
+        endif
+        if (op.arity == 2?) then (yes)
+            :parse_number(entry_b.get());
+            if (ValueError?) then (yes)
+                :messagebox.showerror("Input Error", "Second input — <msg>");
+                :return;
+            endif
+        endif
+        :method = getattr(calculator, op.method);
+        :result = method(a) or method(a, b);
+        if (ValueError, ZeroDivisionError,\nor OverflowError raised?) then (yes)
+            :messagebox.showerror("Calculation Error", str(exc));
+            :result_var = "Error";
+        else (no)
+            :Format result\n(whole-number floats shown without decimal);
+            :result_var = display string;
+            :Append formatted entry to history list;
+            :Insert entry into history_listbox;
+            :Scroll listbox to end;
+        endif
+    fork again
+        :User clicks "Clear";
+        :_clear():\n  - clear entry_a\n  - clear entry_b (if enabled)\n  - reset result_var to "—";
+    end fork
+
+    :Event loop continues until window closed;
+    stop
+
+}
+
 @enduml

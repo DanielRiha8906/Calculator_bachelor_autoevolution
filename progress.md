@@ -1,3 +1,41 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-196-tkinter-gui)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-196-tkinter-gui
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — added `OperationSpec` dataclass, `CalculatorMode`
+  abstract class, `SimpleMode`, `ScientificMode`, `CalculatorApp`, `gui_modes` module,
+  and `gui` module with all relationships and per-class notes
+- `artifacts/activity_diagram.puml` — added "Tkinter GUI" partition covering app
+  startup, mode switch, operation selection, Calculate, and Clear flows
+- `artifacts/sequence_diagram.puml` — added "Tkinter GUI Mode" section covering
+  app initialisation, mode switch, operation selection, Calculate, and Clear sequences
+
+### Purpose
+
+Brought all three PlantUML diagrams in sync with issue #196 additions:
+`src/gui_modes.py` (OperationSpec, CalculatorMode, SimpleMode, ScientificMode,
+parse_number) and `src/gui.py` (CalculatorApp, run()).
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #196 — tkinter GUI (task/issue-196-tkinter-gui)
 
 **Date:** 2026-04-11

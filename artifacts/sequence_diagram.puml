@@ -234,4 +234,101 @@ deactivate Calc2
 deactivate Session
 deactivate Main
 
+' ── Tkinter GUI sequence ───────────────────────────────────────────────────
+
+== Tkinter GUI Mode ==
+
+actor User
+participant "src.gui\n(gui module)" as GuiMod
+participant "CalculatorApp" as App
+participant "CalculatorMode\n(Simple/Scientific)" as Mode
+participant "OperationSpec" as OpSpec
+participant "Calculator" as Calc3
+
+User -> GuiMod : python -m src.gui\n(or python -m src.gui)
+activate GuiMod
+
+GuiMod -> App : CalculatorApp()
+activate App
+
+App -> Calc3 : Calculator() [held as self.calculator]
+activate Calc3
+
+App -> Mode : SimpleMode(), ScientificMode()
+note right of App : modes = [SimpleMode(), ScientificMode()]\ncurrent_mode = SimpleMode
+
+App -> App : _build_ui()\n(build all frames, widgets, listbox)
+
+App -> App : _refresh_operations()
+App -> Mode : current_mode.operations
+Mode --> App : list[OperationSpec]
+App -> App : populate op_combo with op names\nselect first op; _update_inputs(ops[0])
+
+GuiMod -> App : app.mainloop()
+
+note right of App : Tkinter event loop running
+
+== User switches mode ==
+
+User -> App : click radio button (Simple / Scientific)
+App -> App : _on_mode_change()
+App -> App : current_mode = matching CalculatorMode
+App -> App : _refresh_operations()
+App -> Mode : current_mode.operations
+Mode --> App : list[OperationSpec]
+App -> App : repopulate combobox\nselect first op; _update_inputs(ops[0])\nreset result_var to "—"
+
+== User selects operation ==
+
+User -> App : select from combobox
+App -> App : _on_operation_change()
+App -> App : _selected_operation()\n→ find OperationSpec by name
+App -> App : _update_inputs(op)\n- set label_a\n- if arity==2: enable entry_b\n- if arity==1: disable entry_b
+
+== User clicks Calculate ==
+
+User -> App : click "Calculate"
+App -> App : _calculate()
+App -> App : _selected_operation() → op
+
+alt op is None (no operation selected)
+    App -> App : return (no-op)
+else parse first operand
+    App -> App : parse_number(entry_a.get(),\nrequire_int=op.require_int)
+    alt ValueError
+        App -> User : messagebox.showerror("Input Error", "First input — <msg>")
+    end
+end
+
+alt op.arity == 2
+    App -> App : parse_number(entry_b.get())
+    alt ValueError
+        App -> User : messagebox.showerror("Input Error", "Second input — <msg>")
+    end
+end
+
+App -> Calc3 : method(a) or method(a, b)\n[resolved via getattr(calculator, op.method)]
+
+alt ValueError / ZeroDivisionError / OverflowError
+    Calc3 --> App : raises exception
+    App -> User : messagebox.showerror("Calculation Error", str(exc))
+    App -> App : result_var = "Error"
+else success
+    Calc3 --> App : result
+    App -> App : format result\n(whole-number floats → int display)
+    App -> App : result_var = display string
+    App -> App : history.append(formatted entry)
+    App -> App : history_listbox.insert(END, entry)\nhistory_listbox.see(END)
+    App -> User : result shown in Result frame\nentry visible in Session History listbox
+end
+
+== User clicks Clear ==
+
+User -> App : click "Clear"
+App -> App : _clear()\n- entry_a.delete(0, END)\n- entry_b.delete(0, END) if enabled\n- result_var = "—"
+
+deactivate Calc3
+deactivate App
+deactivate GuiMod
+
 @enduml
