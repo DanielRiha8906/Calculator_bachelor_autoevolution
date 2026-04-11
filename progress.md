@@ -1,3 +1,51 @@
+## Run: Issue #196 — tkinter GUI (task/issue-196-tkinter-gui)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-196-tkinter-gui
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/gui_modes.py` — new file; defines `OperationSpec` dataclass, abstract
+  `CalculatorMode` base class, `SimpleMode` (6 operations), `ScientificMode`
+  (12 operations), and `parse_number()` utility used by both the GUI and its tests
+- `src/gui.py` — new file; defines `CalculatorApp(tk.Tk)` window with mode
+  radio buttons, operation combobox, dynamic input fields, result label,
+  Calculate/Clear buttons, and scrollable session-history listbox; exposes a
+  `run()` entry point so it can be launched with `python -m src.gui`
+- `tests/test_gui.py` — new file; 54 tests covering `OperationSpec`,
+  `SimpleMode`, `ScientificMode`, `parse_number` (all pass without a display),
+  and `CalculatorApp` integration tests (23, skipped in headless CI with a
+  TODO comment to re-enable via Xvfb)
+
+### Purpose
+
+Add a tkinter-based GUI (issue #196) that exposes all calculator functionality
+— Simple and Scientific mode, all operations, operand inputs, result display,
+mode switching, and session history — while reusing the existing `Calculator`
+class and leaving the CLI and interactive session modes untouched.  The OO mode
+design uses `CalculatorMode` as a shared abstraction with `SimpleMode` and
+`ScientificMode` as concrete implementations, matching the issue requirement.
+
+### Risks
+
+- `tkinter` is not available in this runner environment; the 23
+  `TestCalculatorApp` tests are skipped with a clear skip message.  They are
+  designed to pass when a display is available (locally or with Xvfb in CI).
+- No existing file was modified, so regression risk is minimal.
+
+### Test results
+
+244 passed, 23 skipped — all pre-existing tests continue to pass.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-193-scientific-mode-switch)
 
 **Date:** 2026-04-11
