@@ -25,7 +25,7 @@ All 162 tests passed unchanged:
 - `TestScientificCalculatorIsSubclass`, `TestScientificCalculatorInheritsBasicOps`, `TestScientificCalculatorInheritsScientificOps`, `TestScientificCalculatorHistory` (18 tests) — PASSED
 - `TestInteractiveMode`, `TestRetryLogicHelpers`, `TestRetryLogicInInteractiveMode`, `TestHistoryInInteractiveMode`, `TestErrorLoggingInUserInput` (30 tests) — PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 230.9s | Cost: $0.867551 USD | Turns: 40
 
 ---
 
