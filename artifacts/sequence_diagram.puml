@@ -5,7 +5,8 @@ title Calculator — Sequence Diagram
 ' ── Bash CLI sequence ──────────────────────────────────────────────────────
 
 actor User as User
-participant "main.py\n(CLI)" as CLI
+participant "main.py\n(CLI module)" as CLI
+participant "CLIHandler" as Handler
 participant "Calculator" as Calc
 participant "error.log" as ELog
 
@@ -15,42 +16,46 @@ User -> CLI : python main.py <operation> [operands]
 activate CLI
 
 CLI -> ELog : setup_error_logging()\n(attach FileHandler)
+CLI -> Handler : CLIHandler()
+activate Handler
+CLI -> Handler : run(argv)
 
 alt no arguments
-    CLI -> ELog : logger.error("[cli] missing required operation argument")
-    CLI -> User : print usage to stderr\nexit code 1
+    Handler -> ELog : logger.error("[cli] missing required operation argument")
+    Handler -> User : print usage to stderr\nexit code 1
 else unknown operation
-    CLI -> ELog : logger.error("[cli] unknown operation: ...")
-    CLI -> User : "Error: unknown operation '...'" to stderr\nexit code 1
+    Handler -> ELog : logger.error("[cli] unknown operation: ...")
+    Handler -> User : "Error: unknown operation '...'" to stderr\nexit code 1
 else wrong operand count
-    CLI -> ELog : logger.error("[cli] incorrect argument count for '...'")
-    CLI -> User : "Error: '...' requires N operand(s)" to stderr\nexit code 1
+    Handler -> ELog : logger.error("[cli] incorrect argument count for '...'")
+    Handler -> User : "Error: '...' requires N operand(s)" to stderr\nexit code 1
 else invalid operand format (e.g. "abc", "3.5" for factorial)
-    CLI -> ELog : logger.error("[cli] invalid operand for '...': ...")
-    CLI -> User : "Error: ..." to stderr\nexit code 1
+    Handler -> ELog : logger.error("[cli] invalid operand for '...': ...")
+    Handler -> User : "Error: ..." to stderr\nexit code 1
 else valid arguments
-    CLI -> Calc : Calculator()
+    Handler -> Handler : _parse_operand(value, require_int)
+    Handler -> Calc : Calculator() [held as _calc]
     activate Calc
-    CLI -> CLI : _parse_operand(value, require_int)
 
     alt arity == 1
-        CLI -> Calc : method(a)
+        Handler -> Calc : method(a)
     else arity == 2
-        CLI -> Calc : method(a, b)
+        Handler -> Calc : method(a, b)
     end
 
     alt ValueError / TypeError / ZeroDivisionError raised
-        Calc --> CLI : raises exception
-        CLI -> ELog : logger.error("[cli] calculation error in <op>: ...")
-        CLI -> User : "Error: <message>" to stderr\nexit code 1
+        Calc --> Handler : raises exception
+        Handler -> ELog : logger.error("[cli] calculation error in <op>: ...")
+        Handler -> User : "Error: <message>" to stderr\nexit code 1
     else success
-        Calc --> CLI : result
-        CLI -> User : print result to stdout\nexit code 0
+        Calc --> Handler : result
+        Handler -> User : print result to stdout\nexit code 0
     end
 
     deactivate Calc
 end
 
+deactivate Handler
 deactivate CLI
 
 ' ── Interactive session sequence ───────────────────────────────────────────
@@ -58,7 +63,8 @@ deactivate CLI
 == Interactive Session Mode ==
 
 actor User
-participant "__main__\n(Interactive)" as Main
+participant "__main__\n(module)" as Main
+participant "InteractiveSession" as Session
 participant "Calculator" as Calc2
 participant "history.txt" as File
 participant "error.log" as ELog2
@@ -66,118 +72,125 @@ participant "error.log" as ELog2
 User -> Main : run program
 activate Main
 
-Main -> ELog2 : setup_error_logging()\n(attach FileHandler)
-Main -> Calc2 : Calculator()
+Main -> Session : InteractiveSession()
+activate Session
+Main -> Session : run()
+
+Session -> ELog2 : setup_error_logging()\n(attach FileHandler)
+Session -> Calc2 : Calculator() [held as _calc]
 activate Calc2
 
-Main -> User : "=== Interactive Calculator ==="
-note right of Main : history = []\nmenu_failures = 0
+Session -> User : "=== Interactive Calculator ==="
+note right of Session : _history = []\n_menu_failures = 0
 
 loop until user quits or retry limit reached
 
-    Main -> User : display operation menu (1–12, h, q)
-    User -> Main : enter choice
+    Session -> Session : _display_menu()
+    Session -> User : print operation menu (1–12, h, q)
+    User -> Session : enter choice
 
     alt choice == 'q'
-        Main -> File : _write_history(history)
-        Main -> User : "Goodbye!"
-        Main -> Main : break
+        Session -> File : _write_history(_history)
+        Session -> User : "Goodbye!"
+        Session -> Session : break
     else choice == 'h'
-        alt history is empty
-            Main -> User : "No calculations yet."
-        else history has entries
-            Main -> User : "Session history:\n  <entry 1>\n  <entry 2>\n  ..."
+        Session -> Session : _show_history()
+        alt _history is empty
+            Session -> User : "No calculations yet."
+        else _history has entries
+            Session -> User : "Session history:\n  <entry 1>\n  <entry 2>\n  ..."
         end
     else choice not in OPERATIONS
-        Main -> Main : menu_failures += 1
-        Main -> ELog2 : logger.error("[interactive] invalid menu choice: ...")
-        Main -> User : "Invalid choice '...'. Available options: ..."
-        alt menu_failures >= MAX_RETRIES
-            Main -> ELog2 : logger.error("[interactive] max retries exceeded for menu selection")
-            Main -> File : _write_history(history)
-            Main -> User : "Too many invalid selections. Ending session."
-            Main -> Main : break
+        Session -> Session : _menu_failures += 1
+        Session -> ELog2 : logger.error("[interactive] invalid menu choice: ...")
+        Session -> User : "Invalid choice '...'. Available options: ..."
+        alt _menu_failures >= MAX_RETRIES
+            Session -> ELog2 : logger.error("[interactive] max retries exceeded for menu selection")
+            Session -> File : _write_history(_history)
+            Session -> User : "Too many invalid selections. Ending session."
+            Session -> Session : break
         else
-            Main -> User : "<N> attempt(s) remaining."
+            Session -> User : "<N> attempt(s) remaining."
         end
-    else valid choice (arity == 1)
-        Main -> Main : menu_failures = 0
+    else valid choice (arity == 1) — via _handle_operation(choice)
+        Session -> Session : _menu_failures = 0
         loop up to MAX_RETRIES times
-            Main -> User : "Enter value:"
-            User -> Main : raw input
+            Session -> User : "Enter value:"
+            User -> Session : raw input
             alt input is valid number
-                Main -> Main : _prompt_number returns parsed value
+                Session -> Session : _prompt_number returns parsed value
             else input is invalid
-                Main -> ELog2 : logger.error("[interactive] invalid operand input: ...")
-                Main -> User : "Error: <message>. <N> attempt(s) remaining."
+                Session -> ELog2 : logger.error("[interactive] invalid operand input: ...")
+                Session -> User : "Error: <message>. <N> attempt(s) remaining."
             end
         end
         alt retries exhausted (returns None)
-            Main -> ELog2 : logger.error("[interactive] max retries exceeded for operand input in <op>")
-            Main -> File : _write_history(history)
-            Main -> User : "Too many invalid inputs. Ending session."
-            Main -> Main : break
+            Session -> ELog2 : logger.error("[interactive] max retries exceeded for operand input in <op>")
+            Session -> File : _write_history(_history)
+            Session -> User : "Too many invalid inputs. Ending session."
+            Session -> Session : break
         else valid value obtained
-            Main -> Calc2 : method(a)
+            Session -> Calc2 : method(a)
             alt ValueError / TypeError raised
-                Calc2 --> Main : raises exception
-                Main -> ELog2 : logger.error("[interactive] calculation error in <op>: ...")
-                Main -> User : "Error: <message>"
+                Calc2 --> Session : raises exception
+                Session -> ELog2 : logger.error("[interactive] calculation error in <op>: ...")
+                Session -> User : "Error: <message>"
             else success
-                Calc2 --> Main : result
-                Main -> User : "Result: <result>"
-                Main -> Main : history.append(_format_history_entry(op_name, (a,), result))
+                Calc2 --> Session : result
+                Session -> User : "Result: <result>"
+                Session -> Session : _history.append(_format_history_entry(op_name, (a,), result))
             end
         end
-    else valid choice (arity == 2)
-        Main -> Main : menu_failures = 0
+    else valid choice (arity == 2) — via _handle_operation(choice)
+        Session -> Session : _menu_failures = 0
         loop up to MAX_RETRIES times (first operand)
-            Main -> User : "Enter first value:"
-            User -> Main : raw input
+            Session -> User : "Enter first value:"
+            User -> Session : raw input
             alt input is valid number
-                Main -> Main : _prompt_number returns parsed value
+                Session -> Session : _prompt_number returns parsed value
             else input is invalid
-                Main -> ELog2 : logger.error("[interactive] invalid operand input: ...")
-                Main -> User : "Error: <message>. <N> attempt(s) remaining."
+                Session -> ELog2 : logger.error("[interactive] invalid operand input: ...")
+                Session -> User : "Error: <message>. <N> attempt(s) remaining."
             end
         end
         alt retries exhausted for first operand
-            Main -> ELog2 : logger.error("[interactive] max retries exceeded for operand input in <op>")
-            Main -> File : _write_history(history)
-            Main -> User : "Too many invalid inputs. Ending session."
-            Main -> Main : break
+            Session -> ELog2 : logger.error("[interactive] max retries exceeded for operand input in <op>")
+            Session -> File : _write_history(_history)
+            Session -> User : "Too many invalid inputs. Ending session."
+            Session -> Session : break
         end
         loop up to MAX_RETRIES times (second operand)
-            Main -> User : "Enter second value:"
-            User -> Main : raw input
+            Session -> User : "Enter second value:"
+            User -> Session : raw input
             alt input is valid number
-                Main -> Main : _prompt_number returns parsed value
+                Session -> Session : _prompt_number returns parsed value
             else input is invalid
-                Main -> ELog2 : logger.error("[interactive] invalid operand input: ...")
-                Main -> User : "Error: <message>. <N> attempt(s) remaining."
+                Session -> ELog2 : logger.error("[interactive] invalid operand input: ...")
+                Session -> User : "Error: <message>. <N> attempt(s) remaining."
             end
         end
         alt retries exhausted for second operand
-            Main -> ELog2 : logger.error("[interactive] max retries exceeded for operand input in <op>")
-            Main -> File : _write_history(history)
-            Main -> User : "Too many invalid inputs. Ending session."
-            Main -> Main : break
+            Session -> ELog2 : logger.error("[interactive] max retries exceeded for operand input in <op>")
+            Session -> File : _write_history(_history)
+            Session -> User : "Too many invalid inputs. Ending session."
+            Session -> Session : break
         end
-        Main -> Calc2 : method(a, b)
+        Session -> Calc2 : method(a, b)
         alt ZeroDivisionError / ValueError / TypeError raised
-            Calc2 --> Main : raises exception
-            Main -> ELog2 : logger.error("[interactive] calculation error in <op>: ...")
-            Main -> User : "Error: <message>"
+            Calc2 --> Session : raises exception
+            Session -> ELog2 : logger.error("[interactive] calculation error in <op>: ...")
+            Session -> User : "Error: <message>"
         else success
-            Calc2 --> Main : result
-            Main -> User : "Result: <result>"
-            Main -> Main : history.append(_format_history_entry(op_name, (a, b), result))
+            Calc2 --> Session : result
+            Session -> User : "Result: <result>"
+            Session -> Session : _history.append(_format_history_entry(op_name, (a, b), result))
         end
     end
 
 end
 
 deactivate Calc2
+deactivate Session
 deactivate Main
 
 @enduml
