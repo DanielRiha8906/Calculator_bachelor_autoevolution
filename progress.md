@@ -1,3 +1,101 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-151-history)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-151-history
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+
+Reviewed all three PlantUML diagrams against the current state of `src/` and `main.py`.
+All twelve Calculator methods, both entry points (interactive `src/__main__.py` and bash
+CLI `main.py`), the retry logic (`MAX_RETRIES`, `_prompt_number`, menu failure counter),
+and the session history features (`HISTORY_FILE`, `_format_history_entry`, `_write_history`,
+`'h'` menu command) introduced in issue #151 are correctly represented in every diagram.
+No updates were required.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 56.9s | Cost: $0.253521 USD | Turns: 17
+
+---
+
+## Run: Issue #151 — Session history for interactive mode (task/issue-151-history)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-151-history
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/__main__.py` — added `HISTORY_FILE` constant; added `_format_history_entry()` helper
+  that formats successful calculations in function-style notation (e.g. `add(2, 3) = 5`);
+  added `_write_history()` helper that writes the history list to `HISTORY_FILE`, overwriting
+  any previous session; updated `main()` to maintain a `history` list, append entries after
+  every successful calculation, handle the new `'h'` menu command to display history, and call
+  `_write_history` at every exit point (normal quit, max-retries termination on menu or operand)
+- `tests/test_main.py` — updated `_run()` helper to mock `_write_history` so existing tests
+  produce no file side-effects; added `test_menu_lists_history_option` to assert `'h'` appears
+  in the menu; added 9 new history-specific tests covering: empty history message, binary/unary
+  recording, multiple entries, errors not recorded, `'h'` not treated as invalid, file writing
+  on quit, fresh session (no loading from prior file), and file writing on retry termination
+- `artifacts/class_diagram.puml` — added `HISTORY_FILE`, `_format_history_entry`, and
+  `_write_history` to the `__main__` module with descriptive notes
+- `artifacts/activity_diagram.puml` — added `history = []` initialisation; added `'h'`
+  branch in the menu loop; added `history.append(...)` after each successful result; added
+  `_write_history(history)` call at every session-termination point
+- `artifacts/sequence_diagram.puml` — added `history.txt` as a participant; added
+  `_write_history` messages at every exit point; added history display branch for `'h'`;
+  added `history.append(...)` notes after each successful operation
+
+### Purpose
+
+Implemented issue #151 (Task 9 — History — Expert/guided):
+- Session history is tracked in memory as a list of formatted strings
+- Each successful calculation appends `op_name(operands) = result` to the list
+- Failed calculations (exceptions) are not recorded
+- `'h'` at the menu prompt displays all history entries or "No calculations yet."
+- When the session ends (quit, or max-retries termination), history is written to
+  `history.txt` in the working directory, overwriting any previous session's file
+- New sessions always start with an empty history list (no loading from file)
+
+### Risks
+
+Low. Changes are confined to `src/__main__.py` interactive input-handling logic.
+The `Calculator` class, bash CLI, and all existing tests are unaffected.
+File writing is isolated to `_write_history()` which is mocked in the test helper
+`_run()` to prevent test side-effects; the three file-specific tests use `tmp_path`
+to verify actual disk writes without polluting the working directory.
+
+### Test results
+
+148 tests collected; 148 passed; 0 failed; 0 skipped.
+No regressions in `test_calculator.py` (75) or `test_cli.py` (30).
+`test_main.py` grew from 33 to 43 tests (+10 history-specific tests).
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 479.6s | Cost: $1.255687 USD | Turns: 32
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-148-retry-logic-interactive)
 
 **Date:** 2026-04-11
