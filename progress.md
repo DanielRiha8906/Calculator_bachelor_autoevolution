@@ -1,3 +1,62 @@
+## Run: Issue #193 — Scientific mode switch (task/issue-193-scientific-mode-switch)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-193-scientific-mode-switch
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/operations/scientific.py` — added six trigonometric methods to `ScientificOperations`:
+  `sin`, `cos`, `tan`, `cot`, `asin`, `acos`; all accept/return degrees; `tan` raises
+  `ValueError` at odd multiples of 90°, `cot` at multiples of 180°, `asin`/`acos` for
+  inputs outside [-1, 1]
+- `src/session.py` — replaced single `OPERATIONS` dict with `NORMAL_OPERATIONS` (add,
+  subtract, multiply, divide, square, sqrt) and `SCIENTIFIC_OPERATIONS` (power, cube, cbrt,
+  factorial, log10, ln, sin, cos, tan, cot, asin, acos); added `_select_mode()` method with
+  MAX_RETRIES retry logic; updated `run()` to call mode selection at start and support `s`
+  key for mid-session mode switching; updated `_display_menu()` and `_handle_operation()` to
+  use the current mode's operation dict
+- `tests/test_calculator.py` — added 26 unit tests covering sin, cos, tan (including
+  undefined-angle errors), cot (including undefined-angle errors), asin and acos (including
+  out-of-range errors)
+- `tests/test_main.py` — rewrote all interactive tests to prepend mode selection input;
+  updated all operation key references to match the new per-mode key assignments; added new
+  tests for mode selection (valid/invalid/max-retries), mode switching with `s`, and all six
+  new trig operations in interactive flow
+- `tests/test_error_logging.py` — updated all interactive error-logging tests to prepend
+  mode selection input and corrected operation key references (sqrt now key 6 in normal,
+  ln now key 6 in scientific)
+
+### Purpose
+
+Implemented issue #193 (Task 14 — Scientific mode switch — Expert/generic):
+- Interactive session now starts with a mode selection prompt (1=Normal, 2=Scientific)
+- Normal mode exposes: add, subtract, multiply, divide, square, square root
+- Scientific mode exposes: power, cube, cube root, factorial, log10, ln, sin, cos, tan,
+  cot, asin, acos (all trig in degrees)
+- Users can switch modes at any time during the session via the `s` key
+- Mode selection has the same MAX_RETRIES (5) retry policy as menu selection
+- Existing modular operation structure (BasicOperations / ScientificOperations mixins)
+  is preserved; Calculator class is unchanged
+
+### Risks
+
+Low. The Calculator class and CLI are not touched. Interactive logic is self-contained
+in session.py. All trig functions delegate to Python's `math` module with explicit
+domain validation for undefined inputs.
+
+### Test results
+
+213 tests collected, 213 passed, 0 failed.
+Previous count: 164 tests; 49 new tests added (26 unit + 16 new interactive + 7 mode/
+switching tests; some older interactive tests were updated rather than added).
+
+### Duration / Cost / Turns
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-190-documentation)
 
 **Date:** 2026-04-11
