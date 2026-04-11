@@ -1,3 +1,35 @@
+## Run: issue-152 — Add error logging to the calculator
+
+- **Branch:** task/issue-152-add-error-logging
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/calculator.py` — added `import logging` and `logger = logging.getLogger(__name__)`; wrapped each of the 12 operation methods in a try-except block that calls `logger.error(...)` with operation name and arguments before re-raising, so all calculator errors are logged at ERROR level
+- `src/user_input.py` — added `import logging` and `logger = logging.getLogger(__name__)`; in `_get_float()` and `_get_int()` the final `raise ValueError` (when all retries are exhausted) is now preceded by `logger.error(...)` to record input-exhaustion errors
+- `src/cli.py` — added `import logging` and `logger = logging.getLogger(__name__)`; the wrong-operand-count branches now call `logger.error(msg)` before printing to stderr; the catch-all `except (ValueError, ZeroDivisionError, TypeError)` block calls `logger.error(...)` to log CLI-level operation failures
+- `tests/test_calculator.py` — added `import logging`; added `TestCalculatorErrorLogging` class (6 tests): divide-by-zero, negative square root, log(0), ln(-1), factorial(-1) are each verified to emit exactly one ERROR record to `src.calculator`; successful operation emits no ERROR record
+- `tests/test_user_input.py` — added `import logging`; added `TestErrorLoggingInUserInput` class (3 tests): get_float and get_int exhausted retries each emit one ERROR record to `src.user_input`; successful float input emits none
+- `tests/test_cli.py` — added `import logging`; added `TestCliErrorLogging` class (3 tests): divide-by-zero emits an ERROR to `src.cli`, wrong operand count emits one ERROR with the constraint message, successful operation emits none
+
+### Purpose
+Implements Issue #152 (V2 Task 10 - Error logging - Naive/generic): adds structured error logging via Python's standard `logging` module to all three calculator modules. Each logger uses `logging.getLogger(__name__)` so callers can configure handlers and levels independently. No default handlers are added (library convention). All errors are logged at `ERROR` level as close to their origin as possible, with arguments included for debuggability.
+
+### Risks
+- No logging handlers are configured; errors are silently discarded unless the calling application sets up a handler. This is standard Python library behavior and intentional.
+- Calculator errors (e.g., divide-by-zero) are logged in `src.calculator` and also logged with context in `src.cli`, resulting in two ERROR records per failure in CLI mode. This is acceptable for traceability.
+- No new dependencies introduced (uses Python standard library `logging`).
+
+### Test results
+All 150 tests passed (138 pre-existing + 12 new):
+- `TestCalculatorErrorLogging` (6 tests) — all PASSED
+- `TestErrorLoggingInUserInput` (3 tests) — all PASSED
+- `TestCliErrorLogging` (3 tests) — all PASSED
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-149 — Add history of operations to the calculator
 
 - **Branch:** task/issue-149-add-history

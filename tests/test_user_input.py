@@ -1,3 +1,4 @@
+import logging
 import pytest
 from unittest.mock import patch
 from src.user_input import interactive_mode, _get_float, _get_int, _print_history, MAX_RETRIES
@@ -240,3 +241,28 @@ class TestHistoryInInteractiveMode:
         captured = capsys.readouterr()
         assert "divide" in captured.out
         assert "5.0" in captured.out
+
+
+class TestErrorLoggingInUserInput:
+    def test_get_float_exhausted_retries_logs_error(self, caplog):
+        with caplog.at_level(logging.ERROR, logger="src.user_input"):
+            with patch("builtins.input", return_value="abc"):
+                with pytest.raises(ValueError):
+                    _get_float("Enter number: ")
+        assert len(caplog.records) == 1
+        assert "Failed to get a valid number" in caplog.records[0].message
+
+    def test_get_int_exhausted_retries_logs_error(self, caplog):
+        with caplog.at_level(logging.ERROR, logger="src.user_input"):
+            with patch("builtins.input", return_value="xyz"):
+                with pytest.raises(ValueError):
+                    _get_int("Enter integer: ")
+        assert len(caplog.records) == 1
+        assert "Failed to get a valid integer" in caplog.records[0].message
+
+    def test_successful_float_input_does_not_log_error(self, caplog):
+        with caplog.at_level(logging.ERROR, logger="src.user_input"):
+            with patch("builtins.input", return_value="3.14"):
+                result = _get_float("Enter number: ")
+        assert result == pytest.approx(3.14)
+        assert len(caplog.records) == 0

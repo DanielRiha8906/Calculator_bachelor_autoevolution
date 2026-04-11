@@ -1,6 +1,10 @@
 """Interactive user input interface for the Calculator."""
 
+import logging
+
 from .calculator import Calculator
+
+logger = logging.getLogger(__name__)
 
 
 OPERATIONS = {
@@ -56,7 +60,9 @@ def _get_float(prompt: str) -> float:
                 print(f"Invalid input: {raw!r}. Please enter a number. ({remaining} attempt(s) remaining)")
             else:
                 print(f"Invalid input: {raw!r}. No more retries.")
-    raise ValueError(f"Failed to get a valid number after {MAX_RETRIES} attempts.")
+    error_msg = f"Failed to get a valid number after {MAX_RETRIES} attempts."
+    logger.error(error_msg)
+    raise ValueError(error_msg)
 
 
 def _get_int(prompt: str) -> int:
@@ -71,7 +77,9 @@ def _get_int(prompt: str) -> int:
                 print(f"Invalid input: {raw!r}. Please enter an integer. ({remaining} attempt(s) remaining)")
             else:
                 print(f"Invalid input: {raw!r}. No more retries.")
-    raise ValueError(f"Failed to get a valid integer after {MAX_RETRIES} attempts.")
+    error_msg = f"Failed to get a valid integer after {MAX_RETRIES} attempts."
+    logger.error(error_msg)
+    raise ValueError(error_msg)
 
 
 def interactive_mode() -> None:

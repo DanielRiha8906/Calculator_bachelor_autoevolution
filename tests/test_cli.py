@@ -1,5 +1,6 @@
 """Tests for CLI (bash) mode of the Calculator."""
 
+import logging
 import pytest
 from src.cli import cli_mode
 
@@ -142,3 +143,26 @@ class TestCliErrorCases:
     def test_invalid_operation_raises_system_exit(self):
         with pytest.raises(SystemExit):
             cli_mode(["invalid_op", "5"])
+
+
+class TestCliErrorLogging:
+    """Tests that errors are logged at ERROR level in CLI mode."""
+
+    def test_divide_by_zero_logs_error(self, caplog):
+        with caplog.at_level(logging.ERROR, logger="src.cli"):
+            exit_code = cli_mode(["divide", "10", "0"])
+        assert exit_code == 1
+        assert any("divide" in r.message for r in caplog.records)
+
+    def test_wrong_operand_count_logs_error(self, caplog):
+        with caplog.at_level(logging.ERROR, logger="src.cli"):
+            exit_code = cli_mode(["add", "1", "2", "3"])
+        assert exit_code == 1
+        assert len(caplog.records) == 1
+        assert "requires exactly 2 operands" in caplog.records[0].message
+
+    def test_successful_operation_does_not_log_error(self, caplog):
+        with caplog.at_level(logging.ERROR, logger="src.cli"):
+            exit_code = cli_mode(["add", "3", "5"])
+        assert exit_code == 0
+        assert len(caplog.records) == 0

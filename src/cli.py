@@ -9,9 +9,12 @@ the shell without entering the interactive REPL:
 """
 
 import argparse
+import logging
 import sys
 
 from .calculator import Calculator
+
+logger = logging.getLogger(__name__)
 
 
 TWO_ARG_OPS = {"add", "subtract", "multiply", "divide", "power"}
@@ -82,29 +85,26 @@ def cli_mode(argv: list[str] | None = None) -> int:
     try:
         if op in INT_OPS:
             if len(operands_str) != 1:
-                print(
-                    f"Error: '{op}' requires exactly 1 integer operand.",
-                    file=sys.stderr,
-                )
+                msg = f"'{op}' requires exactly 1 integer operand."
+                logger.error(msg)
+                print(f"Error: {msg}", file=sys.stderr)
                 return 1
             a = int(operands_str[0])
             result = getattr(calc, op)(a)
         elif op in TWO_ARG_OPS:
             if len(operands_str) != 2:
-                print(
-                    f"Error: '{op}' requires exactly 2 operands.",
-                    file=sys.stderr,
-                )
+                msg = f"'{op}' requires exactly 2 operands."
+                logger.error(msg)
+                print(f"Error: {msg}", file=sys.stderr)
                 return 1
             a = float(operands_str[0])
             b = float(operands_str[1])
             result = getattr(calc, op)(a, b)
         else:
             if len(operands_str) != 1:
-                print(
-                    f"Error: '{op}' requires exactly 1 operand.",
-                    file=sys.stderr,
-                )
+                msg = f"'{op}' requires exactly 1 operand."
+                logger.error(msg)
+                print(f"Error: {msg}", file=sys.stderr)
                 return 1
             a = float(operands_str[0])
             result = getattr(calc, op)(a)
@@ -113,5 +113,6 @@ def cli_mode(argv: list[str] | None = None) -> int:
         return 0
 
     except (ValueError, ZeroDivisionError, TypeError) as e:
+        logger.error("cli operation '%s' failed: %s", op, e)
         print(f"Error: {e}", file=sys.stderr)
         return 1
