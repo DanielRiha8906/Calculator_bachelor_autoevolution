@@ -1,3 +1,37 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-106-unit-test-suite)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-106-unit-test-suite
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+
+Reviewed all three PlantUML diagrams against the current state of `src/`. The source code
+(Calculator class with add/subtract/multiply/divide, `__main__.py` entry point, and `__init__.py`
+export module) is unchanged, so all diagrams remain correct and required no updates.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #106 — Unit test suite for all calculator operations (exp2/expert-generic)
 
 **Date:** 2026-04-11
