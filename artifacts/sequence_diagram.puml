@@ -34,4 +34,44 @@ else valid n
     Main -> Main : print("Factorial: 120")
 end
 
+Main -> Calc : square(4)
+Calc --> Main : 16
+Main -> Main : print("Square: 16")
+
+Main -> Calc : cube(3)
+Calc --> Main : 27
+Main -> Main : print("Cube: 27")
+
+Main -> Calc : square_root(9)
+alt x < 0
+    Calc --> Main : ValueError
+else x >= 0
+    Calc --> Main : 3.0
+    Main -> Main : print("Square Root: 3.0")
+end
+
+Main -> Calc : cube_root(27)
+Calc --> Main : 3.0
+Main -> Main : print("Cube Root: 3.0")
+
+Main -> Calc : power(2, 10)
+Calc --> Main : 1024.0
+Main -> Main : print("Power: 1024.0")
+
+Main -> Calc : log(100)
+alt x <= 0
+    Calc --> Main : ValueError
+else x > 0
+    Calc --> Main : 2.0
+    Main -> Main : print("Log (base 10): 2.0")
+end
+
+Main -> Calc : ln(1)
+alt x <= 0
+    Calc --> Main : ValueError
+else x > 0
+    Calc --> Main : 0.0
+    Main -> Main : print("Ln (natural log): 0.0")
+end
+
 @enduml
