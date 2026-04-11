@@ -3,6 +3,28 @@
 import math
 
 
+def sin(x: float) -> float:
+    """Return the sine of x (x in radians)."""
+    return math.sin(x)
+
+
+def cos(x: float) -> float:
+    """Return the cosine of x (x in radians)."""
+    return math.cos(x)
+
+
+def tan(x: float) -> float:
+    """Return the tangent of x (x in radians).
+
+    Raises:
+        ValueError: If the result is undefined (cos(x) is effectively zero).
+    """
+    result = math.tan(x)
+    if math.isinf(result):
+        raise ValueError(f"tan({x}) is undefined")
+    return result
+
+
 def factorial(n: int) -> int:
     """Return n! (n factorial).
 

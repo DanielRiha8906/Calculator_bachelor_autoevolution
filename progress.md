@@ -1,3 +1,39 @@
+## Run: issue-191 — Add scientific mode switch to interactive calculator
+
+- **Branch:** task/issue-191-scientific-mode-switch
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/operations/scientific.py` — added `sin(x)`, `cos(x)`, `tan(x)` pure functions (angles in radians; `tan` raises `ValueError` for undefined results)
+- `src/scientific_calculator.py` — replaced stub with full implementation: added `sin`, `cos`, `tan` methods that delegate to `operations/scientific` and record to history
+- `src/user_input.py` — refactored interactive mode to support normal/scientific mode switching:
+  - Added `NORMAL_OPERATIONS` dict (12 ops, same as before) and `SCIENTIFIC_OPERATIONS` dict (15 ops, adds sin/cos/tan)
+  - Interactive mode now uses `ScientificCalculator` throughout (enabling trig in scientific mode)
+  - New commands: `s` to switch to scientific mode, `n` to switch back to normal
+  - Menu reprints on mode change; history persists across switches
+- `tests/test_scientific_calculator.py` — added `TestScientificCalculatorTrigOps` class (13 tests covering sin/cos/tan values and history recording)
+- `tests/test_user_input.py` — added `TestOperationDicts` (4 tests) and `TestScientificModeSwitch` (12 tests) covering mode switching, trig access, and history persistence
+
+### Purpose
+Implements Issue #191 (V2 Task 14 — Scientific mode switch): adds trigonometric operations (sin, cos, tan) to `ScientificCalculator` and enables runtime switching between normal mode (12 standard operations) and scientific mode (12 + sin/cos/tan) in the interactive REPL.
+
+### Risks
+- No breaking changes: normal mode retains all 12 existing operations; existing tests unmodified
+- `tan` for values near π/2 returns a very large float (not truly undefined due to floating-point precision) rather than raising; the `ValueError` guard only triggers on `math.isinf(result)` which is not reachable in practice but provides a safety net
+- No new external dependencies introduced
+
+### Test results
+All 191 tests passed (up from 162 on previous run; 29 new tests added):
+- `test_calculator.py`: 84 tests — PASSED
+- `test_cli.py`: 30 tests — PASSED
+- `test_scientific_calculator.py`: 31 tests (18 existing + 13 new trig tests) — PASSED
+- `test_user_input.py`: 46 tests (30 existing + 16 new mode-switch tests) — PASSED
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: diagram-update — Update PlantUML diagrams
 
 - **Branch:** task/issue-188-add-documentation

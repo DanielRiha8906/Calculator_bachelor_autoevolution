@@ -1,7 +1,16 @@
 import logging
+import math
 import pytest
 from unittest.mock import patch
-from src.user_input import interactive_mode, _get_float, _get_int, _print_history, MAX_RETRIES
+from src.user_input import (
+    interactive_mode,
+    _get_float,
+    _get_int,
+    _print_history,
+    MAX_RETRIES,
+    NORMAL_OPERATIONS,
+    SCIENTIFIC_OPERATIONS,
+)
 
 
 class TestInteractiveMode:
@@ -266,3 +275,123 @@ class TestErrorLoggingInUserInput:
                 result = _get_float("Enter number: ")
         assert result == pytest.approx(3.14)
         assert len(caplog.records) == 0
+
+
+class TestOperationDicts:
+    """Tests for NORMAL_OPERATIONS and SCIENTIFIC_OPERATIONS constants."""
+
+    def test_normal_operations_has_12_entries(self):
+        assert len(NORMAL_OPERATIONS) == 12
+
+    def test_scientific_operations_has_15_entries(self):
+        assert len(SCIENTIFIC_OPERATIONS) == 15
+
+    def test_scientific_operations_is_superset_of_normal(self):
+        for key, op in NORMAL_OPERATIONS.items():
+            assert SCIENTIFIC_OPERATIONS[key] == op
+
+    def test_scientific_operations_includes_trig(self):
+        trig_ops = set(SCIENTIFIC_OPERATIONS.values())
+        assert "sin" in trig_ops
+        assert "cos" in trig_ops
+        assert "tan" in trig_ops
+
+
+class TestScientificModeSwitch:
+    """Tests for normal/scientific mode switching in interactive_mode."""
+
+    def test_starts_in_normal_mode(self, capsys):
+        with patch("builtins.input", return_value="q"):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "normal" in captured.out
+
+    def test_switch_to_scientific_mode(self, capsys):
+        inputs = iter(["s", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Switched to scientific mode" in captured.out
+        assert "scientific" in captured.out
+
+    def test_switch_back_to_normal_mode(self, capsys):
+        inputs = iter(["s", "n", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Switched to scientific mode" in captured.out
+        assert "Switched to normal mode" in captured.out
+
+    def test_switch_to_scientific_already_in_scientific(self, capsys):
+        inputs = iter(["s", "s", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Already in scientific mode" in captured.out
+
+    def test_switch_to_normal_already_in_normal(self, capsys):
+        inputs = iter(["n", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Already in normal mode" in captured.out
+
+    def test_scientific_mode_menu_shows_trig_ops(self, capsys):
+        inputs = iter(["s", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "sin" in captured.out
+        assert "cos" in captured.out
+        assert "tan" in captured.out
+
+    def test_trig_op_not_available_in_normal_mode(self, capsys):
+        # op "13" (sin) is only in scientific mode; in normal mode it's unknown
+        inputs = iter(["13", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Unknown operation" in captured.out
+
+    def test_sin_in_scientific_mode(self, capsys):
+        # Switch to scientific, select sin (13), enter pi/2 → result ≈ 1.0
+        half_pi = str(math.pi / 2)
+        inputs = iter(["s", "13", half_pi, "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Result:" in captured.out
+
+    def test_cos_in_scientific_mode(self, capsys):
+        # Switch to scientific, select cos (14), enter 0 → result = 1.0
+        inputs = iter(["s", "14", "0", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Result: 1.0" in captured.out
+
+    def test_tan_in_scientific_mode(self, capsys):
+        # Switch to scientific, select tan (15), enter 0 → result = 0.0
+        inputs = iter(["s", "15", "0", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Result: 0.0" in captured.out
+
+    def test_history_persists_across_mode_switch(self, capsys):
+        # add in normal, switch to scientific, do sin, show history
+        inputs = iter(["1", "2", "3", "s", "13", "0", "h", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        # Both add and sin should appear in history
+        assert "add" in captured.out
+        assert "sin" in captured.out
+
+    def test_normal_ops_still_work_after_mode_switch(self, capsys):
+        # Switch to scientific and back, then use normal add
+        inputs = iter(["s", "n", "1", "4", "6", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Result: 10.0" in captured.out

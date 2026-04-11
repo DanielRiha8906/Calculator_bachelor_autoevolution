@@ -4,13 +4,24 @@ Implements a text-based REPL that lets a user perform calculator operations
 by selecting numbered menu entries.  Input validation retries up to
 :data:`MAX_RETRIES` times before raising a :class:`ValueError`.
 
+The session starts in **normal mode**, which exposes the standard set of
+operations.  Entering ``s`` switches to **scientific mode**, which adds
+trigonometric functions (sin, cos, tan).  Entering ``n`` switches back to
+normal mode.  History is shared across both modes within a session.
+
 Menu choices
 ------------
 1–12
     Named operations (add, subtract, multiply, divide, factorial, square,
     cube, square_root, cube_root, power, log, ln).
+13–15 (scientific mode only)
+    Trigonometric operations (sin, cos, tan) — angles in radians.
 h
     Display the full operation history for the current session.
+s
+    Switch to scientific mode.
+n
+    Switch to normal mode.
 q
     Quit the interactive session.
 
@@ -21,12 +32,12 @@ Usage::
 
 import logging
 
-from .calculator import Calculator
+from .scientific_calculator import ScientificCalculator
 
 logger = logging.getLogger(__name__)
 
 
-OPERATIONS = {
+NORMAL_OPERATIONS = {
     "1": "add",
     "2": "subtract",
     "3": "multiply",
@@ -41,19 +52,30 @@ OPERATIONS = {
     "12": "ln",
 }
 
+SCIENTIFIC_OPERATIONS = {
+    **NORMAL_OPERATIONS,
+    "13": "sin",
+    "14": "cos",
+    "15": "tan",
+}
+
 TWO_ARG_OPS = {"add", "subtract", "multiply", "divide", "power"}
 INT_OPS = {"factorial"}
 
 MAX_RETRIES = 3
 
 
-def _print_menu() -> None:
-    """Print the operations menu."""
-    print("Calculator - Interactive Mode")
+def _print_menu(mode: str, operations: dict) -> None:
+    """Print the operations menu for the given mode."""
+    print(f"Calculator - Interactive Mode ({mode})")
     print("Operations:")
-    for key, name in OPERATIONS.items():
+    for key, name in operations.items():
         print(f"  {key}: {name}")
     print("  h: show history")
+    if mode == "normal":
+        print("  s: switch to scientific mode")
+    else:
+        print("  n: switch to normal mode")
     print("  q: quit")
 
 
@@ -102,9 +124,15 @@ def _get_int(prompt: str) -> int:
 
 
 def interactive_mode() -> None:
-    """Run an interactive calculator session reading operands from stdin."""
-    calc = Calculator()
-    _print_menu()
+    """Run an interactive calculator session reading operands from stdin.
+
+    The session starts in normal mode.  Use ``s`` to switch to scientific mode
+    (adds sin, cos, tan) and ``n`` to return to normal mode.  History persists
+    across mode switches for the duration of the session.
+    """
+    calc = ScientificCalculator()
+    mode = "normal"
+    _print_menu(mode, NORMAL_OPERATIONS)
 
     while True:
         choice = input("Select operation (or 'q' to quit): ").strip()
@@ -117,11 +145,30 @@ def interactive_mode() -> None:
             _print_history(calc.get_history())
             continue
 
-        if choice not in OPERATIONS:
+        if choice.lower() == "s":
+            if mode != "scientific":
+                mode = "scientific"
+                print("Switched to scientific mode.")
+                _print_menu(mode, SCIENTIFIC_OPERATIONS)
+            else:
+                print("Already in scientific mode.")
+            continue
+
+        if choice.lower() == "n":
+            if mode != "normal":
+                mode = "normal"
+                print("Switched to normal mode.")
+                _print_menu(mode, NORMAL_OPERATIONS)
+            else:
+                print("Already in normal mode.")
+            continue
+
+        current_ops = NORMAL_OPERATIONS if mode == "normal" else SCIENTIFIC_OPERATIONS
+        if choice not in current_ops:
             print(f"Unknown operation: {choice!r}. Please choose from the menu.")
             continue
 
-        op_name = OPERATIONS[choice]
+        op_name = current_ops[choice]
         op = getattr(calc, op_name)
 
         try:
