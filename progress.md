@@ -1,3 +1,50 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-178-separate-core-from-interface)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-178-separate-core-from-interface
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — added `InteractiveSession` class (fields `_calc`,
+  `_history`, `_menu_failures`; methods `__init__`, `run`, `_display_menu`, `_show_history`,
+  `_handle_operation`) and `CLIHandler` class (field `_calc`; methods `__init__`, `run`);
+  updated relationships so both classes use `Calculator` by composition and delegate to
+  `error_logger`; `main()` in each module is now documented as a thin wrapper that
+  instantiates the corresponding class
+- `artifacts/activity_diagram.puml` — updated partition headings to reference the new
+  classes (`CLIHandler`, `InteractiveSession`); added instantiation steps for each class
+  at the start of both flows; `_handle_operation` dispatch and `_show_history` steps
+  are now named consistently with the class API
+- `artifacts/sequence_diagram.puml` — replaced the flat `CLI` / `Main` participants with
+  separate `CLIHandler` / `InteractiveSession` participants; all message arrows now target
+  the correct class; `run()` entry points are explicit; `__main__` module is shown as a
+  thin entry point that delegates to `InteractiveSession`
+
+### Purpose
+
+Updated all three PlantUML diagrams to reflect the class-based refactoring introduced in
+issue #178.  The prior diagrams modelled `main.py` and `src/__main__.py` as flat modules;
+they now accurately represent `CLIHandler` and `InteractiveSession` as the primary
+participants that encapsulate session state and CLI concerns respectively, while the
+`Calculator` core remains untouched and independently reusable.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #178 — Refactoring: separate core from interface (task/issue-178-separate-core-from-interface)
 
 **Date:** 2026-04-11

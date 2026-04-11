@@ -19,6 +19,17 @@ package "src" {
         + ln(n) : float
     }
 
+    class InteractiveSession {
+        - _calc : Calculator
+        - _history : list[str]
+        - _menu_failures : int
+        + __init__(calc: Calculator | None)
+        + run() : void
+        - _display_menu() : void
+        - _show_history() : void
+        - _handle_operation(choice: str) : bool
+    }
+
     class "__main__" as Main <<module>> {
         + MAX_RETRIES : int
         + HISTORY_FILE : str
@@ -44,6 +55,12 @@ package "src" {
 
 package "root" {
 
+    class CLIHandler {
+        - _calc : Calculator
+        + __init__(calc: Calculator | None)
+        + run(argv: list[str]) : void
+    }
+
     class "main" as CLI <<module>> {
         + CLI_OPERATIONS : dict
         + _parse_operand(value: str, require_int: bool) : int | float
@@ -52,11 +69,67 @@ package "root" {
 
 }
 
-Main --> Calculator : instantiates & calls
+InteractiveSession o-- Calculator : holds reference\n(creates if None)
+InteractiveSession --> ErrLog : run() calls setup_error_logging()\n_handle_operation() / _prompt_number()\n  call get_error_logger()
+Main --> InteractiveSession : main() instantiates & calls run()
+
+CLIHandler o-- Calculator : holds reference\n(creates if None)
+CLIHandler --> ErrLog : run() calls get_error_logger()
+CLI --> CLIHandler : main() instantiates & calls run()
+CLI --> ErrLog : main() calls setup_error_logging()
+
 Init ..> Calculator : exports
-CLI --> Calculator : instantiates & calls
-Main --> ErrLog : setup_error_logging()\nget_error_logger()
-CLI --> ErrLog : setup_error_logging()\nget_error_logger()
+
+note right of InteractiveSession::_calc
+  Injected via constructor or created fresh.
+  Allows Calculator to be exercised
+  independently of the interactive UI
+  (e.g. in tests).
+end note
+
+note right of InteractiveSession::_history
+  In-memory list of formatted strings for
+  successful calculations in the session.
+  Written to HISTORY_FILE on every exit path.
+end note
+
+note right of InteractiveSession::_menu_failures
+  Counts consecutive invalid menu choices.
+  Resets to 0 on a valid choice.
+  Session terminates after MAX_RETRIES failures.
+end note
+
+note right of InteractiveSession::run
+  Main session loop.
+  Calls setup_error_logging() on startup.
+  Delegates menu display to _display_menu(),
+  history display to _show_history(), and
+  operation execution to _handle_operation().
+  Writes history to HISTORY_FILE on every exit.
+end note
+
+note right of InteractiveSession::_handle_operation
+  Collects operands via _prompt_number().
+  Returns False when retries are exhausted
+  (signals run() to terminate the session).
+  Returns True to continue the loop.
+end note
+
+note right of CLIHandler::_calc
+  Injected via constructor or created fresh.
+  Allows Calculator to be exercised
+  independently of CLI concerns (e.g. in tests).
+end note
+
+note right of CLIHandler::run
+  Validates argv: checks operation exists,
+  operand count, and parses operand types.
+  Logs each error via get_error_logger()
+  with [cli] prefix.
+  Prints result to stdout; errors to stderr.
+  Exits with code 1 on any failure.
+  No retry — fails fast on invalid input.
+end note
 
 note right of CLI::CLI_OPERATIONS
   Maps operation name -> (method_name, arity).
@@ -75,10 +148,7 @@ note right of CLI::main
   Bash CLI entry point.
   Calls setup_error_logging() on startup.
   Reads operation and operands from argv.
-  Logs each error via get_error_logger() with [cli] prefix.
-  Prints result to stdout; errors to stderr.
-  Exits with code 1 on any failure.
-  No retry — fails fast on invalid input.
+  Delegates all logic to CLIHandler().run(argv).
 end note
 
 note right of Main::MAX_RETRIES
@@ -131,20 +201,8 @@ note right of Main::_prompt_number
 end note
 
 note right of Main::main
-  Interactive session loop.
-  Calls setup_error_logging() on startup.
-  Displays menu, reads choice, collects operands,
-  calls Calculator, prints result or error.
-  Logs each error via get_error_logger() with [interactive] prefix.
-  Successful results are appended to the session
-  history list (formatted via _format_history_entry).
-  'h' displays the current session history.
-  'q' writes history to HISTORY_FILE and exits.
-  Tracks consecutive invalid menu choices;
-  terminates (and writes history) after MAX_RETRIES failures.
-  Uses _prompt_number for operand input so
-  non-numeric values trigger a retry rather
-  than immediately ending the calculation.
+  Thin entry point.
+  Instantiates InteractiveSession and calls run().
 end note
 
 note right of ErrLog::ERROR_LOG_FILE
