@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch
-from src.user_input import interactive_mode
+from src.user_input import interactive_mode, _get_float, _get_int, MAX_RETRIES
 
 
 class TestInteractiveMode:
@@ -108,3 +108,84 @@ class TestInteractiveMode:
         captured = capsys.readouterr()
         assert "Result: 5.0" in captured.out
         assert "Result: 6.0" in captured.out
+
+
+class TestRetryLogicHelpers:
+    """Tests for _get_float and _get_int retry helpers."""
+
+    def test_get_float_valid_on_first_attempt(self, capsys):
+        with patch("builtins.input", return_value="3.14"):
+            result = _get_float("Enter: ")
+        assert result == 3.14
+
+    def test_get_float_retries_once_then_succeeds(self, capsys):
+        inputs = iter(["abc", "2.5"])
+        with patch("builtins.input", side_effect=inputs):
+            result = _get_float("Enter: ")
+        captured = capsys.readouterr()
+        assert result == 2.5
+        assert "Invalid input" in captured.out
+        assert "attempt(s) remaining" in captured.out
+
+    def test_get_float_exhausts_retries_raises(self, capsys):
+        inputs = iter(["x"] * MAX_RETRIES)
+        with patch("builtins.input", side_effect=inputs):
+            with pytest.raises(ValueError, match="Failed to get a valid number"):
+                _get_float("Enter: ")
+        captured = capsys.readouterr()
+        assert "No more retries" in captured.out
+
+    def test_get_int_valid_on_first_attempt(self, capsys):
+        with patch("builtins.input", return_value="7"):
+            result = _get_int("Enter: ")
+        assert result == 7
+
+    def test_get_int_retries_once_then_succeeds(self, capsys):
+        inputs = iter(["not-a-number", "5"])
+        with patch("builtins.input", side_effect=inputs):
+            result = _get_int("Enter: ")
+        captured = capsys.readouterr()
+        assert result == 5
+        assert "Invalid input" in captured.out
+        assert "attempt(s) remaining" in captured.out
+
+    def test_get_int_exhausts_retries_raises(self, capsys):
+        inputs = iter(["x"] * MAX_RETRIES)
+        with patch("builtins.input", side_effect=inputs):
+            with pytest.raises(ValueError, match="Failed to get a valid integer"):
+                _get_int("Enter: ")
+        captured = capsys.readouterr()
+        assert "No more retries" in captured.out
+
+
+class TestRetryLogicInInteractiveMode:
+    """Integration tests for retry logic within interactive_mode."""
+
+    def test_invalid_float_then_valid_computes_result(self, capsys):
+        # Select add (op 1), enter bad first number, then good inputs
+        inputs = iter(["1", "bad", "3", "4", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Invalid input" in captured.out
+        assert "Result: 7.0" in captured.out
+
+    def test_invalid_int_then_valid_computes_factorial(self, capsys):
+        # Select factorial (op 5), enter bad integer, then good integer
+        inputs = iter(["5", "notint", "4", "q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "Invalid input" in captured.out
+        assert "Result: 24" in captured.out
+
+    def test_exhausted_retries_shows_error_and_returns_to_menu(self, capsys):
+        # Select square (op 6), exhaust all retries, then quit
+        bad_inputs = ["bad"] * MAX_RETRIES
+        inputs = iter(["6"] + bad_inputs + ["q"])
+        with patch("builtins.input", side_effect=inputs):
+            interactive_mode()
+        captured = capsys.readouterr()
+        assert "No more retries" in captured.out
+        assert "Error:" in captured.out
+        assert "Goodbye!" in captured.out

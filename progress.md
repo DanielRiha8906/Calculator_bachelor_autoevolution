@@ -1,3 +1,30 @@
+## Run: issue-146 — Add retry logic for bad input in interactive mode
+
+- **Branch:** task/issue-146-retry-logic
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/user_input.py` — added `MAX_RETRIES = 3` constant and two helpers `_get_float()` and `_get_int()` that prompt for valid numeric input and retry up to `MAX_RETRIES` times before raising `ValueError`; replaced bare `input()` calls in `interactive_mode()` with these helpers
+- `tests/test_user_input.py` — added 9 new tests across two classes (`TestRetryLogicHelpers`, `TestRetryLogicInInteractiveMode`) covering successful retry after bad input, exhausting all retries, and correct error messages
+
+### Purpose
+Implements Issue #146 (V2 Task 8 - Retry logic - Naive/generic): when the user enters invalid input (non-numeric or non-integer) for an operand, the system prints a descriptive error with remaining attempts and prompts again, up to 3 times, before reporting failure and returning to the operation selection menu.
+
+### Risks
+- Only operand input has retry logic; operation selection continues to use the existing `continue` path on invalid choice (different UX, already sufficient).
+- `MAX_RETRIES = 3` is a module-level constant — easy to adjust, but changing it affects all callers at once.
+- No new dependencies introduced.
+
+### Test results
+All 123 tests passed (114 pre-existing + 9 new):
+- `TestRetryLogicHelpers` (6 tests) — all PASSED
+- `TestRetryLogicInInteractiveMode` (3 tests) — all PASSED
+
+Duration: 140.8s | Cost: $0.432757 USD | Turns: 19
+
+---
+
 ## Run: issue-143 — Add bash CLI mode to the calculator
 
 - **Branch:** task/issue-143-add-bash-cli
@@ -314,3 +341,26 @@ Routine diagram maintenance pass following the addition of `src/cli.py` (Issue #
 No tests modified; all existing 114 tests remain passing from previous run.
 
 Duration: 42.4s | Cost: $0.248681 USD | Turns: 21
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-146-retry-logic
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — added `MAX_RETRIES`, `_get_float()`, and `_get_int()` to `UserInput` module class; added `TestRetryLogicHelpers` (6 test methods) and `TestRetryLogicInInteractiveMode` (3 test methods) with their relationships
+- `artifacts/activity_diagram.puml` — updated interactive mode input steps to show retry loop via `_get_float()` / `_get_int()` helpers with up to `MAX_RETRIES` attempts before raising `ValueError`
+- `artifacts/sequence_diagram.puml` — updated interactive mode section to show per-operand retry loops for float and integer input, including exhausted-retries error path
+
+### Purpose
+Routine diagram maintenance pass following the addition of retry logic (Issue #146). All three PlantUML diagrams now reflect the current codebase: `Calculator` (12 methods), `UserInput` module (interactive REPL with `MAX_RETRIES`/`_get_float()`/`_get_int()` retry helpers), `CLI` module (bash single-shot mode), `__main__` entry point, `__init__` export, and all 23 test classes (123 test methods total).
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing 123 tests remain passing from previous run.
+
+Duration: 93.6s | Cost: $0.382299 USD | Turns: 26

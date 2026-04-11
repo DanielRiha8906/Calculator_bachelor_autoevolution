@@ -70,20 +70,45 @@ else no arguments (interactive mode)
         else choice not in OPERATIONS
             UI -> UI : print("Unknown operation: ...")
         else op in INT_OPS (e.g. factorial)
-            UI -> UI : input("Enter integer:")
-            UI -> Calc : factorial(n)
-            alt valid input
-                Calc --> UI : result
-                UI -> UI : print("Result: ...")
-            else ValueError / TypeError
-                Calc --> UI : exception
-                UI -> UI : print("Error: ...")
+            loop up to MAX_RETRIES times
+                UI -> UI : input("Enter integer:")
+                alt valid int
+                    UI -> UI : return int value
+                else invalid
+                    UI -> UI : print("Invalid input, N attempt(s) remaining")
+                end
+            end
+            alt valid integer obtained
+                UI -> Calc : factorial(n)
+                alt success
+                    Calc --> UI : result
+                    UI -> UI : print("Result: ...")
+                else ValueError / TypeError
+                    Calc --> UI : exception
+                    UI -> UI : print("Error: ...")
+                end
+            else retries exhausted
+                UI -> UI : print("Error: Failed after MAX_RETRIES attempts")
             end
         else op in TWO_ARG_OPS (add, subtract, multiply, divide, power)
-            UI -> UI : input("Enter first number:")
-            UI -> UI : input("Enter second number:")
+            loop up to MAX_RETRIES times (first operand)
+                UI -> UI : input("Enter first number:")
+                alt valid float
+                    UI -> UI : return float value a
+                else invalid
+                    UI -> UI : print("Invalid input, N attempt(s) remaining")
+                end
+            end
+            loop up to MAX_RETRIES times (second operand)
+                UI -> UI : input("Enter second number:")
+                alt valid float
+                    UI -> UI : return float value b
+                else invalid
+                    UI -> UI : print("Invalid input, N attempt(s) remaining")
+                end
+            end
             UI -> Calc : op(a, b)
-            alt valid input
+            alt success
                 Calc --> UI : result
                 UI -> UI : print("Result: ...")
             else ZeroDivisionError / TypeError / ValueError
@@ -91,9 +116,16 @@ else no arguments (interactive mode)
                 UI -> UI : print("Error: ...")
             end
         else single-arg op (square, cube, square_root, cube_root, log, ln)
-            UI -> UI : input("Enter number:")
+            loop up to MAX_RETRIES times
+                UI -> UI : input("Enter number:")
+                alt valid float
+                    UI -> UI : return float value a
+                else invalid
+                    UI -> UI : print("Invalid input, N attempt(s) remaining")
+                end
+            end
             UI -> Calc : op(a)
-            alt valid input
+            alt success
                 Calc --> UI : result
                 UI -> UI : print("Result: ...")
             else ValueError
