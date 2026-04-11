@@ -743,3 +743,26 @@ Routine diagram maintenance pass following issue-191 (scientific mode switch). T
 No tests modified; all existing 183 tests remain passing from previous run.
 
 Duration: 172.2s | Cost: $0.522879 USD | Turns: 21
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-194-add-gui
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed (already reflects GUI and ScientificCalculator additions from this branch)
+- `artifacts/activity_diagram.puml` — added `--gui` flag check as top-level branch; added full GUI event-loop activity (digit, clear, binary op, equals, unary op, mode toggle, history) before the existing CLI and interactive branches
+- `artifacts/sequence_diagram.puml` — added `gui` and `CalculatorGUI` participants; added `--gui` alt block showing `launch_gui()` → `CalculatorGUI.__init__` → `Calculator.__create__` → `_build_ui()` → `mainloop()` with all user interaction flows (digit, clear, binary op, equals, unary op, mode toggle, history); existing CLI and interactive blocks preserved unchanged
+
+### Purpose
+Routine diagram maintenance pass following the addition of the tkinter GUI (Issue #194). The activity and sequence diagrams now reflect the three-way entry-point dispatch in `__main__`: `--gui` → GUI mode, arguments present → CLI mode, no arguments → interactive REPL. The class diagram was already up to date: it correctly reflects `gui.py` (`GUI` module + `CalculatorGUI` class), `scientific_calculator.py` (`ScientificCalculator` subclass), all 43 test classes, and all relationships.
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing tests remain passing from previous run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
