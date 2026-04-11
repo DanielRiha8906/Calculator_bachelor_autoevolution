@@ -1,3 +1,26 @@
+## Run: PlantUML diagram update
+
+**Branch:** task/issue-108-factorial
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/activity_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/sequence_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+
+### Purpose
+Verify and maintain PlantUML diagrams against the current source code. All three diagrams (class, activity, sequence) correctly represent the `Calculator` class and `main()` flow as they exist in `src/`, including the `factorial` method added in the previous run.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #108 — Add factorial operation
 
 **Branch:** task/issue-108-factorial
