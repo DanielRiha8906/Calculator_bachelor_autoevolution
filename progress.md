@@ -26,7 +26,7 @@ All 114 tests passed (89 pre-existing + 25 new):
 - `TestCliSingleArgOps` (8 tests) — all PASSED
 - `TestCliErrorCases` (10 tests) — all PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 234.8s | Cost: $0.702941 USD | Turns: 30
 
 ---
 
