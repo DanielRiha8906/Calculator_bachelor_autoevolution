@@ -430,3 +430,26 @@ Verify and maintain PlantUML diagrams against the current source code. All three
 N/A — diagram-only run.
 
 Duration: 53.0s | Cost: $0.213095 USD | Turns: 17
+
+---
+
+## Run: PlantUML diagram update
+
+**Branch:** task/issue-153-error-logging
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Added missing `perform_operation ..> get_error_logger : calls on invalid log base` dependency arrow; `perform_operation()` in `__main__.py` directly calls `get_error_logger()` when an invalid log base is entered, which was not captured in the previous diagram update.
+- `artifacts/activity_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed).
+- `artifacts/sequence_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed).
+
+### Purpose
+Verify and maintain PlantUML diagrams against the current source code on the `task/issue-153-error-logging` branch. The class diagram was missing one direct dependency: `perform_operation()` calls `get_error_logger()` when the user supplies an invalid log base in interactive mode. All other relationships (Calculator methods, history module, error_logger module, cli module, TooManyAttemptsError) were already correctly represented.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING

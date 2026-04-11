@@ -103,6 +103,7 @@ cli_main ..> get_error_logger : calls on error
 _dispatch ..> Calculator : dispatches to
 
 main ..> get_error_logger : calls on error
+perform_operation ..> get_error_logger : calls on invalid log base
 get_error_logger ..> ERROR_LOG_FILE : writes to
 
 note bottom of main
