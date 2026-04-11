@@ -520,3 +520,26 @@ Routine diagram maintenance pass. All three PlantUML diagrams were reviewed agai
 No tests modified; all existing 150 tests remain passing from previous run.
 
 Duration: 57.4s | Cost: $0.297489 USD | Turns: 23
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-176-separate-logic-from-interface
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — removed `TestCalculatorErrorLogging` class (6 test methods) and its `tests` relationship to `Calculator`; this class was eliminated in issue-176 when calculator error logging was removed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass following the separation of calculator logic from interface concerns (Issue #176). The class diagram now reflects all 27 test classes (144 test methods total): `TestCalculatorErrorLogging` has been removed as it tested behaviour that was intentionally eliminated. The activity and sequence diagrams remain accurate since error logging was internal to existing error paths and does not alter the flow between components.
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing 144 tests remain passing from previous run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
