@@ -1,0 +1,31 @@
+@startuml activity_diagram
+
+title Calculator — Activity Diagram (main execution flow)
+
+start
+
+:Import Calculator from src;
+:Instantiate Calculator();
+
+:Call calc.add(10, 5);
+:Print "Addition: 15";
+
+:Call calc.subtract(10, 5);
+:Print "Subtraction: 5";
+
+:Call calc.multiply(10, 5);
+:Print "Multiplication: 50";
+
+:Call calc.divide(10, 5);
+
+if (divisor == 0?) then (yes)
+    :Raise ZeroDivisionError;
+    stop
+else (no)
+    :Return quotient;
+    :Print "Division: 2.0";
+endif
+
+stop
+
+@enduml
