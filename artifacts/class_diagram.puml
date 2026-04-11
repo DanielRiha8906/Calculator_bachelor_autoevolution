@@ -10,6 +10,13 @@ package "src" {
         + multiply(a, b) : number
         + divide(a, b) : number
         + factorial(n: int) : int
+        + square(n) : number
+        + cube(n) : number
+        + sqrt(n) : float
+        + cbrt(n) : float
+        + power(base, exp) : float
+        + log10(n) : float
+        + ln(n) : float
     }
 
     class "__main__" as Main <<module>> {
@@ -35,6 +42,33 @@ note right of Calculator::factorial
   (including bool).
   Raises ValueError for n < 0.
   Delegates to math.factorial(n).
+end note
+
+note right of Calculator::sqrt
+  Raises ValueError for n < 0.
+  Delegates to math.sqrt(n).
+end note
+
+note right of Calculator::cbrt
+  Defined for all real numbers.
+  Negative input yields negative result.
+  Delegates to math.cbrt(n).
+end note
+
+note right of Calculator::power
+  Raises ValueError when result is complex
+  (negative base, non-integer exponent).
+  Delegates to math.pow(base, exp).
+end note
+
+note right of Calculator::log10
+  Raises ValueError for n <= 0.
+  Delegates to math.log10(n).
+end note
+
+note right of Calculator::ln
+  Raises ValueError for n <= 0.
+  Delegates to math.log(n).
 end note
 
 @enduml

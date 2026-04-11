@@ -35,6 +35,48 @@ else valid n
     Calc --> Main : n!
 end
 
+Main -> Calc : square(n)
+Calc --> Main : n ** 2
+
+Main -> Calc : cube(n)
+Calc --> Main : n ** 3
+
+Main -> Calc : sqrt(n)
+alt n < 0
+    Calc --> Main : raises ValueError
+else n >= 0
+    Calc -> Calc : math.sqrt(n)
+    Calc --> Main : √n
+end
+
+Main -> Calc : cbrt(n)
+Calc -> Calc : math.cbrt(n)
+Calc --> Main : ∛n
+
+Main -> Calc : power(base, exp)
+alt base < 0 and exp is non-integer
+    Calc --> Main : raises ValueError
+else valid inputs
+    Calc -> Calc : math.pow(base, exp)
+    Calc --> Main : base ^ exp
+end
+
+Main -> Calc : log10(n)
+alt n <= 0
+    Calc --> Main : raises ValueError
+else n > 0
+    Calc -> Calc : math.log10(n)
+    Calc --> Main : log₁₀(n)
+end
+
+Main -> Calc : ln(n)
+alt n <= 0
+    Calc --> Main : raises ValueError
+else n > 0
+    Calc -> Calc : math.log(n)
+    Calc --> Main : ln(n)
+end
+
 deactivate Calc
 
 @enduml

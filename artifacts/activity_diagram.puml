@@ -39,6 +39,58 @@ else (no)
     :Print "Factorial: <result>";
 endif
 
+:Call calc.square(n);
+:Return n ** 2;
+:Print "Square: <result>";
+
+:Call calc.cube(n);
+:Return n ** 3;
+:Print "Cube: <result>";
+
+:Call calc.sqrt(n);
+
+if (n < 0?) then (yes)
+    :Raise ValueError;
+    stop
+else (no)
+    :Return math.sqrt(n);
+    :Print "Sqrt: <result>";
+endif
+
+:Call calc.cbrt(n);
+:Return math.cbrt(n);
+:Print "Cbrt: <result>";
+
+:Call calc.power(base, exp);
+
+if (base < 0 AND exp is non-integer?) then (yes)
+    :Raise ValueError;
+    stop
+else (no)
+    :Return math.pow(base, exp);
+    :Print "Power: <result>";
+endif
+
+:Call calc.log10(n);
+
+if (n <= 0?) then (yes)
+    :Raise ValueError;
+    stop
+else (no)
+    :Return math.log10(n);
+    :Print "Log10: <result>";
+endif
+
+:Call calc.ln(n);
+
+if (n <= 0?) then (yes)
+    :Raise ValueError;
+    stop
+else (no)
+    :Return math.log(n);
+    :Print "Ln: <result>";
+endif
+
 stop
 
 @enduml

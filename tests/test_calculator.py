@@ -182,3 +182,175 @@ def test_factorial_bool_raises_type_error(calc):
     # bool is a subclass of int in Python; reject it explicitly
     with pytest.raises(TypeError):
         calc.factorial(True)
+
+
+# --- square ---
+
+def test_square_positive(calc):
+    assert calc.square(3) == 9
+
+
+def test_square_negative(calc):
+    assert calc.square(-3) == 9
+
+
+def test_square_zero(calc):
+    assert calc.square(0) == 0
+
+
+def test_square_float(calc):
+    assert calc.square(2.5) == pytest.approx(6.25)
+
+
+def test_square_negative_float(calc):
+    assert calc.square(-2.5) == pytest.approx(6.25)
+
+
+# --- cube ---
+
+def test_cube_positive(calc):
+    assert calc.cube(3) == 27
+
+
+def test_cube_negative(calc):
+    # cube root of a negative number is negative
+    assert calc.cube(-3) == -27
+
+
+def test_cube_zero(calc):
+    assert calc.cube(0) == 0
+
+
+def test_cube_float(calc):
+    assert calc.cube(2.0) == pytest.approx(8.0)
+
+
+# --- sqrt ---
+
+def test_sqrt_perfect_square(calc):
+    assert calc.sqrt(9) == pytest.approx(3.0)
+
+
+def test_sqrt_irrational(calc):
+    assert calc.sqrt(2) == pytest.approx(math.sqrt(2))
+
+
+def test_sqrt_zero(calc):
+    assert calc.sqrt(0) == pytest.approx(0.0)
+
+
+def test_sqrt_fraction(calc):
+    assert calc.sqrt(0.25) == pytest.approx(0.5)
+
+
+def test_sqrt_negative_raises_value_error(calc):
+    with pytest.raises(ValueError):
+        calc.sqrt(-1)
+
+
+# --- cbrt ---
+
+def test_cbrt_positive(calc):
+    assert calc.cbrt(27) == pytest.approx(3.0)
+
+
+def test_cbrt_negative(calc):
+    # cube root is defined for negative numbers
+    assert calc.cbrt(-27) == pytest.approx(-3.0)
+
+
+def test_cbrt_zero(calc):
+    assert calc.cbrt(0) == pytest.approx(0.0)
+
+
+def test_cbrt_float(calc):
+    assert calc.cbrt(8.0) == pytest.approx(2.0)
+
+
+# --- power ---
+
+def test_power_integer_exponent(calc):
+    assert calc.power(2, 10) == pytest.approx(1024.0)
+
+
+def test_power_negative_exponent(calc):
+    assert calc.power(2, -1) == pytest.approx(0.5)
+
+
+def test_power_zero_exponent(calc):
+    assert calc.power(5, 0) == pytest.approx(1.0)
+
+
+def test_power_zero_base(calc):
+    assert calc.power(0, 5) == pytest.approx(0.0)
+
+
+def test_power_fractional_exponent(calc):
+    # 4^0.5 == 2.0
+    assert calc.power(4, 0.5) == pytest.approx(2.0)
+
+
+def test_power_negative_base_integer_exponent(calc):
+    assert calc.power(-2, 3) == pytest.approx(-8.0)
+
+
+def test_power_negative_base_fractional_exponent_raises_value_error(calc):
+    # results in a complex number; math.pow raises ValueError
+    with pytest.raises(ValueError):
+        calc.power(-2, 0.5)
+
+
+# --- log10 ---
+
+def test_log10_hundred(calc):
+    assert calc.log10(100) == pytest.approx(2.0)
+
+
+def test_log10_one(calc):
+    assert calc.log10(1) == pytest.approx(0.0)
+
+
+def test_log10_ten(calc):
+    assert calc.log10(10) == pytest.approx(1.0)
+
+
+def test_log10_fraction(calc):
+    assert calc.log10(0.1) == pytest.approx(-1.0)
+
+
+def test_log10_zero_raises_value_error(calc):
+    with pytest.raises(ValueError):
+        calc.log10(0)
+
+
+def test_log10_negative_raises_value_error(calc):
+    with pytest.raises(ValueError):
+        calc.log10(-5)
+
+
+# --- ln ---
+
+def test_ln_one(calc):
+    assert calc.ln(1) == pytest.approx(0.0)
+
+
+def test_ln_e(calc):
+    assert calc.ln(math.e) == pytest.approx(1.0)
+
+
+def test_ln_e_squared(calc):
+    assert calc.ln(math.e ** 2) == pytest.approx(2.0)
+
+
+def test_ln_fraction(calc):
+    assert calc.ln(0.5) == pytest.approx(math.log(0.5))
+
+
+def test_ln_zero_raises_value_error(calc):
+    with pytest.raises(ValueError):
+        calc.ln(0)
+
+
+def test_ln_negative_raises_value_error(calc):
+    with pytest.raises(ValueError):
+        calc.ln(-1)
