@@ -173,3 +173,26 @@ Routine diagram maintenance pass. All three PlantUML diagrams were reviewed agai
 No tests modified; all existing 38 tests remain passing from previous run.
 
 Duration: 36.5s | Cost: $0.156808 USD | Turns: 15
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-110-add-math-functions
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass. All three PlantUML diagrams were reviewed against the current source code (`src/calculator.py`, `src/__main__.py`, `src/__init__.py`) and test suite. All diagrams correctly reflect the `Calculator` class with its 12 operations (`add`, `subtract`, `multiply`, `divide`, `factorial`, `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln`), the `__main__` entry point, the `__init__` export, and all 17 test classes with their full set of test methods.
+
+### Risks
+- None. No source or test code was modified; only `progress.md` updated.
+
+### Test results
+No tests modified; all existing 74 tests remain passing from previous run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
