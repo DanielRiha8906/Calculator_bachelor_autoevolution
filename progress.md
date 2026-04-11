@@ -1,3 +1,28 @@
+## Run: issue-176 — Separate calculator logic from interface
+
+- **Branch:** task/issue-176-separate-logic-from-interface
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/calculator.py` — removed `import logging` and `logger = logging.getLogger(__name__)`; removed all try-except-logger wrappers from the 12 operation methods; each method now calls its math expression directly and delegates to `_record()` on success; exceptions propagate naturally to callers
+- `tests/test_calculator.py` — removed `import logging`; removed `TestCalculatorErrorLogging` class (6 tests) whose sole purpose was asserting that calculator operations emit log records — behaviour that has been intentionally moved to the interface layer
+
+### Purpose
+Implements Issue #176 (V2 Task 11 - Refactoring - Naive/generic): separates calculator business logic from interface-layer concerns. Before this change, `Calculator` mixed math computation with error logging via Python's `logging` module. After this change the class is pure logic: it computes, records history, and raises exceptions. Interface modules (`cli.py`, `user_input.py`) already catch and log exceptions at their own level (`src.cli`, `src.user_input`), so no externally visible behaviour changes.
+
+### Risks
+- Error log records from `src.calculator` will no longer appear in application logs. Errors are still logged at `src.cli` level for CLI mode. Interactive mode does not log calculator errors (it prints them) — this was already the case before this change.
+- No new dependencies introduced or removed.
+
+### Test results
+All 144 tests passed (6 `TestCalculatorErrorLogging` tests removed as their tested behaviour was intentionally eliminated):
+- All pre-existing operation, history, CLI, interactive-mode, and retry-logic tests — PASSED
+
+Duration: 215.1s | Cost: $0.956924 USD | Turns: 35
+
+---
+
 ## Run: issue-152 — Add error logging to the calculator
 
 - **Branch:** task/issue-152-add-error-logging
@@ -495,3 +520,26 @@ Routine diagram maintenance pass. All three PlantUML diagrams were reviewed agai
 No tests modified; all existing 150 tests remain passing from previous run.
 
 Duration: 57.4s | Cost: $0.297489 USD | Turns: 23
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-176-separate-logic-from-interface
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — removed `TestCalculatorErrorLogging` class (6 test methods) and its `tests` relationship to `Calculator`; this class was eliminated in issue-176 when calculator error logging was removed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass following the separation of calculator logic from interface concerns (Issue #176). The class diagram now reflects all 27 test classes (144 test methods total): `TestCalculatorErrorLogging` has been removed as it tested behaviour that was intentionally eliminated. The activity and sequence diagrams remain accurate since error logging was internal to existing error paths and does not alter the flow between components.
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing 144 tests remain passing from previous run.
+
+Duration: 52.2s | Cost: $0.304402 USD | Turns: 23

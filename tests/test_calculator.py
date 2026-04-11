@@ -1,4 +1,3 @@
-import logging
 import pytest
 import math
 from src.calculator import Calculator
@@ -380,46 +379,3 @@ class TestHistory:
         assert history[0]["result"] == 120
 
 
-class TestCalculatorErrorLogging:
-    def setup_method(self):
-        self.calc = Calculator()
-
-    def test_divide_by_zero_is_logged(self, caplog):
-        with caplog.at_level(logging.ERROR, logger="src.calculator"):
-            with pytest.raises(ZeroDivisionError):
-                self.calc.divide(10, 0)
-        assert len(caplog.records) == 1
-        assert "divide" in caplog.records[0].message
-
-    def test_square_root_negative_is_logged(self, caplog):
-        with caplog.at_level(logging.ERROR, logger="src.calculator"):
-            with pytest.raises(ValueError):
-                self.calc.square_root(-1)
-        assert len(caplog.records) == 1
-        assert "square_root" in caplog.records[0].message
-
-    def test_log_zero_is_logged(self, caplog):
-        with caplog.at_level(logging.ERROR, logger="src.calculator"):
-            with pytest.raises(ValueError):
-                self.calc.log(0)
-        assert len(caplog.records) == 1
-        assert "log" in caplog.records[0].message
-
-    def test_ln_negative_is_logged(self, caplog):
-        with caplog.at_level(logging.ERROR, logger="src.calculator"):
-            with pytest.raises(ValueError):
-                self.calc.ln(-1)
-        assert len(caplog.records) == 1
-        assert "ln" in caplog.records[0].message
-
-    def test_factorial_negative_is_logged(self, caplog):
-        with caplog.at_level(logging.ERROR, logger="src.calculator"):
-            with pytest.raises(ValueError):
-                self.calc.factorial(-1)
-        assert len(caplog.records) == 1
-        assert "factorial" in caplog.records[0].message
-
-    def test_successful_operation_does_not_log_error(self, caplog):
-        with caplog.at_level(logging.ERROR, logger="src.calculator"):
-            self.calc.add(3, 5)
-        assert len(caplog.records) == 0
