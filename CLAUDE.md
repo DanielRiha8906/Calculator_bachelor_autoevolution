@@ -167,11 +167,8 @@ Before any commit, append a run summary to `progress.md` including:
 
 ## Artifacts
 
-- Diagrams should be written in plant uml language and should be placed in folder 'artifacts/'
-- Development should be logged using these diagrams:
-    - Class diagram files for core classes
-    - Activity diagram
-    - Sequence Diagram
+- PlantUML diagrams are stored in `artifacts/`: `class_diagram.puml`, `activity_diagram.puml`, and `sequence_diagram.puml`.
+- **Do NOT create or update diagrams during the main implementation run.** Diagram updates are handled automatically by the `update-diagrams` workflow job that runs after each implementation. Do not touch `artifacts/` unless the task explicitly requires it.
 
 
 ---
