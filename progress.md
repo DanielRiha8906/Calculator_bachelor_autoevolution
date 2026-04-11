@@ -1,3 +1,38 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-148-retry-logic-interactive)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-148-retry-logic-interactive
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+
+Reviewed all three PlantUML diagrams against the current state of `src/` and `main.py`.
+All twelve Calculator methods, both entry points (interactive `src/__main__.py` and bash
+CLI `main.py`), and the retry logic introduced in issue #148 (`MAX_RETRIES`, `_prompt_number`,
+menu failure counter) are correctly represented in every diagram. No updates were required.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #148 — Retry logic for interactive mode (task/issue-148-retry-logic-interactive)
 
 **Date:** 2026-04-11
