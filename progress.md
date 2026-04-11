@@ -1,3 +1,53 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-181-expert-generic-modular)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-181-expert-generic-modular
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — added `src.operations` sub-package containing `BasicOperations <<mixin>>`
+  and `ScientificOperations <<mixin>>`; `Calculator` now shown with inheritance arrows from both mixins and
+  an empty body (all public methods provided by parent classes); per-method notes moved to the mixin classes
+  that define them; added `cli` module (`CLI_OPERATIONS`, `USAGE`, `_parse_operand`) and `CLIHandler` class
+  to the `src` package (previously shown in "root"); added `session` module (`MAX_RETRIES`, `HISTORY_FILE`,
+  `OPERATIONS`, `_format_history_entry`, `_write_history`, `_parse_number`, `_prompt_number`) to `src`
+  package; updated `__main__` to thin wrapper (just `main()` + `MAX_RETRIES` re-export); updated root `main`
+  module to thin wrapper; added `src.operations.__init__` module showing exports; updated all relationships
+  and notes to match new module paths
+- `artifacts/activity_diagram.puml` — updated partition headings to reference new module paths:
+  `main.py → src.cli.CLIHandler` and `src/__main__.py → src.session.InteractiveSession`; internal flow
+  unchanged
+- `artifacts/sequence_diagram.puml` — updated participant labels: `"main.py\n(entry point)"` replaces
+  `"main.py\n(CLI module)"` and `"src/__main__\n(entry point)"` replaces `"__main__\n(module)"`;
+  added `src.cli\n(CLI module)` and `src.session\n(session module)` participants to show the import
+  delegation step; sequence flow unchanged
+
+### Purpose
+
+Updated all three PlantUML diagrams to reflect the modular refactoring introduced in issue #181.
+The prior diagrams modelled `Calculator` as a flat class containing all operations and had `CLIHandler`
+in the "root" package alongside `main.py`. They now accurately represent the `src/operations/` package
+with `BasicOperations` and `ScientificOperations` mixins, `Calculator`'s multiple inheritance from both,
+`CLIHandler` and `cli` module in `src/cli.py`, and `InteractiveSession` and `session` module in
+`src/session.py`. Entry points (`main.py`, `src/__main__.py`) are shown as thin wrappers.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #181 — Expert/generic modular refactoring (task/issue-181-expert-generic-modular)
 
 **Date:** 2026-04-11

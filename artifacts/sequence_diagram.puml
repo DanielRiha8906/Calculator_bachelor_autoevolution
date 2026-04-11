@@ -5,7 +5,8 @@ title Calculator — Sequence Diagram
 ' ── Bash CLI sequence ──────────────────────────────────────────────────────
 
 actor User as User
-participant "main.py\n(CLI module)" as CLI
+participant "main.py\n(entry point)" as CLI
+participant "src.cli\n(CLI module)" as CLIMod
 participant "CLIHandler" as Handler
 participant "Calculator" as Calc
 participant "error.log" as ELog
@@ -16,6 +17,7 @@ User -> CLI : python main.py <operation> [operands]
 activate CLI
 
 CLI -> ELog : setup_error_logging()\n(attach FileHandler)
+CLI -> CLIMod : import CLIHandler
 CLI -> Handler : CLIHandler()
 activate Handler
 CLI -> Handler : run(argv)
@@ -63,15 +65,17 @@ deactivate CLI
 == Interactive Session Mode ==
 
 actor User
-participant "__main__\n(module)" as Main
+participant "src/__main__\n(entry point)" as Main
+participant "src.session\n(session module)" as SessMod
 participant "InteractiveSession" as Session
 participant "Calculator" as Calc2
 participant "history.txt" as File
 participant "error.log" as ELog2
 
-User -> Main : run program
+User -> Main : python -m src
 activate Main
 
+Main -> SessMod : import InteractiveSession
 Main -> Session : InteractiveSession()
 activate Session
 Main -> Session : run()
