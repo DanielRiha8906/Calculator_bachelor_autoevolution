@@ -21,7 +21,10 @@ package "src" {
         OPERATIONS : dict
         TWO_ARG_OPS : set
         INT_OPS : set
+        MAX_RETRIES : int
         +_print_menu() : void
+        +_get_float(prompt: str) : float
+        +_get_int(prompt: str) : int
         +interactive_mode() : void
     }
 
@@ -221,6 +224,21 @@ package "tests" {
         +test_multiple_operations_in_session() : void
     }
 
+    class TestRetryLogicHelpers {
+        +test_get_float_valid_on_first_attempt() : void
+        +test_get_float_retries_once_then_succeeds() : void
+        +test_get_float_exhausts_retries_raises() : void
+        +test_get_int_valid_on_first_attempt() : void
+        +test_get_int_retries_once_then_succeeds() : void
+        +test_get_int_exhausts_retries_raises() : void
+    }
+
+    class TestRetryLogicInInteractiveMode {
+        +test_invalid_float_then_valid_computes_result() : void
+        +test_invalid_int_then_valid_computes_factorial() : void
+        +test_exhausted_retries_shows_error_and_returns_to_menu() : void
+    }
+
     class TestCliTwoArgOps {
         +test_add() : void
         +test_subtract() : void
@@ -280,6 +298,8 @@ TestLogIncorrectInputs --> Calculator : tests
 TestLn --> Calculator : tests
 TestLnIncorrectInputs --> Calculator : tests
 TestInteractiveMode --> UserInput : tests
+TestRetryLogicHelpers --> UserInput : tests
+TestRetryLogicInInteractiveMode --> UserInput : tests
 TestCliTwoArgOps --> CLI : tests
 TestCliSingleArgOps --> CLI : tests
 TestCliErrorCases --> CLI : tests

@@ -78,14 +78,18 @@ else (no)
             :Look up operation name and method on Calculator;
 
             if (op in INT_OPS?) then (yes)
-                :Read integer from stdin;
-                :Call op(int_value);
+                :_get_int(): prompt for integer\n(retry up to MAX_RETRIES times);
+                if (valid integer obtained?) then (no)
+                    :Raise ValueError\n"Failed after MAX_RETRIES attempts";
+                else (yes)
+                    :Call op(int_value);
+                endif
             elseif (op in TWO_ARG_OPS?) then (yes)
-                :Read first float from stdin;
-                :Read second float from stdin;
+                :_get_float(): prompt for first float\n(retry up to MAX_RETRIES times);
+                :_get_float(): prompt for second float\n(retry up to MAX_RETRIES times);
                 :Call op(a, b);
             else (no)
-                :Read one float from stdin;
+                :_get_float(): prompt for float\n(retry up to MAX_RETRIES times);
                 :Call op(a);
             endif
 
