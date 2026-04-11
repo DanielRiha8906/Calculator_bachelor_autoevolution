@@ -15,7 +15,7 @@ if (Command-line arguments provided?) then (yes)
 
   :Instantiate CalculatorController;
   :_dispatch(controller, args);
-  :controller.execute() → Calculator method;
+  :controller.execute() → Calculator method\n→ operations module function;
 
   if (ValueError or ZeroDivisionError raised?) then (yes)
     :log_error("[cli] <operation>: <message>");
@@ -67,7 +67,7 @@ else (no)
             stop
           endif
         else (yes)
-          :controller.execute() → Calculator method;
+          :controller.execute() → Calculator facade\n→ operations module function\n(arithmetic / algebraic / transcendental);
 
           if (ValueError or ZeroDivisionError raised?) then (yes)
             :log_error("[interactive] <operation>: <message>");

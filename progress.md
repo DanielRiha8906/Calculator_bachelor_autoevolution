@@ -1,3 +1,26 @@
+## Run: PlantUML diagram update
+
+**Branch:** task/issue-180-modular-operations
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Added `src.operations` package with three sub-packages (`arithmetic`, `algebraic`, `transcendental`) and their pure-function members. Added delegation arrows from `Calculator` to each function in the operations modules. Added a note on `Calculator` explaining it is now a facade that delegates to `src.operations`. Moved domain-error notes from `Calculator` methods to the individual operation functions where they are actually defined.
+- `artifacts/activity_diagram.puml` — Updated computation step labels in both the CLI branch and the interactive branch to read `controller.execute() → Calculator facade → operations module function (arithmetic / algebraic / transcendental)` to accurately reflect the two-level delegation introduced in issue #180.
+- `artifacts/sequence_diagram.puml` — Added `operations (arithmetic/algebraic/transcendental)` as an explicit participant. Updated interactive-mode and CLI-mode flows to show `Calculator` calling the relevant operations sub-module function and receiving the result back, before returning to `CalculatorController`. Extended the interactive-mode note to document that `Calculator` is a facade.
+
+### Purpose
+Update PlantUML diagrams to reflect the `src/operations/` sub-package introduced in issue #180. Previously the diagrams showed `Calculator` as the computation source with methods defined directly on the class. After this change, `Calculator` is correctly depicted as a thin facade, and the three categorised operation modules (`arithmetic`, `algebraic`, `transcendental`) appear as distinct participants/packages in all three diagrams.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #180 — Modular operations package
 
 **Branch:** task/issue-180-modular-operations
