@@ -1,3 +1,25 @@
+## Run: Issue #189 — Documentation
+
+**Branch:** task/issue-189-add-documentation
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `README.md` — Replaced the single-line placeholder with full project documentation covering: project overview, all 12 supported operations (arithmetic, algebraic, transcendental) with examples, installation instructions, interactive mode walkthrough, CLI mode usage with all subcommands and flags, error-handling table, project structure tree with module descriptions, architecture overview, instructions for running the test suite, and a table of runtime-generated files.
+
+### Purpose
+Issue #189 requested written documentation for the calculator so its features, usage, and project structure are easier to understand. The previous README contained only the title "Bakalar_part_one". The new README provides a complete, accurate reference without changing any source code or tests.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+All 256 existing tests pass (pytest, 0.67 s).
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: PlantUML diagram update
 
 **Branch:** task/issue-180-modular-operations
