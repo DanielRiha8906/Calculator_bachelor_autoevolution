@@ -21,7 +21,7 @@ All 123 tests passed (114 pre-existing + 9 new):
 - `TestRetryLogicHelpers` (6 tests) — all PASSED
 - `TestRetryLogicInInteractiveMode` (3 tests) — all PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 140.8s | Cost: $0.432757 USD | Turns: 19
 
 ---
 
