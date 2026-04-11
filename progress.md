@@ -1,3 +1,38 @@
+## Run: issue-179 — Modularize calculator and prepare scientific mode structure
+
+- **Branch:** task/issue-179-modularize-calculator
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/operations/__init__.py` — new package marker with docstring describing submodules
+- `src/operations/basic.py` — new module with pure arithmetic functions: `add`, `subtract`, `multiply`, `divide`
+- `src/operations/scientific.py` — new module with pure scientific functions: `factorial`, `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln`
+- `src/calculator.py` — refactored to delegate all math computation to `operations.basic` and `operations.scientific`; history tracking and public API unchanged
+- `src/scientific_calculator.py` — new stub class `ScientificCalculator(Calculator)` as the designated extension point for future scientific-only operations
+- `src/__init__.py` — added export of `ScientificCalculator` alongside `Calculator`
+- `tests/test_scientific_calculator.py` — new test module (18 tests): verifies `ScientificCalculator` is a proper `Calculator` subclass, inherits all basic and scientific operations correctly, and tracks history
+
+### Purpose
+Implements Issue #179 (V2 Task 12 - Naive/generic): refactors the single-file `calculator.py` into a modular structure and prepares the project for a future scientific mode. The `operations/` sub-package separates pure math functions from the stateful `Calculator` class, making each layer independently testable and reusable. `ScientificCalculator` gives future scientific-only functions a clear, reviewed home without requiring structural changes to existing code.
+
+### Risks
+- No behaviour changes: all 144 pre-existing tests pass unchanged; 18 new tests added.
+- Relative import `from .operations import basic, scientific` inside `calculator.py` is consistent with the rest of the package.
+- No new external dependencies introduced.
+
+### Test results
+All 162 tests passed (144 pre-existing + 18 new):
+- All pre-existing operation, history, CLI, interactive-mode, and retry-logic tests — PASSED
+- `TestScientificCalculatorIsSubclass` (2 tests) — PASSED
+- `TestScientificCalculatorInheritsBasicOps` (5 tests) — PASSED
+- `TestScientificCalculatorInheritsScientificOps` (8 tests) — PASSED
+- `TestScientificCalculatorHistory` (3 tests) — PASSED
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-176 — Separate calculator logic from interface
 
 - **Branch:** task/issue-176-separate-logic-from-interface

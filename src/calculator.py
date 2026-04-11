@@ -1,4 +1,6 @@
-import math
+"""Calculator class providing arithmetic and scientific operations."""
+
+from .operations import basic, scientific
 
 
 class Calculator:
@@ -18,61 +20,61 @@ class Calculator:
         self._history.clear()
 
     def add(self, a, b):
-        result = a + b
+        result = basic.add(a, b)
         self._record("add", [a, b], result)
         return result
 
     def subtract(self, a, b):
-        result = a - b
+        result = basic.subtract(a, b)
         self._record("subtract", [a, b], result)
         return result
 
     def multiply(self, a, b):
-        result = a * b
+        result = basic.multiply(a, b)
         self._record("multiply", [a, b], result)
         return result
 
     def divide(self, a, b):
-        result = a / b
+        result = basic.divide(a, b)
         self._record("divide", [a, b], result)
         return result
 
     def factorial(self, n: int) -> int:
-        result = math.factorial(n)
+        result = scientific.factorial(n)
         self._record("factorial", [n], result)
         return result
 
     def square(self, x: float) -> float:
-        result = x ** 2
+        result = scientific.square(x)
         self._record("square", [x], result)
         return result
 
     def cube(self, x: float) -> float:
-        result = x ** 3
+        result = scientific.cube(x)
         self._record("cube", [x], result)
         return result
 
     def square_root(self, x: float) -> float:
-        result = math.sqrt(x)
+        result = scientific.square_root(x)
         self._record("square_root", [x], result)
         return result
 
     def cube_root(self, x: float) -> float:
-        result = math.cbrt(x)
+        result = scientific.cube_root(x)
         self._record("cube_root", [x], result)
         return result
 
     def power(self, base: float, exp: float) -> float:
-        result = math.pow(base, exp)
+        result = scientific.power(base, exp)
         self._record("power", [base, exp], result)
         return result
 
     def log(self, x: float) -> float:
-        result = math.log10(x)
+        result = scientific.log(x)
         self._record("log", [x], result)
         return result
 
     def ln(self, x: float) -> float:
-        result = math.log(x)
+        result = scientific.ln(x)
         self._record("ln", [x], result)
         return result
