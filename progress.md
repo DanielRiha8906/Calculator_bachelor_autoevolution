@@ -19,7 +19,7 @@ Issue #195: add a tkinter GUI that exposes normal and scientific calculator mode
 ### Test results
 290 tests pass, 22 skipped (headless widget tests). All 269 pre-existing tests continue to pass.
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 480.5s | Cost: $1.485162 USD | Turns: 43
 
 ---
 
