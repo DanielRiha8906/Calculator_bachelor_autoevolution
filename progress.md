@@ -42,7 +42,7 @@ the mixin classes.  Test patches were updated to match the new module paths.
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 665.9s | Cost: $1.866142 USD | Turns: 60
 
 ---
 
