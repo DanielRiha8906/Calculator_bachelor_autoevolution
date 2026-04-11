@@ -61,7 +61,7 @@ activate Calc2
 
 Main -> User : "=== Interactive Calculator ==="
 
-loop until user quits
+loop until user quits or retry limit reached
 
     Main -> User : display operation menu (1–12, q)
     User -> Main : enter choice
@@ -70,26 +70,66 @@ loop until user quits
         Main -> User : "Goodbye!"
         Main -> Main : break
     else choice not in OPERATIONS
-        Main -> User : "Invalid choice. Please enter a number from the list or 'q' to quit."
+        Main -> Main : menu_failures += 1
+        Main -> User : "Invalid choice '...'. Available options: ..."
+        alt menu_failures >= MAX_RETRIES
+            Main -> User : "Too many invalid selections. Ending session."
+            Main -> Main : break
+        else
+            Main -> User : "<N> attempt(s) remaining."
+        end
     else valid choice (arity == 1)
-        Main -> User : "Enter value:"
-        User -> Main : raw input
-        Main -> Main : _parse_number(prompt, require_int)
-        Main -> Calc2 : method(a)
-        alt ValueError / TypeError raised
-            Calc2 --> Main : raises exception
-            Main -> User : "Error: <message>"
-        else success
-            Calc2 --> Main : result
-            Main -> User : "Result: <result>"
+        Main -> Main : menu_failures = 0
+        loop up to MAX_RETRIES times
+            Main -> User : "Enter value:"
+            User -> Main : raw input
+            alt input is valid number
+                Main -> Main : _prompt_number returns parsed value
+            else input is invalid
+                Main -> User : "Error: <message>. <N> attempt(s) remaining."
+            end
+        end
+        alt retries exhausted (returns None)
+            Main -> User : "Too many invalid inputs. Ending session."
+            Main -> Main : break
+        else valid value obtained
+            Main -> Calc2 : method(a)
+            alt ValueError / TypeError raised
+                Calc2 --> Main : raises exception
+                Main -> User : "Error: <message>"
+            else success
+                Calc2 --> Main : result
+                Main -> User : "Result: <result>"
+            end
         end
     else valid choice (arity == 2)
-        Main -> User : "Enter first value:"
-        User -> Main : raw input
-        Main -> Main : _parse_number("Enter first value:")
-        Main -> User : "Enter second value:"
-        User -> Main : raw input
-        Main -> Main : _parse_number("Enter second value:")
+        Main -> Main : menu_failures = 0
+        loop up to MAX_RETRIES times (first operand)
+            Main -> User : "Enter first value:"
+            User -> Main : raw input
+            alt input is valid number
+                Main -> Main : _prompt_number returns parsed value
+            else input is invalid
+                Main -> User : "Error: <message>. <N> attempt(s) remaining."
+            end
+        end
+        alt retries exhausted for first operand
+            Main -> User : "Too many invalid inputs. Ending session."
+            Main -> Main : break
+        end
+        loop up to MAX_RETRIES times (second operand)
+            Main -> User : "Enter second value:"
+            User -> Main : raw input
+            alt input is valid number
+                Main -> Main : _prompt_number returns parsed value
+            else input is invalid
+                Main -> User : "Error: <message>. <N> attempt(s) remaining."
+            end
+        end
+        alt retries exhausted for second operand
+            Main -> User : "Too many invalid inputs. Ending session."
+            Main -> Main : break
+        end
         Main -> Calc2 : method(a, b)
         alt ZeroDivisionError / ValueError / TypeError raised
             Calc2 --> Main : raises exception

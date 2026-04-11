@@ -65,6 +65,7 @@ partition "Interactive Session (src/__main__.py)" {
     :Import Calculator from src;
     :Instantiate Calculator();
     :Print "=== Interactive Calculator ===";
+    :menu_failures = 0;
 
     repeat
 
@@ -75,19 +76,39 @@ partition "Interactive Session (src/__main__.py)" {
             :Print "Goodbye!";
             stop
         elseif (choice not in OPERATIONS?) then (yes)
-            :Print "Invalid choice" error message;
+            :menu_failures += 1;
+            :Print "Invalid choice" error\n+ list of available options;
+            if (menu_failures >= MAX_RETRIES?) then (yes)
+                :Print "Too many invalid selections.\nEnding session.";
+                stop
+            else (no)
+                :Print remaining attempts;
+            endif
         else (valid choice)
+            :menu_failures = 0;
             :Look up (op_name, label, arity) from OPERATIONS;
             :Resolve method via getattr(calc, op_name);
 
             if (arity == 1?) then (yes)
-                :_parse_number("Enter value:",\nrequire_int=(op_name == "factorial"));
+                :_prompt_number("Enter value:", require_int)\n[retries up to MAX_RETRIES on bad input];
+                if (None returned — retries exhausted?) then (yes)
+                    :Print "Too many invalid inputs.\nEnding session.";
+                    stop
+                endif
                 :a = parsed value;
                 :result = method(a);
             else (arity == 2)
-                :_parse_number("Enter first value:");
+                :_prompt_number("Enter first value:")\n[retries up to MAX_RETRIES on bad input];
+                if (None returned — retries exhausted?) then (yes)
+                    :Print "Too many invalid inputs.\nEnding session.";
+                    stop
+                endif
                 :a = parsed value;
-                :_parse_number("Enter second value:");
+                :_prompt_number("Enter second value:")\n[retries up to MAX_RETRIES on bad input];
+                if (None returned — retries exhausted?) then (yes)
+                    :Print "Too many invalid inputs.\nEnding session.";
+                    stop
+                endif
                 :b = parsed value;
                 :result = method(a, b);
             endif

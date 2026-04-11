@@ -2,7 +2,8 @@
 
 Each test drives main() through one or more calculation cycles by mocking
 builtins.input with a predetermined sequence of responses and then asserting
-on the captured stdout.  Every sequence must end with 'q' so the loop exits.
+on the captured stdout.  Every sequence must end with 'q' so the loop exits,
+unless the test exercises the max-retry termination path.
 """
 
 import math
@@ -10,7 +11,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.__main__ import main
+from src.__main__ import main, MAX_RETRIES
 
 
 # ---------------------------------------------------------------------------
@@ -52,6 +53,48 @@ def test_invalid_choice_then_valid_operation(capsys):
     out = _run(["abc", "1", "2", "3", "q"], capsys)
     assert "Invalid choice" in out
     assert "Result: 5" in out
+
+
+# ---------------------------------------------------------------------------
+# Retry logic — invalid menu selection
+# ---------------------------------------------------------------------------
+
+def test_invalid_menu_choice_shows_available_operations(capsys):
+    # Error message for an unknown choice must list the available operation keys.
+    out = _run(["99", "q"], capsys)
+    assert "Available options" in out
+
+
+def test_invalid_menu_choice_max_retries_terminates(capsys):
+    # MAX_RETRIES consecutive invalid menu choices must end the session.
+    out = _run(["bad"] * MAX_RETRIES, capsys)
+    assert "Ending session" in out
+
+
+def test_valid_choice_resets_menu_failure_counter(capsys):
+    # A valid operation resets the failure counter; the session must not
+    # terminate after (MAX_RETRIES - 1) invalid choices followed by a valid one.
+    inputs = ["bad"] * (MAX_RETRIES - 1) + ["1", "2", "3", "q"]
+    out = _run(inputs, capsys)
+    assert "Result: 5" in out
+
+
+# ---------------------------------------------------------------------------
+# Retry logic — invalid operand input
+# ---------------------------------------------------------------------------
+
+def test_invalid_operand_retry_then_succeed(capsys):
+    # An invalid first operand triggers a retry; a subsequent valid value
+    # should allow the calculation to complete.
+    out = _run(["1", "abc", "3", "4", "q"], capsys)
+    assert "Error:" in out
+    assert "Result: 7" in out
+
+
+def test_invalid_operand_max_retries_terminates(capsys):
+    # MAX_RETRIES consecutive invalid operands must end the session.
+    out = _run(["1"] + ["abc"] * MAX_RETRIES, capsys)
+    assert "Ending session" in out
 
 
 # ---------------------------------------------------------------------------
@@ -113,9 +156,11 @@ def test_factorial_negative_shows_error(capsys):
 
 
 def test_factorial_float_input_shows_error(capsys):
-    # "3.5" cannot be parsed as int; _parse_number raises ValueError
-    out = _run(["5", "3.5", "q"], capsys)
+    # "3.5" cannot be parsed as int; _prompt_number shows an error and retries.
+    # Providing valid integer "5" on the next attempt completes the calculation.
+    out = _run(["5", "3.5", "5", "q"], capsys)
     assert "Error:" in out
+    assert "Result: 120" in out
 
 
 def test_square(capsys):
