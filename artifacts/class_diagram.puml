@@ -20,6 +20,8 @@ package "src" {
     }
 
     class "__main__" as Main <<module>> {
+        + OPERATIONS : dict
+        + _parse_number(prompt: str, require_int: bool) : int | float
         + main() : void
     }
 
@@ -31,6 +33,27 @@ package "src" {
 
 Main --> Calculator : instantiates & calls
 Init ..> Calculator : exports
+
+note right of Main::OPERATIONS
+  Maps menu key -> (method_name, label, arity).
+  Keys "1"–"12", covering all Calculator operations.
+end note
+
+note right of Main::_parse_number
+  Reads a number from stdin.
+  Returns int for whole-number input,
+  float otherwise.
+  When require_int=True, parses strictly
+  as int (used for factorial).
+end note
+
+note right of Main::main
+  Interactive session loop.
+  Displays menu, reads choice,
+  collects operands, calls Calculator,
+  prints result or error.
+  Exits when user enters 'q'.
+end note
 
 note right of Calculator::divide
   Raises ZeroDivisionError

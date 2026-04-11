@@ -295,3 +295,38 @@ None. The change is additive (new test only) and does not touch the implementati
 exp2/expert-generic (never main)
 
 Duration: 87.3s | Cost: $0.236692 USD | Turns: 17
+
+---
+
+## Run: Diagram update — PlantUML artifacts (task/issue-115-user-input)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-115-user-input
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — added `OPERATIONS: dict` and `_parse_number()` to `__main__` module; added descriptive notes for each
+- `artifacts/activity_diagram.puml` — replaced static linear demo flow with interactive session loop reflecting `main()`: menu display, choice validation, arity-based operand collection via `_parse_number`, error handling, repeat-until-quit structure
+- `artifacts/sequence_diagram.puml` — replaced static sequence with interactive loop showing User actor, `_parse_number` calls, arity-based branching, exception alt blocks, and session lifecycle
+
+### Purpose
+
+Updated all three PlantUML diagrams to reflect the interactive session loop introduced in
+issue #115. The previous diagrams modelled a static hardcoded demo; they now accurately
+represent the menu-driven input loop, `OPERATIONS` dispatch table, `_parse_number` helper,
+and per-operation error handling present in the current `src/__main__.py`.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
