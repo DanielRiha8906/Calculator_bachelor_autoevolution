@@ -1,46 +1,106 @@
 @startuml activity_diagram
 
-title Calculator — Activity Diagram (interactive main execution flow)
+title Calculator — Activity Diagram
 
-start
+' ── Bash CLI flow ──────────────────────────────────────────────────────────
 
-:Import Calculator from src;
-:Instantiate Calculator();
-:Print "=== Interactive Calculator ===";
+partition "Bash CLI (main.py)" {
 
-repeat
+    start
 
-    :Display operation menu (options 1–12 and 'q');
-    :Read user choice from stdin;
+    :Receive argv from command line;
 
-    if (choice == 'q'?) then (yes)
-        :Print "Goodbye!";
+    if (argv is empty?) then (yes)
+        :Print usage to stderr;
+        :Exit with code 1;
         stop
-    elseif (choice not in OPERATIONS?) then (yes)
-        :Print "Invalid choice" error message;
-    else (valid choice)
-        :Look up (op_name, label, arity) from OPERATIONS;
-        :Resolve method via getattr(calc, op_name);
-
-        if (arity == 1?) then (yes)
-            :_parse_number("Enter value:",\nrequire_int=(op_name == "factorial"));
-            :a = parsed value;
-            :result = method(a);
-        else (arity == 2)
-            :_parse_number("Enter first value:");
-            :a = parsed value;
-            :_parse_number("Enter second value:");
-            :b = parsed value;
-            :result = method(a, b);
-        endif
-
-        if (ValueError, TypeError, or\nZeroDivisionError raised?) then (yes)
-            :Print "Error: <exception message>";
-        else (no)
-            :Print "Result: <result>";
-        endif
     endif
 
-repeat while (session continues)
+    :operation = argv[0];
+
+    if (operation not in CLI_OPERATIONS?) then (yes)
+        :Print "Error: unknown operation" to stderr;
+        :Print usage to stderr;
+        :Exit with code 1;
+        stop
+    endif
+
+    :Look up (method_name, arity) from CLI_OPERATIONS;
+
+    if (len(argv) != arity + 1?) then (yes)
+        :Print "Error: requires N operand(s)" to stderr;
+        :Exit with code 1;
+        stop
+    endif
+
+    :Parse operand strings via _parse_operand()\n(require_int=True for factorial);
+
+    if (ValueError during parsing?) then (yes)
+        :Print "Error: <message>" to stderr;
+        :Exit with code 1;
+        stop
+    endif
+
+    :Instantiate Calculator();
+    :Resolve method via getattr(calc, method_name);
+    :result = method(*operands);
+
+    if (ValueError, TypeError, or\nZeroDivisionError raised?) then (yes)
+        :Print "Error: <exception message>" to stderr;
+        :Exit with code 1;
+        stop
+    else (no)
+        :Print result to stdout;
+        stop
+    endif
+
+}
+
+' ── Interactive session flow ────────────────────────────────────────────────
+
+partition "Interactive Session (src/__main__.py)" {
+
+    start
+
+    :Import Calculator from src;
+    :Instantiate Calculator();
+    :Print "=== Interactive Calculator ===";
+
+    repeat
+
+        :Display operation menu (options 1–12 and 'q');
+        :Read user choice from stdin;
+
+        if (choice == 'q'?) then (yes)
+            :Print "Goodbye!";
+            stop
+        elseif (choice not in OPERATIONS?) then (yes)
+            :Print "Invalid choice" error message;
+        else (valid choice)
+            :Look up (op_name, label, arity) from OPERATIONS;
+            :Resolve method via getattr(calc, op_name);
+
+            if (arity == 1?) then (yes)
+                :_parse_number("Enter value:",\nrequire_int=(op_name == "factorial"));
+                :a = parsed value;
+                :result = method(a);
+            else (arity == 2)
+                :_parse_number("Enter first value:");
+                :a = parsed value;
+                :_parse_number("Enter second value:");
+                :b = parsed value;
+                :result = method(a, b);
+            endif
+
+            if (ValueError, TypeError, or\nZeroDivisionError raised?) then (yes)
+                :Print "Error: <exception message>";
+            else (no)
+                :Print "Result: <result>";
+            endif
+        endif
+
+    repeat while (session continues)
+
+}
 
 @enduml

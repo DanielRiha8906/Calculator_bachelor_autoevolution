@@ -31,8 +31,39 @@ package "src" {
 
 }
 
+package "root" {
+
+    class "main" as CLI <<module>> {
+        + CLI_OPERATIONS : dict
+        + _parse_operand(value: str, require_int: bool) : int | float
+        + main(argv: list | None) : void
+    }
+
+}
+
 Main --> Calculator : instantiates & calls
 Init ..> Calculator : exports
+CLI --> Calculator : instantiates & calls
+
+note right of CLI::CLI_OPERATIONS
+  Maps operation name -> (method_name, arity).
+  Covers all 12 Calculator operations.
+  Used to validate and dispatch CLI arguments.
+end note
+
+note right of CLI::_parse_operand
+  Parses a CLI argument string into a number.
+  Returns int for whole-number input, float otherwise.
+  When require_int=True, parses strictly as int
+  (used for factorial); raises ValueError otherwise.
+end note
+
+note right of CLI::main
+  Bash CLI entry point.
+  Reads operation and operands from argv.
+  Prints result to stdout; errors to stderr.
+  Exits with code 1 on any failure.
+end note
 
 note right of Main::OPERATIONS
   Maps menu key -> (method_name, label, arity).

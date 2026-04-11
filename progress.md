@@ -1,3 +1,86 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-145-bash-cli)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-145-bash-cli
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+
+Reviewed all three PlantUML diagrams against the current state of `src/` and `main.py`.
+All twelve Calculator methods and both entry points (interactive `src/__main__.py` and
+bash CLI `main.py`) are correctly represented in every diagram. No updates were required.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 48.0s | Cost: $0.207033 USD | Turns: 17
+
+---
+
+## Run: Issue #145 — Add bash CLI (task/issue-145-bash-cli)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-145-bash-cli
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `main.py` — new file; bash CLI entry point supporting all 12 Calculator operations via
+  command-line arguments (`python main.py <operation> [operand1] [operand2]`)
+- `tests/test_cli.py` — new file; 30 tests covering argument validation, all operations
+  (happy path and error cases), and correct stdout/stderr/exit-code behaviour
+- `artifacts/class_diagram.puml` — added `main` CLI module with `CLI_OPERATIONS`,
+  `_parse_operand`, and `main(argv)` with descriptive notes
+- `artifacts/activity_diagram.puml` — added Bash CLI partition alongside the existing
+  interactive session partition
+- `artifacts/sequence_diagram.puml` — added Bash CLI sequence alongside the existing
+  interactive session sequence
+
+### Purpose
+
+Implemented a bash CLI per issue #145 (V2 Task 7 - Bash mode - Expert/generic):
+- `main.py` at the project root accepts `<operation> [operands]` as argv
+- `CLI_OPERATIONS` maps the 12 operation names to `(method_name, arity)` pairs
+- `_parse_operand()` parses each argv operand: int for whole-number strings,
+  float otherwise; strict int for `factorial` (mirrors `_parse_number` in `__main__`)
+- Errors (unknown operation, wrong operand count, bad number format, calculator
+  exceptions) are written to stderr and the process exits with code 1
+- Successful results are printed to stdout with exit code 0
+- The interactive session in `src/__main__.py` is unchanged
+
+### Risks
+
+Minimal. `main.py` is a new file with no modifications to existing source or tests.
+The `Calculator` class and both existing test files are untouched. The only runtime
+dependency added is `src.calculator.Calculator`, already present in the project.
+
+### Test results
+
+133 tests collected, 133 passed. No regressions (103 pre-existing + 30 new).
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 363.7s | Cost: $0.893680 USD | Turns: 36
+
+---
+
 ## Run: Issue #115 — Add interactive user input (task/issue-115-user-input)
 
 **Date:** 2026-04-11
