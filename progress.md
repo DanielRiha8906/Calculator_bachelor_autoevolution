@@ -1,3 +1,26 @@
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-179-modularize-calculator
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — added `src.operations` package containing `basic` and `scientific` modules with their pure functions; added `ScientificCalculator` class inheriting from `Calculator`; added delegation arrows from `Calculator` to `BasicOps` and `ScientificOps`; added `Init --> ScientificCalculator` export relationship; added `TestScientificCalculatorIsSubclass` (2 test methods), `TestScientificCalculatorInheritsBasicOps` (5 test methods), `TestScientificCalculatorInheritsScientificOps` (8 test methods), and `TestScientificCalculatorHistory` (3 test methods) with their relationships
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass following the modularization of the calculator (Issue #179). The class diagram now reflects all 31 test classes (162 test methods total), the new `operations` sub-package structure, and the `ScientificCalculator` subclass. The activity and sequence diagrams remain accurate: internal delegation to `operations.*` does not alter the inter-component flow, and `ScientificCalculator` is not yet wired into any interface.
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing 162 tests remain passing from previous run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-179 — Modularize calculator and prepare scientific mode structure
 
 - **Branch:** task/issue-179-modularize-calculator
