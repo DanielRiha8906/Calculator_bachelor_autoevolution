@@ -27,6 +27,16 @@ else (no)
     :Print "Division: 2.0";
 endif
 
+:Call calc.factorial(5);
+
+if (n < 0 or not integer?) then (yes)
+    :Raise ValueError or TypeError;
+    stop
+else (no)
+    :Return n!;
+    :Print "Factorial: 120";
+endif
+
 stop
 
 @enduml

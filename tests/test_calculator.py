@@ -122,3 +122,41 @@ class TestDivisionIncorrectInputs:
     def test_divide_none_denominator(self):
         with pytest.raises(TypeError):
             self.calc.divide(10, None)
+
+
+class TestFactorial:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_factorial_zero(self):
+        assert self.calc.factorial(0) == 1
+
+    def test_factorial_one(self):
+        assert self.calc.factorial(1) == 1
+
+    def test_factorial_small_positive(self):
+        assert self.calc.factorial(5) == 120
+
+    def test_factorial_larger_positive(self):
+        assert self.calc.factorial(10) == 3628800
+
+
+class TestFactorialIncorrectInputs:
+    def setup_method(self):
+        self.calc = Calculator()
+
+    def test_factorial_negative(self):
+        with pytest.raises(ValueError):
+            self.calc.factorial(-1)
+
+    def test_factorial_float(self):
+        with pytest.raises(TypeError):
+            self.calc.factorial(2.5)
+
+    def test_factorial_string(self):
+        with pytest.raises(TypeError):
+            self.calc.factorial("five")
+
+    def test_factorial_none(self):
+        with pytest.raises(TypeError):
+            self.calc.factorial(None)

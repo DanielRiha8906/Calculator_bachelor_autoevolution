@@ -7,6 +7,7 @@ package "src" {
         +subtract(a, b) : number
         +multiply(a, b) : number
         +divide(a, b) : number
+        +factorial(n) : int
     }
 
     class "__main__" as Main {
@@ -76,6 +77,24 @@ package "tests" {
         +test_divide_none_denominator() : void
     }
 
+    class TestFactorial {
+        -calc : Calculator
+        +setup_method() : void
+        +test_factorial_zero() : void
+        +test_factorial_one() : void
+        +test_factorial_small_positive() : void
+        +test_factorial_larger_positive() : void
+    }
+
+    class TestFactorialIncorrectInputs {
+        -calc : Calculator
+        +setup_method() : void
+        +test_factorial_negative() : void
+        +test_factorial_float() : void
+        +test_factorial_string() : void
+        +test_factorial_none() : void
+    }
+
 }
 
 Main --> Calculator : instantiates
@@ -85,5 +104,7 @@ TestSubtraction --> Calculator : tests
 TestMultiplication --> Calculator : tests
 TestDivision --> Calculator : tests
 TestDivisionIncorrectInputs --> Calculator : tests
+TestFactorial --> Calculator : tests
+TestFactorialIncorrectInputs --> Calculator : tests
 
 @enduml
