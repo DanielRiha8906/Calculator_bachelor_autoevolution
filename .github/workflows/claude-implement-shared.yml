@@ -209,6 +209,7 @@ jobs:
           fetch-depth: 1
 
       - name: Run Claude Code for diagram update
+        id: run-claude-diagrams
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.anthropic_api_key }}
@@ -228,4 +229,52 @@ jobs:
             - Create the `artifacts/` directory if it does not exist
             - Base diagrams on the actual current state of `src/` — read the files first
             - If a diagram file already exists, update it to reflect any changes; do not delete content that is still accurate
-            - After updating all three files, commit the changes with message "chore: update PlantUML diagrams" and push to the current branch
+            - After updating all three diagram files, append a new section to `progress.md` recording this diagram update run.
+              Include a line with exactly this text (do not estimate or fill in values):
+              Duration: PENDING | Cost: PENDING | Turns: PENDING
+              The workflow will replace PENDING with real values after this run completes.
+            - Commit all changes (diagrams + progress.md) with message "chore: update PlantUML diagrams" and push to the current branch
+
+      - name: Patch progress.md with diagram run cost
+        if: always()
+        run: |
+          EXEC_FILE="${{ steps.run-claude-diagrams.outputs.execution_file }}"
+          if [ -z "$EXEC_FILE" ] || [ ! -f "$EXEC_FILE" ]; then
+            echo "No execution file found, skipping diagram cost patch."
+            exit 0
+          fi
+          RESULT=$(jq '.[] | select(.type == "result")' "$EXEC_FILE")
+          COST=$(echo "$RESULT" | jq -r '.total_cost_usd // "N/A"')
+          TURNS=$(echo "$RESULT" | jq -r '.num_turns // "N/A"')
+          DURATION=$(echo "$RESULT" | jq -r '.duration_ms // 0')
+          DURATION_S=$(echo "scale=1; $DURATION / 1000" | bc)
+          if [ "$COST" != "N/A" ]; then
+            COST_FMT=$(printf "%.6f" "$COST" 2>/dev/null || echo "$COST")
+          else
+            COST_FMT="$COST"
+          fi
+
+          TASK_BRANCH="${{ needs.claude-implement.outputs.task_branch }}"
+          git fetch --all --quiet
+          git checkout -b "$TASK_BRANCH" "origin/$TASK_BRANCH" 2>/dev/null || git checkout "$TASK_BRANCH"
+          git pull origin "$TASK_BRANCH" --ff-only 2>/dev/null || true
+
+          if [ ! -f "progress.md" ] || ! grep -q "PENDING" progress.md; then
+            echo "No PENDING placeholder in progress.md, skipping."
+            exit 0
+          fi
+
+          export ACTUAL_LINE="Duration: ${DURATION_S}s | Cost: \$${COST_FMT} USD | Turns: ${TURNS}"
+          python3 - <<'PYEOF'
+          import os
+          content = open('progress.md').read()
+          actual = os.environ['ACTUAL_LINE']
+          new = content.replace('Duration: PENDING | Cost: PENDING | Turns: PENDING', actual, 1)
+          open('progress.md', 'w').write(new)
+          PYEOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add progress.md
+          git commit -m "chore: update progress.md with diagram run cost" || echo "Nothing to commit"
+          git push origin "$TASK_BRANCH"
