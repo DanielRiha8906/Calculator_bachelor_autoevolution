@@ -52,6 +52,7 @@ deactivate CLI
 actor User
 participant "__main__\n(Interactive)" as Main
 participant "Calculator" as Calc2
+participant "history.txt" as File
 
 User -> Main : run program
 activate Main
@@ -60,19 +61,28 @@ Main -> Calc2 : Calculator()
 activate Calc2
 
 Main -> User : "=== Interactive Calculator ==="
+note right of Main : history = []\nmenu_failures = 0
 
 loop until user quits or retry limit reached
 
-    Main -> User : display operation menu (1–12, q)
+    Main -> User : display operation menu (1–12, h, q)
     User -> Main : enter choice
 
     alt choice == 'q'
+        Main -> File : _write_history(history)
         Main -> User : "Goodbye!"
         Main -> Main : break
+    else choice == 'h'
+        alt history is empty
+            Main -> User : "No calculations yet."
+        else history has entries
+            Main -> User : "Session history:\n  <entry 1>\n  <entry 2>\n  ..."
+        end
     else choice not in OPERATIONS
         Main -> Main : menu_failures += 1
         Main -> User : "Invalid choice '...'. Available options: ..."
         alt menu_failures >= MAX_RETRIES
+            Main -> File : _write_history(history)
             Main -> User : "Too many invalid selections. Ending session."
             Main -> Main : break
         else
@@ -90,6 +100,7 @@ loop until user quits or retry limit reached
             end
         end
         alt retries exhausted (returns None)
+            Main -> File : _write_history(history)
             Main -> User : "Too many invalid inputs. Ending session."
             Main -> Main : break
         else valid value obtained
@@ -100,6 +111,7 @@ loop until user quits or retry limit reached
             else success
                 Calc2 --> Main : result
                 Main -> User : "Result: <result>"
+                Main -> Main : history.append(_format_history_entry(op_name, (a,), result))
             end
         end
     else valid choice (arity == 2)
@@ -114,6 +126,7 @@ loop until user quits or retry limit reached
             end
         end
         alt retries exhausted for first operand
+            Main -> File : _write_history(history)
             Main -> User : "Too many invalid inputs. Ending session."
             Main -> Main : break
         end
@@ -127,6 +140,7 @@ loop until user quits or retry limit reached
             end
         end
         alt retries exhausted for second operand
+            Main -> File : _write_history(history)
             Main -> User : "Too many invalid inputs. Ending session."
             Main -> Main : break
         end
@@ -137,6 +151,7 @@ loop until user quits or retry limit reached
         else success
             Calc2 --> Main : result
             Main -> User : "Result: <result>"
+            Main -> Main : history.append(_format_history_entry(op_name, (a, b), result))
         end
     end
 

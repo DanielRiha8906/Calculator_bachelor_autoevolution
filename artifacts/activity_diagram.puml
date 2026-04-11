@@ -65,21 +65,31 @@ partition "Interactive Session (src/__main__.py)" {
     :Import Calculator from src;
     :Instantiate Calculator();
     :Print "=== Interactive Calculator ===";
+    :history = [];
     :menu_failures = 0;
 
     repeat
 
-        :Display operation menu (options 1–12 and 'q');
+        :Display operation menu (options 1–12, h, q);
         :Read user choice from stdin;
 
         if (choice == 'q'?) then (yes)
+            :_write_history(history) → history.txt;
             :Print "Goodbye!";
             stop
+        elseif (choice == 'h'?) then (yes)
+            if (history is empty?) then (yes)
+                :Print "No calculations yet.";
+            else (no)
+                :Print "Session history:";
+                :Print each entry in history;
+            endif
         elseif (choice not in OPERATIONS?) then (yes)
             :menu_failures += 1;
             :Print "Invalid choice" error\n+ list of available options;
             if (menu_failures >= MAX_RETRIES?) then (yes)
                 :Print "Too many invalid selections.\nEnding session.";
+                :_write_history(history) → history.txt;
                 stop
             else (no)
                 :Print remaining attempts;
@@ -93,6 +103,7 @@ partition "Interactive Session (src/__main__.py)" {
                 :_prompt_number("Enter value:", require_int)\n[retries up to MAX_RETRIES on bad input];
                 if (None returned — retries exhausted?) then (yes)
                     :Print "Too many invalid inputs.\nEnding session.";
+                    :_write_history(history) → history.txt;
                     stop
                 endif
                 :a = parsed value;
@@ -101,12 +112,14 @@ partition "Interactive Session (src/__main__.py)" {
                 :_prompt_number("Enter first value:")\n[retries up to MAX_RETRIES on bad input];
                 if (None returned — retries exhausted?) then (yes)
                     :Print "Too many invalid inputs.\nEnding session.";
+                    :_write_history(history) → history.txt;
                     stop
                 endif
                 :a = parsed value;
                 :_prompt_number("Enter second value:")\n[retries up to MAX_RETRIES on bad input];
                 if (None returned — retries exhausted?) then (yes)
                     :Print "Too many invalid inputs.\nEnding session.";
+                    :_write_history(history) → history.txt;
                     stop
                 endif
                 :b = parsed value;
@@ -117,6 +130,7 @@ partition "Interactive Session (src/__main__.py)" {
                 :Print "Error: <exception message>";
             else (no)
                 :Print "Result: <result>";
+                :history.append(_format_history_entry(op_name, operands, result));
             endif
         endif
 

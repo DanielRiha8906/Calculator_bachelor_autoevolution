@@ -4,6 +4,10 @@ Each test drives main() through one or more calculation cycles by mocking
 builtins.input with a predetermined sequence of responses and then asserting
 on the captured stdout.  Every sequence must end with 'q' so the loop exits,
 unless the test exercises the max-retry termination path.
+
+_run() mocks _write_history to prevent file side-effects during tests.
+Tests that specifically verify file writing call main() directly with
+HISTORY_FILE patched to a tmp_path location.
 """
 
 import math
@@ -19,9 +23,10 @@ from src.__main__ import main, MAX_RETRIES
 # ---------------------------------------------------------------------------
 
 def _run(inputs: list[str], capsys) -> str:
-    """Invoke main() with mocked input, return captured stdout."""
+    """Invoke main() with mocked input and no-op file writes, return captured stdout."""
     with patch("builtins.input", side_effect=inputs):
-        main()
+        with patch("src.__main__._write_history"):
+            main()
     return capsys.readouterr().out
 
 
@@ -41,6 +46,11 @@ def test_menu_lists_all_operations(capsys):
                     "Square", "Cube", "Square root", "Cube root",
                     "Power", "Log base-10", "Natural log"]:
         assert keyword in out
+
+
+def test_menu_lists_history_option(capsys):
+    out = _run(["q"], capsys)
+    assert "Show history" in out
 
 
 def test_invalid_choice_shows_message(capsys):
@@ -234,3 +244,86 @@ def test_error_does_not_terminate_session(capsys):
     out = _run(["4", "1", "0", "1", "3", "4", "q"], capsys)
     assert "Error:" in out
     assert "Result: 7" in out
+
+
+# ---------------------------------------------------------------------------
+# Session history — display
+# ---------------------------------------------------------------------------
+
+def test_history_empty_before_first_calculation(capsys):
+    """'h' before any calculation shows 'No calculations yet.'"""
+    out = _run(["h", "q"], capsys)
+    assert "No calculations yet." in out
+
+
+def test_history_records_binary_operation(capsys):
+    """A successful binary calculation appears in the history when 'h' is entered."""
+    out = _run(["1", "2", "3", "h", "q"], capsys)
+    assert "add(2, 3) = 5" in out
+
+
+def test_history_records_unary_operation(capsys):
+    """A successful unary calculation appears in the history when 'h' is entered."""
+    out = _run(["5", "4", "h", "q"], capsys)
+    assert "factorial(4) = 24" in out
+
+
+def test_history_multiple_entries(capsys):
+    """All successful calculations in a session appear in history."""
+    # add 1+2=3, then factorial 4=24, then show history
+    out = _run(["1", "1", "2", "5", "4", "h", "q"], capsys)
+    assert "add(1, 2) = 3" in out
+    assert "factorial(4) = 24" in out
+
+
+def test_history_error_not_recorded(capsys):
+    """A calculation that raises an error is not added to the history."""
+    # divide 5 by 0 → error → history still empty → 'h' shows no entries
+    out = _run(["4", "5", "0", "h", "q"], capsys)
+    assert "No calculations yet." in out
+
+
+def test_history_h_is_not_invalid_choice(capsys):
+    """'h' must not trigger the 'Invalid choice' error message."""
+    out = _run(["h", "q"], capsys)
+    assert "Invalid choice" not in out
+
+
+# ---------------------------------------------------------------------------
+# Session history — file writing
+# ---------------------------------------------------------------------------
+
+def test_history_written_to_file_on_quit(tmp_path, capsys):
+    """History is written to HISTORY_FILE when the user quits."""
+    history_file = tmp_path / "history.txt"
+    with patch("src.__main__.HISTORY_FILE", str(history_file)):
+        with patch("builtins.input", side_effect=["1", "2", "3", "q"]):
+            main()
+    capsys.readouterr()
+    assert history_file.exists()
+    assert "add(2, 3) = 5" in history_file.read_text()
+
+
+def test_history_fresh_each_session(tmp_path, capsys):
+    """A new session overwrites any existing history file; old entries are not loaded."""
+    history_file = tmp_path / "history.txt"
+    history_file.write_text("old_op(1) = 999\n")
+    with patch("src.__main__.HISTORY_FILE", str(history_file)):
+        with patch("builtins.input", side_effect=["1", "4", "5", "q"]):
+            main()
+    capsys.readouterr()
+    content = history_file.read_text()
+    assert "old_op" not in content
+    assert "add(4, 5) = 9" in content
+
+
+def test_history_written_on_retry_termination(tmp_path, capsys):
+    """History is written to HISTORY_FILE when the session ends due to max retries."""
+    history_file = tmp_path / "history.txt"
+    with patch("src.__main__.HISTORY_FILE", str(history_file)):
+        # do one valid calculation then exhaust menu retries
+        with patch("builtins.input", side_effect=["1", "3", "4"] + ["bad"] * MAX_RETRIES):
+            main()
+    capsys.readouterr()
+    assert history_file.exists()
+    assert "add(3, 4) = 7" in history_file.read_text()
