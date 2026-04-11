@@ -1,3 +1,51 @@
+## Run: Issue #181 — Expert/generic modular refactoring (task/issue-181-expert-generic-modular)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-181-expert-generic-modular
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/operations/__init__.py` *(new)* — exports `BasicOperations` and `ScientificOperations`
+- `src/operations/basic.py` *(new)* — `BasicOperations` mixin: `add`, `subtract`, `multiply`, `divide`
+- `src/operations/scientific.py` *(new)* — `ScientificOperations` mixin: `factorial`, `square`, `cube`, `sqrt`, `cbrt`, `power`, `log10`, `ln`
+- `src/calculator.py` — refactored to `class Calculator(BasicOperations, ScientificOperations)`; all operation logic moved to the operations package
+- `src/session.py` *(new)* — `InteractiveSession` class, `OPERATIONS` map, `MAX_RETRIES`, `HISTORY_FILE`, and session helpers (`_format_history_entry`, `_write_history`, `_parse_number`, `_prompt_number`) moved from `src/__main__.py`
+- `src/cli.py` *(new)* — `CLIHandler` class, `CLI_OPERATIONS`, `USAGE`, and `_parse_operand` moved from `main.py`
+- `src/__main__.py` — reduced to thin entry point; re-exports `MAX_RETRIES` for import compatibility
+- `main.py` — reduced to thin entry point; imports `CLIHandler` from `src.cli`
+- `tests/test_main.py` — updated mock paths from `src.__main__.*` to `src.session.*` to reflect new module layout
+- `tests/test_error_logging.py` — updated mock paths from `src.__main__.*` to `src.session.*`
+
+### Purpose
+
+Refactored the calculator into a cleaner multi-module layout per issue #181.
+The `src/operations/` package separates `BasicOperations` (four-function arithmetic)
+from `ScientificOperations` (advanced math), giving future scientific-mode work
+an obvious structural home without requiring a full implementation now.
+Session concerns (`InteractiveSession` and helpers) moved to `src/session.py`
+and CLI concerns (`CLIHandler` and helpers) moved to `src/cli.py`, so each
+module has a single clear responsibility.  Entry points (`main.py` and
+`src/__main__.py`) are now thin wrappers.  All 164 existing tests pass.
+
+### Risks
+
+Low. All changes are internal reorganisation; no public behaviour was altered.
+The `Calculator` API surface is identical — it inherits all operations through
+the mixin classes.  Test patches were updated to match the new module paths.
+
+### Test results
+
+164 passed, 0 failed.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-178-separate-core-from-interface)
 
 **Date:** 2026-04-11

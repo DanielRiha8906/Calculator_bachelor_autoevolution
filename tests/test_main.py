@@ -5,9 +5,9 @@ builtins.input with a predetermined sequence of responses and then asserting
 on the captured stdout.  Every sequence must end with 'q' so the loop exits,
 unless the test exercises the max-retry termination path.
 
-_run() mocks _write_history to prevent file side-effects during tests.
-Tests that specifically verify file writing call main() directly with
-HISTORY_FILE patched to a tmp_path location.
+_run() mocks src.session._write_history to prevent file side-effects during
+tests.  Tests that specifically verify file writing call main() directly with
+src.session.HISTORY_FILE patched to a tmp_path location.
 """
 
 import math
@@ -29,8 +29,8 @@ def _run(inputs: list[str], capsys) -> str:
     side-effects; use test_error_logging.py for logging-specific assertions.
     """
     with patch("builtins.input", side_effect=inputs):
-        with patch("src.__main__._write_history"):
-            with patch("src.__main__.setup_error_logging"):
+        with patch("src.session._write_history"):
+            with patch("src.session.setup_error_logging"):
                 main()
     return capsys.readouterr().out
 
@@ -301,9 +301,9 @@ def test_history_h_is_not_invalid_choice(capsys):
 def test_history_written_to_file_on_quit(tmp_path, capsys):
     """History is written to HISTORY_FILE when the user quits."""
     history_file = tmp_path / "history.txt"
-    with patch("src.__main__.HISTORY_FILE", str(history_file)):
+    with patch("src.session.HISTORY_FILE", str(history_file)):
         with patch("builtins.input", side_effect=["1", "2", "3", "q"]):
-            with patch("src.__main__.setup_error_logging"):
+            with patch("src.session.setup_error_logging"):
                 main()
     capsys.readouterr()
     assert history_file.exists()
@@ -314,9 +314,9 @@ def test_history_fresh_each_session(tmp_path, capsys):
     """A new session overwrites any existing history file; old entries are not loaded."""
     history_file = tmp_path / "history.txt"
     history_file.write_text("old_op(1) = 999\n")
-    with patch("src.__main__.HISTORY_FILE", str(history_file)):
+    with patch("src.session.HISTORY_FILE", str(history_file)):
         with patch("builtins.input", side_effect=["1", "4", "5", "q"]):
-            with patch("src.__main__.setup_error_logging"):
+            with patch("src.session.setup_error_logging"):
                 main()
     capsys.readouterr()
     content = history_file.read_text()
@@ -327,10 +327,10 @@ def test_history_fresh_each_session(tmp_path, capsys):
 def test_history_written_on_retry_termination(tmp_path, capsys):
     """History is written to HISTORY_FILE when the session ends due to max retries."""
     history_file = tmp_path / "history.txt"
-    with patch("src.__main__.HISTORY_FILE", str(history_file)):
+    with patch("src.session.HISTORY_FILE", str(history_file)):
         # do one valid calculation then exhaust menu retries
         with patch("builtins.input", side_effect=["1", "3", "4"] + ["bad"] * MAX_RETRIES):
-            with patch("src.__main__.setup_error_logging"):
+            with patch("src.session.setup_error_logging"):
                 main()
     capsys.readouterr()
     assert history_file.exists()
