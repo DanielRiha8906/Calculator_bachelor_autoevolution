@@ -47,11 +47,13 @@ package "src" {
     }
 
     class "user_input" as UserInput {
+        BASIC_OPERATIONS : dict
+        SCIENTIFIC_OPERATIONS : dict
         OPERATIONS : dict
         TWO_ARG_OPS : set
         INT_OPS : set
         MAX_RETRIES : int
-        +_print_menu() : void
+        +_print_menu(scientific_mode: bool = False) : void
         +_print_history(history: list[dict]) : void
         +_get_float(prompt: str) : float
         +_get_int(prompt: str) : int
@@ -61,6 +63,7 @@ package "src" {
     class "cli" as CLI {
         TWO_ARG_OPS : set
         INT_OPS : set
+        BASIC_OPS : set
         VALID_OPS : set
         +_build_parser() : ArgumentParser
         +cli_mode(argv: list | None) : int
@@ -267,6 +270,19 @@ package "tests" {
         +test_multiple_operations_in_session() : void
     }
 
+    class TestModeSwitch {
+        +test_default_mode_is_normal() : void
+        +test_mode_toggle_to_scientific() : void
+        +test_mode_toggle_back_to_normal() : void
+        +test_normal_mode_rejects_scientific_op() : void
+        +test_normal_mode_menu_content() : void
+        +test_scientific_mode_menu_content() : void
+        +test_scientific_op_available_after_toggle() : void
+        +test_mode_label_in_menu() : void
+        +test_quit_works_in_scientific_mode() : void
+        +test_history_works_in_scientific_mode() : void
+    }
+
     class TestRetryLogicHelpers {
         +test_get_float_valid_on_first_attempt() : void
         +test_get_float_retries_once_then_succeeds() : void
@@ -290,6 +306,20 @@ package "tests" {
         +test_print_history_empty() : void
         +test_print_history_single_entry() : void
         +test_print_history_two_arg_entry() : void
+    }
+
+    class TestCliMode {
+        +test_normal_mode_allows_basic_ops() : void
+        +test_normal_mode_rejects_scientific_ops() : void
+        +test_scientific_mode_allows_all_ops() : void
+        +test_default_mode_is_scientific() : void
+        +test_normal_mode_add() : void
+        +test_normal_mode_subtract() : void
+        +test_normal_mode_multiply() : void
+        +test_normal_mode_divide() : void
+        +test_scientific_mode_factorial() : void
+        +test_scientific_mode_log() : void
+        +test_scientific_mode_ln() : void
     }
 
     class TestCliTwoArgOps {
@@ -404,9 +434,11 @@ TestLn --> Calculator : tests
 TestLnIncorrectInputs --> Calculator : tests
 TestHistory --> Calculator : tests
 TestInteractiveMode --> UserInput : tests
+TestModeSwitch --> UserInput : tests
 TestRetryLogicHelpers --> UserInput : tests
 TestRetryLogicInInteractiveMode --> UserInput : tests
 TestHistoryInInteractiveMode --> UserInput : tests
+TestCliMode --> CLI : tests
 TestCliTwoArgOps --> CLI : tests
 TestCliSingleArgOps --> CLI : tests
 TestCliErrorCases --> CLI : tests

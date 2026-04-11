@@ -8,48 +8,55 @@ participant "Calculator" as Calc
 alt sys.argv has arguments (bash / CLI mode)
 
     Main -> CLI : cli_mode()
-    CLI -> CLI : _build_parser().parse_args()
+    CLI -> CLI : _build_parser().parse_args()\nnote: includes --mode flag (default: scientific)
 
     alt invalid operation name
         CLI --> Main : SystemExit(2) via argparse
     else valid operation
-        CLI -> Calc : <<create>>
+        CLI -> CLI : resolve mode (normal | scientific)
 
-        alt op in INT_OPS (e.g. factorial)
-            CLI -> CLI : validate operand count == 1
-            CLI -> Calc : factorial(int_value)
-            alt success
-                Calc --> CLI : result
-                CLI -> CLI : print(result)
-                CLI --> Main : return 0
-            else ValueError / TypeError
-                Calc --> CLI : exception
-                CLI -> CLI : print("Error: ...", file=stderr)
-                CLI --> Main : return 1
-            end
-        else op in TWO_ARG_OPS (add, subtract, multiply, divide, power)
-            CLI -> CLI : validate operand count == 2
-            CLI -> Calc : op(a, b)
-            alt success
-                Calc --> CLI : result
-                CLI -> CLI : print(result)
-                CLI --> Main : return 0
-            else ZeroDivisionError / TypeError / ValueError
-                Calc --> CLI : exception
-                CLI -> CLI : print("Error: ...", file=stderr)
-                CLI --> Main : return 1
-            end
-        else single-arg op (square, cube, square_root, cube_root, log, ln)
-            CLI -> CLI : validate operand count == 1
-            CLI -> Calc : op(a)
-            alt success
-                Calc --> CLI : result
-                CLI -> CLI : print(result)
-                CLI --> Main : return 0
-            else ValueError
-                Calc --> CLI : exception
-                CLI -> CLI : print("Error: ...", file=stderr)
-                CLI --> Main : return 1
+        alt mode == normal AND op not in BASIC_OPS
+            CLI -> CLI : print("Error: operation not available in normal mode", file=stderr)
+            CLI --> Main : return 1
+        else mode allows operation
+            CLI -> Calc : <<create>>
+
+            alt op in INT_OPS (e.g. factorial)
+                CLI -> CLI : validate operand count == 1
+                CLI -> Calc : factorial(int_value)
+                alt success
+                    Calc --> CLI : result
+                    CLI -> CLI : print(result)
+                    CLI --> Main : return 0
+                else ValueError / TypeError
+                    Calc --> CLI : exception
+                    CLI -> CLI : print("Error: ...", file=stderr)
+                    CLI --> Main : return 1
+                end
+            else op in TWO_ARG_OPS (add, subtract, multiply, divide, power)
+                CLI -> CLI : validate operand count == 2
+                CLI -> Calc : op(a, b)
+                alt success
+                    Calc --> CLI : result
+                    CLI -> CLI : print(result)
+                    CLI --> Main : return 0
+                else ZeroDivisionError / TypeError / ValueError
+                    Calc --> CLI : exception
+                    CLI -> CLI : print("Error: ...", file=stderr)
+                    CLI --> Main : return 1
+                end
+            else single-arg op (square, cube, square_root, cube_root, log, ln)
+                CLI -> CLI : validate operand count == 1
+                CLI -> Calc : op(a)
+                alt success
+                    Calc --> CLI : result
+                    CLI -> CLI : print(result)
+                    CLI --> Main : return 0
+                else ValueError
+                    Calc --> CLI : exception
+                    CLI -> CLI : print("Error: ...", file=stderr)
+                    CLI --> Main : return 1
+                end
             end
         end
     end
@@ -58,21 +65,25 @@ else no arguments (interactive mode)
 
     Main -> UI : interactive_mode()
     UI -> Calc : <<create>>
-    UI -> UI : _print_menu()
+    UI -> UI : scientific_mode = False
+    UI -> UI : _print_menu(scientific_mode=False)\nnote: shows BASIC_OPERATIONS only
 
     loop until 'q'
 
-        UI -> UI : input("Select operation (or 'q' to quit):")
+        UI -> UI : input("Select operation (or 'q'/'m'/'h'):")
 
         alt choice == 'q'
             UI -> Main : return
             note right : prints "Goodbye!" before returning
+        else choice == 'm'
+            UI -> UI : toggle scientific_mode
+            UI -> UI : _print_menu(scientific_mode)\nnote: redraws menu reflecting new mode
         else choice == 'h'
             UI -> Calc : get_history()
             Calc --> UI : list[dict]
             UI -> UI : _print_history(history)
             note right : prints each entry or "No history."
-        else choice not in OPERATIONS
+        else choice not in active_ops (based on current mode)
             UI -> UI : print("Unknown operation: ...")
         else op in INT_OPS (e.g. factorial)
             loop up to MAX_RETRIES times

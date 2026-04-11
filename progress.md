@@ -688,3 +688,26 @@ Routine diagram maintenance pass following the separation of calculator logic fr
 No tests modified; all existing 144 tests remain passing from previous run.
 
 Duration: 52.2s | Cost: $0.304402 USD | Turns: 23
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-191-scientific-mode-switch
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — updated `user_input` module: split `OPERATIONS : dict` into `BASIC_OPERATIONS : dict` and `SCIENTIFIC_OPERATIONS : dict`, added `OPERATIONS : dict` (merged), updated `_print_menu()` signature to `_print_menu(scientific_mode: bool = False)`; updated `cli` module: added `BASIC_OPS : set` constant; added `TestModeSwitch` class (10 test methods) and `TestCliMode` class (11 test methods) with their relationships to `UserInput` and `CLI`
+- `artifacts/activity_diagram.puml` — updated CLI path to show `--mode` flag resolution and mode-enforcement guard before operation execution; updated interactive path to show `scientific_mode = False` initial state, mode toggle on `m` input, menu reprint on toggle, and mode-dependent operation lookup
+- `artifacts/sequence_diagram.puml` — updated CLI sequence to show `--mode` flag parsing and mode-enforcement alt block before Calculator creation; updated interactive sequence to show `scientific_mode = False` state, `m` toggle with menu redraw, and mode-dependent active_ops check
+
+### Purpose
+Routine diagram maintenance pass following issue-191 (scientific mode switch). The class diagram now reflects all 33 test classes (183 test methods total), the `BASIC_OPERATIONS`/`SCIENTIFIC_OPERATIONS` split in `user_input`, and the `BASIC_OPS` constant in `cli`. The activity and sequence diagrams now accurately model the mode-aware CLI (`--mode` flag) and interactive (normal/scientific toggle) flows introduced in issue-191.
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing 183 tests remain passing from previous run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
