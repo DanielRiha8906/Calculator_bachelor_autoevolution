@@ -27,7 +27,7 @@ All 183 tests passed (162 existing + 21 new):
 - `TestInteractiveMode`, `TestRetryLogicHelpers`, `TestRetryLogicInInteractiveMode`, `TestHistoryInInteractiveMode`, `TestErrorLoggingInUserInput` (30 tests, updated) — PASSED
 - `TestModeSwitch` (10 new tests) — PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 519.4s | Cost: $1.245253 USD | Turns: 32
 
 ---
 
