@@ -21,6 +21,50 @@ package "src" {
 
 package "tests" {
 
+    class TestAddition {
+        -calc : Calculator
+        +setup_method() : void
+        +test_add_two_positive_integers() : void
+        +test_add_two_negative_integers() : void
+        +test_add_positive_and_negative() : void
+        +test_add_zero() : void
+        +test_add_floats() : void
+        +test_add_float_and_integer() : void
+    }
+
+    class TestSubtraction {
+        -calc : Calculator
+        +setup_method() : void
+        +test_subtract_two_positive_integers() : void
+        +test_subtract_results_in_negative() : void
+        +test_subtract_negative_number() : void
+        +test_subtract_zero() : void
+        +test_subtract_floats() : void
+        +test_subtract_same_values() : void
+    }
+
+    class TestMultiplication {
+        -calc : Calculator
+        +setup_method() : void
+        +test_multiply_two_positive_integers() : void
+        +test_multiply_by_zero() : void
+        +test_multiply_negative() : void
+        +test_multiply_two_negatives() : void
+        +test_multiply_floats() : void
+        +test_multiply_by_one() : void
+    }
+
+    class TestDivision {
+        -calc : Calculator
+        +setup_method() : void
+        +test_divide_two_integers() : void
+        +test_divide_result_float() : void
+        +test_divide_negative_by_positive() : void
+        +test_divide_negative_by_negative() : void
+        +test_divide_floats() : void
+        +test_divide_by_one() : void
+    }
+
     class TestDivisionIncorrectInputs {
         -calc : Calculator
         +setup_method() : void
@@ -36,6 +80,10 @@ package "tests" {
 
 Main --> Calculator : instantiates
 Init --> Calculator : exports
+TestAddition --> Calculator : tests
+TestSubtraction --> Calculator : tests
+TestMultiplication --> Calculator : tests
+TestDivision --> Calculator : tests
 TestDivisionIncorrectInputs --> Calculator : tests
 
 @enduml
