@@ -1,3 +1,34 @@
+## Run: Issue #180 — Modular operations package
+
+**Branch:** task/issue-180-modular-operations
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/operations/__init__.py` — New package init; re-exports all operation functions from the three category modules so callers can import from a single location or from individual sub-modules.
+- `src/operations/arithmetic.py` — New module; pure functions `add`, `subtract`, `multiply`, `divide` extracted from `Calculator`. `divide` retains its `ZeroDivisionError` guard.
+- `src/operations/algebraic.py` — New module; pure functions `power`, `square`, `cube`, `square_root`, `cube_root`, `factorial` extracted from `Calculator`. All domain guards (negative root, non-integer factorial) are preserved.
+- `src/operations/transcendental.py` — New module; pure functions `log` and `ln` extracted from `Calculator`. Non-positive domain guards are preserved.
+- `src/calculator.py` — Refactored; `Calculator` class is now a thin facade that delegates every method to the corresponding function in `src.operations`. The public method signatures are unchanged so the controller and all tests remain unmodified.
+- `tests/operations/__init__.py` — Empty package marker for the new test sub-package.
+- `tests/operations/test_arithmetic.py` — 21 new tests covering all four arithmetic functions including the `ZeroDivisionError` guard.
+- `tests/operations/test_algebraic.py` — 25 new tests covering power, square, cube, square_root, cube_root, and factorial including error cases.
+- `tests/operations/test_transcendental.py` — 11 new tests covering `log` (default and custom base) and `ln` including non-positive domain errors.
+
+### Purpose
+Refactor calculator operations into a categorised `src/operations/` package (issue #180, Task 12 — Structured/generic). Before this change all 12 operations lived as methods on the `Calculator` class with no grouping. After this change operations are split into `arithmetic`, `algebraic`, and `transcendental` modules. Adding a future scientific category (e.g. trigonometric, statistical) only requires a new file in `src/operations/` — no changes to existing modules are needed. The `Calculator` class remains as a stable facade so the controller and UIs are unaffected.
+
+### Risks
+- `Calculator` methods are now thin one-line delegates; any mismatch between the method signature and the imported function would surface immediately in existing tests.
+- The `operations` package is a new public API surface; callers that import directly from `src.operations` must be aware that the module layout is now part of the contract.
+
+### Test results
+All 256 tests passed: 256 passed in 0.59s (199 existing + 57 new)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: PlantUML diagram update
 
 **Branch:** task/issue-177-separate-calculation-from-ui
