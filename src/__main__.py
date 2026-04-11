@@ -129,4 +129,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if sys.argv[1:]:
+        from .cli import cli_main
+        cli_main()
+    else:
+        main()

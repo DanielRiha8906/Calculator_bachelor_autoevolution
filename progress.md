@@ -1,5 +1,60 @@
 ## Run: PlantUML diagram update
 
+**Branch:** task/issue-144-bash-cli-mode
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/activity_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/sequence_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+
+### Purpose
+Verify and maintain PlantUML diagrams against the current source code. All three diagrams (class, activity, sequence) correctly represent the `Calculator` class with all 12 operations, the interactive `__main__` module (display_menu, get_number, get_integer, perform_operation, main), and the bash CLI module (build_parser, _dispatch, cli_main) as introduced in issue #144.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: 31.3s | Cost: $0.163883 USD | Turns: 15
+
+---
+
+## Run: Issue #144 — Bash CLI mode
+
+**Branch:** task/issue-144-bash-cli-mode
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/cli.py` — New module; implements argparse-based CLI with `build_parser()`, `_dispatch()`, and `cli_main()`. Supports all 12 operations (add, subtract, multiply, divide, power, square, cube, sqrt, cbrt, ln, log, factorial) as subcommands with positional operand arguments; `log` accepts an optional `--base` flag (default 10)
+- `src/__main__.py` — Updated entry point: if `sys.argv[1:]` is non-empty, delegates to `cli_main()` (bash mode); otherwise runs the existing interactive `main()` (no change to interactive behaviour)
+- `tests/test_cli.py` — New test file with 49 tests covering argument parsing (`build_parser`), operation routing (`_dispatch`), and end-to-end output (`cli_main`) including error cases (exit code 1 + stderr message)
+- `artifacts/class_diagram.puml` — Added `cli` package with `build_parser`, `_dispatch`, and `cli_main` functions and their relationships; added mode-dispatch note on main
+- `artifacts/activity_diagram.puml` — Added bash CLI mode branch (parse args → dispatch → print result / print error + exit 1) alongside existing interactive mode branch
+- `artifacts/sequence_diagram.puml` — Added "Bash CLI Mode" section showing `User → cli_main → _dispatch → Calculator → stdout` interaction
+
+### Purpose
+Add bash CLI mode so the calculator can be invoked with a single command from the terminal, providing the operation and operands as arguments and reading the result from stdout (issue #144, V2 Task 7 - Structured/generic experiment). Interactive mode is preserved unchanged when no arguments are supplied.
+
+### Risks
+- The `factorial` subcommand uses `type=int` in argparse, so passing a float (e.g., `5.0`) will fail at parse time with a usage error. This is intentional — factorial only accepts integers.
+- Error messages go to stderr; stdout receives only the result. This enables scripting (`result=$(python -m src add 3 4)`).
+- The `__main__.py` entry-point check (`sys.argv[1:]`) is standard practice; it does not affect how `main()` is tested (tests call it directly).
+
+### Test results
+All 139 tests passed: 139 passed in 0.20s (90 existing + 49 new)
+
+### Intended PR target
+exp2/structured-generic
+
+Duration: 320.8s | Cost: $0.986884 USD | Turns: 38
+
+---
+
+## Run: PlantUML diagram update
+
 **Branch:** task/issue-114-user-input
 **Date:** 2026-04-11
 
