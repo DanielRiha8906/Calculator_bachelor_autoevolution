@@ -53,7 +53,7 @@ switching tests; some older interactive tests were updated rather than added).
 
 ### Duration / Cost / Turns
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 681.9s | Cost: $1.942701 USD | Turns: 46
 
 ---
 
