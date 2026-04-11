@@ -1,3 +1,26 @@
+## Run: PlantUML diagram update
+
+**Branch:** task/issue-144-bash-cli-mode
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/activity_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/sequence_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+
+### Purpose
+Verify and maintain PlantUML diagrams against the current source code. All three diagrams (class, activity, sequence) correctly represent the `Calculator` class with all 12 operations, the interactive `__main__` module (display_menu, get_number, get_integer, perform_operation, main), and the bash CLI module (build_parser, _dispatch, cli_main) as introduced in issue #144.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #144 — Bash CLI mode
 
 **Branch:** task/issue-144-bash-cli-mode
