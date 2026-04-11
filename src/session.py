@@ -1,8 +1,13 @@
 """Interactive session module for the calculator.
 
 Manages the full lifecycle of a single interactive calculator session:
-menu display, user input collection with retry logic, operation dispatch,
-session history tracking, and history persistence on exit.
+mode selection (Normal or Scientific), menu display, user input collection
+with retry logic, operation dispatch, session history tracking, and history
+persistence on exit.
+
+Normal mode exposes the standard four-function operations plus square and
+square root.  Scientific mode exposes advanced functions: powers, roots,
+logarithms, factorial, and trigonometric functions (in degrees).
 
 This module is the primary home for all session-scoped state and behaviour.
 The entry point in src/__main__.py is a thin wrapper that delegates to
@@ -16,20 +21,32 @@ from .error_logger import get_error_logger, setup_error_logging
 MAX_RETRIES = 5
 HISTORY_FILE = "history.txt"
 
+# Normal mode: standard four-function operations plus square and square root.
 # Maps menu key -> (method_name, display_label, number_of_operands)
-OPERATIONS = {
-    "1":  ("add",       "Add             (a + b)",    2),
-    "2":  ("subtract",  "Subtract        (a - b)",    2),
-    "3":  ("multiply",  "Multiply        (a * b)",    2),
-    "4":  ("divide",    "Divide          (a / b)",    2),
-    "5":  ("factorial", "Factorial       (n!)",        1),
-    "6":  ("square",    "Square          (n²)",        1),
-    "7":  ("cube",      "Cube            (n³)",        1),
-    "8":  ("sqrt",      "Square root     (√n)",        1),
-    "9":  ("cbrt",      "Cube root       (∛n)",        1),
-    "10": ("power",     "Power           (base ^ exp)", 2),
-    "11": ("log10",     "Log base-10     (log₁₀ n)",  1),
-    "12": ("ln",        "Natural log     (ln n)",      1),
+NORMAL_OPERATIONS = {
+    "1": ("add",      "Add             (a + b)",    2),
+    "2": ("subtract", "Subtract        (a - b)",    2),
+    "3": ("multiply", "Multiply        (a * b)",    2),
+    "4": ("divide",   "Divide          (a / b)",    2),
+    "5": ("square",   "Square          (n²)",        1),
+    "6": ("sqrt",     "Square root     (√n)",        1),
+}
+
+# Scientific mode: advanced mathematical functions (all trig in degrees).
+# Maps menu key -> (method_name, display_label, number_of_operands)
+SCIENTIFIC_OPERATIONS = {
+    "1":  ("power",     "Power           (base ^ exp)", 2),
+    "2":  ("cube",      "Cube            (n³)",          1),
+    "3":  ("cbrt",      "Cube root       (∛n)",          1),
+    "4":  ("factorial", "Factorial       (n!)",           1),
+    "5":  ("log10",     "Log base-10     (log₁₀ n)",     1),
+    "6":  ("ln",        "Natural log     (ln n)",         1),
+    "7":  ("sin",       "Sin             (degrees)",      1),
+    "8":  ("cos",       "Cos             (degrees)",      1),
+    "9":  ("tan",       "Tan             (degrees)",      1),
+    "10": ("cot",       "Cot             (degrees)",      1),
+    "11": ("asin",      "Arcsin          (degrees)",      1),
+    "12": ("acos",      "Arccos          (degrees)",      1),
 }
 
 
@@ -112,9 +129,9 @@ def _prompt_number(prompt: str, require_int: bool = False) -> int | float | None
 class InteractiveSession:
     """Manages state and control flow for a single interactive calculator session.
 
-    Separates session concerns (history tracking, failure counting, operation
-    dispatch) from input/output details so that the Calculator core can be
-    exercised independently of how the user interacts with the application.
+    Separates session concerns (mode, history tracking, failure counting,
+    operation dispatch) from input/output details so that the Calculator core
+    can be exercised independently of how the user interacts with the application.
     """
 
     def __init__(self, calc: Calculator | None = None) -> None:
@@ -127,21 +144,31 @@ class InteractiveSession:
         self._calc = calc if calc is not None else Calculator()
         self._history: list[str] = []
         self._menu_failures: int = 0
+        self._mode: str = "normal"  # set by _select_mode() at the start of run()
 
     def run(self) -> None:
         """Run the interactive session loop until the user quits or retries are exhausted.
 
-        Sets up error logging, displays the menu, reads user selections, and
-        dispatches each valid operation to _handle_operation.  Session history
-        is written to HISTORY_FILE on every exit path.
+        Sets up error logging, prompts for mode selection, displays the mode-
+        specific menu, reads user selections, and dispatches each valid operation
+        to _handle_operation.  Session history is written to HISTORY_FILE on
+        every exit path.
         """
         setup_error_logging()
         _logger = get_error_logger()
 
         print("=== Interactive Calculator ===")
-        available_keys = ", ".join(OPERATIONS.keys())
+
+        selected = self._select_mode()
+        if selected is None:
+            _write_history(self._history)
+            return
+        self._mode = selected
 
         while True:
+            ops = NORMAL_OPERATIONS if self._mode == "normal" else SCIENTIFIC_OPERATIONS
+            available_keys = ", ".join(ops.keys())
+
             self._display_menu()
             choice = input("\nSelect operation: ").strip().lower()
 
@@ -153,12 +180,19 @@ class InteractiveSession:
                 self._show_history()
                 continue
 
-            if choice not in OPERATIONS:
+            if choice == "s":
+                new_mode = self._select_mode()
+                if new_mode is None:
+                    break
+                self._mode = new_mode
+                continue
+
+            if choice not in ops:
                 self._menu_failures += 1
                 _logger.error("[interactive] invalid menu choice: %s", choice)
                 print(
                     f"Invalid choice '{choice}'. "
-                    f"Available options: {available_keys}, h, q."
+                    f"Available options: {available_keys}, s, h, q."
                 )
                 if self._menu_failures >= MAX_RETRIES:
                     _logger.error("[interactive] max retries exceeded for menu selection")
@@ -174,11 +208,46 @@ class InteractiveSession:
 
         _write_history(self._history)
 
+    def _select_mode(self) -> str | None:
+        """Prompt the user to select Normal or Scientific mode.
+
+        Retries up to MAX_RETRIES times on invalid input.
+
+        Returns:
+            "normal" or "scientific" on a valid selection, or None when
+            MAX_RETRIES consecutive invalid inputs are received.
+        """
+        _logger = get_error_logger()
+        print("\nSelect mode:")
+        print("  1. Normal")
+        print("  2. Scientific")
+        for attempt in range(MAX_RETRIES):
+            choice = input("Mode (1/2): ").strip()
+            if choice == "1":
+                return "normal"
+            if choice == "2":
+                return "scientific"
+            _logger.error("[interactive] invalid mode choice: %s", choice)
+            remaining = MAX_RETRIES - attempt - 1
+            if remaining > 0:
+                print(
+                    f"Invalid choice '{choice}'. Enter 1 or 2. "
+                    f"{remaining} attempt(s) remaining."
+                )
+            else:
+                print(f"Invalid choice '{choice}'.")
+        _logger.error("[interactive] max retries exceeded for mode selection")
+        print("Too many invalid mode selections. Ending session.")
+        return None
+
     def _display_menu(self) -> None:
-        """Print the available operations menu to stdout."""
-        print("\nAvailable operations:")
-        for key, (_, label, _) in OPERATIONS.items():
+        """Print the available operations for the current mode to stdout."""
+        ops = NORMAL_OPERATIONS if self._mode == "normal" else SCIENTIFIC_OPERATIONS
+        mode_label = "Normal" if self._mode == "normal" else "Scientific"
+        print(f"\nMode: {mode_label} | Available operations:")
+        for key, (_, label, _) in ops.items():
             print(f"  {key:>2}. {label}")
+        print("   s. Switch mode")
         print("   h. Show history")
         print("   q. Quit")
 
@@ -195,14 +264,15 @@ class InteractiveSession:
         """Collect operands for the chosen operation and execute it.
 
         Args:
-            choice: A valid key from OPERATIONS.
+            choice: A valid key from the current mode's operations dict.
 
         Returns:
             True if the session should continue, False if max retries were
             exceeded while collecting operands.
         """
         _logger = get_error_logger()
-        op_name, _label, arity = OPERATIONS[choice]
+        ops = NORMAL_OPERATIONS if self._mode == "normal" else SCIENTIFIC_OPERATIONS
+        op_name, _label, arity = ops[choice]
         method = getattr(self._calc, op_name)
         require_int = op_name == "factorial"
 
