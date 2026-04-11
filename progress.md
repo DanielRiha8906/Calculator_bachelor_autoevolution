@@ -31,7 +31,7 @@ new import (`math`) is from the Python standard library.
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 100.4s | Cost: $0.303693 USD | Turns: 16
 
 ---
 
