@@ -37,12 +37,35 @@ package "__main__" {
     }
 }
 
+package "cli" {
+    class build_parser <<function>> {
+        + build_parser() : ArgumentParser
+    }
+    class _dispatch <<function>> {
+        + _dispatch(calc: Calculator, args: Namespace) : str
+    }
+    class cli_main <<function>> {
+        + cli_main() : None
+    }
+}
+
 main ..> Calculator : instantiates
 main ..> display_menu : calls
 main ..> perform_operation : calls
 perform_operation ..> get_number : calls
 perform_operation ..> get_integer : calls
 perform_operation ..> Calculator : dispatches to
+
+cli_main ..> build_parser : calls
+cli_main ..> Calculator : instantiates
+cli_main ..> _dispatch : calls
+_dispatch ..> Calculator : dispatches to
+
+note bottom of main
+  Entry point selects mode:
+  - no args  → interactive (main)
+  - with args → bash CLI (cli_main)
+end note
 
 note right of Calculator::divide
   Raises ZeroDivisionError

@@ -4,39 +4,65 @@ title Calculator — Activity Diagram
 
 start
 
-:Display "Welcome to the Calculator!";
-:Instantiate Calculator;
+if (Command-line arguments provided?) then (yes)
 
-repeat
+  :Parse arguments with argparse\n(operation + operands);
 
-  :display_menu();
-  :Read user choice;
-
-  if (choice == "0"?) then (yes)
-    :Print "Goodbye!";
+  if (Parse error?) then (yes)
+    :Print usage to stderr;
     stop
   endif
 
-  :perform_operation(calc, choice);
+  :Instantiate Calculator;
+  :_dispatch(calc, args);
+  :Call Calculator method;
 
-  if (choice recognised?) then (no)
-    :Print "Unknown operation";
-  else (yes)
-    :Prompt for operand(s)\nvia get_number() / get_integer();
-
-    if (operation requires 2 args?) then (yes)
-      :Read second operand;
-    endif
-
-    :Call Calculator method;
-
-    if (ValueError or ZeroDivisionError raised?) then (yes)
-      :Print "Error: <message>";
-    else (no)
-      :Print "Result: <value>";
-    endif
+  if (ValueError or ZeroDivisionError raised?) then (yes)
+    :Print "Error: <message>" to stderr;
+    :Exit with code 1;
+    stop
+  else (no)
+    :Print result to stdout;
+    stop
   endif
 
-repeat while (user has not exited)
+else (no)
+
+  :Display "Welcome to the Calculator!";
+  :Instantiate Calculator;
+
+  repeat
+
+    :display_menu();
+    :Read user choice;
+
+    if (choice == "0"?) then (yes)
+      :Print "Goodbye!";
+      stop
+    endif
+
+    :perform_operation(calc, choice);
+
+    if (choice recognised?) then (no)
+      :Print "Unknown operation";
+    else (yes)
+      :Prompt for operand(s)\nvia get_number() / get_integer();
+
+      if (operation requires 2 args?) then (yes)
+        :Read second operand;
+      endif
+
+      :Call Calculator method;
+
+      if (ValueError or ZeroDivisionError raised?) then (yes)
+        :Print "Error: <message>";
+      else (no)
+        :Print "Result: <value>";
+      endif
+    endif
+
+  repeat while (user has not exited)
+
+endif
 
 @enduml

@@ -5,7 +5,10 @@ title Calculator — Sequence Diagram
 actor User
 participant "main()" as Main
 participant "perform_operation()" as Op
+participant "cli_main()" as CLI
 participant "Calculator" as Calc
+
+== Interactive Mode (no arguments) ==
 
 Main -> User : "Welcome to the Calculator!"
 Main -> User : display_menu()
@@ -35,6 +38,20 @@ note over Main, Calc
   "Error: <message>", and continues the loop.
   If an unrecognised choice is entered, perform_operation()
   returns None and main() prints "Unknown operation".
+end note
+
+== Bash CLI Mode (with arguments, e.g. "add 3 4") ==
+
+User -> CLI : python -m src add 3 4
+CLI -> CLI : build_parser().parse_args()
+CLI -> Calc : _dispatch(calc, args)\n→ calc.add(3.0, 4.0)
+Calc --> CLI : 7.0
+CLI -> User : "7.0" (stdout)
+
+note over CLI, Calc
+  If a ValueError or ZeroDivisionError is raised,
+  cli_main() prints "Error: <message>" to stderr
+  and exits with code 1.
 end note
 
 @enduml
