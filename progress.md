@@ -17,7 +17,7 @@ Verify and maintain PlantUML diagrams against the current state of `src/`. All t
 ### Test results
 N/A — diagram-only run.
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 50.6s | Cost: $0.223777 USD | Turns: 23
 
 ---
 
