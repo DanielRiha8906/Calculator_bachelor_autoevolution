@@ -35,7 +35,7 @@ All 164 tests passed (pytest, no failures).
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 205.1s | Cost: $0.601451 USD | Turns: 29
 
 ---
 
