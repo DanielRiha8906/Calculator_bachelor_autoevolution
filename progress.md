@@ -17,7 +17,7 @@ Verify and maintain PlantUML diagrams against the current source code. All three
 ### Test results
 N/A — diagram-only run.
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 45.3s | Cost: $0.154416 USD | Turns: 14
 
 ---
 
