@@ -301,6 +301,29 @@ package "tests" {
         +test_invalid_operation_raises_system_exit() : void
     }
 
+    class TestCalculatorErrorLogging {
+        -calc : Calculator
+        +setup_method() : void
+        +test_divide_by_zero_is_logged() : void
+        +test_square_root_negative_is_logged() : void
+        +test_log_zero_is_logged() : void
+        +test_ln_negative_is_logged() : void
+        +test_factorial_negative_is_logged() : void
+        +test_successful_operation_does_not_log_error() : void
+    }
+
+    class TestErrorLoggingInUserInput {
+        +test_get_float_exhausted_retries_logs_error() : void
+        +test_get_int_exhausted_retries_logs_error() : void
+        +test_successful_float_input_does_not_log_error() : void
+    }
+
+    class TestCliErrorLogging {
+        +test_divide_by_zero_logs_error() : void
+        +test_wrong_operand_count_logs_error() : void
+        +test_successful_operation_does_not_log_error() : void
+    }
+
 }
 
 Main --> UserInput : calls interactive_mode() (no args)
@@ -333,5 +356,8 @@ TestHistoryInInteractiveMode --> UserInput : tests
 TestCliTwoArgOps --> CLI : tests
 TestCliSingleArgOps --> CLI : tests
 TestCliErrorCases --> CLI : tests
+TestCalculatorErrorLogging --> Calculator : tests
+TestErrorLoggingInUserInput --> UserInput : tests
+TestCliErrorLogging --> CLI : tests
 
 @enduml

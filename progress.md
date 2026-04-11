@@ -449,3 +449,26 @@ Routine diagram maintenance pass following the addition of operation history (Is
 No tests modified; all existing 138 tests remain passing from previous run.
 
 Duration: 91.2s | Cost: $0.426271 USD | Turns: 29
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-152-add-error-logging
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — added `TestCalculatorErrorLogging` (6 test methods), `TestErrorLoggingInUserInput` (3 test methods), and `TestCliErrorLogging` (3 test methods) with their relationships to `Calculator`, `UserInput`, and `CLI` respectively
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass following the addition of error logging (Issue #152). The class diagram now reflects all 28 test classes (150 test methods total). The activity and sequence diagrams remain accurate: error logging is internal to existing error paths and does not alter the flow between components.
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing 150 tests remain passing from previous run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
