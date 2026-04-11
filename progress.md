@@ -25,7 +25,7 @@ Refactor calculator operations into a categorised `src/operations/` package (iss
 ### Test results
 All 256 tests passed: 256 passed in 0.59s (199 existing + 57 new)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 260.8s | Cost: $1.053759 USD | Turns: 44
 
 ---
 
