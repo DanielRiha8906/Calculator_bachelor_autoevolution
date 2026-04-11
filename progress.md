@@ -17,7 +17,7 @@ Update PlantUML diagrams to reflect the scientific/normal mode switch introduced
 ### Test results
 N/A — diagram-only run.
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 130.2s | Cost: $0.373848 USD | Turns: 25
 
 ---
 
