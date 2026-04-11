@@ -51,3 +51,26 @@ All 30 tests passed:
 - `TestDivisionIncorrectInputs` (6 tests) — all PASSED
 
 Duration: 142.9s | Cost: $0.416957 USD | Turns: 19
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-104-add-calculator-tests
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass. All three PlantUML diagrams were reviewed against the current source code (`src/calculator.py`, `src/__main__.py`, `src/__init__.py`) and test suite (`tests/test_calculator.py`). All diagrams correctly reflect the `Calculator` class with its four operations, the `__main__` entry point, the `__init__` export, and all five test classes (`TestAddition`, `TestSubtraction`, `TestMultiplication`, `TestDivision`, `TestDivisionIncorrectInputs`) with their 30 test methods.
+
+### Risks
+- None. No source or test code was modified; only `progress.md` updated.
+
+### Test results
+No tests modified; all existing 30 tests remain passing from previous run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
