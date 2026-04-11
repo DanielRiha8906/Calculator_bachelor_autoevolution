@@ -37,7 +37,7 @@ Minimal. The change is purely additive — no existing methods or tests were mod
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 240.0s | Cost: $0.711373 USD | Turns: 32
 
 ---
 
