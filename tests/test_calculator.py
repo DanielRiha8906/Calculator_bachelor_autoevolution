@@ -354,3 +354,116 @@ def test_ln_zero_raises_value_error(calc):
 def test_ln_negative_raises_value_error(calc):
     with pytest.raises(ValueError):
         calc.ln(-1)
+
+
+# --- sin ---
+
+def test_sin_zero(calc):
+    assert calc.sin(0) == pytest.approx(0.0)
+
+
+def test_sin_pi_over_2(calc):
+    assert calc.sin(math.pi / 2) == pytest.approx(1.0)
+
+
+def test_sin_pi(calc):
+    assert calc.sin(math.pi) == pytest.approx(0.0, abs=1e-10)
+
+
+def test_sin_negative(calc):
+    assert calc.sin(-math.pi / 2) == pytest.approx(-1.0)
+
+
+# --- cos ---
+
+def test_cos_zero(calc):
+    assert calc.cos(0) == pytest.approx(1.0)
+
+
+def test_cos_pi_over_2(calc):
+    assert calc.cos(math.pi / 2) == pytest.approx(0.0, abs=1e-10)
+
+
+def test_cos_pi(calc):
+    assert calc.cos(math.pi) == pytest.approx(-1.0)
+
+
+def test_cos_negative(calc):
+    assert calc.cos(-math.pi) == pytest.approx(-1.0)
+
+
+# --- tan ---
+
+def test_tan_zero(calc):
+    assert calc.tan(0) == pytest.approx(0.0)
+
+
+def test_tan_pi_over_4(calc):
+    assert calc.tan(math.pi / 4) == pytest.approx(1.0)
+
+
+def test_tan_negative(calc):
+    assert calc.tan(-math.pi / 4) == pytest.approx(-1.0)
+
+
+# --- cot ---
+
+def test_cot_pi_over_4(calc):
+    assert calc.cot(math.pi / 4) == pytest.approx(1.0)
+
+
+def test_cot_pi_over_2(calc):
+    assert calc.cot(math.pi / 2) == pytest.approx(0.0, abs=1e-10)
+
+
+def test_cot_zero_raises_value_error(calc):
+    with pytest.raises(ValueError):
+        calc.cot(0)
+
+
+# --- asin ---
+
+def test_asin_zero(calc):
+    assert calc.asin(0) == pytest.approx(0.0)
+
+
+def test_asin_one(calc):
+    assert calc.asin(1) == pytest.approx(math.pi / 2)
+
+
+def test_asin_negative_one(calc):
+    assert calc.asin(-1) == pytest.approx(-math.pi / 2)
+
+
+def test_asin_out_of_range_raises_value_error(calc):
+    with pytest.raises(ValueError):
+        calc.asin(2)
+
+
+def test_asin_negative_out_of_range_raises_value_error(calc):
+    with pytest.raises(ValueError):
+        calc.asin(-2)
+
+
+# --- acos ---
+
+def test_acos_one(calc):
+    assert calc.acos(1) == pytest.approx(0.0)
+
+
+def test_acos_zero(calc):
+    assert calc.acos(0) == pytest.approx(math.pi / 2)
+
+
+def test_acos_negative_one(calc):
+    assert calc.acos(-1) == pytest.approx(math.pi)
+
+
+def test_acos_out_of_range_raises_value_error(calc):
+    with pytest.raises(ValueError):
+        calc.acos(2)
+
+
+def test_acos_negative_out_of_range_raises_value_error(calc):
+    with pytest.raises(ValueError):
+        calc.acos(-2)

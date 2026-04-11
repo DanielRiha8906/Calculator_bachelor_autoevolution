@@ -1,3 +1,38 @@
+## Run: Issue #193 — Scientific mode switch (task/issue-193-scientific-mode-switch)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-193-scientific-mode-switch
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/operations/scientific.py` — added six trigonometric operations: `sin`, `cos`, `tan`, `cot`, `asin`, `acos` (all working in radians)
+- `src/session.py` — replaced monolithic `OPERATIONS` dict with `NORMAL_OPERATIONS` (add, subtract, multiply, divide, square, sqrt) and `SCIENTIFIC_OPERATIONS` (power, cube, cbrt, factorial, log10, ln, sin, cos, tan, cot, asin, acos); added `_prompt_mode()` helper and mode-selection step at session start; added 'm' key to switch modes mid-session without restarting; menu now labels active mode and lists only that mode's operations
+- `tests/test_calculator.py` — added 22 new tests covering sin, cos, tan, cot, asin, acos (happy paths and error cases)
+- `tests/test_main.py` — rewrote to reflect two-step flow (mode selection then operation loop); updated all operation key references to match new per-mode numbering; added tests for mode selection, invalid mode input, mode switching, and trig operations in interactive mode
+- `tests/test_error_logging.py` — updated all interactive-mode tests to supply the mode-selection input that now precedes the menu loop
+
+### Purpose
+
+Implement Issue #193: add Normal/Scientific mode switching to the interactive session. Normal mode surfaces the standard six operations (add, subtract, multiply, divide, square, sqrt). Scientific mode surfaces twelve advanced operations including six new trig functions. The user can switch modes at any point without restarting.
+
+### Risks
+
+- Operation numbering changed between old and new design (old: 1–12 unified; new: 1–6 normal, 1–12 scientific). Any external documentation or history files referencing old keys will be stale, but these are not persisted between sessions.
+- Trig functions operate in radians; this is standard but may surprise users expecting degrees. No conversion is offered.
+
+### Test results
+
+205 tests passed, 0 failed.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-190-documentation)
 
 **Date:** 2026-04-11

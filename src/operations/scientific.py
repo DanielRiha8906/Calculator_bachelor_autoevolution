@@ -78,3 +78,46 @@ class ScientificOperations:
         if n <= 0:
             raise ValueError("ln is not defined for non-positive numbers")
         return math.log(n)
+
+    def sin(self, theta):
+        """Return the sine of theta (in radians)."""
+        return math.sin(theta)
+
+    def cos(self, theta):
+        """Return the cosine of theta (in radians)."""
+        return math.cos(theta)
+
+    def tan(self, theta):
+        """Return the tangent of theta (in radians)."""
+        return math.tan(theta)
+
+    def cot(self, theta):
+        """Return the cotangent of theta (in radians).
+
+        Raises:
+            ValueError: if sin(theta) is exactly zero.
+        """
+        sin_val = math.sin(theta)
+        if sin_val == 0.0:
+            raise ValueError("cotangent is not defined where sin is zero")
+        return math.cos(theta) / sin_val
+
+    def asin(self, n):
+        """Return the arcsine of n in radians.
+
+        Raises:
+            ValueError: if n is outside [-1, 1].
+        """
+        if not -1 <= n <= 1:
+            raise ValueError("asin is not defined outside the range [-1, 1]")
+        return math.asin(n)
+
+    def acos(self, n):
+        """Return the arccosine of n in radians.
+
+        Raises:
+            ValueError: if n is outside [-1, 1].
+        """
+        if not -1 <= n <= 1:
+            raise ValueError("acos is not defined outside the range [-1, 1]")
+        return math.acos(n)

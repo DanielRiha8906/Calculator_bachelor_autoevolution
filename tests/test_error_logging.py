@@ -98,39 +98,44 @@ def test_cli_logs_log10_non_positive(caplog, capsys):
 # ---------------------------------------------------------------------------
 
 def test_interactive_logs_invalid_menu_choice(caplog, capsys):
-    _run_interactive(["99", "q"], caplog, capsys)
+    # Normal mode selected ("1"), then invalid menu choice
+    _run_interactive(["1", "99", "q"], caplog, capsys)
     messages = [r.message for r in caplog.records]
     assert any("[interactive]" in m and "invalid menu choice" in m for m in messages)
 
 
 def test_interactive_logs_max_retries_menu(caplog, capsys):
     from src.__main__ import MAX_RETRIES
-    _run_interactive(["bad"] * MAX_RETRIES, caplog, capsys)
+    # Normal mode selected ("1"), then MAX_RETRIES invalid menu choices
+    _run_interactive(["1"] + ["bad"] * MAX_RETRIES, caplog, capsys)
     messages = [r.message for r in caplog.records]
     assert any("[interactive]" in m and "max retries" in m for m in messages)
 
 
 def test_interactive_logs_invalid_operand(caplog, capsys):
-    # "abc" is not a valid number; logged inside _prompt_number
-    _run_interactive(["1", "abc", "3", "4", "q"], caplog, capsys)
+    # Normal mode ("1"), add operation ("1"), "abc" is not a valid number
+    _run_interactive(["1", "1", "abc", "3", "4", "q"], caplog, capsys)
     messages = [r.message for r in caplog.records]
     assert any("[interactive]" in m and "invalid operand input" in m for m in messages)
 
 
 def test_interactive_logs_divide_by_zero(caplog, capsys):
-    _run_interactive(["4", "5", "0", "q"], caplog, capsys)
+    # Normal mode ("1"), divide ("4"), 5/0
+    _run_interactive(["1", "4", "5", "0", "q"], caplog, capsys)
     messages = [r.message for r in caplog.records]
     assert any("[interactive]" in m and "calculation error" in m for m in messages)
 
 
 def test_interactive_logs_sqrt_negative(caplog, capsys):
-    _run_interactive(["8", "-1", "q"], caplog, capsys)
+    # Normal mode ("1"), sqrt is key "6", input -1
+    _run_interactive(["1", "6", "-1", "q"], caplog, capsys)
     messages = [r.message for r in caplog.records]
     assert any("[interactive]" in m and "calculation error" in m for m in messages)
 
 
 def test_interactive_logs_ln_non_positive(caplog, capsys):
-    _run_interactive(["12", "-1", "q"], caplog, capsys)
+    # Scientific mode ("2"), ln is key "6", input -1
+    _run_interactive(["2", "6", "-1", "q"], caplog, capsys)
     messages = [r.message for r in caplog.records]
     assert any("[interactive]" in m and "calculation error" in m for m in messages)
 
@@ -182,7 +187,8 @@ def test_interactive_errors_written_to_log_file(tmp_path, capsys):
     log_file = tmp_path / "error.log"
     _isolated_setup(log_file)
     try:
-        with patch("builtins.input", side_effect=["4", "5", "0", "q"]):
+        # Normal mode ("1"), divide ("4"), 5/0
+        with patch("builtins.input", side_effect=["1", "4", "5", "0", "q"]):
             with patch("src.session._write_history"):
                 with patch("src.session.setup_error_logging"):
                     # setup_error_logging already called above via _isolated_setup

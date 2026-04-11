@@ -2,8 +2,18 @@
 
 Each test drives main() through one or more calculation cycles by mocking
 builtins.input with a predetermined sequence of responses and then asserting
-on the captured stdout.  Every sequence must end with 'q' so the loop exits,
-unless the test exercises the max-retry termination path.
+on the captured stdout.  The session now begins with a mode selection step:
+  "1" selects Normal mode (add, subtract, multiply, divide, square, sqrt)
+  "2" selects Scientific mode (power, cube, cbrt, factorial, log10, ln,
+                               sin, cos, tan, cot, asin, acos)
+
+Operation keys differ between modes — the mapping is:
+  Normal:      1=add, 2=subtract, 3=multiply, 4=divide, 5=square, 6=sqrt
+  Scientific:  1=power, 2=cube, 3=cbrt, 4=factorial, 5=log10, 6=ln,
+               7=sin, 8=cos, 9=tan, 10=cot, 11=asin, 12=acos
+
+Every sequence must end with 'q' so the loop exits, unless the test
+exercises a max-retry termination path.
 
 _run() mocks src.session._write_history to prevent file side-effects during
 tests.  Tests that specifically verify file writing call main() directly with
@@ -36,38 +46,111 @@ def _run(inputs: list[str], capsys) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Mode selection
+# ---------------------------------------------------------------------------
+
+def test_mode_selection_prompt_appears(capsys):
+    """The mode selection prompt appears at the start of the session."""
+    out = _run(["1", "q"], capsys)
+    assert "Select mode" in out
+
+
+def test_normal_mode_selected(capsys):
+    """Selecting mode 1 enters Normal mode."""
+    out = _run(["1", "q"], capsys)
+    assert "Normal" in out
+
+
+def test_scientific_mode_selected(capsys):
+    """Selecting mode 2 enters Scientific mode."""
+    out = _run(["2", "q"], capsys)
+    assert "Scientific" in out
+
+
+def test_invalid_mode_selection_shows_error(capsys):
+    """An invalid mode selection shows an error before re-prompting."""
+    out = _run(["99", "1", "q"], capsys)
+    assert "Invalid choice" in out
+
+
+def test_invalid_mode_selection_max_retries_terminates(capsys):
+    """MAX_RETRIES consecutive invalid mode selections end the session."""
+    out = _run(["bad"] * MAX_RETRIES, capsys)
+    assert "Ending session" in out
+
+
+# ---------------------------------------------------------------------------
 # Quit / navigation
 # ---------------------------------------------------------------------------
 
 def test_quit_immediately(capsys):
-    out = _run(["q"], capsys)
+    out = _run(["1", "q"], capsys)
     assert "Goodbye!" in out
 
 
-def test_menu_lists_all_operations(capsys):
-    out = _run(["q"], capsys)
-    # Every operation label must appear in the menu.
-    for keyword in ["Add", "Subtract", "Multiply", "Divide", "Factorial",
-                    "Square", "Cube", "Square root", "Cube root",
-                    "Power", "Log base-10", "Natural log"]:
+def test_normal_mode_menu_lists_operations(capsys):
+    """Normal mode menu shows exactly the normal operations."""
+    out = _run(["1", "q"], capsys)
+    for keyword in ["Add", "Subtract", "Multiply", "Divide", "Square", "Square root"]:
+        assert keyword in out
+
+
+def test_scientific_mode_menu_lists_operations(capsys):
+    """Scientific mode menu shows exactly the scientific operations."""
+    out = _run(["2", "q"], capsys)
+    for keyword in ["Power", "Cube", "Cube root", "Factorial",
+                    "Log base-10", "Natural log",
+                    "Sine", "Cosine", "Tangent", "Cotangent",
+                    "Arcsine", "Arccosine"]:
         assert keyword in out
 
 
 def test_menu_lists_history_option(capsys):
-    out = _run(["q"], capsys)
+    out = _run(["1", "q"], capsys)
     assert "Show history" in out
 
 
+def test_menu_lists_switch_mode_option(capsys):
+    """The 'm' switch-mode option must appear in every menu."""
+    out = _run(["1", "q"], capsys)
+    assert "Switch mode" in out
+
+
 def test_invalid_choice_shows_message(capsys):
-    out = _run(["99", "q"], capsys)
+    out = _run(["1", "99", "q"], capsys)
     assert "Invalid choice" in out
 
 
 def test_invalid_choice_then_valid_operation(capsys):
     # After an invalid choice the loop should continue cleanly.
-    out = _run(["abc", "1", "2", "3", "q"], capsys)
+    # Normal mode: invalid, then add(2+3=5)
+    out = _run(["1", "abc", "1", "2", "3", "q"], capsys)
     assert "Invalid choice" in out
     assert "Result: 5" in out
+
+
+# ---------------------------------------------------------------------------
+# Mode switching during session
+# ---------------------------------------------------------------------------
+
+def test_switch_mode_during_session(capsys):
+    """'m' switches the active mode; the new mode name appears in the next menu."""
+    # Start in Normal, switch to Scientific
+    out = _run(["1", "m", "2", "q"], capsys)
+    assert "Scientific" in out
+
+
+def test_switch_mode_then_use_scientific_operation(capsys):
+    """After switching to scientific mode, scientific operations are accessible."""
+    # Start normal, switch to scientific, run power(2,3)=8.0
+    out = _run(["1", "m", "2", "1", "2", "3", "q"], capsys)
+    assert "Result: 8.0" in out
+
+
+def test_h_is_not_treated_as_mode_switch(capsys):
+    """'h' must not re-trigger the mode switch prompt; it appears only once at startup."""
+    out = _run(["1", "h", "q"], capsys)
+    assert out.count("Select mode") == 1
 
 
 # ---------------------------------------------------------------------------
@@ -76,20 +159,21 @@ def test_invalid_choice_then_valid_operation(capsys):
 
 def test_invalid_menu_choice_shows_available_operations(capsys):
     # Error message for an unknown choice must list the available operation keys.
-    out = _run(["99", "q"], capsys)
+    out = _run(["1", "99", "q"], capsys)
     assert "Available options" in out
 
 
 def test_invalid_menu_choice_max_retries_terminates(capsys):
     # MAX_RETRIES consecutive invalid menu choices must end the session.
-    out = _run(["bad"] * MAX_RETRIES, capsys)
+    out = _run(["1"] + ["bad"] * MAX_RETRIES, capsys)
     assert "Ending session" in out
 
 
 def test_valid_choice_resets_menu_failure_counter(capsys):
     # A valid operation resets the failure counter; the session must not
     # terminate after (MAX_RETRIES - 1) invalid choices followed by a valid one.
-    inputs = ["bad"] * (MAX_RETRIES - 1) + ["1", "2", "3", "q"]
+    # Normal mode: (MAX_RETRIES-1) invalid, then add(2+3=5)
+    inputs = ["1"] + ["bad"] * (MAX_RETRIES - 1) + ["1", "2", "3", "q"]
     out = _run(inputs, capsys)
     assert "Result: 5" in out
 
@@ -99,137 +183,179 @@ def test_valid_choice_resets_menu_failure_counter(capsys):
 # ---------------------------------------------------------------------------
 
 def test_invalid_operand_retry_then_succeed(capsys):
-    # An invalid first operand triggers a retry; a subsequent valid value
-    # should allow the calculation to complete.
-    out = _run(["1", "abc", "3", "4", "q"], capsys)
+    # Normal mode: add — invalid first operand, then valid 3 and 4 → 7
+    out = _run(["1", "1", "abc", "3", "4", "q"], capsys)
     assert "Error:" in out
     assert "Result: 7" in out
 
 
 def test_invalid_operand_max_retries_terminates(capsys):
-    # MAX_RETRIES consecutive invalid operands must end the session.
-    out = _run(["1"] + ["abc"] * MAX_RETRIES, capsys)
+    # Normal mode: add — MAX_RETRIES consecutive invalid operands end the session.
+    out = _run(["1", "1"] + ["abc"] * MAX_RETRIES, capsys)
     assert "Ending session" in out
 
 
 # ---------------------------------------------------------------------------
-# Two-operand operations
+# Normal mode — two-operand operations
 # ---------------------------------------------------------------------------
 
 def test_add(capsys):
-    out = _run(["1", "3", "4", "q"], capsys)
+    out = _run(["1", "1", "3", "4", "q"], capsys)
     assert "Result: 7" in out
 
 
 def test_subtract(capsys):
-    out = _run(["2", "10", "3", "q"], capsys)
+    out = _run(["1", "2", "10", "3", "q"], capsys)
     assert "Result: 7" in out
 
 
 def test_multiply(capsys):
-    out = _run(["3", "4", "5", "q"], capsys)
+    out = _run(["1", "3", "4", "5", "q"], capsys)
     assert "Result: 20" in out
 
 
 def test_divide_exact(capsys):
-    out = _run(["4", "10", "2", "q"], capsys)
+    out = _run(["1", "4", "10", "2", "q"], capsys)
     assert "Result: 5.0" in out
 
 
 def test_divide_by_zero_shows_error(capsys):
-    out = _run(["4", "5", "0", "q"], capsys)
+    out = _run(["1", "4", "5", "0", "q"], capsys)
     assert "Error:" in out
 
 
+# ---------------------------------------------------------------------------
+# Scientific mode — two-operand operations
+# ---------------------------------------------------------------------------
+
 def test_power(capsys):
-    out = _run(["10", "2", "3", "q"], capsys)
+    out = _run(["2", "1", "2", "3", "q"], capsys)
     assert "Result: 8.0" in out
 
 
 def test_power_negative_base_fractional_exponent_shows_error(capsys):
-    out = _run(["10", "-2", "0.5", "q"], capsys)
+    out = _run(["2", "1", "-2", "0.5", "q"], capsys)
     assert "Error:" in out
 
 
 # ---------------------------------------------------------------------------
-# Single-operand operations
+# Normal mode — single-operand operations
+# ---------------------------------------------------------------------------
+
+def test_square(capsys):
+    out = _run(["1", "5", "4", "q"], capsys)
+    assert "Result: 16" in out
+
+
+def test_square_negative(capsys):
+    out = _run(["1", "5", "-3", "q"], capsys)
+    assert "Result: 9" in out
+
+
+def test_sqrt(capsys):
+    out = _run(["1", "6", "9", "q"], capsys)
+    assert "Result: 3.0" in out
+
+
+def test_sqrt_negative_shows_error(capsys):
+    out = _run(["1", "6", "-1", "q"], capsys)
+    assert "Error:" in out
+
+
+# ---------------------------------------------------------------------------
+# Scientific mode — single-operand operations
 # ---------------------------------------------------------------------------
 
 def test_factorial(capsys):
-    out = _run(["5", "5", "q"], capsys)
+    out = _run(["2", "4", "5", "q"], capsys)
     assert "Result: 120" in out
 
 
 def test_factorial_zero(capsys):
-    out = _run(["5", "0", "q"], capsys)
+    out = _run(["2", "4", "0", "q"], capsys)
     assert "Result: 1" in out
 
 
 def test_factorial_negative_shows_error(capsys):
-    out = _run(["5", "-1", "q"], capsys)
+    out = _run(["2", "4", "-1", "q"], capsys)
     assert "Error:" in out
 
 
 def test_factorial_float_input_shows_error(capsys):
     # "3.5" cannot be parsed as int; _prompt_number shows an error and retries.
     # Providing valid integer "5" on the next attempt completes the calculation.
-    out = _run(["5", "3.5", "5", "q"], capsys)
+    out = _run(["2", "4", "3.5", "5", "q"], capsys)
     assert "Error:" in out
     assert "Result: 120" in out
 
 
-def test_square(capsys):
-    out = _run(["6", "4", "q"], capsys)
-    assert "Result: 16" in out
-
-
-def test_square_negative(capsys):
-    out = _run(["6", "-3", "q"], capsys)
-    assert "Result: 9" in out
-
-
 def test_cube(capsys):
-    out = _run(["7", "3", "q"], capsys)
+    out = _run(["2", "2", "3", "q"], capsys)
     assert "Result: 27" in out
 
 
-def test_sqrt(capsys):
-    out = _run(["8", "9", "q"], capsys)
-    assert "Result: 3.0" in out
-
-
-def test_sqrt_negative_shows_error(capsys):
-    out = _run(["8", "-1", "q"], capsys)
-    assert "Error:" in out
-
-
 def test_cbrt(capsys):
-    out = _run(["9", "27", "q"], capsys)
+    out = _run(["2", "3", "27", "q"], capsys)
     assert "Result: 3.0" in out
 
 
 def test_cbrt_negative(capsys):
-    out = _run(["9", "-27", "q"], capsys)
+    out = _run(["2", "3", "-27", "q"], capsys)
     assert "Result: -3.0" in out
 
 
 def test_log10(capsys):
-    out = _run(["11", "100", "q"], capsys)
+    out = _run(["2", "5", "100", "q"], capsys)
     assert "Result: 2.0" in out
 
 
 def test_log10_non_positive_shows_error(capsys):
-    out = _run(["11", "0", "q"], capsys)
+    out = _run(["2", "5", "0", "q"], capsys)
     assert "Error:" in out
 
 
 def test_ln(capsys):
-    out = _run(["12", "1", "q"], capsys)
+    out = _run(["2", "6", "1", "q"], capsys)
     assert "Result: 0.0" in out
 
 
 def test_ln_non_positive_shows_error(capsys):
-    out = _run(["12", "-1", "q"], capsys)
+    out = _run(["2", "6", "-1", "q"], capsys)
+    assert "Error:" in out
+
+
+def test_sin_zero(capsys):
+    out = _run(["2", "7", "0", "q"], capsys)
+    assert "Result: 0.0" in out
+
+
+def test_cos_zero(capsys):
+    out = _run(["2", "8", "0", "q"], capsys)
+    assert "Result: 1.0" in out
+
+
+def test_tan_zero(capsys):
+    out = _run(["2", "9", "0", "q"], capsys)
+    assert "Result: 0.0" in out
+
+
+def test_asin_zero(capsys):
+    out = _run(["2", "11", "0", "q"], capsys)
+    assert "Result: 0.0" in out
+
+
+def test_acos_one(capsys):
+    out = _run(["2", "12", "1", "q"], capsys)
+    assert "Result: 0.0" in out
+
+
+def test_asin_out_of_range_shows_error(capsys):
+    out = _run(["2", "11", "2", "q"], capsys)
+    assert "Error:" in out
+
+
+def test_acos_out_of_range_shows_error(capsys):
+    out = _run(["2", "12", "-2", "q"], capsys)
     assert "Error:" in out
 
 
@@ -238,15 +364,15 @@ def test_ln_non_positive_shows_error(capsys):
 # ---------------------------------------------------------------------------
 
 def test_multiple_calculations_in_one_session(capsys):
-    # add 1+2=3, then square 4=16, then quit
-    out = _run(["1", "1", "2", "6", "4", "q"], capsys)
+    # Normal mode: add(1,2)=3, then square(4)=16
+    out = _run(["1", "1", "1", "2", "5", "4", "q"], capsys)
     assert "Result: 3" in out
     assert "Result: 16" in out
 
 
 def test_error_does_not_terminate_session(capsys):
-    # divide-by-zero should show error but the loop must continue.
-    out = _run(["4", "1", "0", "1", "3", "4", "q"], capsys)
+    # Normal mode: divide-by-zero should show error but the loop must continue.
+    out = _run(["1", "4", "1", "0", "1", "3", "4", "q"], capsys)
     assert "Error:" in out
     assert "Result: 7" in out
 
@@ -257,40 +383,42 @@ def test_error_does_not_terminate_session(capsys):
 
 def test_history_empty_before_first_calculation(capsys):
     """'h' before any calculation shows 'No calculations yet.'"""
-    out = _run(["h", "q"], capsys)
+    out = _run(["1", "h", "q"], capsys)
     assert "No calculations yet." in out
 
 
 def test_history_records_binary_operation(capsys):
     """A successful binary calculation appears in the history when 'h' is entered."""
-    out = _run(["1", "2", "3", "h", "q"], capsys)
+    # Normal mode: add(2,3)=5
+    out = _run(["1", "1", "2", "3", "h", "q"], capsys)
     assert "add(2, 3) = 5" in out
 
 
 def test_history_records_unary_operation(capsys):
     """A successful unary calculation appears in the history when 'h' is entered."""
-    out = _run(["5", "4", "h", "q"], capsys)
+    # Scientific mode: factorial(4)=24
+    out = _run(["2", "4", "4", "h", "q"], capsys)
     assert "factorial(4) = 24" in out
 
 
 def test_history_multiple_entries(capsys):
     """All successful calculations in a session appear in history."""
-    # add 1+2=3, then factorial 4=24, then show history
-    out = _run(["1", "1", "2", "5", "4", "h", "q"], capsys)
+    # Normal mode: add(1,2)=3; then switch to scientific; factorial(4)=24
+    out = _run(["1", "1", "1", "2", "m", "2", "4", "4", "h", "q"], capsys)
     assert "add(1, 2) = 3" in out
     assert "factorial(4) = 24" in out
 
 
 def test_history_error_not_recorded(capsys):
     """A calculation that raises an error is not added to the history."""
-    # divide 5 by 0 → error → history still empty → 'h' shows no entries
-    out = _run(["4", "5", "0", "h", "q"], capsys)
+    # Normal mode: divide 5 by 0 → error → history still empty
+    out = _run(["1", "4", "5", "0", "h", "q"], capsys)
     assert "No calculations yet." in out
 
 
 def test_history_h_is_not_invalid_choice(capsys):
     """'h' must not trigger the 'Invalid choice' error message."""
-    out = _run(["h", "q"], capsys)
+    out = _run(["1", "h", "q"], capsys)
     assert "Invalid choice" not in out
 
 
@@ -302,7 +430,7 @@ def test_history_written_to_file_on_quit(tmp_path, capsys):
     """History is written to HISTORY_FILE when the user quits."""
     history_file = tmp_path / "history.txt"
     with patch("src.session.HISTORY_FILE", str(history_file)):
-        with patch("builtins.input", side_effect=["1", "2", "3", "q"]):
+        with patch("builtins.input", side_effect=["1", "1", "2", "3", "q"]):
             with patch("src.session.setup_error_logging"):
                 main()
     capsys.readouterr()
@@ -315,7 +443,7 @@ def test_history_fresh_each_session(tmp_path, capsys):
     history_file = tmp_path / "history.txt"
     history_file.write_text("old_op(1) = 999\n")
     with patch("src.session.HISTORY_FILE", str(history_file)):
-        with patch("builtins.input", side_effect=["1", "4", "5", "q"]):
+        with patch("builtins.input", side_effect=["1", "1", "4", "5", "q"]):
             with patch("src.session.setup_error_logging"):
                 main()
     capsys.readouterr()
@@ -328,8 +456,8 @@ def test_history_written_on_retry_termination(tmp_path, capsys):
     """History is written to HISTORY_FILE when the session ends due to max retries."""
     history_file = tmp_path / "history.txt"
     with patch("src.session.HISTORY_FILE", str(history_file)):
-        # do one valid calculation then exhaust menu retries
-        with patch("builtins.input", side_effect=["1", "3", "4"] + ["bad"] * MAX_RETRIES):
+        # Normal mode: add(3,4)=7, then exhaust menu retries
+        with patch("builtins.input", side_effect=["1", "1", "3", "4"] + ["bad"] * MAX_RETRIES):
             with patch("src.session.setup_error_logging"):
                 main()
     capsys.readouterr()
