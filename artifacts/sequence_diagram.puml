@@ -5,7 +5,8 @@ title Calculator — Sequence Diagram
 ' ── Bash CLI sequence ──────────────────────────────────────────────────────
 
 actor User as User
-participant "main.py\n(CLI module)" as CLI
+participant "main.py\n(entry point)" as CLI
+participant "src.cli\n(CLI module)" as CLIMod
 participant "CLIHandler" as Handler
 participant "Calculator" as Calc
 participant "error.log" as ELog
@@ -16,6 +17,7 @@ User -> CLI : python main.py <operation> [operands]
 activate CLI
 
 CLI -> ELog : setup_error_logging()\n(attach FileHandler)
+CLI -> CLIMod : import CLIHandler
 CLI -> Handler : CLIHandler()
 activate Handler
 CLI -> Handler : run(argv)
@@ -63,15 +65,17 @@ deactivate CLI
 == Interactive Session Mode ==
 
 actor User
-participant "__main__\n(module)" as Main
+participant "src/__main__\n(entry point)" as Main
+participant "src.session\n(session module)" as SessMod
 participant "InteractiveSession" as Session
 participant "Calculator" as Calc2
 participant "history.txt" as File
 participant "error.log" as ELog2
 
-User -> Main : run program
+User -> Main : python -m src
 activate Main
 
+Main -> SessMod : import InteractiveSession
 Main -> Session : InteractiveSession()
 activate Session
 Main -> Session : run()
@@ -83,10 +87,30 @@ activate Calc2
 Session -> User : "=== Interactive Calculator ==="
 note right of Session : _history = []\n_menu_failures = 0
 
+Session -> Session : _select_mode()
+Session -> User : "Select mode: 1. Normal  2. Scientific"
+loop up to MAX_RETRIES times
+    User -> Session : mode choice
+    alt choice == '1'
+        Session -> Session : _mode = "normal"
+    else choice == '2'
+        Session -> Session : _mode = "scientific"
+    else invalid input
+        Session -> ELog2 : logger.error("[interactive] invalid mode choice: ...")
+        Session -> User : error + remaining attempts
+    end
+end
+alt retries exhausted
+    Session -> ELog2 : logger.error("[interactive] max retries exceeded for mode selection")
+    Session -> File : _write_history(_history)
+    Session -> User : "Too many invalid mode selections. Ending session."
+    Session -> Session : return
+end
+
 loop until user quits or retry limit reached
 
     Session -> Session : _display_menu()
-    Session -> User : print operation menu (1–12, h, q)
+    Session -> User : print mode-specific menu\n(Normal: 1–6, s, h, q\n Scientific: 1–12, s, h, q)
     User -> Session : enter choice
 
     alt choice == 'q'
@@ -100,7 +124,24 @@ loop until user quits or retry limit reached
         else _history has entries
             Session -> User : "Session history:\n  <entry 1>\n  <entry 2>\n  ..."
         end
-    else choice not in OPERATIONS
+    else choice == 's'
+        Session -> Session : _select_mode()
+        Session -> User : "Select mode: 1. Normal  2. Scientific"
+        loop up to MAX_RETRIES times
+            User -> Session : mode choice
+            alt valid choice
+                Session -> Session : _mode = selected mode
+            else invalid
+                Session -> ELog2 : logger.error("[interactive] invalid mode choice: ...")
+                Session -> User : error + remaining attempts
+            end
+        end
+        alt retries exhausted
+            Session -> File : _write_history(_history)
+            Session -> User : "Too many invalid mode selections. Ending session."
+            Session -> Session : break
+        end
+    else choice not in active ops dict (NORMAL_OPERATIONS or SCIENTIFIC_OPERATIONS)
         Session -> Session : _menu_failures += 1
         Session -> ELog2 : logger.error("[interactive] invalid menu choice: ...")
         Session -> User : "Invalid choice '...'. Available options: ..."

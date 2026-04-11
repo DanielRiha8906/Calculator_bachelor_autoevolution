@@ -1,3 +1,277 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-193-scientific-mode-switch)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-193-scientific-mode-switch
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — added six trig methods (`sin`, `cos`, `tan`, `cot`,
+  `asin`, `acos`) to `ScientificOperations`; added `_mode` attribute and `_select_mode()`
+  to `InteractiveSession`; split `OPERATIONS` note into `NORMAL_OPERATIONS` and
+  `SCIENTIFIC_OPERATIONS`; added per-method notes for all six trig operations
+- `artifacts/activity_diagram.puml` — added mode selection flow before the main loop;
+  added `s` (switch mode) branch in the main loop; updated ops-dict references to use
+  mode-specific dicts
+- `artifacts/sequence_diagram.puml` — added mode selection sequence after session start;
+  added `choice == 's'` branch with mode-switch sub-flow; updated ops-dict label
+
+### Purpose
+
+Brought all three PlantUML diagrams in sync with issue #193 changes: `ScientificOperations`
+gained six trigonometric methods, and `InteractiveSession` gained mode selection and mode
+switching (`_mode`, `_select_mode()`, `NORMAL_OPERATIONS`/`SCIENTIFIC_OPERATIONS` split).
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 126.1s | Cost: $0.552482 USD | Turns: 35
+
+---
+
+## Run: Issue #193 — Scientific mode switch (task/issue-193-scientific-mode-switch)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-193-scientific-mode-switch
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/operations/scientific.py` — added six trigonometric methods to `ScientificOperations`:
+  `sin`, `cos`, `tan`, `cot`, `asin`, `acos`; all accept/return degrees; `tan` raises
+  `ValueError` at odd multiples of 90°, `cot` at multiples of 180°, `asin`/`acos` for
+  inputs outside [-1, 1]
+- `src/session.py` — replaced single `OPERATIONS` dict with `NORMAL_OPERATIONS` (add,
+  subtract, multiply, divide, square, sqrt) and `SCIENTIFIC_OPERATIONS` (power, cube, cbrt,
+  factorial, log10, ln, sin, cos, tan, cot, asin, acos); added `_select_mode()` method with
+  MAX_RETRIES retry logic; updated `run()` to call mode selection at start and support `s`
+  key for mid-session mode switching; updated `_display_menu()` and `_handle_operation()` to
+  use the current mode's operation dict
+- `tests/test_calculator.py` — added 26 unit tests covering sin, cos, tan (including
+  undefined-angle errors), cot (including undefined-angle errors), asin and acos (including
+  out-of-range errors)
+- `tests/test_main.py` — rewrote all interactive tests to prepend mode selection input;
+  updated all operation key references to match the new per-mode key assignments; added new
+  tests for mode selection (valid/invalid/max-retries), mode switching with `s`, and all six
+  new trig operations in interactive flow
+- `tests/test_error_logging.py` — updated all interactive error-logging tests to prepend
+  mode selection input and corrected operation key references (sqrt now key 6 in normal,
+  ln now key 6 in scientific)
+
+### Purpose
+
+Implemented issue #193 (Task 14 — Scientific mode switch — Expert/generic):
+- Interactive session now starts with a mode selection prompt (1=Normal, 2=Scientific)
+- Normal mode exposes: add, subtract, multiply, divide, square, square root
+- Scientific mode exposes: power, cube, cube root, factorial, log10, ln, sin, cos, tan,
+  cot, asin, acos (all trig in degrees)
+- Users can switch modes at any time during the session via the `s` key
+- Mode selection has the same MAX_RETRIES (5) retry policy as menu selection
+- Existing modular operation structure (BasicOperations / ScientificOperations mixins)
+  is preserved; Calculator class is unchanged
+
+### Risks
+
+Low. The Calculator class and CLI are not touched. Interactive logic is self-contained
+in session.py. All trig functions delegate to Python's `math` module with explicit
+domain validation for undefined inputs.
+
+### Test results
+
+213 tests collected, 213 passed, 0 failed.
+Previous count: 164 tests; 49 new tests added (26 unit + 16 new interactive + 7 mode/
+switching tests; some older interactive tests were updated rather than added).
+
+### Duration / Cost / Turns
+
+Duration: 681.9s | Cost: $1.942701 USD | Turns: 46
+
+---
+
+## Run: Diagram update — PlantUML artifacts (task/issue-190-documentation)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-190-documentation
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+
+Reviewed all three PlantUML diagrams against the current state of `src/` and `main.py`.
+The modular structure (`BasicOperations`, `ScientificOperations`, `Calculator`, `CLIHandler`,
+`InteractiveSession`, `error_logger`), all twelve Calculator operations, both entry points
+(interactive `src/__main__.py` and bash CLI `main.py`), the retry logic, session history,
+and error-logging paths are all correctly represented. No updates were required.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 69.4s | Cost: $0.539781 USD | Turns: 26
+
+---
+
+## Run: Issue #190 — Documentation (task/issue-190-documentation)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-190-documentation
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `README.md` — replaced minimal one-line placeholder with full project documentation covering:
+  requirements and setup, CLI mode with all 12 operation examples, interactive mode with menu
+  table and session walkthrough, operation reference tables (basic and scientific) with error
+  conditions, session behaviour (history format, `history.txt` persistence, error log format
+  and prefixes, retry logic for both modes), full code structure tree and module responsibility
+  table, design notes on mixin architecture and thin entry points, test suite description,
+  and architecture diagram references.
+
+### Purpose
+
+Issue #190 requires written documentation for users and developers that accurately reflects the
+current implementation after the modular refactoring in issue #181.  The prior README contained
+only the project title.  The new README documents both entry points, all 12 operations with their
+error conditions, the session history and error logging behaviour, the mixin-based code structure,
+and how to run the test suite — all derived from reading the actual source code and tests rather
+than describing planned or idealised behaviour.
+
+### Risks
+
+None. Only `README.md` was modified; no source or test files were changed.
+
+### Test results
+
+All 164 tests passed (pytest, no failures).
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 205.1s | Cost: $0.601451 USD | Turns: 29
+
+---
+
+## Run: Diagram update — PlantUML artifacts (task/issue-181-expert-generic-modular)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-181-expert-generic-modular
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — added `src.operations` sub-package containing `BasicOperations <<mixin>>`
+  and `ScientificOperations <<mixin>>`; `Calculator` now shown with inheritance arrows from both mixins and
+  an empty body (all public methods provided by parent classes); per-method notes moved to the mixin classes
+  that define them; added `cli` module (`CLI_OPERATIONS`, `USAGE`, `_parse_operand`) and `CLIHandler` class
+  to the `src` package (previously shown in "root"); added `session` module (`MAX_RETRIES`, `HISTORY_FILE`,
+  `OPERATIONS`, `_format_history_entry`, `_write_history`, `_parse_number`, `_prompt_number`) to `src`
+  package; updated `__main__` to thin wrapper (just `main()` + `MAX_RETRIES` re-export); updated root `main`
+  module to thin wrapper; added `src.operations.__init__` module showing exports; updated all relationships
+  and notes to match new module paths
+- `artifacts/activity_diagram.puml` — updated partition headings to reference new module paths:
+  `main.py → src.cli.CLIHandler` and `src/__main__.py → src.session.InteractiveSession`; internal flow
+  unchanged
+- `artifacts/sequence_diagram.puml` — updated participant labels: `"main.py\n(entry point)"` replaces
+  `"main.py\n(CLI module)"` and `"src/__main__\n(entry point)"` replaces `"__main__\n(module)"`;
+  added `src.cli\n(CLI module)` and `src.session\n(session module)` participants to show the import
+  delegation step; sequence flow unchanged
+
+### Purpose
+
+Updated all three PlantUML diagrams to reflect the modular refactoring introduced in issue #181.
+The prior diagrams modelled `Calculator` as a flat class containing all operations and had `CLIHandler`
+in the "root" package alongside `main.py`. They now accurately represent the `src/operations/` package
+with `BasicOperations` and `ScientificOperations` mixins, `Calculator`'s multiple inheritance from both,
+`CLIHandler` and `cli` module in `src/cli.py`, and `InteractiveSession` and `session` module in
+`src/session.py`. Entry points (`main.py`, `src/__main__.py`) are shown as thin wrappers.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 291.9s | Cost: $0.716778 USD | Turns: 25
+
+---
+
+## Run: Issue #181 — Expert/generic modular refactoring (task/issue-181-expert-generic-modular)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-181-expert-generic-modular
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/operations/__init__.py` *(new)* — exports `BasicOperations` and `ScientificOperations`
+- `src/operations/basic.py` *(new)* — `BasicOperations` mixin: `add`, `subtract`, `multiply`, `divide`
+- `src/operations/scientific.py` *(new)* — `ScientificOperations` mixin: `factorial`, `square`, `cube`, `sqrt`, `cbrt`, `power`, `log10`, `ln`
+- `src/calculator.py` — refactored to `class Calculator(BasicOperations, ScientificOperations)`; all operation logic moved to the operations package
+- `src/session.py` *(new)* — `InteractiveSession` class, `OPERATIONS` map, `MAX_RETRIES`, `HISTORY_FILE`, and session helpers (`_format_history_entry`, `_write_history`, `_parse_number`, `_prompt_number`) moved from `src/__main__.py`
+- `src/cli.py` *(new)* — `CLIHandler` class, `CLI_OPERATIONS`, `USAGE`, and `_parse_operand` moved from `main.py`
+- `src/__main__.py` — reduced to thin entry point; re-exports `MAX_RETRIES` for import compatibility
+- `main.py` — reduced to thin entry point; imports `CLIHandler` from `src.cli`
+- `tests/test_main.py` — updated mock paths from `src.__main__.*` to `src.session.*` to reflect new module layout
+- `tests/test_error_logging.py` — updated mock paths from `src.__main__.*` to `src.session.*`
+
+### Purpose
+
+Refactored the calculator into a cleaner multi-module layout per issue #181.
+The `src/operations/` package separates `BasicOperations` (four-function arithmetic)
+from `ScientificOperations` (advanced math), giving future scientific-mode work
+an obvious structural home without requiring a full implementation now.
+Session concerns (`InteractiveSession` and helpers) moved to `src/session.py`
+and CLI concerns (`CLIHandler` and helpers) moved to `src/cli.py`, so each
+module has a single clear responsibility.  Entry points (`main.py` and
+`src/__main__.py`) are now thin wrappers.  All 164 existing tests pass.
+
+### Risks
+
+Low. All changes are internal reorganisation; no public behaviour was altered.
+The `Calculator` API surface is identical — it inherits all operations through
+the mixin classes.  Test patches were updated to match the new module paths.
+
+### Test results
+
+164 passed, 0 failed.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 665.9s | Cost: $1.866142 USD | Turns: 60
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-178-separate-core-from-interface)
 
 **Date:** 2026-04-11

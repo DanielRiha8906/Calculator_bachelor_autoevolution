@@ -4,40 +4,81 @@ title Calculator — Class Diagram
 
 package "src" {
 
+    package "src.operations" {
+
+        class BasicOperations <<mixin>> {
+            + add(a, b) : number
+            + subtract(a, b) : number
+            + multiply(a, b) : number
+            + divide(a, b) : number
+        }
+
+        class ScientificOperations <<mixin>> {
+            + factorial(n: int) : int
+            + square(n) : number
+            + cube(n) : number
+            + sqrt(n) : float
+            + cbrt(n) : float
+            + power(base, exp) : float
+            + log10(n) : float
+            + ln(n) : float
+            + sin(angle_deg) : float
+            + cos(angle_deg) : float
+            + tan(angle_deg) : float
+            + cot(angle_deg) : float
+            + asin(x) : float
+            + acos(x) : float
+        }
+
+        class "__init__" as OpsInit <<module>> {
+            + __all__ : list
+        }
+
+    }
+
     class Calculator {
-        + add(a, b) : number
-        + subtract(a, b) : number
-        + multiply(a, b) : number
-        + divide(a, b) : number
-        + factorial(n: int) : int
-        + square(n) : number
-        + cube(n) : number
-        + sqrt(n) : float
-        + cbrt(n) : float
-        + power(base, exp) : float
-        + log10(n) : float
-        + ln(n) : float
+        ' All public methods inherited via multiple inheritance
+        ' from BasicOperations and ScientificOperations
     }
 
     class InteractiveSession {
         - _calc : Calculator
         - _history : list[str]
         - _menu_failures : int
+        - _mode : str
         + __init__(calc: Calculator | None)
         + run() : void
+        - _select_mode() : str | None
         - _display_menu() : void
         - _show_history() : void
         - _handle_operation(choice: str) : bool
     }
 
-    class "__main__" as Main <<module>> {
+    class "session" as Sess <<module>> {
         + MAX_RETRIES : int
         + HISTORY_FILE : str
-        + OPERATIONS : dict
+        + NORMAL_OPERATIONS : dict
+        + SCIENTIFIC_OPERATIONS : dict
         + _format_history_entry(op_name: str, operands: tuple, result) : str
         + _write_history(history: list[str]) : void
         + _parse_number(prompt: str, require_int: bool) : int | float
         + _prompt_number(prompt: str, require_int: bool) : int | float | None
+    }
+
+    class CLIHandler {
+        - _calc : Calculator
+        + __init__(calc: Calculator | None)
+        + run(argv: list[str]) : void
+    }
+
+    class "cli" as CLI <<module>> {
+        + CLI_OPERATIONS : dict
+        + USAGE : str
+        + _parse_operand(value: str, require_int: bool) : int | float
+    }
+
+    class "__main__" as Main <<module>> {
+        + MAX_RETRIES : int
         + main() : void
     }
 
@@ -55,30 +96,117 @@ package "src" {
 
 package "root" {
 
-    class CLIHandler {
-        - _calc : Calculator
-        + __init__(calc: Calculator | None)
-        + run(argv: list[str]) : void
-    }
-
-    class "main" as CLI <<module>> {
-        + CLI_OPERATIONS : dict
-        + _parse_operand(value: str, require_int: bool) : int | float
+    class "main" as RootMain <<module>> {
         + main(argv: list | None) : void
     }
 
 }
 
+BasicOperations <|-- Calculator
+ScientificOperations <|-- Calculator
+
 InteractiveSession o-- Calculator : holds reference\n(creates if None)
 InteractiveSession --> ErrLog : run() calls setup_error_logging()\n_handle_operation() / _prompt_number()\n  call get_error_logger()
+Sess --> InteractiveSession : contains class definition
 Main --> InteractiveSession : main() instantiates & calls run()
+Main ..> Sess : re-exports MAX_RETRIES
 
 CLIHandler o-- Calculator : holds reference\n(creates if None)
 CLIHandler --> ErrLog : run() calls get_error_logger()
-CLI --> CLIHandler : main() instantiates & calls run()
-CLI --> ErrLog : main() calls setup_error_logging()
+CLI --> CLIHandler : contains class definition
+RootMain --> CLIHandler : main() instantiates & calls run()
+RootMain --> ErrLog : main() calls setup_error_logging()
 
 Init ..> Calculator : exports
+OpsInit ..> BasicOperations : exports
+OpsInit ..> ScientificOperations : exports
+
+note right of BasicOperations
+  Mixin providing the four standard arithmetic
+  operations. Defined in src/operations/basic.py.
+  Combined with ScientificOperations via
+  multiple inheritance in Calculator.
+  divide: Raises ZeroDivisionError when b == 0.
+end note
+
+note right of ScientificOperations
+  Mixin providing advanced mathematical operations.
+  Defined in src/operations/scientific.py.
+  Combined with BasicOperations via
+  multiple inheritance in Calculator.
+  All trigonometric functions accept and
+  return values in degrees.
+end note
+
+note right of ScientificOperations::factorial
+  Raises TypeError for non-integers
+  (including bool).
+  Raises ValueError for n < 0.
+  Delegates to math.factorial(n).
+end note
+
+note right of ScientificOperations::sqrt
+  Raises ValueError for n < 0.
+  Delegates to math.sqrt(n).
+end note
+
+note right of ScientificOperations::cbrt
+  Defined for all real numbers.
+  Negative input yields negative result.
+  Delegates to math.cbrt(n).
+end note
+
+note right of ScientificOperations::power
+  Raises ValueError when result is complex
+  (negative base, non-integer exponent).
+  Delegates to math.pow(base, exp).
+end note
+
+note right of ScientificOperations::log10
+  Raises ValueError for n <= 0.
+  Delegates to math.log10(n).
+end note
+
+note right of ScientificOperations::ln
+  Raises ValueError for n <= 0.
+  Delegates to math.log(n).
+end note
+
+note right of ScientificOperations::sin
+  Returns sin(angle_deg) via math.sin(radians).
+end note
+
+note right of ScientificOperations::cos
+  Returns cos(angle_deg) via math.cos(radians).
+end note
+
+note right of ScientificOperations::tan
+  Raises ValueError at odd multiples of 90°
+  (undefined). Delegates to math.tan(radians).
+end note
+
+note right of ScientificOperations::cot
+  Raises ValueError at multiples of 180°
+  (undefined). Computed as 1/tan(radians).
+end note
+
+note right of ScientificOperations::asin
+  Raises ValueError for x outside [-1, 1].
+  Returns result in degrees.
+end note
+
+note right of ScientificOperations::acos
+  Raises ValueError for x outside [-1, 1].
+  Returns result in degrees.
+end note
+
+note right of Calculator
+  Full-featured calculator composing basic and
+  scientific operations via multiple inheritance.
+  Defined in src/calculator.py.
+  Has no methods of its own — the full public API
+  is supplied by the two mixin parent classes.
+end note
 
 note right of InteractiveSession::_calc
   Injected via constructor or created fresh.
@@ -99,9 +227,25 @@ note right of InteractiveSession::_menu_failures
   Session terminates after MAX_RETRIES failures.
 end note
 
+note right of InteractiveSession::_mode
+  Set by _select_mode() at the start of run()
+  and updated whenever the user presses 's'.
+  Determines which operations dict is active:
+  NORMAL_OPERATIONS or SCIENTIFIC_OPERATIONS.
+end note
+
+note right of InteractiveSession::_select_mode
+  Prompts for mode selection (1=Normal, 2=Scientific).
+  Retries up to MAX_RETRIES on invalid input.
+  Returns "normal" or "scientific" on success,
+  or None when retries are exhausted (ends session).
+end note
+
 note right of InteractiveSession::run
   Main session loop.
   Calls setup_error_logging() on startup.
+  Calls _select_mode() before entering the loop.
+  Supports 's' key for mid-session mode switching.
   Delegates menu display to _display_menu(),
   history display to _show_history(), and
   operation execution to _handle_operation().
@@ -144,45 +288,52 @@ note right of CLI::_parse_operand
   (used for factorial); raises ValueError otherwise.
 end note
 
-note right of CLI::main
-  Bash CLI entry point.
+note right of RootMain::main
+  Bash CLI entry point (main.py at project root).
   Calls setup_error_logging() on startup.
-  Reads operation and operands from argv.
-  Delegates all logic to CLIHandler().run(argv).
+  Delegates all logic to src.cli.CLIHandler().run(argv).
 end note
 
-note right of Main::MAX_RETRIES
+note right of Sess::MAX_RETRIES
   Maximum consecutive invalid inputs
   allowed before the session terminates.
   Applies to both menu selection and
   operand entry.
 end note
 
-note right of Main::HISTORY_FILE
+note right of Sess::HISTORY_FILE
   Path to the file where session history
   is written when the session ends.
   Default: "history.txt" in the working directory.
   Each session overwrites the file.
 end note
 
-note right of Main::OPERATIONS
+note right of Sess::NORMAL_OPERATIONS
   Maps menu key -> (method_name, label, arity).
-  Keys "1"–"12", covering all Calculator operations.
+  Keys "1"–"6": add, subtract, multiply, divide,
+  square, sqrt. Shown in Normal mode.
 end note
 
-note right of Main::_format_history_entry
+note right of Sess::SCIENTIFIC_OPERATIONS
+  Maps menu key -> (method_name, label, arity).
+  Keys "1"–"12": power, cube, cbrt, factorial,
+  log10, ln, sin, cos, tan, cot, asin, acos.
+  Shown in Scientific mode. All trig in degrees.
+end note
+
+note right of Sess::_format_history_entry
   Formats one history entry in function-style notation.
   Binary example: add(2, 3) = 5
   Unary example:  sqrt(9) = 3.0
 end note
 
-note right of Main::_write_history
+note right of Sess::_write_history
   Writes all history entries to HISTORY_FILE,
   one entry per line.  Always overwrites the file
   so each new session starts with a clean slate on disk.
 end note
 
-note right of Main::_parse_number
+note right of Sess::_parse_number
   Reads a number from stdin.
   Returns int for whole-number input,
   float otherwise.
@@ -190,7 +341,7 @@ note right of Main::_parse_number
   as int (used for factorial).
 end note
 
-note right of Main::_prompt_number
+note right of Sess::_prompt_number
   Wraps _parse_number with retry logic.
   Re-prompts up to MAX_RETRIES times on
   invalid (unparseable) input, showing
@@ -201,8 +352,11 @@ note right of Main::_prompt_number
 end note
 
 note right of Main::main
-  Thin entry point.
+  Thin entry point for interactive mode
+  (src/__main__.py).
   Instantiates InteractiveSession and calls run().
+  Re-exports MAX_RETRIES from src.session for
+  import compatibility.
 end note
 
 note right of ErrLog::ERROR_LOG_FILE
@@ -222,45 +376,6 @@ note right of ErrLog::get_error_logger
   Level is set to ERROR at import time so
   pytest caplog can capture records in tests.
   Logged events are tagged [cli] or [interactive].
-end note
-
-note right of Calculator::divide
-  Raises ZeroDivisionError
-  when b == 0
-end note
-
-note right of Calculator::factorial
-  Raises TypeError for non-integers
-  (including bool).
-  Raises ValueError for n < 0.
-  Delegates to math.factorial(n).
-end note
-
-note right of Calculator::sqrt
-  Raises ValueError for n < 0.
-  Delegates to math.sqrt(n).
-end note
-
-note right of Calculator::cbrt
-  Defined for all real numbers.
-  Negative input yields negative result.
-  Delegates to math.cbrt(n).
-end note
-
-note right of Calculator::power
-  Raises ValueError when result is complex
-  (negative base, non-integer exponent).
-  Delegates to math.pow(base, exp).
-end note
-
-note right of Calculator::log10
-  Raises ValueError for n <= 0.
-  Delegates to math.log10(n).
-end note
-
-note right of Calculator::ln
-  Raises ValueError for n <= 0.
-  Delegates to math.log(n).
 end note
 
 @enduml
