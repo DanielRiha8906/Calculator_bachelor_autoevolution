@@ -34,7 +34,7 @@ All 74 tests passed (38 pre-existing + 36 new):
 - `TestLn` (4 tests) — all PASSED
 - `TestLnIncorrectInputs` (2 tests) — all PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 259.0s | Cost: $0.802687 USD | Turns: 35
 
 ---
 
