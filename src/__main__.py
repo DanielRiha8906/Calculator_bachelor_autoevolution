@@ -9,8 +9,19 @@ class TooManyAttemptsError(Exception):
     """Raised when the user exceeds the maximum number of invalid input attempts."""
 
 
-MENU = (
-    "\nCalculator Operations:\n"
+NORMAL_MENU = (
+    "\nCalculator Operations (Normal Mode):\n"
+    "  1.  Add              (a + b)\n"
+    "  2.  Subtract         (a - b)\n"
+    "  3.  Multiply         (a * b)\n"
+    "  4.  Divide           (a / b)\n"
+    " 13.  Show History\n"
+    " 14.  Switch to Scientific Mode\n"
+    "  0.  Exit\n"
+)
+
+SCIENTIFIC_MENU = (
+    "\nCalculator Operations (Scientific Mode):\n"
     "  1.  Add              (a + b)\n"
     "  2.  Subtract         (a - b)\n"
     "  3.  Multiply         (a * b)\n"
@@ -24,8 +35,12 @@ MENU = (
     " 11.  Log              (log_base(a), default base 10)\n"
     " 12.  Natural Log      (ln(a))\n"
     " 13.  Show History\n"
+    " 14.  Switch to Normal Mode\n"
     "  0.  Exit\n"
 )
+
+NORMAL_VALID_CHOICES = {"1", "2", "3", "4", "13", "14"}
+SCIENTIFIC_VALID_CHOICES = {str(i) for i in range(1, 15)}
 
 OPERATION_NAMES = {
     "1": "Add",
@@ -43,9 +58,16 @@ OPERATION_NAMES = {
 }
 
 
-def display_menu() -> None:
-    """Print the operation menu to stdout."""
-    print(MENU)
+def display_menu(mode: str = "normal") -> None:
+    """Print the operation menu for the given mode to stdout.
+
+    Args:
+        mode: Either ``"normal"`` (default) or ``"scientific"``.
+    """
+    if mode == "scientific":
+        print(SCIENTIFIC_MENU)
+    else:
+        print(NORMAL_MENU)
 
 
 def get_number(prompt: str, max_attempts: int = MAX_INPUT_ATTEMPTS) -> float:
@@ -145,10 +167,11 @@ def main() -> None:
     clear_history()
     print("Welcome to the Calculator!")
     consecutive_invalid_choices = 0
-    valid_choices = {str(i) for i in range(1, 14)}
+    mode = "normal"
+    valid_choices = NORMAL_VALID_CHOICES
 
     while True:
-        display_menu()
+        display_menu(mode)
         choice = input("Select operation: ").strip()
 
         if choice == "0":
@@ -160,7 +183,7 @@ def main() -> None:
             get_error_logger().error(
                 "[interactive] Unknown operation choice: '%s'", choice
             )
-            print(f"Unknown operation '{choice}'. Please choose a number between 0 and 13.")
+            print(f"Unknown operation '{choice}'. Please choose a valid option from the menu.")
             if consecutive_invalid_choices >= MAX_INPUT_ATTEMPTS:
                 print("Too many invalid choices. Ending session.")
                 break
@@ -170,6 +193,17 @@ def main() -> None:
 
         if choice == "13":
             display_history()
+            continue
+
+        if choice == "14":
+            if mode == "normal":
+                mode = "scientific"
+                valid_choices = SCIENTIFIC_VALID_CHOICES
+                print("Switched to Scientific Mode.")
+            else:
+                mode = "normal"
+                valid_choices = NORMAL_VALID_CHOICES
+                print("Switched to Normal Mode.")
             continue
 
         try:
@@ -186,7 +220,7 @@ def main() -> None:
             continue
 
         if result is None:
-            print(f"Unknown operation '{choice}'. Please choose a number between 0 and 13.")
+            print(f"Unknown operation '{choice}'. Please choose a valid option from the menu.")
         else:
             record_entry(f"{OPERATION_NAMES[choice]}: {result}")
             print(f"Result: {result}")

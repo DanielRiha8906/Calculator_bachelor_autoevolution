@@ -1,3 +1,26 @@
+## Run: Issue #192 — Scientific Mode Switch
+
+**Branch:** task/issue-192-scientific-mode-switch
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/__main__.py` — Replaced the single `MENU` constant with `NORMAL_MENU` and `SCIENTIFIC_MENU`. Added `NORMAL_VALID_CHOICES` and `SCIENTIFIC_VALID_CHOICES` sets. Updated `display_menu()` to accept a `mode` parameter (`"normal"` or `"scientific"`). Updated `main()` to track the active mode, display the appropriate menu, restrict valid choices per mode, and handle choice `"14"` to toggle between modes.
+- `tests/test_main.py` — Replaced `test_display_menu_contains_all_operations` with mode-specific tests for normal and scientific menus. Updated `test_main_multiple_operations` to switch to scientific mode before using scientific operations. Added 8 new tests covering mode-switching behaviour, mode-restricted operation availability, and mode toggle messages.
+
+### Purpose
+Issue #192: add a scientific mode to the interactive calculator so the user can switch between normal mode (arithmetic only: add, subtract, multiply, divide) and scientific mode (all 12 operations). Mode switching is triggered by choice `"14"` in both menus.
+
+### Risks
+- None; no controller, calculator, or CLI logic was modified. The mode restriction is enforced only in the interactive `main()` loop via `valid_choices`.
+
+### Test results
+All 269 tests pass (pytest, 0.66 s).
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: PlantUML diagram update
 
 **Branch:** task/issue-189-add-documentation
