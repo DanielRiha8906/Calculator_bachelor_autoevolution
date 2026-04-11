@@ -26,7 +26,7 @@ All 150 tests passed (138 pre-existing + 12 new):
 - `TestErrorLoggingInUserInput` (3 tests) — all PASSED
 - `TestCliErrorLogging` (3 tests) — all PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 415.1s | Cost: $1.289211 USD | Turns: 43
 
 ---
 
