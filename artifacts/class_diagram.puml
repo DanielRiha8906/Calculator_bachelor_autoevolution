@@ -41,6 +41,73 @@ package "src" {
         ' from BasicOperations and ScientificOperations
     }
 
+    ' ── GUI layer ────────────────────────────────────────────────────────────
+
+    class OperationSpec <<dataclass>> {
+        + name : str
+        + method : str
+        + arity : int
+        + label_a : str
+        + label_b : str
+        + require_int : bool
+    }
+
+    abstract class CalculatorMode <<ABC>> {
+        {abstract} + name : str
+        {abstract} + operations : list[OperationSpec]
+    }
+
+    class SimpleMode {
+        + name : str
+        + operations : list[OperationSpec]
+    }
+
+    class ScientificMode {
+        + name : str
+        + operations : list[OperationSpec]
+    }
+
+    class "gui_modes" as GuiModes <<module>> {
+        + parse_number(text: str, require_int: bool) : int | float
+    }
+
+    class CalculatorApp <<tk.Tk>> {
+        - calculator : Calculator
+        - modes : list[CalculatorMode]
+        - current_mode : CalculatorMode
+        - history : list[str]
+        - mode_var : tk.StringVar
+        - op_var : tk.StringVar
+        - op_combo : ttk.Combobox
+        - label_a : ttk.Label
+        - label_b : ttk.Label
+        - entry_a : ttk.Entry
+        - entry_b : ttk.Entry
+        - result_var : tk.StringVar
+        - history_listbox : tk.Listbox
+        + __init__()
+        - _build_ui() : void
+        - _build_mode_frame() : void
+        - _build_operation_frame() : void
+        - _build_input_frame() : void
+        - _build_result_frame() : void
+        - _build_buttons() : void
+        - _build_history_frame() : void
+        - _on_mode_change() : void
+        - _on_operation_change(_event) : void
+        - _refresh_operations() : void
+        - _selected_operation() : OperationSpec | None
+        - _update_inputs(op: OperationSpec) : void
+        - _calculate() : void
+        - _clear() : void
+    }
+
+    class "gui" as GuiMod <<module>> {
+        + run() : void
+    }
+
+    ' ── CLI layer ─────────────────────────────────────────────────────────────
+
     class InteractiveSession {
         - _calc : Calculator
         - _history : list[str]
@@ -102,14 +169,34 @@ package "root" {
 
 }
 
+' ── Inheritance ───────────────────────────────────────────────────────────────
+
 BasicOperations <|-- Calculator
 ScientificOperations <|-- Calculator
+
+CalculatorMode <|-- SimpleMode
+CalculatorMode <|-- ScientificMode
+CalculatorMode "1" *-- "many" OperationSpec : returns list of
+
+' ── GUI relationships ──────────────────────────────────────────────────────────
+
+CalculatorApp o-- Calculator : holds reference
+CalculatorApp o-- "1..*" CalculatorMode : modes list
+CalculatorApp --> OperationSpec : uses per selected op
+CalculatorApp --> ErrLog : (indirectly, via Calculator errors\ncaught in _calculate())
+GuiMod --> CalculatorApp : run() instantiates & mainloop()
+GuiModes --> OperationSpec : module context
+GuiModes --> CalculatorMode : module context
+
+' ── Interactive session relationships ─────────────────────────────────────────
 
 InteractiveSession o-- Calculator : holds reference\n(creates if None)
 InteractiveSession --> ErrLog : run() calls setup_error_logging()\n_handle_operation() / _prompt_number()\n  call get_error_logger()
 Sess --> InteractiveSession : contains class definition
 Main --> InteractiveSession : main() instantiates & calls run()
 Main ..> Sess : re-exports MAX_RETRIES
+
+' ── CLI relationships ─────────────────────────────────────────────────────────
 
 CLIHandler o-- Calculator : holds reference\n(creates if None)
 CLIHandler --> ErrLog : run() calls get_error_logger()
@@ -120,6 +207,8 @@ RootMain --> ErrLog : main() calls setup_error_logging()
 Init ..> Calculator : exports
 OpsInit ..> BasicOperations : exports
 OpsInit ..> ScientificOperations : exports
+
+' ── Notes ─────────────────────────────────────────────────────────────────────
 
 note right of BasicOperations
   Mixin providing the four standard arithmetic
@@ -206,6 +295,74 @@ note right of Calculator
   Defined in src/calculator.py.
   Has no methods of its own — the full public API
   is supplied by the two mixin parent classes.
+end note
+
+note right of OperationSpec
+  Dataclass describing one operation in the GUI.
+  name: display name in the combobox.
+  method: Calculator method to invoke.
+  arity: 1 (unary) or 2 (binary).
+  label_a/label_b: input field labels.
+  require_int: True forces integer parse (factorial).
+end note
+
+note right of CalculatorMode
+  Abstract base class for GUI modes.
+  Concrete subclasses expose name and
+  an ordered list of OperationSpec objects.
+  The GUI switches between modes without
+  knowing operation specifics.
+end note
+
+note right of SimpleMode
+  Normal arithmetic mode.
+  Provides 6 operations:
+  Add, Subtract, Multiply, Divide,
+  Square, Square Root.
+end note
+
+note right of ScientificMode
+  Scientific mode.
+  Provides 12 operations:
+  Power, Cube, Cube Root, Factorial,
+  Log10, Ln, Sin, Cos, Tan, Cot,
+  Arcsin, Arccos.
+  All trig operations expect angles in degrees.
+end note
+
+note right of GuiModes::parse_number
+  Parses a GUI input field string into a number.
+  Returns int for whole-number text, float otherwise.
+  When require_int=True, a non-integer value
+  (e.g. "3.5") raises ValueError.
+  Raises ValueError for empty or non-numeric input.
+end note
+
+note right of CalculatorApp
+  Main tkinter window (extends tk.Tk).
+  Defined in src/gui.py.
+  Supports Simple and Scientific modes via
+  CalculatorMode abstractions. Operation selector
+  dynamically shows/hides the second input field
+  based on OperationSpec.arity. Results and session
+  history are displayed in the window.
+  Launch via python -m src.gui or src.gui.run().
+end note
+
+note right of CalculatorApp::_calculate
+  Reads entry_a (and entry_b when arity==2).
+  Calls parse_number() for type coercion.
+  Resolves Calculator method via getattr().
+  Catches ValueError, ZeroDivisionError, OverflowError.
+  Displays result; appends formatted entry to history.
+end note
+
+note right of CalculatorApp::_refresh_operations
+  Called on mode change.
+  Repopulates op_combo with the current mode's
+  operation names.
+  Selects the first operation and updates inputs.
+  Resets result display to em-dash.
 end note
 
 note right of InteractiveSession::_calc
