@@ -1,3 +1,48 @@
+## Run: Issue #115 — Add interactive user input (task/issue-115-user-input)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-115-user-input
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/__main__.py` — replaced static hardcoded demo with a full interactive session loop
+  covering all 11 Calculator operations; added `_parse_number()` helper and `OPERATIONS` table
+- `tests/test_main.py` — new file; 28 tests driving the interactive session via mocked input,
+  covering all operations, error paths, invalid choices, and multi-calculation sessions
+
+### Purpose
+
+Implemented interactive runtime input per issue #115 (V2 Task 5 - User Input - Expert/generic):
+- Menu-driven selection of all 11 operations (add, subtract, multiply, divide, factorial, square,
+  cube, sqrt, cbrt, power, log10, ln)
+- Prompts for one operand (unary operations) or two operands (binary operations) based on the
+  selected operation; factorial enforces integer input at parse time
+- Errors (ValueError, TypeError, ZeroDivisionError) are caught and displayed without terminating
+  the session, allowing the user to continue
+- Session loops until the user enters 'q' to quit
+
+No changes were made to `src/calculator.py` or `tests/test_calculator.py` — the implementation
+is strictly scoped to input-driven execution as required by the issue.
+
+### Risks
+
+Minimal. The Calculator class and its test suite are untouched. The new interactive layer depends
+only on `builtins.input` and the existing Calculator methods, both of which are straightforwardly
+testable via mocking.
+
+### Test results
+
+103 tests collected, 103 passed. No regressions (75 pre-existing + 28 new).
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 206.8s | Cost: $0.499660 USD | Turns: 19
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-112-more-functions)
 
 **Date:** 2026-04-11
@@ -250,3 +295,38 @@ None. The change is additive (new test only) and does not touch the implementati
 exp2/expert-generic (never main)
 
 Duration: 87.3s | Cost: $0.236692 USD | Turns: 17
+
+---
+
+## Run: Diagram update — PlantUML artifacts (task/issue-115-user-input)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-115-user-input
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — added `OPERATIONS: dict` and `_parse_number()` to `__main__` module; added descriptive notes for each
+- `artifacts/activity_diagram.puml` — replaced static linear demo flow with interactive session loop reflecting `main()`: menu display, choice validation, arity-based operand collection via `_parse_number`, error handling, repeat-until-quit structure
+- `artifacts/sequence_diagram.puml` — replaced static sequence with interactive loop showing User actor, `_parse_number` calls, arity-based branching, exception alt blocks, and session lifecycle
+
+### Purpose
+
+Updated all three PlantUML diagrams to reflect the interactive session loop introduced in
+issue #115. The previous diagrams modelled a static hardcoded demo; they now accurately
+represent the menu-driven input loop, `OPERATIONS` dispatch table, `_parse_number` helper,
+and per-operation error handling present in the current `src/__main__.py`.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 76.1s | Cost: $0.275522 USD | Turns: 18

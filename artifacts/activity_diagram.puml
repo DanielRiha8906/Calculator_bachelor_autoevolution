@@ -1,96 +1,46 @@
 @startuml activity_diagram
 
-title Calculator — Activity Diagram (main execution flow)
+title Calculator — Activity Diagram (interactive main execution flow)
 
 start
 
 :Import Calculator from src;
 :Instantiate Calculator();
+:Print "=== Interactive Calculator ===";
 
-:Call calc.add(10, 5);
-:Print "Addition: 15";
+repeat
 
-:Call calc.subtract(10, 5);
-:Print "Subtraction: 5";
+    :Display operation menu (options 1–12 and 'q');
+    :Read user choice from stdin;
 
-:Call calc.multiply(10, 5);
-:Print "Multiplication: 50";
+    if (choice == 'q'?) then (yes)
+        :Print "Goodbye!";
+        stop
+    elseif (choice not in OPERATIONS?) then (yes)
+        :Print "Invalid choice" error message;
+    else (valid choice)
+        :Look up (op_name, label, arity) from OPERATIONS;
+        :Resolve method via getattr(calc, op_name);
 
-:Call calc.divide(10, 5);
+        if (arity == 1?) then (yes)
+            :_parse_number("Enter value:",\nrequire_int=(op_name == "factorial"));
+            :a = parsed value;
+            :result = method(a);
+        else (arity == 2)
+            :_parse_number("Enter first value:");
+            :a = parsed value;
+            :_parse_number("Enter second value:");
+            :b = parsed value;
+            :result = method(a, b);
+        endif
 
-if (divisor == 0?) then (yes)
-    :Raise ZeroDivisionError;
-    stop
-else (no)
-    :Return quotient;
-    :Print "Division: 2.0";
-endif
+        if (ValueError, TypeError, or\nZeroDivisionError raised?) then (yes)
+            :Print "Error: <exception message>";
+        else (no)
+            :Print "Result: <result>";
+        endif
+    endif
 
-:Call calc.factorial(n);
-
-if (n is not int OR n is bool?) then (yes)
-    :Raise TypeError;
-    stop
-elseif (n < 0?) then (yes)
-    :Raise ValueError;
-    stop
-else (no)
-    :Return math.factorial(n);
-    :Print "Factorial: <result>";
-endif
-
-:Call calc.square(n);
-:Return n ** 2;
-:Print "Square: <result>";
-
-:Call calc.cube(n);
-:Return n ** 3;
-:Print "Cube: <result>";
-
-:Call calc.sqrt(n);
-
-if (n < 0?) then (yes)
-    :Raise ValueError;
-    stop
-else (no)
-    :Return math.sqrt(n);
-    :Print "Sqrt: <result>";
-endif
-
-:Call calc.cbrt(n);
-:Return math.cbrt(n);
-:Print "Cbrt: <result>";
-
-:Call calc.power(base, exp);
-
-if (base < 0 AND exp is non-integer?) then (yes)
-    :Raise ValueError;
-    stop
-else (no)
-    :Return math.pow(base, exp);
-    :Print "Power: <result>";
-endif
-
-:Call calc.log10(n);
-
-if (n <= 0?) then (yes)
-    :Raise ValueError;
-    stop
-else (no)
-    :Return math.log10(n);
-    :Print "Log10: <result>";
-endif
-
-:Call calc.ln(n);
-
-if (n <= 0?) then (yes)
-    :Raise ValueError;
-    stop
-else (no)
-    :Return math.log(n);
-    :Print "Ln: <result>";
-endif
-
-stop
+repeat while (session continues)
 
 @enduml
