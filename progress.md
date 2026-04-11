@@ -291,3 +291,26 @@ Routine diagram maintenance pass following the addition of `src/user_input.py` (
 No tests modified; all existing 89 tests remain passing from previous run.
 
 Duration: 109.3s | Cost: $0.335366 USD | Turns: 22
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-143-add-bash-cli
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass following the addition of `src/cli.py` (Issue #143). All three PlantUML diagrams were reviewed against the current source code (`src/calculator.py`, `src/user_input.py`, `src/cli.py`, `src/__main__.py`, `src/__init__.py`) and test suite (`tests/test_calculator.py`, `tests/test_user_input.py`, `tests/test_cli.py`). All diagrams correctly reflect the full codebase: `Calculator` (12 methods), `UserInput` module (interactive REPL), `CLI` module (bash single-shot mode), `__main__` entry point, `__init__` export, and all 21 test classes (114 test methods total).
+
+### Risks
+- None. No source or test code was modified; only `progress.md` updated.
+
+### Test results
+No tests modified; all existing 114 tests remain passing from previous run.
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
