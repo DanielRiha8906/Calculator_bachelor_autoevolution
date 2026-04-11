@@ -30,6 +30,7 @@ else (no)
 
   :Display "Welcome to the Calculator!";
   :Instantiate Calculator;
+  :clear_history() — wipe history.txt;
   :consecutive_invalid_choices = 0;
 
   repeat
@@ -42,7 +43,7 @@ else (no)
       stop
     endif
 
-    if (choice in 1–12?) then (no)
+    if (choice in 1–13?) then (no)
       :consecutive_invalid_choices += 1;
       :Print "Unknown operation";
       if (consecutive_invalid_choices >= MAX_INPUT_ATTEMPTS?) then (yes)
@@ -51,21 +52,27 @@ else (no)
       endif
     else (yes)
       :consecutive_invalid_choices = 0;
-      :perform_operation(calc, choice);
 
-      if (operand input valid?) then (no — retry up to MAX_INPUT_ATTEMPTS)
-        :Print "Invalid input... N attempt(s) remaining";
-        if (attempts exhausted?) then (yes)
-          :Print "Maximum input attempts exceeded.";
-          stop
-        endif
-      else (yes)
-        :Call Calculator method;
+      if (choice == "13"?) then (yes)
+        :display_history();
+      else (no)
+        :perform_operation(calc, choice);
 
-        if (ValueError or ZeroDivisionError raised?) then (yes)
-          :Print "Error: <message>";
-        else (no)
-          :Print "Result: <value>";
+        if (operand input valid?) then (no — retry up to MAX_INPUT_ATTEMPTS)
+          :Print "Invalid input... N attempt(s) remaining";
+          if (attempts exhausted?) then (yes)
+            :Print "Maximum input attempts exceeded.";
+            stop
+          endif
+        else (yes)
+          :Call Calculator method;
+
+          if (ValueError or ZeroDivisionError raised?) then (yes)
+            :Print "Error: <message>";
+          else (no)
+            :record_entry(operation + result)\nto history.txt;
+            :Print "Result: <value>";
+          endif
         endif
       endif
     endif

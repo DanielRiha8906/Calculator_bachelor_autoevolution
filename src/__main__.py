@@ -1,4 +1,5 @@
 from .calculator import Calculator
+from .history import clear_history, display_history, record_entry
 
 MAX_INPUT_ATTEMPTS = 3
 
@@ -21,8 +22,24 @@ MENU = (
     " 10.  Power            (base^exp)\n"
     " 11.  Log              (log_base(a), default base 10)\n"
     " 12.  Natural Log      (ln(a))\n"
+    " 13.  Show History\n"
     "  0.  Exit\n"
 )
+
+OPERATION_NAMES = {
+    "1": "Add",
+    "2": "Subtract",
+    "3": "Multiply",
+    "4": "Divide",
+    "5": "Factorial",
+    "6": "Square",
+    "7": "Cube",
+    "8": "Square Root",
+    "9": "Cube Root",
+    "10": "Power",
+    "11": "Log",
+    "12": "Natural Log",
+}
 
 
 def display_menu() -> None:
@@ -135,9 +152,10 @@ def perform_operation(calc: Calculator, choice: str) -> "str | None":
 def main() -> None:
     """Run the interactive calculator session."""
     calc = Calculator()
+    clear_history()
     print("Welcome to the Calculator!")
     consecutive_invalid_choices = 0
-    valid_choices = {str(i) for i in range(1, 13)}
+    valid_choices = {str(i) for i in range(1, 14)}
 
     while True:
         display_menu()
@@ -149,13 +167,17 @@ def main() -> None:
 
         if choice not in valid_choices:
             consecutive_invalid_choices += 1
-            print(f"Unknown operation '{choice}'. Please choose a number between 0 and 12.")
+            print(f"Unknown operation '{choice}'. Please choose a number between 0 and 13.")
             if consecutive_invalid_choices >= MAX_INPUT_ATTEMPTS:
                 print("Too many invalid choices. Ending session.")
                 break
             continue
 
         consecutive_invalid_choices = 0
+
+        if choice == "13":
+            display_history()
+            continue
 
         try:
             result = perform_operation(calc, choice)
@@ -167,8 +189,9 @@ def main() -> None:
             continue
 
         if result is None:
-            print(f"Unknown operation '{choice}'. Please choose a number between 0 and 12.")
+            print(f"Unknown operation '{choice}'. Please choose a number between 0 and 13.")
         else:
+            record_entry(f"{OPERATION_NAMES[choice]}: {result}")
             print(f"Result: {result}")
 
 

@@ -2,11 +2,20 @@ import math
 import pytest
 from unittest.mock import patch
 
+import src.history as history_module
 from src.__main__ import (
     display_menu, get_number, get_integer, perform_operation, main,
     TooManyAttemptsError, MAX_INPUT_ATTEMPTS,
 )
 from src.calculator import Calculator
+
+
+@pytest.fixture(autouse=True)
+def tmp_history_file(tmp_path, monkeypatch):
+    """Redirect HISTORY_FILE to a temporary path so tests never write to the project root."""
+    tmp_file = tmp_path / "history.txt"
+    monkeypatch.setattr(history_module, "HISTORY_FILE", tmp_file)
+    return tmp_file
 
 
 @pytest.fixture
@@ -22,7 +31,7 @@ def test_display_menu_contains_all_operations(capsys):
     for label in [
         "Add", "Subtract", "Multiply", "Divide", "Factorial",
         "Square", "Cube", "Square Root", "Cube Root", "Power",
-        "Log", "Natural Log", "Exit",
+        "Log", "Natural Log", "History", "Exit",
     ]:
         assert label in captured.out
 
@@ -292,3 +301,31 @@ def test_main_exits_after_too_many_invalid_operands(capsys):
         main()
     captured = capsys.readouterr()
     assert "Maximum input attempts" in captured.out
+
+
+# --- history integration ---
+
+def test_main_clears_history_at_session_start(tmp_history_file, capsys):
+    # Pre-populate the history file; main() should wipe it at the start.
+    tmp_history_file.write_text("stale entry\n", encoding="utf-8")
+    with patch("builtins.input", return_value="0"):
+        main()
+    assert tmp_history_file.read_text(encoding="utf-8") == ""
+
+
+def test_main_records_history_after_successful_operation(tmp_history_file, capsys):
+    with patch("builtins.input", side_effect=["1", "3", "4", "0"]):
+        main()
+    entries = tmp_history_file.read_text(encoding="utf-8").splitlines()
+    assert len(entries) == 1
+    assert "Add" in entries[0]
+    assert "7.0" in entries[0]
+
+
+def test_main_show_history_displays_entries(tmp_history_file, capsys):
+    # Perform add, then show history, then exit.
+    with patch("builtins.input", side_effect=["1", "5", "3", "13", "0"]):
+        main()
+    out = capsys.readouterr().out
+    assert "Session history" in out
+    assert "Add" in out

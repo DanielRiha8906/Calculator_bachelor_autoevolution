@@ -1,3 +1,36 @@
+## Run: Issue #150 — Session history
+
+**Branch:** task/issue-150-session-history
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/history.py` — New module; implements `clear_history()`, `record_entry()`, `load_history()`, and `display_history()`. History is stored in `history.txt` (local file, relative to CWD) and cleared at the start of each session to ensure it does not persist between sessions.
+- `src/__main__.py` — Imported `clear_history`, `record_entry`, `display_history` from `.history`. Added menu option 13 (Show History) and `OPERATION_NAMES` lookup dict. Extended `valid_choices` to include `"13"`. In `main()`: calls `clear_history()` at session start, handles choice `"13"` with `display_history()`, and calls `record_entry()` after every successful operation.
+- `tests/test_history.py` — New test file with 11 tests covering all four history functions: `clear_history`, `record_entry`, `load_history`, and `display_history`. Uses a `monkeypatch`/`tmp_path` fixture to redirect `HISTORY_FILE` so tests never write to the project root.
+- `tests/test_main.py` — Added `tmp_history_file` autouse fixture to redirect `HISTORY_FILE` for all interactive-mode tests. Updated `test_display_menu_contains_all_operations` to assert "History" appears in the menu. Added 3 new integration tests: session clears history at start, successful operation recorded to file, choice 13 displays history.
+- `artifacts/class_diagram.puml` — Added `history` package with `HISTORY_FILE`, `clear_history`, `record_entry`, `load_history`, and `display_history`; added dependency arrows from `main` and `display_history` to history functions.
+- `artifacts/activity_diagram.puml` — Added `clear_history()` step at session start; expanded valid-choices branch to 1–13; added `choice == "13"` fork that calls `display_history()`; added `record_entry()` step after a successful result.
+- `artifacts/sequence_diagram.puml` — Added `history` participant; added `clear_history()` at session start; replaced single `perform_operation` flow with an `alt` block covering choice 13 (display history) vs choices 1–12 (perform operation + record entry); expanded note to mention session-scoped history.
+
+### Purpose
+Add session-scoped operation history to the interactive calculator mode (issue #150, Task 9 — Structured/generic). Every successful calculation is appended to `history.txt`; the file is wiped at the start of each session so history does not carry over between separate runs. The user can view the current session's history at any time by choosing option 13 from the menu. CLI mode is unaffected.
+
+### Risks
+- `history.txt` is written relative to the current working directory. If the process is started from a read-only directory the file write will fail with `PermissionError`. This is an acceptable limitation for an interactive tool run locally.
+- `HISTORY_FILE` is a module-level `pathlib.Path` constant, which makes it straightforward to redirect in tests via `monkeypatch`.
+- CLI mode intentionally has no history — single-shot operations have no persistent context to track.
+
+### Test results
+All 162 tests passed: 162 passed in 0.25s (148 existing + 14 new)
+
+### Intended PR target
+exp2/structured-generic
+
+Duration: 357.2s | Cost: $1.245629 USD | Turns: 45
+
+---
+
 ## Run: PlantUML diagram update
 
 **Branch:** task/issue-147-retry-logic
@@ -340,3 +373,26 @@ All tests passed: 1 passed in 0.01s
 exp2/structured-generic
 
 Duration: 83.2s | Cost: $0.243861 USD | Turns: 15
+
+---
+
+## Run: PlantUML diagram update
+
+**Branch:** task/issue-150-session-history
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/activity_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+- `artifacts/sequence_diagram.puml` — Reviewed; accurately reflects current `src/` state (no update needed)
+
+### Purpose
+Verify and maintain PlantUML diagrams against the current source code. All three diagrams (class, activity, sequence) correctly represent the full system as it exists on this branch: `Calculator` class with 12 operations, interactive `__main__` module (display_menu, get_number, get_integer, perform_operation, main, TooManyAttemptsError, MAX_INPUT_ATTEMPTS), `history` module (HISTORY_FILE, clear_history, record_entry, load_history, display_history), and `cli` module (build_parser, _dispatch, cli_main).
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: 53.0s | Cost: $0.213095 USD | Turns: 17

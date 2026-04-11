@@ -5,11 +5,13 @@ title Calculator — Sequence Diagram
 actor User
 participant "main()" as Main
 participant "perform_operation()" as Op
+participant "history" as Hist
 participant "cli_main()" as CLI
 participant "Calculator" as Calc
 
 == Interactive Mode (no arguments) ==
 
+Main -> Hist : clear_history() — wipe history.txt
 Main -> User : "Welcome to the Calculator!"
 Main -> User : display_menu()
 
@@ -17,14 +19,21 @@ loop until User enters "0"
 
   User -> Main : select operation (e.g. "1")
 
-  Main -> Op : perform_operation(calc, choice)
-  Op -> User : prompt for operand(s)
-  User -> Op : enter value(s) (e.g. "3", "4")
-  Op -> Calc : call method (e.g. add(3.0, 4.0))
-  Calc --> Op : result (e.g. 7.0)
-  Op --> Main : "7.0"
+  alt choice == "13" (Show History)
+    Main -> Hist : display_history()
+    Hist -> User : numbered list of history entries
+  else choice in 1–12
+    Main -> Op : perform_operation(calc, choice)
+    Op -> User : prompt for operand(s)
+    User -> Op : enter value(s) (e.g. "3", "4")
+    Op -> Calc : call method (e.g. add(3.0, 4.0))
+    Calc --> Op : result (e.g. 7.0)
+    Op --> Main : "7.0"
 
-  Main -> User : "Result: 7.0"
+    Main -> Hist : record_entry("Add: 7.0")
+    Main -> User : "Result: 7.0"
+  end
+
   Main -> User : display_menu()
 
 end
@@ -44,6 +53,10 @@ note over Main, Calc
   If get_number() or get_integer() receives MAX_INPUT_ATTEMPTS
   consecutive invalid inputs, it raises TooManyAttemptsError.
   main() catches this, prints the message, and terminates.
+
+  History is stored in history.txt (local file) and cleared
+  at the start of each session — it does not persist between
+  separate sessions.
 end note
 
 == Bash CLI Mode (with arguments, e.g. "add 3 4") ==
