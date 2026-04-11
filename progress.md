@@ -1,3 +1,34 @@
+## Run: Issue #111 — Add more calculator operations
+
+**Branch:** task/issue-111-more-functions
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/calculator.py` — Added 7 new methods: `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln`
+- `tests/test_calculator.py` — Added 30 tests covering all 7 new operations including error cases
+- `src/__main__.py` — Added demonstration calls for all 7 new operations
+- `artifacts/class_diagram.puml` — Added all 7 new methods and error notes for `square_root`, `log`, `ln`
+- `artifacts/activity_diagram.puml` — Added activity forks for all 7 new operations with validation guards
+- `artifacts/sequence_diagram.puml` — Added interaction sequences for all 7 new operations and extended error note
+
+### Purpose
+Add square, cube, square root, cube root, power, log, and ln as supported calculator operations (issue #111, V2 Task 4 - Structured/generic experiment). All operations delegate to Python built-ins (`math.sqrt`, `math.log`) where applicable; `square_root` raises `ValueError` for negative inputs; `log` and `ln` raise `ValueError` for non-positive inputs.
+
+### Risks
+- `cube_root` of negative numbers uses `-((-a) ** (1/3))` to handle negatives correctly, since Python's `**` with fractional exponent does not support negative bases.
+- `log(a, base)` delegates to `math.log(a, base)` — floating-point precision applies.
+
+### Test results
+All 57 tests passed: 57 passed in 0.07s
+
+### Intended PR target
+exp2/structured-generic
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: PlantUML diagram update
 
 **Branch:** task/issue-108-factorial
