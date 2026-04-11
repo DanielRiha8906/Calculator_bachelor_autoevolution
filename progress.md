@@ -17,7 +17,7 @@ Routine diagram maintenance pass following the documentation additions in issue-
 ### Test results
 No tests modified; all existing 162 tests remain passing from previous run.
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 98.5s | Cost: $0.348791 USD | Turns: 26
 
 ---
 
