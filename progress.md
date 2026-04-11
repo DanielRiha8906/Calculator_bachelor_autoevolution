@@ -26,7 +26,7 @@ All 237 tests passed (183 existing + 54 new):
 - `TestInteractiveMode`, `TestModeSwitch`, `TestRetryLogic*`, `TestHistoryInInteractiveMode`, `TestErrorLoggingInUserInput` (61 tests) — PASSED
 - `TestCalculatorGUIInit`, `TestDigitInput`, `TestClear`, `TestBinaryOp`, `TestEquals`, `TestUnaryOp`, `TestModeToggle`, `TestDisplayFloat`, `TestHistoryIntegration`, `TestLaunchGui` (54 new tests) — PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 728.8s | Cost: $1.800764 USD | Turns: 40
 
 ---
 
