@@ -1,3 +1,35 @@
+## Run: issue-152 — Add error logging to the calculator
+
+- **Branch:** task/issue-152-add-error-logging
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-11
+
+### Files changed
+- `src/calculator.py` — added `import logging` and `logger = logging.getLogger(__name__)`; wrapped each of the 12 operation methods in a try-except block that calls `logger.error(...)` with operation name and arguments before re-raising, so all calculator errors are logged at ERROR level
+- `src/user_input.py` — added `import logging` and `logger = logging.getLogger(__name__)`; in `_get_float()` and `_get_int()` the final `raise ValueError` (when all retries are exhausted) is now preceded by `logger.error(...)` to record input-exhaustion errors
+- `src/cli.py` — added `import logging` and `logger = logging.getLogger(__name__)`; the wrong-operand-count branches now call `logger.error(msg)` before printing to stderr; the catch-all `except (ValueError, ZeroDivisionError, TypeError)` block calls `logger.error(...)` to log CLI-level operation failures
+- `tests/test_calculator.py` — added `import logging`; added `TestCalculatorErrorLogging` class (6 tests): divide-by-zero, negative square root, log(0), ln(-1), factorial(-1) are each verified to emit exactly one ERROR record to `src.calculator`; successful operation emits no ERROR record
+- `tests/test_user_input.py` — added `import logging`; added `TestErrorLoggingInUserInput` class (3 tests): get_float and get_int exhausted retries each emit one ERROR record to `src.user_input`; successful float input emits none
+- `tests/test_cli.py` — added `import logging`; added `TestCliErrorLogging` class (3 tests): divide-by-zero emits an ERROR to `src.cli`, wrong operand count emits one ERROR with the constraint message, successful operation emits none
+
+### Purpose
+Implements Issue #152 (V2 Task 10 - Error logging - Naive/generic): adds structured error logging via Python's standard `logging` module to all three calculator modules. Each logger uses `logging.getLogger(__name__)` so callers can configure handlers and levels independently. No default handlers are added (library convention). All errors are logged at `ERROR` level as close to their origin as possible, with arguments included for debuggability.
+
+### Risks
+- No logging handlers are configured; errors are silently discarded unless the calling application sets up a handler. This is standard Python library behavior and intentional.
+- Calculator errors (e.g., divide-by-zero) are logged in `src.calculator` and also logged with context in `src.cli`, resulting in two ERROR records per failure in CLI mode. This is acceptable for traceability.
+- No new dependencies introduced (uses Python standard library `logging`).
+
+### Test results
+All 150 tests passed (138 pre-existing + 12 new):
+- `TestCalculatorErrorLogging` (6 tests) — all PASSED
+- `TestErrorLoggingInUserInput` (3 tests) — all PASSED
+- `TestCliErrorLogging` (3 tests) — all PASSED
+
+Duration: 415.1s | Cost: $1.289211 USD | Turns: 43
+
+---
+
 ## Run: issue-149 — Add history of operations to the calculator
 
 - **Branch:** task/issue-149-add-history
@@ -417,3 +449,49 @@ Routine diagram maintenance pass following the addition of operation history (Is
 No tests modified; all existing 138 tests remain passing from previous run.
 
 Duration: 91.2s | Cost: $0.426271 USD | Turns: 29
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-152-add-error-logging
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — added `TestCalculatorErrorLogging` (6 test methods), `TestErrorLoggingInUserInput` (3 test methods), and `TestCliErrorLogging` (3 test methods) with their relationships to `Calculator`, `UserInput`, and `CLI` respectively
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass following the addition of error logging (Issue #152). The class diagram now reflects all 28 test classes (150 test methods total). The activity and sequence diagrams remain accurate: error logging is internal to existing error paths and does not alter the flow between components.
+
+### Risks
+- None. No source or test code was modified; only diagram artifacts and `progress.md` updated.
+
+### Test results
+No tests modified; all existing 150 tests remain passing from previous run.
+
+Duration: 79.0s | Cost: $0.390289 USD | Turns: 26
+
+---
+
+## Run: diagram-update — Update PlantUML diagrams
+
+- **Branch:** task/issue-152-add-error-logging
+- **Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+Routine diagram maintenance pass. All three PlantUML diagrams were reviewed against the current source code (`src/calculator.py`, `src/user_input.py`, `src/cli.py`, `src/__main__.py`, `src/__init__.py`) and test suite (`tests/test_calculator.py`, `tests/test_user_input.py`, `tests/test_cli.py`). All diagrams correctly reflect the full codebase: `Calculator` (12 operations + history tracking via `_record`, `get_history`, `clear_history` + error logging via `logging`), `UserInput` module (interactive REPL with retry helpers and error logging), `CLI` module (bash single-shot mode with error logging), `__main__` entry point, `__init__` export, and all 28 test classes (150 test methods total).
+
+### Risks
+- None. No source or test code was modified; only `progress.md` updated.
+
+### Test results
+No tests modified; all existing 150 tests remain passing from previous run.
+
+Duration: 57.4s | Cost: $0.297489 USD | Turns: 23
