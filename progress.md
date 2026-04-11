@@ -1,3 +1,80 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-112-more-functions)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-112-more-functions
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — verified accurate; no changes needed
+- `artifacts/activity_diagram.puml` — verified accurate; no changes needed
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes needed
+
+### Purpose
+
+Reviewed all three PlantUML diagrams against the current state of `src/`. All eleven
+Calculator methods (add, subtract, multiply, divide, factorial, square, cube, sqrt, cbrt,
+power, log10, ln) are correctly represented in every diagram. No updates were required.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 28.2s | Cost: $0.158094 USD | Turns: 13
+
+---
+
+## Run: Issue #112 — Add more calculator operations (task/issue-112-more-functions)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-112-more-functions
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/calculator.py` — added `square`, `cube`, `sqrt`, `cbrt`, `power`, `log10`, and `ln` methods
+- `tests/test_calculator.py` — added 37 tests covering all new operations including edge cases
+- `artifacts/class_diagram.puml` — added all 7 new method signatures with constraint notes
+- `artifacts/activity_diagram.puml` — added execution paths and error branches for each new operation
+- `artifacts/sequence_diagram.puml` — added interaction sequences with alt blocks for error cases
+
+### Purpose
+
+Implemented seven new calculator operations per issue #112 (V2 Task 4 - More functions):
+- `square(n)` — returns n²; defined for all real numbers
+- `cube(n)` — returns n³; defined for all real numbers (negative cube is negative)
+- `sqrt(n)` — returns √n via `math.sqrt`; raises `ValueError` for n < 0
+- `cbrt(n)` — returns ∛n via `math.cbrt`; defined for all real numbers including negatives
+- `power(base, exp)` — returns base^exp via `math.pow`; raises `ValueError` for complex results (negative base with non-integer exponent)
+- `log10(n)` — returns log₁₀(n) via `math.log10`; raises `ValueError` for n ≤ 0
+- `ln(n)` — returns ln(n) via `math.log`; raises `ValueError` for n ≤ 0
+
+Unary operations (square, cube, sqrt, cbrt, log10, ln) and binary operation (power) are integrated consistently with the existing pattern established by `factorial` and the arithmetic methods.
+
+### Risks
+
+Minimal. The change is purely additive — no existing methods or tests were modified. All new methods rely exclusively on Python's standard `math` module (already imported). The `math.cbrt` function requires Python 3.11+; the project targets Python 3.12 per CLAUDE.md.
+
+### Test results
+
+75 tests collected, 75 passed. No regressions.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: 240.0s | Cost: $0.711373 USD | Turns: 32
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-109-add-factorial)
 
 **Date:** 2026-04-11
