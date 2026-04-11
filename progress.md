@@ -34,7 +34,7 @@ All 89 tests passed (74 pre-existing + 15 new):
 - `TestInteractiveMode::test_square_root_negative_shows_error` — PASSED
 - `TestInteractiveMode::test_multiple_operations_in_session` — PASSED
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 192.8s | Cost: $0.583849 USD | Turns: 21
 
 ---
 
