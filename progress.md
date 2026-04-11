@@ -1,3 +1,40 @@
+## Run: Issue #109 — Add factorial operation (task/issue-109-add-factorial)
+
+**Date:** 2026-04-11
+**Branch:** task/issue-109-add-factorial
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `src/calculator.py` — added `factorial(n)` method using `math.factorial`; added `import math`
+- `tests/test_calculator.py` — added 9 tests covering boundary cases (0, 1), positive integers,
+  negative input (ValueError), floats/strings/None/bool (TypeError)
+
+### Purpose
+
+Implemented factorial as a new calculator operation per issue #109. The method:
+- Accepts only `int` values (booleans explicitly rejected despite being int subclasses)
+- Raises `TypeError` for non-integer inputs (float, str, None, bool)
+- Raises `ValueError` for negative integers
+- Delegates computation to `math.factorial` for correctness and efficiency
+
+### Risks
+
+Minimal. The change is additive — no existing methods or tests were modified. The only
+new import (`math`) is from the Python standard library.
+
+### Test results
+
+38 tests collected, 38 passed. No regressions.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-106-unit-test-suite)
 
 **Date:** 2026-04-11

@@ -138,3 +138,47 @@ def test_divide_zero_numerator(calc):
 def test_divide_invalid_input_raises_type_error(calc):
     with pytest.raises(TypeError):
         calc.divide("a", 2)
+
+
+# --- factorial ---
+
+def test_factorial_zero(calc):
+    assert calc.factorial(0) == 1
+
+
+def test_factorial_one(calc):
+    assert calc.factorial(1) == 1
+
+
+def test_factorial_positive(calc):
+    assert calc.factorial(5) == 120
+
+
+def test_factorial_large(calc):
+    assert calc.factorial(10) == 3628800
+
+
+def test_factorial_negative_raises_value_error(calc):
+    with pytest.raises(ValueError):
+        calc.factorial(-1)
+
+
+def test_factorial_float_raises_type_error(calc):
+    with pytest.raises(TypeError):
+        calc.factorial(3.0)
+
+
+def test_factorial_string_raises_type_error(calc):
+    with pytest.raises(TypeError):
+        calc.factorial("5")
+
+
+def test_factorial_none_raises_type_error(calc):
+    with pytest.raises(TypeError):
+        calc.factorial(None)
+
+
+def test_factorial_bool_raises_type_error(calc):
+    # bool is a subclass of int in Python; reject it explicitly
+    with pytest.raises(TypeError):
+        calc.factorial(True)
