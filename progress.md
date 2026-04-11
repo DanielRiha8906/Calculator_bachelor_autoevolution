@@ -1,5 +1,59 @@
 ## Run: PlantUML diagram update
 
+**Branch:** task/issue-180-modular-operations
+**Date:** 2026-04-11
+
+### Files changed
+- `artifacts/class_diagram.puml` — Added `src.operations` package with three sub-packages (`arithmetic`, `algebraic`, `transcendental`) and their pure-function members. Added delegation arrows from `Calculator` to each function in the operations modules. Added a note on `Calculator` explaining it is now a facade that delegates to `src.operations`. Moved domain-error notes from `Calculator` methods to the individual operation functions where they are actually defined.
+- `artifacts/activity_diagram.puml` — Updated computation step labels in both the CLI branch and the interactive branch to read `controller.execute() → Calculator facade → operations module function (arithmetic / algebraic / transcendental)` to accurately reflect the two-level delegation introduced in issue #180.
+- `artifacts/sequence_diagram.puml` — Added `operations (arithmetic/algebraic/transcendental)` as an explicit participant. Updated interactive-mode and CLI-mode flows to show `Calculator` calling the relevant operations sub-module function and receiving the result back, before returning to `CalculatorController`. Extended the interactive-mode note to document that `Calculator` is a facade.
+
+### Purpose
+Update PlantUML diagrams to reflect the `src/operations/` sub-package introduced in issue #180. Previously the diagrams showed `Calculator` as the computation source with methods defined directly on the class. After this change, `Calculator` is correctly depicted as a thin facade, and the three categorised operation modules (`arithmetic`, `algebraic`, `transcendental`) appear as distinct participants/packages in all three diagrams.
+
+### Risks
+- None; no source code was modified.
+
+### Test results
+N/A — diagram-only run.
+
+Duration: 114.8s | Cost: $0.403721 USD | Turns: 24
+
+---
+
+## Run: Issue #180 — Modular operations package
+
+**Branch:** task/issue-180-modular-operations
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-11
+
+### Files changed
+- `src/operations/__init__.py` — New package init; re-exports all operation functions from the three category modules so callers can import from a single location or from individual sub-modules.
+- `src/operations/arithmetic.py` — New module; pure functions `add`, `subtract`, `multiply`, `divide` extracted from `Calculator`. `divide` retains its `ZeroDivisionError` guard.
+- `src/operations/algebraic.py` — New module; pure functions `power`, `square`, `cube`, `square_root`, `cube_root`, `factorial` extracted from `Calculator`. All domain guards (negative root, non-integer factorial) are preserved.
+- `src/operations/transcendental.py` — New module; pure functions `log` and `ln` extracted from `Calculator`. Non-positive domain guards are preserved.
+- `src/calculator.py` — Refactored; `Calculator` class is now a thin facade that delegates every method to the corresponding function in `src.operations`. The public method signatures are unchanged so the controller and all tests remain unmodified.
+- `tests/operations/__init__.py` — Empty package marker for the new test sub-package.
+- `tests/operations/test_arithmetic.py` — 21 new tests covering all four arithmetic functions including the `ZeroDivisionError` guard.
+- `tests/operations/test_algebraic.py` — 25 new tests covering power, square, cube, square_root, cube_root, and factorial including error cases.
+- `tests/operations/test_transcendental.py` — 11 new tests covering `log` (default and custom base) and `ln` including non-positive domain errors.
+
+### Purpose
+Refactor calculator operations into a categorised `src/operations/` package (issue #180, Task 12 — Structured/generic). Before this change all 12 operations lived as methods on the `Calculator` class with no grouping. After this change operations are split into `arithmetic`, `algebraic`, and `transcendental` modules. Adding a future scientific category (e.g. trigonometric, statistical) only requires a new file in `src/operations/` — no changes to existing modules are needed. The `Calculator` class remains as a stable facade so the controller and UIs are unaffected.
+
+### Risks
+- `Calculator` methods are now thin one-line delegates; any mismatch between the method signature and the imported function would surface immediately in existing tests.
+- The `operations` package is a new public API surface; callers that import directly from `src.operations` must be aware that the module layout is now part of the contract.
+
+### Test results
+All 256 tests passed: 256 passed in 0.59s (199 existing + 57 new)
+
+Duration: 260.8s | Cost: $1.053759 USD | Turns: 44
+
+---
+
+## Run: PlantUML diagram update
+
 **Branch:** task/issue-177-separate-calculation-from-ui
 **Date:** 2026-04-11
 

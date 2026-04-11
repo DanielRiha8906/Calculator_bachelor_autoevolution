@@ -10,6 +10,7 @@ participant "error_logger" as ErrLog
 participant "cli_main()" as CLI
 participant "CalculatorController" as Controller
 participant "Calculator" as Calc
+participant "operations\n(arithmetic/algebraic/\ntranscendental)" as Ops
 
 == Interactive Mode (no arguments) ==
 
@@ -30,6 +31,8 @@ loop until User enters "0"
     User -> Op : enter value(s) (e.g. "3", "4")
     Op -> Controller : execute("add", a=3.0, b=4.0)
     Controller -> Calc : add(3.0, 4.0)
+    Calc -> Ops : arithmetic.add(3.0, 4.0)
+    Ops --> Calc : 7.0
     Calc --> Controller : 7.0
     Controller --> Op : "7.0"
     Op --> Main : "7.0"
@@ -45,7 +48,7 @@ end
 User -> Main : "0" (Exit)
 Main -> User : "Goodbye!"
 
-note over Main, Calc
+note over Main, Ops
   If a ValueError or ZeroDivisionError is raised inside
   perform_operation(), main() logs the error to
   calculator_errors.log via error_logger, prints
@@ -66,6 +69,10 @@ note over Main, Calc
   at the start of each session — it does not persist between
   separate sessions. Errors are stored in calculator_errors.log,
   separate from the normal operation history.
+
+  Calculator is a facade: each method delegates to the
+  corresponding pure function in src.operations
+  (arithmetic, algebraic, or transcendental sub-module).
 end note
 
 == Bash CLI Mode (with arguments, e.g. "add 3 4") ==
@@ -74,11 +81,13 @@ User -> CLI : python -m src add 3 4
 CLI -> CLI : build_parser().parse_args()
 CLI -> Controller : _dispatch(controller, args)\n→ execute("add", a=3.0, b=4.0)
 Controller -> Calc : add(3.0, 4.0)
+Calc -> Ops : arithmetic.add(3.0, 4.0)
+Ops --> Calc : 7.0
 Calc --> Controller : 7.0
 Controller --> CLI : "7.0"
 CLI -> User : "7.0" (stdout)
 
-note over CLI, Calc
+note over CLI, Ops
   If a ValueError or ZeroDivisionError is raised,
   cli_main() logs the error to calculator_errors.log
   via error_logger, prints "Error: <message>" to stderr,

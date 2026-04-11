@@ -29,6 +29,53 @@ package "controller" {
     }
 }
 
+package "src.operations" {
+    package "arithmetic" {
+        class add <<function>> {
+            + add(a: float, b: float) : float
+        }
+        class subtract <<function>> {
+            + subtract(a: float, b: float) : float
+        }
+        class multiply <<function>> {
+            + multiply(a: float, b: float) : float
+        }
+        class divide <<function>> {
+            + divide(a: float, b: float) : float
+        }
+    }
+
+    package "algebraic" {
+        class power <<function>> {
+            + power(base: float, exp: float) : float
+        }
+        class square <<function>> {
+            + square(a: float) : float
+        }
+        class cube <<function>> {
+            + cube(a: float) : float
+        }
+        class square_root <<function>> {
+            + square_root(a: float) : float
+        }
+        class cube_root <<function>> {
+            + cube_root(a: float) : float
+        }
+        class factorial <<function>> {
+            + factorial(n: int) : int
+        }
+    }
+
+    package "transcendental" {
+        class log <<function>> {
+            + log(a: float, base: float = 10) : float
+        }
+        class ln <<function>> {
+            + ln(a: float) : float
+        }
+    }
+}
+
 package "error_logger" {
     class ERROR_LOG_FILE <<constant>> {
         pathlib.Path("calculator_errors.log")
@@ -90,6 +137,20 @@ package "cli" {
     }
 }
 
+' Calculator facade delegates to operations sub-modules
+Calculator ..> add : delegates
+Calculator ..> subtract : delegates
+Calculator ..> multiply : delegates
+Calculator ..> divide : delegates
+Calculator ..> power : delegates
+Calculator ..> square : delegates
+Calculator ..> cube : delegates
+Calculator ..> square_root : delegates
+Calculator ..> cube_root : delegates
+Calculator ..> factorial : delegates
+Calculator ..> log : delegates
+Calculator ..> ln : delegates
+
 CalculatorController --> Calculator : uses
 CalculatorController ..> CHOICE_TO_OPERATION : defined alongside
 
@@ -125,25 +186,33 @@ note bottom of main
   - with args → bash CLI (cli_main)
 end note
 
-note right of Calculator::divide
+note right of Calculator
+  Facade: every method delegates to
+  the corresponding pure function in
+  src.operations (arithmetic,
+  algebraic, or transcendental).
+  Public method signatures unchanged.
+end note
+
+note right of divide
   Raises ZeroDivisionError
   when b == 0
 end note
 
-note right of Calculator::factorial
+note right of factorial
   Raises ValueError when n < 0
   or n is not an integer
 end note
 
-note right of Calculator::square_root
+note right of square_root
   Raises ValueError when a < 0
 end note
 
-note right of Calculator::log
+note right of log
   Raises ValueError when a <= 0
 end note
 
-note right of Calculator::ln
+note right of ln
   Raises ValueError when a <= 0
 end note
 
