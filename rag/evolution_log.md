@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 5 — Issue #220: Add User Input (2026-04-12)
+- **Task:** Add user input to the calculator (interactive CLI)
+- **Branch:** exp3/issue-220-user-input
+- **Files changed:** src/__main__.py, tests/test_main.py (new)
+- **Outcome:** Replaced hardcoded demo in `__main__.py` with a full interactive REPL. 84 tests collected, 84 passed.
+- **Key decisions:** `parse_number` loops on invalid input rather than crashing. `factorial` inputs are converted float→int to satisfy `math.factorial`; non-whole inputs raise `ValueError`. `run_operation` catches `ValueError`/`ZeroDivisionError` so the REPL never exits on bad operands. MENU_MAP maps "1"–"12" to all 12 Calculator operations.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 4 — Issue #217: Add Multiple Math Functions (2026-04-12)
 - **Task:** Add square, cube, square root, cube root, power, log and ln to Calculator
 - **Branch:** exp3/issue-217-add-math-functions

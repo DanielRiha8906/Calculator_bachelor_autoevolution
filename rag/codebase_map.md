@@ -25,10 +25,21 @@
 - **Last updated:** cycle 4
 
 ## src/__main__.py
-- **Purpose:** CLI entry point; demonstrates basic Calculator usage.
-- **Exports:** `main()` function
-- **Key invariants:** Calls all four operations with hardcoded values (10, 5).
-- **Last updated:** cycle 0
+- **Purpose:** Interactive CLI REPL for the Calculator.
+- **Exports:** `parse_number(prompt)`, `run_operation(calc, op)`, `main()`
+- **Module-level constants:** `UNARY_OPS`, `BINARY_OPS`, `INTEGER_OPS`, `MENU`, `MENU_MAP`
+- **Key invariants:**
+  - `MENU_MAP` maps strings "1"–"12" to the 12 Calculator method names; "q" quits.
+  - `parse_number` loops until the user enters a valid float; never raises.
+  - `run_operation` catches `ValueError` and `ZeroDivisionError` and prints "Error: …" without crashing the loop.
+  - `INTEGER_OPS = {"factorial"}`: inputs for these ops are converted float→int before dispatch; non-whole numbers raise `ValueError`.
+- **Last updated:** cycle 5
+
+## tests/test_main.py
+- **Purpose:** Test suite for the interactive CLI in src/__main__.py.
+- **Exports:** 26 test functions covering parse_number (valid int/float/negative/retry), MENU_MAP completeness, run_operation for all 12 operations including error paths (divide-by-zero, negative factorial, negative square_root, non-positive log/ln), and the main loop (quit immediately, unknown choice, perform add then quit).
+- **Key invariants:** Uses `unittest.mock.patch("builtins.input", ...)` to simulate user input; uses `capsys` to capture stdout.
+- **Last updated:** cycle 5
 
 ## tests/test_calculator.py
 - **Purpose:** Full test suite for Calculator class.
