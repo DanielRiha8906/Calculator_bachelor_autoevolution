@@ -1,10 +1,21 @@
 """Tests for the interactive CLI session in src/__main__.py."""
 import math
+import os
+import tempfile
 from unittest.mock import patch
 
 import pytest
 
-from src.__main__ import OPERATIONS, MAX_ATTEMPTS, display_menu, get_number, main
+from src.__main__ import (
+    OPERATIONS,
+    MAX_ATTEMPTS,
+    HISTORY_FILE,
+    display_menu,
+    format_history_entry,
+    get_number,
+    main,
+    save_history,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -278,3 +289,145 @@ def test_three_calculations_then_quit():
     assert output_contains(output, "12")
     assert output_contains(output, "1")
     assert output_contains(output, "4")
+
+
+# ---------------------------------------------------------------------------
+# format_history_entry helper
+# ---------------------------------------------------------------------------
+
+def test_format_history_entry_binary():
+    assert format_history_entry("add", (2, 3), 5) == "add(2, 3) = 5"
+
+
+def test_format_history_entry_unary():
+    assert format_history_entry("factorial", (5,), 120) == "factorial(5) = 120"
+
+
+def test_format_history_entry_float_result():
+    assert format_history_entry("square_root", (9,), 3.0) == "square_root(9) = 3.0"
+
+
+# ---------------------------------------------------------------------------
+# save_history helper
+# ---------------------------------------------------------------------------
+
+def test_save_history_writes_entries(tmp_path):
+    path = str(tmp_path / "hist.txt")
+    save_history(["add(2, 3) = 5", "factorial(5) = 120"], path)
+    with open(path, encoding="utf-8") as fh:
+        lines = fh.read().splitlines()
+    assert lines == ["add(2, 3) = 5", "factorial(5) = 120"]
+
+
+def test_save_history_empty_writes_empty_file(tmp_path):
+    path = str(tmp_path / "hist.txt")
+    save_history([], path)
+    with open(path, encoding="utf-8") as fh:
+        content = fh.read()
+    assert content == ""
+
+
+def test_save_history_overwrites_previous_content(tmp_path):
+    path = str(tmp_path / "hist.txt")
+    save_history(["old_entry(1) = 1"], path)
+    save_history(["new_entry(2) = 2"], path)
+    with open(path, encoding="utf-8") as fh:
+        lines = fh.read().splitlines()
+    assert lines == ["new_entry(2) = 2"]
+
+
+# ---------------------------------------------------------------------------
+# Session history: display during session ('h' key)
+# ---------------------------------------------------------------------------
+
+def test_history_empty_message_before_any_calculation():
+    output = run_main_with_inputs(["h", "q"])
+    assert output_contains(output, "No history yet")
+
+
+def test_history_shows_entry_after_calculation():
+    # add(2, 3) = 5, then display history
+    output = run_main_with_inputs(["1", "2", "3", "h", "q"])
+    assert output_contains(output, "add(2, 3) = 5")
+
+
+def test_history_shows_multiple_entries():
+    # add(2,3)=5, factorial(5)=120, then show history
+    output = run_main_with_inputs(["1", "2", "3", "5", "5", "h", "q"])
+    assert output_contains(output, "add(2, 3) = 5")
+    assert output_contains(output, "factorial(5) = 120")
+
+
+def test_history_header_printed_when_non_empty():
+    output = run_main_with_inputs(["1", "2", "3", "h", "q"])
+    assert output_contains(output, "Session history")
+
+
+# ---------------------------------------------------------------------------
+# Session history: written to file on session end
+# ---------------------------------------------------------------------------
+
+def _run_main_with_history_file(inputs, tmp_path):
+    """Run main() capturing output and redirecting HISTORY_FILE to tmp_path."""
+    hist_path = str(tmp_path / "history.txt")
+    with patch("builtins.input", side_effect=inputs), \
+         patch("builtins.print"), \
+         patch("src.__main__.HISTORY_FILE", hist_path):
+        main()
+    return hist_path
+
+
+def test_history_file_written_on_quit(tmp_path):
+    hist_path = _run_main_with_history_file(["1", "2", "3", "q"], tmp_path)
+    assert os.path.exists(hist_path)
+    with open(hist_path, encoding="utf-8") as fh:
+        content = fh.read()
+    assert "add(2, 3) = 5" in content
+
+
+def test_history_file_written_on_session_expiry(tmp_path):
+    # Exhaust invalid operation attempts so session terminates
+    hist_path = _run_main_with_history_file(
+        ["1", "2", "3"] + ["99"] * MAX_ATTEMPTS, tmp_path
+    )
+    assert os.path.exists(hist_path)
+    with open(hist_path, encoding="utf-8") as fh:
+        content = fh.read()
+    assert "add(2, 3) = 5" in content
+
+
+def test_history_file_empty_when_no_calculations(tmp_path):
+    hist_path = _run_main_with_history_file(["q"], tmp_path)
+    assert os.path.exists(hist_path)
+    with open(hist_path, encoding="utf-8") as fh:
+        content = fh.read()
+    assert content == ""
+
+
+def test_new_session_starts_with_fresh_history(tmp_path):
+    # First session: add(2,3)=5; second session: multiply(3,4)=12
+    hist_path = str(tmp_path / "history.txt")
+    with patch("src.__main__.HISTORY_FILE", hist_path):
+        with patch("builtins.input", side_effect=["1", "2", "3", "q"]), \
+             patch("builtins.print"):
+            main()
+        with patch("builtins.input", side_effect=["3", "3", "4", "q"]), \
+             patch("builtins.print"):
+            main()
+    with open(hist_path, encoding="utf-8") as fh:
+        lines = fh.read().splitlines()
+    # Only the second session's entry should be present
+    assert lines == ["multiply(3, 4) = 12"]
+
+
+# ---------------------------------------------------------------------------
+# History: display_menu includes 'h' option
+# ---------------------------------------------------------------------------
+
+def test_display_menu_includes_history_option():
+    with patch("builtins.print") as mock_print:
+        display_menu()
+    output = []
+    for call in mock_print.call_args_list:
+        output.extend(str(a) for a in call.args)
+    assert any("h" in line and "history" in line for line in output)

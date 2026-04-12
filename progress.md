@@ -1,3 +1,19 @@
+## Run: issue-250 — Session history for interactive CLI
+
+- **Branch:** exp3/issue-250-session-history
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/__main__.py` — added `HISTORY_FILE` constant, `format_history_entry()`, `save_history()`; updated `display_menu()` to include 'h' option; updated `main()` to maintain a per-session history list, record each successful calculation as a function-style entry (`name(args) = result`), display history on 'h' input, and write history to HISTORY_FILE on session end (quit, expiry, or max-attempts termination)
+  - `tests/test_main.py` — updated imports to include `HISTORY_FILE`, `format_history_entry`, `save_history`; added 15 new tests covering: `format_history_entry` (binary, unary, float result), `save_history` (writes, empty, overwrites), history display during session (empty, after one calc, multiple entries, header), history file written on quit/expiry/empty, new session starts with fresh history, display_menu includes 'h'; total 52 tests (up from 37)
+- **Purpose:** Issue #250 — add operation history to the interactive calculator. Calculations performed during the current session are tracked in memory, can be shown on demand ('h'), and are written to history.txt when the session ends. Each new session starts with a fresh history.
+- **Risks:** Low — change is scoped to src/__main__.py only; Calculator class and CLI (main.py) are untouched. save_history reads HISTORY_FILE at call time (not as a default arg) so tests can patch it cleanly.
+- **Tests passed:** 156/156
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md` (src/__main__.py, tests/test_main.py entries)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-issue-247)
 
 - **Branch:** exp3/issue-247-input-validation
