@@ -1,0 +1,25 @@
+@startuml class_diagram
+
+title Calculator — Class Diagram
+
+package "src" {
+    class Calculator {
+        +add(a, b) : number
+        +subtract(a, b) : number
+        +multiply(a, b) : number
+        +divide(a, b) : number
+    }
+
+    class "__main__" as Main <<module>> {
+        +main() : void
+    }
+}
+
+Main ..> Calculator : instantiates
+
+note right of Calculator::divide
+  Raises ZeroDivisionError
+  when b == 0 (Python built-in)
+end note
+
+@enduml
