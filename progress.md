@@ -13,7 +13,7 @@
 - **Risks:** None — `Calculator` class and existing 76 tests untouched. Change scoped to entry point only.
 - **Tests passed:** 108 (76 existing + 32 new) — all pass
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 280.8s | Cost: $0.932654 USD | Turns: 42
 
 ---
 
