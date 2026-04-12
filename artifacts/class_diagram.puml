@@ -22,9 +22,12 @@ package "src" {
     class "__main__" as Main <<module>> {
         +OPERATIONS : dict[str, tuple[str, int]]
         +MAX_ATTEMPTS : int
+        +HISTORY_FILE : str
         +display_menu() : None
         +get_number(prompt, require_int=False) : int|float
         +get_number_with_retry(prompt, require_int=False) : int|float
+        +format_history_entry(name, args, result) : str
+        +save_history(history, path=None) : None
         +main() : None
         -{static} _SessionExpired <<exception>>
     }
@@ -62,7 +65,7 @@ package "tests" {
 
     class "test_main" as TestMain <<module>> {
         +run_main_with_inputs(inputs) : list[str]  <<helper>>
-        ' 37 tests covering interactive CLI
+        ' 52 tests covering interactive CLI
         +test_operations_map_*()
         +test_get_number_*()
         +test_quit_*()
@@ -70,6 +73,10 @@ package "tests" {
         +test_error_paths_*()
         +test_unknown_key()
         +test_multi_session_*()
+        +test_format_history_entry_*()
+        +test_save_history_*()
+        +test_history_display_*()
+        +test_history_file_written_*()
     }
 
     class "test_cli" as TestCLI <<module>> {
@@ -112,15 +119,20 @@ note left of Main
   Arity 2: add, subtract, multiply, divide, power.
   MAX_ATTEMPTS=5: max failed input attempts before
   session terminates.
+  HISTORY_FILE="history.txt": path for session history.
   get_number: parses as int first, then float;
   require_int=True forces strict integer (factorial).
   get_number_with_retry: wraps get_number; prints
   remaining-attempts message on each failure; raises
   _SessionExpired after MAX_ATTEMPTS failures.
-  main: session loop; catches ValueError/TypeError/
-  ZeroDivisionError per iteration and prints error;
-  tracks invalid op selections (terminate after
-  MAX_ATTEMPTS); catches _SessionExpired to break.
+  format_history_entry: returns "name(arg1, arg2) = result".
+  save_history: overwrites HISTORY_FILE with history list;
+  called on all exit paths (quit, expiry, max-attempts).
+  main: session loop; 'h' displays history in memory;
+  successful calculations appended to history list;
+  catches ValueError/TypeError/ZeroDivisionError per
+  iteration and prints error; tracks invalid op selections
+  (terminate after MAX_ATTEMPTS); catches _SessionExpired.
 end note
 
 note right of CLI

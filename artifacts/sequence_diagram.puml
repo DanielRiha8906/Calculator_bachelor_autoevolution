@@ -22,7 +22,7 @@ Calc --> Main : calc instance
 deactivate Calc
 
 Main -> Main : display_menu()
-Main --> User : prints 12 operations + "q. quit"
+Main --> User : prints 12 operations + "h. history" + "q. quit"
 
 User -> Main : enter choice "1" (add)
 Main -> Ops : lookup "1"
@@ -42,6 +42,7 @@ Runtime --> Calc : 15
 Calc --> Main : 15
 deactivate Calc
 
+Main -> Main : history.append("add(10, 5) = 15")
 Main --> User : "Result: 15"
 
 == Interactive Session — Normal Unary Operation ==
@@ -62,7 +63,18 @@ Calc -> Calc : iterate: 1*2*3*4*5
 Calc --> Main : 120
 deactivate Calc
 
+Main -> Main : history.append("factorial(5) = 120")
 Main --> User : "Result: 120"
+
+== Interactive Session — History Display ==
+
+User -> Main : enter choice "h"
+Main -> Main : check history list
+alt history is not empty
+    Main --> User : "Session history:"\n  "add(10, 5) = 15"\n  "factorial(5) = 120"
+else history is empty
+    Main --> User : "No history yet."
+end
 
 == Interactive Session — Error Path (caught by main()) ==
 
@@ -124,6 +136,7 @@ note right: caught by except _SessionExpired: break in main()
 == Interactive Session — Quit ==
 
 User -> Main : enter choice "q"
+Main -> Main : save_history(history) → writes history.txt
 Main --> User : "Goodbye!"
 deactivate Main
 
@@ -273,7 +286,7 @@ deactivate Calc
 Tests -> Tests : assert power(2, 10) == 1024 ✓
 
 == Unit Tests — Interactive CLI (test_main.py) ==
-note over Tests: 37 tests total
+note over Tests: 52 tests total
 
 participant "mock\nstdin/stdout" as MockIO
 
@@ -311,9 +324,29 @@ Tests -> Main : main() [max invalid op selections test]
 activate Main
 note right: inputs: ["99"×5]\nMAX_ATTEMPTS=5 unknown operation keys
 Main -> Main : invalid_op_attempts reaches MAX_ATTEMPTS
+Main -> Main : save_history([]) → writes empty history.txt
 Main --> MockIO : print("Maximum attempts reached. Ending session.")
 deactivate Main
 Tests -> MockIO : assert session-terminated message in output ✓
+
+Tests -> Main : main() [history display test]
+activate Main
+note right: inputs: ["1", "10", "5", "h", "q"]\nadd(10,5)=15 then display history
+Main -> MockIO : input() → "1" (add)
+Main -> MockIO : input("Enter first number: ") → "10"
+Main -> MockIO : input("Enter second number: ") → "5"
+Main -> Calc : calc.add(10, 5)
+activate Calc
+Calc --> Main : 15
+deactivate Calc
+Main -> Main : history.append("add(10, 5) = 15")
+Main -> MockIO : input() → "h"
+Main --> MockIO : print("Session history:")\nprint("  add(10, 5) = 15")
+Main -> MockIO : input() → "q"
+Main -> Main : save_history(["add(10, 5) = 15"]) → writes history.txt
+Main --> MockIO : print("Goodbye!")
+deactivate Main
+Tests -> MockIO : assert "add(10, 5) = 15" in captured output ✓
 
 == Unit Tests — Bash CLI (test_cli.py) ==
 

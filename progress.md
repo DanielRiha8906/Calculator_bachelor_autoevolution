@@ -1,3 +1,20 @@
+## Run: update-diagrams — PlantUML diagram update (post-issue-250)
+
+- **Branch:** exp3/issue-250-session-history
+- **PR target:** N/A (diagram-only update)
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `HISTORY_FILE : str`, `format_history_entry()`, `save_history()` to `__main__` module; updated note on Main to describe history tracking; updated test_main comment from 37 → 52 tests with new test stubs
+  - `artifacts/activity_diagram.puml` — added `history = []` to initialization note; added 'h' branch showing history display (empty vs non-empty); added `save_history()` calls on all exit paths (quit, max-invalid-ops, _SessionExpired); added `format_history_entry` + `history.append` step after successful calculations
+  - `artifacts/sequence_diagram.puml` — updated `display_menu()` output to include "h. history"; added "History Display" section showing 'h' key behavior (empty/non-empty); added `history.append` after successful calc results; added `save_history()` call on quit; updated test_main to 52 tests; added history display test scenario
+- **Purpose:** Sync PlantUML diagrams with cycle-8 changes (issue-250): `HISTORY_FILE`, `format_history_entry()`, `save_history()`, per-session history list, 'h' display command, and save-on-exit added to `src/__main__.py`.
+- **Risks:** None — diagram-only, no source or test code modified.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-250 — Session history for interactive CLI
 
 - **Branch:** exp3/issue-250-session-history

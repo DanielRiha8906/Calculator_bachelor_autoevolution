@@ -16,20 +16,28 @@ title Calculator — Execution Flows
 start
 
 :Instantiate Calculator;
-:display_menu() — print all 12 operations;
-note right: invalid_op_attempts = 0
+:display_menu() — print all 12 operations + "h. history" + "q. quit";
+note right: invalid_op_attempts = 0\nhistory = []
 
 repeat
 
   :Read user choice from stdin;
 
   if (choice.lower() == 'q'?) then (yes)
+    :save_history(history) — write to HISTORY_FILE;
     :Print "Goodbye!";
     stop
+  elseif (choice.lower() == 'h'?) then (yes)
+    if (history is empty?) then (yes)
+      :Print "No history yet.";
+    else (no)
+      :Print "Session history:"\nthen each entry;
+    endif
   elseif (choice not in OPERATIONS?) then (yes)
     :Increment invalid_op_attempts;
     :Print unknown operation warning\nwith list of available operations;
     if (invalid_op_attempts >= MAX_ATTEMPTS?) then (yes)
+      :save_history(history) — write to HISTORY_FILE;
       :Print "Maximum attempts reached. Ending session.";
       stop
     endif
@@ -106,10 +114,12 @@ repeat
 
     |Interactive CLI (src/__main__.py)|
     if (_SessionExpired raised by operand input?) then (yes)
+      :save_history(history) — write to HISTORY_FILE;
       stop
     elseif (operation raised ValueError/TypeError/ZeroDivisionError?) then (yes)
       :Print "Error: <message>";
     else (no)
+      :Append format_history_entry(name, args, result)\nto history list;
       :Print "Result: <value>";
     endif
 
