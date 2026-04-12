@@ -35,7 +35,10 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## `tests/test_calculator.py`
-- **Purpose:** Test suite for `Calculator`.
-- **Current state:** Contains `test_divide_by_zero_raises` — asserts `ZeroDivisionError` is raised when calling `divide(1, 0)`.
-- **Exports:** None
-- **Last updated:** cycle 1 (issue-210)
+- **Purpose:** Comprehensive unit test suite for `Calculator`.
+- **Current state:** 30 tests across all four operations — add (7 tests), subtract (6 tests), multiply (7 tests), divide (10 tests).
+  - Normal inputs (positive, negative, zero, floats)
+  - Edge cases: division by zero (`ZeroDivisionError`), float precision via `math.isclose`, zero dividend/multiplier
+  - Invalid type inputs (`TypeError`) for all four operations
+- **Exports:** None (pytest-discovered)
+- **Last updated:** cycle 2 (issue-213)
