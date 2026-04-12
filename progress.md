@@ -2,6 +2,21 @@
 
 ---
 
+## Run: Issue #215 — Factorial operation (2026-04-12)
+
+- **Branch:** exp3/issue-215-add-factorial
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `src/calculator.py` — added `import math` and `Calculator.factorial(n)` method with input validation
+  - `tests/test_calculator.py` — added 6 factorial tests (zero, one, small, large, negative raises, float raises)
+- **Purpose:** Add factorial as a supported calculator operation with correct validation and test coverage.
+- **Risks:** None — purely additive change; no existing methods modified.
+- **Tests passed:** Yes — 30/30
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+- Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #209 — ZeroDivisionError (2026-04-12)
 
 - **Branch:** exp3/issue-209-zero-division
