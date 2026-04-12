@@ -123,3 +123,33 @@ def test_divide_floats(calc):
 
 def test_divide_result_is_fraction(calc):
     assert math.isclose(calc.divide(1, 3), 1 / 3)
+
+
+# ---------------------------------------------------------------------------
+# factorial
+# ---------------------------------------------------------------------------
+
+def test_factorial_zero(calc):
+    assert calc.factorial(0) == 1
+
+
+def test_factorial_one(calc):
+    assert calc.factorial(1) == 1
+
+
+def test_factorial_small(calc):
+    assert calc.factorial(5) == 120
+
+
+def test_factorial_large(calc):
+    assert calc.factorial(10) == 3628800
+
+
+def test_factorial_negative_raises(calc):
+    with pytest.raises(ValueError, match="Factorial is not defined for negative integers"):
+        calc.factorial(-1)
+
+
+def test_factorial_float_raises(calc):
+    with pytest.raises(ValueError, match="Factorial is only defined for non-negative integers"):
+        calc.factorial(3.0)
