@@ -9,4 +9,4 @@
 - **Risks:** None — test only; no changes to source code.
 - **Tests passed:** Yes — 1 collected, 1 passed.
 - **RAG entries consulted:** RAG initialized this run; `rag/codebase_map.md` used to confirm `divide` raises ZeroDivisionError natively (no source code changes required).
-- Duration: PENDING | Cost: PENDING | Turns: PENDING
+- Duration: 125.1s | Cost: $0.522137 USD | Turns: 41
