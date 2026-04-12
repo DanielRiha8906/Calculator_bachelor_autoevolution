@@ -131,6 +131,26 @@ def test_divide_by_zero_raises_error(calc):
         calc.divide(10, 0)
 
 
+def test_divide_negative_by_zero_raises_error(calc):
+    with pytest.raises(ZeroDivisionError):
+        calc.divide(-5, 0)
+
+
+def test_divide_zero_by_zero_raises_error(calc):
+    with pytest.raises(ZeroDivisionError):
+        calc.divide(0, 0)
+
+
+def test_divide_float_by_zero_raises_error(calc):
+    with pytest.raises(ZeroDivisionError):
+        calc.divide(3.5, 0)
+
+
+def test_divide_by_float_zero_raises_error(calc):
+    with pytest.raises(ZeroDivisionError):
+        calc.divide(10, 0.0)
+
+
 def test_divide_zero_numerator(calc):
     assert calc.divide(0, 5) == pytest.approx(0.0)
 

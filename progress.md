@@ -1,3 +1,38 @@
+## Run: Issue #210 — ZeroDivisionError focused test coverage (task/issue-210-zero-division-coverage)
+
+**Date:** 2026-04-12
+**Branch:** task/issue-210-zero-division-coverage
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `tests/test_calculator.py` — added 4 focused ZeroDivisionError tests:
+  `test_divide_negative_by_zero_raises_error`, `test_divide_zero_by_zero_raises_error`,
+  `test_divide_float_by_zero_raises_error`, `test_divide_by_float_zero_raises_error`
+
+### Purpose
+
+Issue #210 requested focused test coverage for division by zero. The existing
+implementation already raises `ZeroDivisionError` via Python's `/` operator so
+no implementation change was required. Added four additional test cases covering:
+negative numerator ÷ 0, 0 ÷ 0, float numerator ÷ integer 0, and numerator ÷ float 0.0.
+
+### Risks
+
+None. Test-only change; no source code modified.
+
+### Test results
+
+248 passed, 23 skipped — no regressions.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update — PlantUML artifacts (task/issue-196-tkinter-gui)
 
 **Date:** 2026-04-11
