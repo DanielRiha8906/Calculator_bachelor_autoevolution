@@ -103,4 +103,4 @@ Duration: 100.8s | Cost: $0.384814 USD | Turns: 29
 - **Risks:** None — diagram-only update; no source or test changes.
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 99.9s | Cost: $0.307061 USD | Turns: 19
