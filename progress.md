@@ -1,3 +1,20 @@
+## Run: issue-247 — Input validation with retry logic (interactive CLI)
+
+- **Branch:** exp3/issue-247-input-validation
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/__main__.py` — added `MAX_ATTEMPTS = 5`, `_SessionExpired` internal exception, `get_number_with_retry()`; updated `main()` to track invalid operation selections (terminate after MAX_ATTEMPTS) and use `get_number_with_retry` for operand input (retry + terminate per prompt)
+  - `tests/test_main.py` — updated 2 tests whose input sequences broke under retry logic; added 4 new tests covering available-operations listing, retry remaining message, session termination after max invalid operands, and session termination after max invalid operation selections; total test count 37 (up from 32)
+- **Purpose:** Issue #247 — add input validation with retry logic to the guided interactive mode. CLI (main.py) unchanged as it already fails fast.
+- **Risks:** None — `_SessionExpired` is an internal exception that does not inherit from ValueError/TypeError/ZeroDivisionError, so it cannot accidentally be silenced by the existing error-display handler.
+- **Tests passed:** 141/141
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md` (src/__main__.py, tests/test_main.py entries)
+- **Tokens used / Cost / Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-issue-243)
 
 - **Branch:** exp3/issue-243-cli-args
