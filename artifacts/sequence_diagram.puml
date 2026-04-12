@@ -11,6 +11,7 @@ skinparam sequence {
 actor "User" as User
 participant "__main__" as Main
 participant "Calculator" as Calc
+participant "history.txt" as History
 participant "math" as Math
 
 User -> Main : python -m src [operation [values...]]
@@ -100,16 +101,22 @@ else interactive mode (no args)
 
     Main -> Calc : <<create>>
     activate Calc
+    Main -> History : clear_history()\n[truncate / create empty file]
     note right of Main : invalid_op_count = 0
 
     loop interactive menu loop
 
-        Main -> User : show_menu()\nprint "1. add ... 12. ln  q. quit"
+        Main -> User : show_menu()\nprint "1. add ... 12. ln  h. show history  q. quit"
         User -> Main : enter choice
 
         alt choice == "q"
             Main -> User : print "Goodbye!"
             note right: program exits
+
+        else choice == "h"
+            Main -> History : show_history()\n[read all lines]
+            History --> Main : entry lines
+            Main -> User : print "--- History ---\n  1. ...\n  2. ..."
 
         else invalid choice (not in OPERATIONS)
             Main -> Main : invalid_op_count += 1
@@ -211,8 +218,10 @@ else interactive mode (no args)
 
                 alt ValueError raised
                     Main -> User : print "Error: <message>"
+                    note right: run_operation returns None;\nno history entry written
                 else success
                     Main -> User : print "Result: <value>"
+                    Main -> History : append_to_history(entry)\n[append "op(args) = result\n"]
                 end
 
             end
