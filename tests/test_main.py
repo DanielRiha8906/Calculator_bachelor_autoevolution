@@ -4,6 +4,7 @@ import sys
 from unittest.mock import patch
 import pytest
 
+import src.__main__ as _main_mod
 from src.__main__ import (
     show_menu,
     parse_number,
@@ -11,9 +12,13 @@ from src.__main__ import (
     run_operation,
     main,
     cli_mode,
+    clear_history,
+    append_to_history,
+    show_history,
     OPERATIONS,
     TooManyAttemptsError,
     MAX_ATTEMPTS,
+    HISTORY_FILE,
 )
 from src.calculator import Calculator
 
@@ -21,6 +26,16 @@ from src.calculator import Calculator
 @pytest.fixture
 def calc():
     return Calculator()
+
+
+@pytest.fixture(autouse=True)
+def isolate_history(tmp_path, monkeypatch):
+    """Redirect all history file operations to a temp directory.
+
+    This prevents tests from writing to or reading from a real ``history.txt``
+    in the working directory, keeping test runs clean and independent.
+    """
+    monkeypatch.setattr(_main_mod, "HISTORY_FILE", str(tmp_path / "history.txt"))
 
 
 # ---------------------------------------------------------------------------
@@ -33,6 +48,92 @@ def test_show_menu_prints_all_operations(capsys):
     for key, name in OPERATIONS.items():
         assert name in captured
     assert "q" in captured
+
+
+def test_show_menu_includes_history_option(capsys):
+    show_menu()
+    assert "h" in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------------------
+# clear_history / append_to_history / show_history
+# ---------------------------------------------------------------------------
+
+def test_clear_history_creates_empty_file(tmp_path):
+    filepath = str(tmp_path / "h.txt")
+    clear_history(filepath)
+    assert open(filepath).read() == ""
+
+
+def test_clear_history_overwrites_existing_content(tmp_path):
+    filepath = str(tmp_path / "h.txt")
+    open(filepath, "w").write("old data\n")
+    clear_history(filepath)
+    assert open(filepath).read() == ""
+
+
+def test_append_to_history_adds_entry(tmp_path):
+    filepath = str(tmp_path / "h.txt")
+    clear_history(filepath)
+    append_to_history("add(1.0, 2.0) = 3.0", filepath)
+    lines = open(filepath).read().splitlines()
+    assert lines == ["add(1.0, 2.0) = 3.0"]
+
+
+def test_append_to_history_multiple_entries(tmp_path):
+    filepath = str(tmp_path / "h.txt")
+    clear_history(filepath)
+    append_to_history("add(1.0, 2.0) = 3.0", filepath)
+    append_to_history("square(4.0) = 16.0", filepath)
+    lines = open(filepath).read().splitlines()
+    assert lines == ["add(1.0, 2.0) = 3.0", "square(4.0) = 16.0"]
+
+
+def test_show_history_empty(tmp_path, capsys):
+    filepath = str(tmp_path / "h.txt")
+    clear_history(filepath)
+    show_history(filepath)
+    assert "No history" in capsys.readouterr().out
+
+
+def test_show_history_no_file(tmp_path, capsys):
+    """show_history handles a missing file gracefully."""
+    filepath = str(tmp_path / "does_not_exist.txt")
+    show_history(filepath)
+    assert "No history" in capsys.readouterr().out
+
+
+def test_show_history_with_entries(tmp_path, capsys):
+    filepath = str(tmp_path / "h.txt")
+    clear_history(filepath)
+    append_to_history("add(1.0, 2.0) = 3.0", filepath)
+    append_to_history("factorial(5) = 120", filepath)
+    show_history(filepath)
+    captured = capsys.readouterr().out
+    assert "add(1.0, 2.0) = 3.0" in captured
+    assert "factorial(5) = 120" in captured
+
+
+# ---------------------------------------------------------------------------
+# run_operation — return value (history entry)
+# ---------------------------------------------------------------------------
+
+def test_run_operation_add_returns_history_entry(calc):
+    with patch("builtins.input", side_effect=["3", "4"]):
+        entry = run_operation(calc, "add")
+    assert entry == "add(3.0, 4.0) = 7.0"
+
+
+def test_run_operation_returns_none_on_error(calc):
+    """ValueError from Calculator (e.g. divide by zero) returns None."""
+    with patch("builtins.input", side_effect=["10", "0"]):
+        entry = run_operation(calc, "divide")
+    assert entry is None
+
+
+def test_run_operation_returns_none_for_unknown_op(calc):
+    entry = run_operation(calc, "nonexistent")
+    assert entry is None
 
 
 # ---------------------------------------------------------------------------
@@ -275,6 +376,63 @@ def test_main_too_many_invalid_operands_ends_session(capsys):
     captured = capsys.readouterr().out
     assert "Too many" in captured
     assert "Goodbye" not in captured
+
+
+def test_main_show_history_option(capsys):
+    """Pressing 'h' displays the (empty) history without exiting the loop."""
+    with patch("builtins.input", side_effect=["h", "q"]):
+        main([])
+    captured = capsys.readouterr().out
+    assert "No history" in captured
+    assert "Goodbye" in captured
+
+
+def test_main_history_recorded_after_operation(tmp_path, monkeypatch):
+    """A successful operation is persisted to the history file."""
+    hist_path = str(tmp_path / "history.txt")
+    monkeypatch.setattr(_main_mod, "HISTORY_FILE", hist_path)
+    with patch("builtins.input", side_effect=["1", "3", "4", "q"]):
+        main([])
+    lines = open(hist_path).read().splitlines()
+    assert len(lines) == 1
+    assert "add" in lines[0]
+    assert "7" in lines[0]
+
+
+def test_main_error_operation_not_recorded(tmp_path, monkeypatch):
+    """A failed operation (e.g. divide by zero) is not written to history."""
+    hist_path = str(tmp_path / "history.txt")
+    monkeypatch.setattr(_main_mod, "HISTORY_FILE", hist_path)
+    with patch("builtins.input", side_effect=["4", "10", "0", "q"]):
+        main([])
+    lines = open(hist_path).read().splitlines()
+    assert lines == []
+
+
+def test_main_history_cleared_on_new_session(tmp_path, monkeypatch):
+    """Starting a new session wipes the history from the previous session."""
+    hist_path = str(tmp_path / "history.txt")
+    monkeypatch.setattr(_main_mod, "HISTORY_FILE", hist_path)
+    # First session: perform add
+    with patch("builtins.input", side_effect=["1", "2", "3", "q"]):
+        main([])
+    lines_after_first = open(hist_path).read().splitlines()
+    assert len(lines_after_first) == 1
+    # Second session: quit immediately — history should be cleared
+    with patch("builtins.input", side_effect=["q"]):
+        main([])
+    lines_after_second = open(hist_path).read().splitlines()
+    assert lines_after_second == []
+
+
+def test_main_show_history_with_previous_operations(capsys):
+    """After performing an operation, 'h' shows it in the history display."""
+    # add 3+4=7, then show history, then quit
+    with patch("builtins.input", side_effect=["1", "3", "4", "h", "q"]):
+        main([])
+    captured = capsys.readouterr().out
+    assert "add" in captured
+    assert "7" in captured
 
 
 # ---------------------------------------------------------------------------
