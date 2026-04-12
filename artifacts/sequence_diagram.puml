@@ -45,6 +45,54 @@ else valid n
 end
 deactivate Calc
 
+Main -> Calc : square(4)
+Calc --> Main : 16
+
+Main -> Calc : cube(3)
+Calc --> Main : 27
+
+Main -> Calc : square_root(9)
+activate Calc
+alt a < 0
+    Calc --> Main : raise ValueError("Square root not defined for negative numbers")
+else a >= 0
+    Calc -> Math : sqrt(9)
+    Math --> Calc : 3.0
+    Calc --> Main : 3.0
+end
+deactivate Calc
+
+Main -> Calc : cube_root(-8)
+activate Calc
+note right: sign-preserving:\n-((-a)**(1/3))
+Calc --> Main : -2.0
+deactivate Calc
+
+Main -> Calc : power(2, 10)
+Calc --> Main : 1024
+
+Main -> Calc : log(100, 10)
+activate Calc
+alt a <= 0 or base <= 0 or base == 1
+    Calc --> Main : raise ValueError(...)
+else valid inputs
+    Calc -> Math : log(100, 10)
+    Math --> Calc : 2.0
+    Calc --> Main : 2.0
+end
+deactivate Calc
+
+Main -> Calc : ln(e)
+activate Calc
+alt a <= 0
+    Calc --> Main : raise ValueError("Natural logarithm not defined for non-positive numbers")
+else a > 0
+    Calc -> Math : log(e)
+    Math --> Calc : 1.0
+    Calc --> Main : 1.0
+end
+deactivate Calc
+
 deactivate Calc
 
 @enduml

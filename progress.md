@@ -103,3 +103,18 @@ Duration: 144.3s | Cost: $0.644819 USD | Turns: 36
 - **Tests passed:** N/A (no source changes)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 - Duration: 61.3s | Cost: $0.214985 USD | Turns: 19
+
+---
+
+## Run: Diagram update (2026-04-12)
+
+- **Branch:** exp3/issue-218-add-math-operations
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln` to `Calculator` class with notes for ValueError conditions
+  - `artifacts/activity_diagram.puml` — added validation and execution flow for all seven new operations
+  - `artifacts/sequence_diagram.puml` — added interaction sequences for all seven new operations including math module delegation and error alt paths
+- **Purpose:** Update PlantUML diagrams to reflect seven new math operations added to Calculator in cycle 4 (issue #218).
+- **Risks:** None — diagram-only change; no source code modified.
+- **Tests passed:** N/A (no source changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
