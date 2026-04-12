@@ -1,5 +1,16 @@
 # Progress Log
 
+## Run: Issue #220 — Add User Input (2026-04-12)
+
+- **Branch:** exp3/issue-220-user-input
+- **Target PR branch:** exp3/naive-generic
+- **Files changed:** src/__main__.py, tests/test_main.py (new)
+- **Purpose:** Replaced hardcoded demo values in `__main__.py` with a full interactive REPL. Presents a numbered menu of all 12 Calculator operations. `parse_number` loops until the user enters a valid float. `run_operation` dispatches to the correct Calculator method and catches `ValueError`/`ZeroDivisionError` so the loop never crashes. `factorial` inputs are converted float→int (with an error for non-whole numbers).
+- **Risks:** Minimal — no changes to `Calculator` class or existing tests. New code uses only stdlib (`builtins.input`, `getattr`). No new dependencies.
+- **Tests passed:** Yes — 84 collected (58 existing + 26 new in tests/test_main.py), 84 passed.
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
+Duration: 182.5s | Cost: $0.580864 USD | Turns: 34
+
 ## Run: Diagram Update (2026-04-12)
 
 - **Branch:** exp3/issue-217-add-math-functions
@@ -83,3 +94,13 @@ Duration: 100.8s | Cost: $0.384814 USD | Turns: 29
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
 - Duration: 51.0s | Cost: $0.192411 USD | Turns: 19
+
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-220-user-input
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect the interactive REPL introduced in cycle 5. Class diagram now shows full `__main__` module API (parse_number, _to_int_if_needed, run_operation, module-level constants). Activity and sequence diagrams replaced the outdated hardcoded demo flow with the actual while-loop REPL: menu display, choice dispatch, binary/unary operand prompting, INTEGER_OPS int conversion, and ValueError/ZeroDivisionError error handling.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: 99.9s | Cost: $0.307061 USD | Turns: 19

@@ -1,106 +1,78 @@
 @startuml sequence_diagram
 
-title Calculator — Component Interaction Sequence
+title Calculator — Interactive CLI Sequence
 
 actor User
 participant "__main__\n(main)" as Main
+participant "parse_number /\n_to_int_if_needed" as Parser
 participant "Calculator" as Calc
 participant "math\n(stdlib)" as Math
 
-User -> Main : run module
+User -> Main : run module (python -m src)
+Main -> Calc ** : Calculator()
+Main --> User : "Welcome to the Calculator!"
 
-Main -> Calc : Calculator()
-activate Calc
+loop REPL — repeats until user quits
 
-group Basic Arithmetic
-  Main -> Calc : add(10, 5)
-  Calc --> Main : 15
+  Main --> User : print MENU
+  User -> Main : choice (1–12 or "q")
 
-  Main -> Calc : subtract(10, 5)
-  Calc --> Main : 5
+  alt choice == "q"
+    Main --> User : "Goodbye!"
+    note right of Main: loop exits here
+  else choice not in MENU_MAP
+    Main --> User : "Unknown choice: ..." message
+  else choice is valid (1–12)
 
-  Main -> Calc : multiply(10, 5)
-  Calc --> Main : 50
+    alt op in BINARY_OPS (add/subtract/multiply/divide/power)
+      Main -> Parser : parse_number("Enter first number: ")
+      Parser --> User : prompt
+      User -> Parser : raw input
+      Parser --> Main : float a
 
-  Main -> Calc : divide(a, b)
-  alt b != 0
-      Calc --> Main : a / b
-  else b == 0
-      Calc --> Main : raises ZeroDivisionError
+      Main -> Parser : parse_number("Enter second number: ")
+      Parser --> User : prompt
+      User -> Parser : raw input
+      Parser --> Main : float b
+    else op in UNARY_OPS
+      Main -> Parser : parse_number("Enter number: ")
+      Parser --> User : prompt
+      User -> Parser : raw input
+      Parser --> Main : float a
+
+      opt op in INTEGER_OPS (factorial)
+        Main -> Parser : _to_int_if_needed(op, a)
+        alt a is whole number
+          Parser --> Main : int(a)
+        else a is not whole
+          Parser --> Main : raises ValueError
+          Main --> User : "Error: requires whole number"
+          note right of Main: run_operation catches and prints; loop continues
+        end
+      end
+    end
+
+    Main -> Calc : getattr(calc, op)(args)
+
+    alt ops delegating to math stdlib
+      Calc -> Math : factorial / sqrt / cbrt / log10 / log
+      alt valid domain
+        Math --> Calc : computed result
+      else invalid domain (n<0, n<=0, div/0)
+        Math --> Calc : raises ValueError / ZeroDivisionError
+      end
+    end
+
+    alt success
+      Calc --> Main : result value
+      Main --> User : "Result: <value>"
+    else ValueError or ZeroDivisionError
+      Calc --> Main : raises exception
+      Main --> User : "Error: <exception message>"
+    end
+
   end
+
 end
-
-group Powers & Roots
-  Main -> Calc : square(n)
-  Calc --> Main : n ** 2
-
-  Main -> Calc : cube(n)
-  Calc --> Main : n ** 3
-
-  Main -> Calc : power(base, exp)
-  Calc --> Main : base ** exp
-
-  Main -> Calc : square_root(n)
-  activate Math
-  alt n >= 0
-      Calc -> Math : math.sqrt(n)
-      Math --> Calc : √n
-      Calc --> Main : √n
-  else n < 0
-      Math --> Calc : raises ValueError
-      Calc --> Main : raises ValueError
-  end
-  deactivate Math
-
-  Main -> Calc : cube_root(n)
-  activate Math
-  Calc -> Math : math.cbrt(n)
-  Math --> Calc : ∛n
-  Calc --> Main : ∛n
-  note right of Math: Handles negative inputs\nRequires Python 3.11+
-  deactivate Math
-end
-
-group Combinatorics & Logarithms
-  Main -> Calc : factorial(n)
-  activate Math
-  alt n >= 0
-      Calc -> Math : math.factorial(n)
-      Math --> Calc : n!
-      Calc --> Main : n!
-  else n < 0
-      Math --> Calc : raises ValueError
-      Calc --> Main : raises ValueError
-  end
-  deactivate Math
-
-  Main -> Calc : log(n)
-  activate Math
-  alt n > 0
-      Calc -> Math : math.log10(n)
-      Math --> Calc : log₁₀(n)
-      Calc --> Main : log₁₀(n)
-  else n <= 0
-      Math --> Calc : raises ValueError
-      Calc --> Main : raises ValueError
-  end
-  deactivate Math
-
-  Main -> Calc : ln(n)
-  activate Math
-  alt n > 0
-      Calc -> Math : math.log(n)
-      Math --> Calc : ln(n)
-      Calc --> Main : ln(n)
-  else n <= 0
-      Math --> Calc : raises ValueError
-      Calc --> Main : raises ValueError
-  end
-  deactivate Math
-end
-
-deactivate Calc
-
-Main --> User : print results
 
 @enduml
