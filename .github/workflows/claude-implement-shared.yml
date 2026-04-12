@@ -109,9 +109,10 @@ jobs:
             ${{ inputs.prompt_additions }}
 
             Progress logging format (mandatory):
-            When writing the cost/turns/duration line in progress.md, write it exactly as:
+            Write this line exactly as plain text, without markdown, bold, italics or any formatting:
             Duration: PENDING | Cost: PENDING | Turns: PENDING
-            Do not estimate or guess these values — the workflow will replace PENDING with real values after your run completes.
+            Do not estimate or guess these values — Do not modify spacing, punctuation or add any symbols.
+            The workflow will replace PENDING with real values after this run completes.
 
       - name: Upload Claude execution log
         if: always()
