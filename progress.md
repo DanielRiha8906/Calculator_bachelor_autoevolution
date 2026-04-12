@@ -13,7 +13,7 @@
 - **Risks:** Minimal — MAX_ATTEMPTS=3 is a constant, easy to change; TooManyAttemptsError not inheriting from ValueError ensures it is never accidentally swallowed by run_operation's except block.
 - **Tests passed:** Yes — 117/117 (63 calculator + 54 main; all pass)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 292.9s | Cost: $1.036777 USD | Turns: 39
 
 ---
 
