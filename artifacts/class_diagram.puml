@@ -10,6 +10,13 @@ package "src" {
         +multiply(a, b) : float|int
         +divide(a, b) : float|int
         +factorial(n: int) : int
+        +square(x) : float
+        +cube(x) : float
+        +square_root(x) : float
+        +cube_root(x) : float
+        +power(base, exp) : float
+        +log(x) : float
+        +ln(x) : float
     }
 
     class "__main__" as Main <<module>> {
@@ -24,44 +31,19 @@ package "src" {
 package "tests" {
     class "test_calculator" as TestModule <<module>> {
         +calc() : Calculator  <<fixture>>
-        +test_add_positive_integers()
-        +test_add_negative_integers()
-        +test_add_mixed_sign()
-        +test_add_zeros()
-        +test_add_floats()
-        +test_add_large_numbers()
-        +test_subtract_positive_integers()
-        +test_subtract_resulting_negative()
-        +test_subtract_zeros()
-        +test_subtract_floats()
-        +test_subtract_negative_operand()
-        +test_multiply_positive_integers()
-        +test_multiply_by_zero()
-        +test_multiply_negative_numbers()
-        +test_multiply_mixed_sign()
-        +test_multiply_floats()
-        +test_multiply_by_one()
-        +test_multiply_large_numbers()
-        +test_divide_positive_integers()
-        +test_divide_non_even()
-        +test_divide_by_one()
-        +test_divide_negative_dividend()
-        +test_divide_negative_divisor()
-        +test_divide_both_negative()
-        +test_divide_floats()
-        +test_divide_zero_numerator()
-        +test_divide_by_zero_raises()
-        +test_divide_by_zero_float_raises()
-        +test_factorial_zero()
-        +test_factorial_one()
-        +test_factorial_positive_integer()
-        +test_factorial_larger_integer()
-        +test_factorial_negative_raises()
-        +test_factorial_negative_large_raises()
-        +test_factorial_float_raises()
-        +test_factorial_non_integer_raises()
-        +test_factorial_bool_raises()
-        +test_factorial_string_raises()
+        ' 76 tests covering all 12 operations
+        +test_add_*()
+        +test_subtract_*()
+        +test_multiply_*()
+        +test_divide_*()
+        +test_factorial_*()
+        +test_square_*()
+        +test_cube_*()
+        +test_square_root_*()
+        +test_cube_root_*()
+        +test_power_*()
+        +test_log_*()
+        +test_ln_*()
     }
 }
 
@@ -70,10 +52,16 @@ Init ..> Calculator : re-exports
 TestModule --> Calculator : tests via fixture
 
 note right of Calculator
-  Division delegates to Python "/" operator.
+  Division: delegates to Python "/" operator.
   ZeroDivisionError raised by runtime when b == 0.
   factorial: iterative; rejects bool/float/non-int
   (TypeError) and negatives (ValueError).
+  square_root: raises ValueError for x < 0.
+  cube_root: handles negatives via -(abs(x)^(1/3)).
+  log: base-10 via math.log10; raises ValueError for x <= 0.
+  ln: natural log via math.log; raises ValueError for x <= 0.
+  power: returns base ** exp (no domain restriction).
+  Imports: math
 end note
 
 @enduml

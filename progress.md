@@ -1,3 +1,19 @@
+## Run: update-diagrams — PlantUML diagram update (post-issue-219)
+
+- **Branch:** exp3/issue-219-add-math-operations
+- **PR target:** N/A (diagram-only update)
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added 7 new methods: `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln`; updated note to document domain restrictions and math import; expanded test stubs listing
+  - `artifacts/activity_diagram.puml` — added branches for all 7 new operations; added ValueError paths for `square_root` (negative), `log`/`ln` (non-positive); added cube_root negative-input path
+  - `artifacts/sequence_diagram.puml` — added interaction sequences for `square_root` (normal + error), `cube_root` (negative input), `log`/`ln` (normal + error), and `power`
+- **Purpose:** Sync PlantUML diagrams with cycle-4 changes (issue-219): 7 new Calculator methods added.
+- **Risks:** None — diagram-only, no source or test code modified.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-219 — Add multiple math operations
 
 - **Branch:** exp3/issue-219-add-math-operations
