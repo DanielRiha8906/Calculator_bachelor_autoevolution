@@ -10,7 +10,7 @@
 - **Tests passed:** 156/156
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md` (src/__main__.py, tests/test_main.py entries)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 238.6s | Cost: $0.890200 USD | Turns: 41
 
 ---
 
