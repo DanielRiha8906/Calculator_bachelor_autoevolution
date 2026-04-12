@@ -1,5 +1,15 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-251-add-error-logging
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 9 changes: added `{static} logger : Logger` to both Calculator and __main__ class entries; updated error notes for divide, factorial, square_root, log, ln to mention ERROR-level logging before re-raise; added `logging.basicConfig(level=ERROR)` step to activity diagram start; added `logger.error(...)` steps to error paths in both activity and sequence diagrams; added `logger` participant to sequence diagram showing all logging call sites in Calculator and __main__.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Issue #251 — Error Logging (2026-04-12)
 
 - **Branch:** exp3/issue-251-add-error-logging

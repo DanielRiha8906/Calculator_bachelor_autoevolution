@@ -4,6 +4,7 @@ title Calculator — Class Diagram
 
 package "src" {
     class Calculator {
+        {static} logger : Logger
         +history : list[dict]
         +__init__()
         +get_history() : list[dict]
@@ -22,6 +23,7 @@ package "src" {
     }
 
     class "__main__" as Main <<module>> {
+        {static} logger : Logger
         +UNARY_OPS : set
         +BINARY_OPS : set
         +INTEGER_OPS : set
@@ -41,6 +43,13 @@ package "src" {
 Main ..> Calculator : instantiates
 Main ..> Calculator : dispatches via getattr(calc, op)
 
+note right of Calculator::logger
+  logging.getLogger(__name__).
+  Used by divide, factorial,
+  square_root, log, and ln to
+  log at ERROR level before re-raising.
+end note
+
 note right of Calculator::history
   Per-instance history list.
   Entries: {"op": str, "operands": tuple, "result": float|int}.
@@ -50,34 +59,47 @@ note right of Calculator::history
 end note
 
 note right of Calculator::divide
-  Raises ZeroDivisionError
-  when b == 0 (Python built-in)
+  Raises ZeroDivisionError when b == 0.
+  Logs "divide error: division by zero"
+  at ERROR level before re-raising.
 end note
 
 note right of Calculator::factorial
-  Delegates to math.factorial(n)
-  Raises ValueError for n < 0
+  Delegates to math.factorial(n).
+  Raises ValueError for n < 0.
+  Logs error at ERROR level before re-raising.
 end note
 
 note right of Calculator::square_root
-  Delegates to math.sqrt(n)
-  Raises ValueError for n < 0
+  Delegates to math.sqrt(n).
+  Raises ValueError for n < 0.
+  Logs error at ERROR level before re-raising.
 end note
 
 note right of Calculator::cube_root
-  Delegates to math.cbrt(n)
-  Handles negative inputs
+  Delegates to math.cbrt(n).
+  Handles negative inputs.
   Requires Python 3.11+
 end note
 
 note right of Calculator::log
-  Delegates to math.log10(n)
-  Raises ValueError for n <= 0
+  Delegates to math.log10(n).
+  Raises ValueError for n <= 0.
+  Logs error at ERROR level before re-raising.
 end note
 
 note right of Calculator::ln
-  Delegates to math.log(n)
-  Raises ValueError for n <= 0
+  Delegates to math.log(n).
+  Raises ValueError for n <= 0.
+  Logs error at ERROR level before re-raising.
+end note
+
+note left of Main::logger
+  logging.getLogger(__name__).
+  Used by run_operation and cli_main
+  to log caught errors at ERROR level.
+  main() configures logging.basicConfig
+  (level=ERROR) before any dispatch.
 end note
 
 note left of Main::MENU_MAP
@@ -100,10 +122,18 @@ note left of Main::MAX_INPUT_ATTEMPTS
   invalid entry.
 end note
 
+note left of Main::run_operation
+  Catches ValueError / ZeroDivisionError;
+  logs via logger.error before printing
+  "Error: ..." to stdout.
+  REPL loop continues after errors.
+end note
+
 note left of Main::cli_main
   Parses sys.argv[1:] as
   <operation> [operands...]
-  Returns 0 on success, 1 on error
+  Returns 0 on success, 1 on error.
+  Logs errors via logger.error.
 end note
 
 note left of Main::_format_result
