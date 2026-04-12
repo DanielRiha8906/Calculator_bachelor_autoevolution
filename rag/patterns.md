@@ -20,6 +20,12 @@ When a module needs both a non-interactive (scripting) mode and an interactive m
 ### Bounded retry with optional max_attempts parameter
 When a user-input helper (e.g., `parse_number`) must limit retries, convert the `while True` loop to a `for attempt in range(max_attempts)` loop and raise `ValueError` on exhaustion. Expose `max_attempts` as an optional parameter (defaulting to a module-level constant) so tests can override it without patching the constant. Callers that already catch `ValueError` get the retry-exhaustion error for free — no extra handler needed.
 
+### Module-level logger with basicConfig only in entry points
+Library modules (e.g., `calculator.py`, `__main__.py` at import time) should only create loggers: `logger = logging.getLogger(__name__)`. Never call `logging.basicConfig()` in library code. Only call it in the actual entry point (`main()`) so library loggers do not unexpectedly configure the root logger for callers. Tests use the `caplog` fixture — no basicConfig needed there.
+
+### Log-then-re-raise for Calculator errors
+When a Calculator method catches an exception to emit a log record (e.g., `ZeroDivisionError`, `ValueError`), always re-raise the original exception unchanged. This keeps logging as a side-effect-only concern: callers retain the same exception contract and tests that use `pytest.raises` are unaffected.
+
 ## Anti-Patterns
 
 ### Infinite retry loops without limit
