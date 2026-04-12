@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 6 — Issue #239: CLI Mode (2026-04-12)
+- **Task:** Add CLI mode so the calculator can be used from bash
+- **Branch:** exp3/issue-239-cli-mode
+- **Files changed:** src/__main__.py, tests/test_main.py
+- **Outcome:** Added `cli_main(args)` and `_format_result(value)` to `__main__.py`. `main()` dispatches to `cli_main` when `sys.argv` has arguments, else runs the REPL. 110 tests collected, 110 passed.
+- **Key decisions:** Used `sys.argv` check in `main()` rather than argparse — interface is simple enough (operation + operands) that stdlib-only dispatch suffices. `_format_result` converts whole floats to integer strings for cleaner bash output. Fixed three existing `main()` tests that needed `patch("sys.argv", ["prog"])` after the argv check was added.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 5 — Issue #220: Add User Input (2026-04-12)
 - **Task:** Add user input to the calculator (interactive CLI)
 - **Branch:** exp3/issue-220-user-input
