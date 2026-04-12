@@ -2,6 +2,21 @@
 
 ---
 
+## Run: Issue #246 — Input validation (2026-04-12)
+
+- **Branch:** exp3/issue-246-input-validation
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `src/__main__.py` — added `MAX_ATTEMPTS = 3`, `TooManyAttemptsError`; `parse_number` and `parse_int` now use bounded retry loop and raise `TooManyAttemptsError` on exhaustion; `main()` interactive loop tracks `invalid_op_count` and breaks on too many bad choices; catches `TooManyAttemptsError` from `run_operation`; `cli_mode` gains explicit per-field number/int validation with clear error messages; argparse result renamed `namespace` to avoid shadowing.
+  - `tests/test_main.py` — added `TooManyAttemptsError`, `MAX_ATTEMPTS` imports; added 7 new tests covering: parse_number raises after max attempts, parse_int raises after max attempts, interactive session ends on too many invalid choices, interactive session ends on too many invalid operands, CLI non-numeric two-arg error, CLI non-numeric one-arg error, CLI non-integer factorial error.
+- **Purpose:** Prevent interactive mode from looping indefinitely on invalid input; provide a fixed retry limit and clean session termination. Improve CLI error messages for non-numeric values.
+- **Risks:** Minimal — MAX_ATTEMPTS=3 is a constant, easy to change; TooManyAttemptsError not inheriting from ValueError ensures it is never accidentally swallowed by run_operation's except block.
+- **Tests passed:** Yes — 117/117 (63 calculator + 54 main; all pass)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #240 — CLI mode (2026-04-12)
 
 - **Branch:** exp3/issue-240-cli-mode
