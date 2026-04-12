@@ -1,3 +1,17 @@
+## Run: issue-213 — Comprehensive unit test suite
+
+- **Branch:** exp3/issue-213-test-suite
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `tests/test_calculator.py` — expanded from 1 test to 28 tests covering all four Calculator operations
+- **Purpose:** Create a full unit test suite for add, subtract, multiply, and divide. Covers normal inputs, zero operands, negative operands, large numbers, floating-point precision (via `pytest.approx`), and ZeroDivisionError for both int and float divisors.
+- **Risks:** None — additive test-only change; no source code modified.
+- **Tests passed:** Yes — 28 passed in 0.03s
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-210 — ZeroDivisionError test coverage
 
 - **Branch:** exp3/issue-210-zerodivision-test
