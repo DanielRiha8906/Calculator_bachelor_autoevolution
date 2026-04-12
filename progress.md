@@ -1,5 +1,15 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-217-add-math-functions
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect the full 12-method Calculator API (square, cube, square_root, cube_root, power, log, ln were missing from prior diagrams which only showed 5 methods).
+- **Risks:** None — diagram-only update, no source code changes.
+- **Tests passed:** N/A — no code changes.
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Issue #217 — Add Multiple Math Functions (2026-04-12)
 
 - **Branch:** exp3/issue-217-add-math-functions

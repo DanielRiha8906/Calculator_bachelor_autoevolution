@@ -8,30 +8,74 @@ start
 
 :Instantiate Calculator();
 
-:Call calc.add(10, 5);
-:Print "Addition: 15";
+partition "Basic Arithmetic" {
+  :Call calc.add(10, 5);
+  :Print "Addition: 15";
 
-:Call calc.subtract(10, 5);
-:Print "Subtraction: 5";
+  :Call calc.subtract(10, 5);
+  :Print "Subtraction: 5";
 
-:Call calc.multiply(10, 5);
-:Print "Multiplication: 50";
+  :Call calc.multiply(10, 5);
+  :Print "Multiplication: 50";
 
-:Call calc.divide(10, 5);
+  :Call calc.divide(a, b);
+  if (divisor == 0?) then (yes)
+    #pink:Raise ZeroDivisionError;
+    stop
+  else (no)
+    :Return quotient;
+    :Print result;
+  endif
+}
 
-if (divisor == 0?) then (yes)
-  #pink:Raise ZeroDivisionError;
-  stop
-else (no)
-  :Return quotient;
-  :Print "Division: 2.0";
-endif
+partition "Powers & Roots" {
+  :Call calc.square(n);
+  :Return n ** 2;
 
-note right
-  factorial is available on
-  Calculator instances but not
-  called in __main__.main()
-end note
+  :Call calc.cube(n);
+  :Return n ** 3;
+
+  :Call calc.power(base, exp);
+  :Return base ** exp;
+
+  :Call calc.square_root(n);
+  if (n < 0?) then (yes)
+    #pink:Raise ValueError;
+    stop
+  else (no)
+    :Return math.sqrt(n);
+  endif
+
+  :Call calc.cube_root(n);
+  :Return math.cbrt(n);
+  note right: Handles negative inputs
+}
+
+partition "Combinatorics & Logarithms" {
+  :Call calc.factorial(n);
+  if (n < 0?) then (yes)
+    #pink:Raise ValueError;
+    stop
+  else (no)
+    :Return math.factorial(n);
+  endif
+
+  :Call calc.log(n);
+  if (n <= 0?) then (yes)
+    #pink:Raise ValueError;
+    stop
+  else (no)
+    :Return math.log10(n);
+  endif
+
+  :Call calc.ln(n);
+  if (n <= 0?) then (yes)
+    #pink:Raise ValueError;
+    stop
+  else (no)
+    :Return math.log(n);
+  endif
+}
 
 stop
 
