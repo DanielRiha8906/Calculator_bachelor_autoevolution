@@ -1,3 +1,21 @@
+## Run: issue-243 — Add CLI argument mode
+
+- **Branch:** exp3/issue-243-cli-args
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `main.py` — new file: bash-accessible CLI entry point (`main()`, `_parse_operand()`, `_BINARY_OPS`, `_UNARY_OPS`)
+  - `tests/test_cli.py` — new file: 28 tests for the CLI (all 12 ops, arg-count validation, error paths, non-numeric operands)
+  - `rag/index.md` — added entries for `main.py` and `tests/test_cli.py` (cycle 6)
+  - `rag/codebase_map.md` — added summaries for `main.py` and `tests/test_cli.py`
+  - `rag/evolution_log.md` — added cycle 6 entry
+- **Purpose:** Allow the calculator to be called non-interactively from bash (`python main.py add 5 7`, `python main.py factorial 5`). Supports all 12 existing operations with one-operand and two-operand cases. Errors go to stderr with exit code 1; results go to stdout with exit code 0.
+- **Risks:** None — `src/__main__.py` (interactive CLI), `src/calculator.py`, and all existing tests are untouched. Change is purely additive.
+- **Tests passed:** 136 passed (108 existing + 28 new)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-issue-222)
 
 - **Branch:** exp3/issue-222-user-input
