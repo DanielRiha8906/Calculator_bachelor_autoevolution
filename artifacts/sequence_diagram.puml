@@ -88,7 +88,38 @@ note right: session continues — error is caught\nby except (ValueError, TypeEr
 User -> Main : enter choice "99"
 Main -> Ops : lookup "99"
 Ops --> Main : (not found)
-Main --> User : "Unknown operation '99'. Please enter a number from the menu."
+Main -> Main : invalid_op_attempts = 1
+Main --> User : "Unknown operation '99'. Available operations: 1. add, ..."
+
+== Interactive Session — Session Termination (max invalid operation selections) ==
+
+User -> Main : enter choice "99" (×5 total)
+note right: invalid_op_attempts increments each time\nafter 5th: >= MAX_ATTEMPTS condition met
+Main --> User : "Maximum attempts reached. Ending session."
+note right: session loop breaks — no _SessionExpired\njust a normal break from the while loop
+
+== Interactive Session — Retry on Invalid Operand Input ==
+
+User -> Main : enter choice "1" (add)
+Main -> Ops : lookup "1"
+Ops --> Main : ("add", arity=2)
+
+Main --> User : "Enter first number: "
+User -> Main : "abc" (invalid)
+Main -> Main : get_number_with_retry() — attempt 1 of 5
+note right: ValueError caught inside get_number_with_retry\nprints error + "4 attempt(s) remaining"
+Main --> User : "Error: ... Please try again (4 attempt(s) remaining)."
+
+User -> Main : "42" (valid on 2nd attempt)
+Main -> Main : get_number_with_retry() — returns 42
+
+Main --> User : "Enter second number: "
+User -> Main : "abc" ×5 (all invalid)
+Main -> Main : get_number_with_retry() — attempt 5 of 5
+note right: remaining == 0 → prints "Maximum attempts reached.\nEnding session." then raises _SessionExpired
+Main --> User : "Maximum attempts reached. Ending session."
+Main -> Main : raise _SessionExpired
+note right: caught by except _SessionExpired: break in main()
 
 == Interactive Session — Quit ==
 
@@ -242,6 +273,7 @@ deactivate Calc
 Tests -> Tests : assert power(2, 10) == 1024 ✓
 
 == Unit Tests — Interactive CLI (test_main.py) ==
+note over Tests: 37 tests total
 
 participant "mock\nstdin/stdout" as MockIO
 
@@ -264,6 +296,24 @@ Main -> MockIO : print("Goodbye!")
 deactivate Main
 
 Tests -> MockIO : assert "Result: 3.0" in captured output ✓
+
+Tests -> Main : main() [retry exhaustion test]
+activate Main
+note right: inputs: ["1", "abc"×5, "q"]\nMAX_ATTEMPTS=5 invalid operand inputs
+Main -> MockIO : input() → "1" (add)
+Main -> MockIO : input("Enter first number:") → "abc" ×5
+Main -> Main : get_number_with_retry exhausted → _SessionExpired
+Main --> MockIO : print("Maximum attempts reached. Ending session.")
+deactivate Main
+Tests -> MockIO : assert session-terminated message in output ✓
+
+Tests -> Main : main() [max invalid op selections test]
+activate Main
+note right: inputs: ["99"×5]\nMAX_ATTEMPTS=5 unknown operation keys
+Main -> Main : invalid_op_attempts reaches MAX_ATTEMPTS
+Main --> MockIO : print("Maximum attempts reached. Ending session.")
+deactivate Main
+Tests -> MockIO : assert session-terminated message in output ✓
 
 == Unit Tests — Bash CLI (test_cli.py) ==
 

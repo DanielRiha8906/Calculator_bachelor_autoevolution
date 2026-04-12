@@ -17,6 +17,7 @@ start
 
 :Instantiate Calculator;
 :display_menu() — print all 12 operations;
+note right: invalid_op_attempts = 0
 
 repeat
 
@@ -26,22 +27,27 @@ repeat
     :Print "Goodbye!";
     stop
   elseif (choice not in OPERATIONS?) then (yes)
-    :Print unknown operation warning;
+    :Increment invalid_op_attempts;
+    :Print unknown operation warning\nwith list of available operations;
+    if (invalid_op_attempts >= MAX_ATTEMPTS?) then (yes)
+      :Print "Maximum attempts reached. Ending session.";
+      stop
+    endif
   else (no — valid key)
     :Look up (name, arity) from OPERATIONS;
 
     if (arity == 1?) then (yes)
       if (name == "factorial"?) then (yes)
-        :get_number(require_int=True)\nparse strictly as int;
+        :get_number_with_retry(require_int=True)\nup to MAX_ATTEMPTS attempts\nbefore raising _SessionExpired;
       else (no)
-        :get_number()\nparse as int, fallback to float;
+        :get_number_with_retry()\nup to MAX_ATTEMPTS attempts\nbefore raising _SessionExpired;
       endif
       |Calculator Computation|
       :Call calc.<name>(a);
     else (no — arity == 2)
       |Interactive CLI (src/__main__.py)|
-      :get_number() → a;
-      :get_number() → b;
+      :get_number_with_retry() → a\nup to MAX_ATTEMPTS attempts;
+      :get_number_with_retry() → b\nup to MAX_ATTEMPTS attempts;
       |Calculator Computation|
       :Call calc.<name>(a, b);
     endif
@@ -99,7 +105,9 @@ repeat
     endif
 
     |Interactive CLI (src/__main__.py)|
-    if (operation raised exception?) then (yes)
+    if (_SessionExpired raised by operand input?) then (yes)
+      stop
+    elseif (operation raised ValueError/TypeError/ZeroDivisionError?) then (yes)
       :Print "Error: <message>";
     else (no)
       :Print "Result: <value>";
