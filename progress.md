@@ -31,3 +31,13 @@
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/codebase_map.md, rag/index.md
 - Duration: 48.5s | Cost: $0.181222 USD | Turns: 18
+
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-211-calculator-tests
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml (verified current; no changes needed)
+- **Purpose:** Verified all three PlantUML diagrams remain accurate against current `src/` state. No source code changes since last diagram update; diagrams unchanged.
+- **Risks:** None — diagram verification run; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+- Duration: PENDING | Cost: PENDING | Turns: PENDING
