@@ -25,21 +25,24 @@
 - **Last updated:** cycle 4
 
 ## src/__main__.py
-- **Purpose:** Interactive CLI REPL for the Calculator.
-- **Exports:** `parse_number(prompt)`, `run_operation(calc, op)`, `main()`
+- **Purpose:** Dual-mode CLI for the Calculator: bash argv mode and interactive REPL.
+- **Exports:** `parse_number(prompt)`, `_to_int_if_needed(op, value)`, `run_operation(calc, op)`, `_format_result(value)`, `cli_main(args)`, `main()`
 - **Module-level constants:** `UNARY_OPS`, `BINARY_OPS`, `INTEGER_OPS`, `MENU`, `MENU_MAP`
 - **Key invariants:**
+  - `main()` checks `sys.argv`: if `len(sys.argv) > 1`, calls `cli_main(sys.argv[1:])` and `sys.exit(rc)`; otherwise starts the interactive REPL.
+  - `cli_main(args)` parses `[operation, *operands]`, validates arg count, runs the operation, prints `_format_result(result)`, returns 0 on success / 1 on error.
+  - `_format_result(value)` converts whole floats to integer strings (7.0 → "7"); fractional floats and ints pass through as-is.
   - `MENU_MAP` maps strings "1"–"12" to the 12 Calculator method names; "q" quits.
   - `parse_number` loops until the user enters a valid float; never raises.
-  - `run_operation` catches `ValueError` and `ZeroDivisionError` and prints "Error: …" without crashing the loop.
+  - `run_operation` catches `ValueError` and `ZeroDivisionError` and prints "Error: …" without crashing the REPL loop.
   - `INTEGER_OPS = {"factorial"}`: inputs for these ops are converted float→int before dispatch; non-whole numbers raise `ValueError`.
-- **Last updated:** cycle 5
+- **Last updated:** cycle 6
 
 ## tests/test_main.py
-- **Purpose:** Test suite for the interactive CLI in src/__main__.py.
-- **Exports:** 26 test functions covering parse_number (valid int/float/negative/retry), MENU_MAP completeness, run_operation for all 12 operations including error paths (divide-by-zero, negative factorial, negative square_root, non-positive log/ln), and the main loop (quit immediately, unknown choice, perform add then quit).
-- **Key invariants:** Uses `unittest.mock.patch("builtins.input", ...)` to simulate user input; uses `capsys` to capture stdout.
-- **Last updated:** cycle 5
+- **Purpose:** Test suite for src/__main__.py (both interactive REPL and bash CLI mode).
+- **Exports:** 52 test functions covering: parse_number (valid int/float/negative/retry), MENU_MAP completeness, run_operation for all 12 operations + error paths, _format_result (whole float, fractional, int), cli_main for all 12 operations + error paths (unknown op, wrong arg count, invalid number, domain errors), and main dispatch (interactive REPL with sys.argv patched to ["prog"], CLI dispatch via sys.argv with 2+ args).
+- **Key invariants:** Uses `unittest.mock.patch("builtins.input", ...)` for REPL tests; uses `patch("sys.argv", ...)` for all `main()` tests to control REPL vs. CLI dispatch; uses `capsys` to capture stdout.
+- **Last updated:** cycle 6
 
 ## tests/test_calculator.py
 - **Purpose:** Full test suite for Calculator class.

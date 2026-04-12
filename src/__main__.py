@@ -1,3 +1,5 @@
+import sys
+
 from .calculator import Calculator
 
 
@@ -73,7 +75,61 @@ def run_operation(calc: Calculator, op: str) -> None:
         print(f"  Error: {exc}")
 
 
+def _format_result(value: "int | float") -> str:
+    """Format a numeric result: whole floats are shown as integers."""
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
+
+
+def cli_main(args: list) -> int:
+    """Execute a single calculator operation from command-line arguments.
+
+    Usage: python -m src <operation> [operands...]
+
+    Returns 0 on success, 1 on error (message printed to stdout).
+    """
+    all_ops = UNARY_OPS | BINARY_OPS
+    if not args:
+        print("Usage: python -m src <operation> [operands...]")
+        print(f"Operations: {', '.join(sorted(all_ops))}")
+        return 1
+
+    op = args[0]
+    if op not in all_ops:
+        print(f"Error: Unknown operation {op!r}. Available: {', '.join(sorted(all_ops))}")
+        return 1
+
+    operand_args = args[1:]
+    calc = Calculator()
+
+    try:
+        if op in BINARY_OPS:
+            if len(operand_args) != 2:
+                print(f"Error: {op} requires exactly 2 operands, got {len(operand_args)}")
+                return 1
+            a = float(operand_args[0])
+            b = float(operand_args[1])
+            result = getattr(calc, op)(a, b)
+        else:
+            if len(operand_args) != 1:
+                print(f"Error: {op} requires exactly 1 operand, got {len(operand_args)}")
+                return 1
+            a = float(operand_args[0])
+            a = _to_int_if_needed(op, a)
+            result = getattr(calc, op)(a)
+    except (ValueError, ZeroDivisionError) as exc:
+        print(f"Error: {exc}")
+        return 1
+
+    print(_format_result(result))
+    return 0
+
+
 def main() -> None:
+    if len(sys.argv) > 1:
+        sys.exit(cli_main(sys.argv[1:]))
+
     calc = Calculator()
     print("Welcome to the Calculator!")
     while True:

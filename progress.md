@@ -1,5 +1,26 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-239-cli-mode
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect the CLI mode added in cycle 6. Class diagram now shows `cli_main(args: list) : int` and `_format_result(value: int|float) : str`. Activity diagram now shows both CLI dispatch path and interactive REPL path branching on `sys.argv`. Sequence diagram now shows the full CLI sequence including `cli_main` participant, operand parsing from args, `_format_result`, and `sys.exit` return codes.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: 78.4s | Cost: $0.263965 USD | Turns: 18
+
+## Run: Issue #239 — CLI Mode (2026-04-12)
+
+- **Branch:** exp3/issue-239-cli-mode
+- **Target PR branch:** exp3/naive-generic
+- **Files changed:** src/__main__.py, tests/test_main.py
+- **Purpose:** Added bash CLI mode to the calculator. When `sys.argv` has arguments, `main()` dispatches to the new `cli_main(args)` function which parses `<operation> [operands...]`, runs the calculation, and prints the result. Whole-number floats are printed as integers (e.g. `7` not `7.0`). On error (unknown op, wrong operand count, invalid number, domain error), prints an "Error: …" message and exits with code 1. Interactive REPL behavior is preserved when no arguments are given. Also added `_format_result` helper. Fixed three existing `main()` tests that were not mocking `sys.argv` (pytest passes its own argv which triggered CLI dispatch).
+- **Risks:** Minimal — no changes to Calculator class. All new code is in `__main__.py`. Three existing tests needed `patch("sys.argv", ["prog"])` to remain valid after the argv-check was added to `main()`.
+- **Tests passed:** Yes — 110 collected (58 calculator + 52 CLI/main), 110 passed.
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
+Duration: 204.5s | Cost: $0.685364 USD | Turns: 33
+
 ## Run: Issue #220 — Add User Input (2026-04-12)
 
 - **Branch:** exp3/issue-220-user-input

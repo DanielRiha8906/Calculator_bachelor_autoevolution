@@ -2,7 +2,7 @@
 
 import pytest
 from unittest.mock import patch
-from src.__main__ import parse_number, run_operation, main, MENU_MAP
+from src.__main__ import parse_number, run_operation, main, MENU_MAP, cli_main, _format_result
 from src.calculator import Calculator
 
 
@@ -190,14 +190,14 @@ def test_run_operation_ln_non_positive_prints_error(capsys):
 # --- main loop ---
 
 def test_main_quit_immediately(capsys):
-    with patch("builtins.input", return_value="q"):
+    with patch("sys.argv", ["prog"]), patch("builtins.input", return_value="q"):
         main()
     out = capsys.readouterr().out
     assert "Goodbye" in out
 
 
 def test_main_unknown_choice_then_quit(capsys):
-    with patch("builtins.input", side_effect=["99", "q"]):
+    with patch("sys.argv", ["prog"]), patch("builtins.input", side_effect=["99", "q"]):
         main()
     out = capsys.readouterr().out
     assert "Unknown choice" in out
@@ -205,7 +205,188 @@ def test_main_unknown_choice_then_quit(capsys):
 
 def test_main_perform_add_then_quit(capsys):
     # Choose add (1), enter 3 and 4, then quit
-    with patch("builtins.input", side_effect=["1", "3", "4", "q"]):
+    with patch("sys.argv", ["prog"]), patch("builtins.input", side_effect=["1", "3", "4", "q"]):
         main()
     out = capsys.readouterr().out
     assert "7" in out
+
+
+# --- _format_result ---
+
+def test_format_result_whole_float_returns_int_string():
+    assert _format_result(7.0) == "7"
+
+
+def test_format_result_fractional_float_returns_float_string():
+    assert _format_result(3.5) == "3.5"
+
+
+def test_format_result_int_returns_int_string():
+    assert _format_result(120) == "120"
+
+
+# --- cli_main ---
+
+def test_cli_main_add(capsys):
+    rc = cli_main(["add", "3", "4"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "7" in out
+
+
+def test_cli_main_subtract(capsys):
+    rc = cli_main(["subtract", "10", "3"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "7" in out
+
+
+def test_cli_main_multiply(capsys):
+    rc = cli_main(["multiply", "6", "7"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "42" in out
+
+
+def test_cli_main_divide(capsys):
+    rc = cli_main(["divide", "10", "2"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "5" in out
+
+
+def test_cli_main_power(capsys):
+    rc = cli_main(["power", "2", "10"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "1024" in out
+
+
+def test_cli_main_factorial(capsys):
+    rc = cli_main(["factorial", "5"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "120" in out
+
+
+def test_cli_main_square(capsys):
+    rc = cli_main(["square", "4"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "16" in out
+
+
+def test_cli_main_cube(capsys):
+    rc = cli_main(["cube", "3"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "27" in out
+
+
+def test_cli_main_square_root(capsys):
+    rc = cli_main(["square_root", "9"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "3" in out
+
+
+def test_cli_main_cube_root(capsys):
+    rc = cli_main(["cube_root", "8"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "2" in out
+
+
+def test_cli_main_log(capsys):
+    rc = cli_main(["log", "100"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "2" in out
+
+
+def test_cli_main_ln(capsys):
+    rc = cli_main(["ln", "1"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "0" in out
+
+
+def test_cli_main_no_args_prints_usage(capsys):
+    rc = cli_main([])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "Usage" in out
+
+
+def test_cli_main_unknown_op_prints_error(capsys):
+    rc = cli_main(["modulo", "10", "3"])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "Error" in out
+
+
+def test_cli_main_binary_op_wrong_arg_count(capsys):
+    rc = cli_main(["add", "3"])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "Error" in out
+
+
+def test_cli_main_unary_op_wrong_arg_count(capsys):
+    rc = cli_main(["square", "4", "5"])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "Error" in out
+
+
+def test_cli_main_divide_by_zero_error(capsys):
+    rc = cli_main(["divide", "10", "0"])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "Error" in out
+
+
+def test_cli_main_factorial_negative_error(capsys):
+    rc = cli_main(["factorial", "-1"])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "Error" in out
+
+
+def test_cli_main_factorial_non_whole_error(capsys):
+    rc = cli_main(["factorial", "3.5"])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "Error" in out
+
+
+def test_cli_main_invalid_number_error(capsys):
+    rc = cli_main(["add", "abc", "3"])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "Error" in out
+
+
+def test_cli_main_square_root_negative_error(capsys):
+    rc = cli_main(["square_root", "-4"])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "Error" in out
+
+
+# --- main dispatches to cli_main when sys.argv has args ---
+
+def test_main_cli_dispatch(capsys):
+    with patch("sys.argv", ["prog", "add", "2", "3"]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+    assert exc_info.value.code == 0
+    out = capsys.readouterr().out
+    assert "5" in out
+
+
+def test_main_cli_dispatch_error_exits_1(capsys):
+    with patch("sys.argv", ["prog", "divide", "1", "0"]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+    assert exc_info.value.code == 1

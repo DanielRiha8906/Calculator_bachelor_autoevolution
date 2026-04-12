@@ -27,6 +27,8 @@ package "src" {
         +parse_number(prompt: str) : float
         -_to_int_if_needed(op: str, value: float) : float | int
         +run_operation(calc: Calculator, op: str) : void
+        -_format_result(value: int | float) : str
+        +cli_main(args: list) : int
         +main() : void
     }
 }
@@ -74,6 +76,18 @@ note left of Main::INTEGER_OPS
   {"factorial"}: float inputs are
   converted to int before dispatch;
   non-whole values raise ValueError
+end note
+
+note left of Main::cli_main
+  Parses sys.argv[1:] as
+  <operation> [operands...]
+  Returns 0 on success, 1 on error
+end note
+
+note left of Main::_format_result
+  Whole floats shown as integers
+  (7.0 → "7"); fractional and
+  int values pass through as-is
 end note
 
 @enduml
