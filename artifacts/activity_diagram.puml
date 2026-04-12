@@ -1,0 +1,36 @@
+@startuml activity_diagram
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+    DiamondBackgroundColor White
+    DiamondBorderColor Black
+}
+
+start
+
+:Instantiate Calculator;
+
+:calc.add(10, 5);
+:Print "Addition: 15";
+
+:calc.subtract(10, 5);
+:Print "Subtraction: 5";
+
+:calc.multiply(10, 5);
+:Print "Multiplication: 50";
+
+:Call calc.divide(a, b);
+
+if (b == 0?) then (yes)
+    :Raise ValueError\n"Division by zero is not allowed";
+    stop
+else (no)
+    :Return a / b;
+    :Print "Division: <result>";
+endif
+
+stop
+
+@enduml

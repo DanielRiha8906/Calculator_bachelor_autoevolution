@@ -1,0 +1,27 @@
+@startuml class_diagram
+
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+
+class Calculator {
+    +add(a, b) : number
+    +subtract(a, b) : number
+    +multiply(a, b) : number
+    +divide(a, b) : number
+}
+
+note right of Calculator::divide
+  Raises ValueError if b == 0
+end note
+
+class "__main__" as Main {
+    +main() : None
+}
+
+Main ..> Calculator : instantiates
+
+@enduml
