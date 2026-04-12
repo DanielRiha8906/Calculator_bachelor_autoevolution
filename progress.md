@@ -11,6 +11,17 @@
 - **RAG entries consulted:** RAG initialized this run; `rag/codebase_map.md` used to confirm `divide` raises ZeroDivisionError natively (no source code changes required).
 - Duration: 125.1s | Cost: $0.522137 USD | Turns: 41
 
+## Run: Issue #211 — Calculator Test Suite (2026-04-12)
+
+- **Branch:** exp3/issue-211-calculator-tests
+- **Target PR branch:** exp3/naive-generic
+- **Files changed:** tests/test_calculator.py
+- **Purpose:** Expanded test suite from 1 test to 23 tests covering all four Calculator operations (add, subtract, multiply, divide) with positive, negative, mixed-sign, zero, float, and edge-case inputs.
+- **Risks:** None — tests only; no changes to source code.
+- **Tests passed:** Yes — 23 collected, 23 passed.
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md
+- Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Diagram Update (2026-04-12)
 
 - **Branch:** exp3/issue-208-zero-division-test
