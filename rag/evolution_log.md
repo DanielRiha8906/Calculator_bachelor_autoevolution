@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 2 — Issue #211: Calculator Test Suite (2026-04-12)
+- **Task:** Create comprehensive tests for the Calculator class
+- **Branch:** exp3/issue-211-calculator-tests
+- **Files changed:** tests/test_calculator.py, progress.md
+- **Outcome:** Expanded from 1 test to 23 tests; 23 collected, 23 passed.
+- **Key decisions:** Retained existing `test_divide_by_zero_raises`. Added 5 tests per arithmetic operation (add, subtract) and 6 for multiply, 7 for divide — covering positive, negative, mixed-sign, zero, float, and boundary (identity element) inputs. Used `pytest.approx` for float comparisons.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 1 — Issue #208: ZeroDivisionTest (2026-04-12)
 - **Task:** Add test for incorrect inputs in division (ZeroDivisionError)
 - **Branch:** exp3/issue-208-zero-division-test
