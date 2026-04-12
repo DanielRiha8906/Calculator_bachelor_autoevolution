@@ -22,6 +22,17 @@
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md
 - Duration: 92.6s | Cost: $0.318279 USD | Turns: 26
 
+## Run: Issue #214 — Add Factorial (2026-04-12)
+
+- **Branch:** exp3/issue-214-add-factorial
+- **Target PR branch:** exp3/naive-generic
+- **Files changed:** src/calculator.py, tests/test_calculator.py
+- **Purpose:** Added `Calculator.factorial(n)` using `math.factorial`; raises `ValueError` for negative inputs. Added 5 tests: factorial(0), factorial(1), factorial(5), factorial(10), and negative-input error case.
+- **Risks:** Minimal — added `import math` at module level; `math` is stdlib so no new dependencies. All existing 23 tests continue to pass.
+- **Tests passed:** Yes — 28 collected, 28 passed.
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Diagram Update (2026-04-12)
 
 - **Branch:** exp3/issue-208-zero-division-test

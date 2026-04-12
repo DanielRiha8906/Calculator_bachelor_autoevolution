@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 3 — Issue #214: Add Factorial (2026-04-12)
+- **Task:** Add factorial operation to Calculator
+- **Branch:** exp3/issue-214-add-factorial
+- **Files changed:** src/calculator.py, tests/test_calculator.py
+- **Outcome:** Added `Calculator.factorial(n)` via `math.factorial`; 28 tests collected, 28 passed.
+- **Key decisions:** Used `math.factorial` from stdlib to delegate validation (raises `ValueError` for negatives), consistent with existing pattern of relying on Python built-in behavior. Added `import math` at module level.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 2 — Issue #211: Calculator Test Suite (2026-04-12)
 - **Task:** Create comprehensive tests for the Calculator class
 - **Branch:** exp3/issue-211-calculator-tests
