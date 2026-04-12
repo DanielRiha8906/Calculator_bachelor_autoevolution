@@ -59,4 +59,39 @@ This keeps the UX smooth and avoids exposing internal Python exceptions to the u
 
 ---
 
+## Pattern: Explicit args parameter to isolate entry points from sys.argv
+
+When a `main()` function conditionally reads `sys.argv[1:]` to select between modes (e.g., interactive vs. CLI), expose an explicit `args: list[str] | None = None` parameter:
+
+```python
+def main(args: list[str] | None = None) -> None:
+    if args is None:
+        args = sys.argv[1:]
+    if args:
+        sys.exit(cli_mode(args))
+    # interactive mode ...
+```
+
+Callers that need a specific mode (test suites, programmatic use) pass the list directly. The production entry point (`if __name__ == "__main__": main()`) picks up `sys.argv` automatically. This prevents test harnesses (e.g., pytest's own CLI args) from accidentally triggering the wrong mode.
+
+**First observed:** cycle 6, `main()` in `src/__main__.py` (CLI mode addition)
+
+---
+
+## Pattern: Group operations by arity for CLI dispatch
+
+When a CLI accepts multiple operations with different numbers of arguments, define explicit sets grouping them by arity and argument type:
+
+```python
+_ONE_ARG_OPS = {"square", "cube", "square_root", "cube_root", "ln"}
+_INT_ARG_OPS = {"factorial"}
+_TWO_ARG_OPS = {"add", "subtract", "multiply", "divide", "power", "log"}
+```
+
+Then dispatch with a simple `if op in _INT_ARG_OPS / elif op in _ONE_ARG_OPS / else` tree and use `getattr(calc, op)(...)` to avoid a full 12-branch if/elif. Keeps argument validation centralized and makes adding new operations straightforward.
+
+**First observed:** cycle 6, `cli_mode()` in `src/__main__.py`
+
+---
+
 <!-- Add further patterns here as they are discovered -->

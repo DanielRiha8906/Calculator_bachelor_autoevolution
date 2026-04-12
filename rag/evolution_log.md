@@ -4,6 +4,22 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 6 — Issue #240: CLI mode (2026-04-12)
+
+- **Task:** Add a CLI mode so the calculator can be executed from bash using command-line arguments. Allow the user to provide the operation and required values directly in the command and print the result to the terminal.
+- **Files changed:** `src/__main__.py`, `tests/test_main.py`
+- **Outcome:** 110 tests pass (63 existing + 28 existing interactive + 19 new cli_mode tests). All previous tests continue to pass.
+- **Key decisions:**
+  - Added `cli_mode(args: list[str]) -> int` — parses args via `argparse` with `choices=sorted(_ALL_OPS)`, validates arity per operation, delegates to Calculator, prints result to stdout, errors to stderr, returns 0/1.
+  - Operations grouped into `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS` constants for arity dispatch; `getattr(calc, op)` used for one-arg and two-arg ops to avoid a 12-branch if/elif.
+  - `main()` signature changed to `main(args: list[str] | None = None)` — when `None`, reads `sys.argv[1:]`; non-empty args dispatch to `cli_mode()`; empty list (`[]`) forces interactive mode.
+  - Existing interactive tests updated from `main()` to `main([])` to prevent pytest's own `sys.argv` entries from triggering CLI mode.
+  - 20 new tests in `tests/test_main.py` cover all 12 cli_mode happy paths, three error paths, two wrong-arity paths, unknown-operation SystemExit, and the main() dispatch integration.
+- **Lessons learned:** When `main()` reads `sys.argv` internally, test harnesses that supply their own args (like pytest) will corrupt the call. Making `args` an explicit parameter with a sensible default cleanly separates production entry-point behavior from test usage.
+- **Cost:** PENDING | **Turns:** PENDING
+
+---
+
 ## Cycle 5 — Issue #221: Interactive user input (2026-04-12)
 
 - **Task:** Add interactive user input so the calculator reads the selected operation and required values at runtime; allow the user to continue after each result.
