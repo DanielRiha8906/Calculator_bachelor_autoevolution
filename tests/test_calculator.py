@@ -140,3 +140,53 @@ def test_divide_by_zero_raises(calc):
 def test_divide_by_zero_float_raises(calc):
     with pytest.raises(ZeroDivisionError):
         calc.divide(1.0, 0)
+
+
+# ---------------------------------------------------------------------------
+# factorial
+# ---------------------------------------------------------------------------
+
+def test_factorial_zero(calc):
+    assert calc.factorial(0) == 1
+
+
+def test_factorial_one(calc):
+    assert calc.factorial(1) == 1
+
+
+def test_factorial_positive_integer(calc):
+    assert calc.factorial(5) == 120
+
+
+def test_factorial_larger_integer(calc):
+    assert calc.factorial(10) == 3628800
+
+
+def test_factorial_negative_raises(calc):
+    with pytest.raises(ValueError):
+        calc.factorial(-1)
+
+
+def test_factorial_negative_large_raises(calc):
+    with pytest.raises(ValueError):
+        calc.factorial(-10)
+
+
+def test_factorial_float_raises(calc):
+    with pytest.raises(TypeError):
+        calc.factorial(3.0)
+
+
+def test_factorial_non_integer_raises(calc):
+    with pytest.raises(TypeError):
+        calc.factorial(1.5)
+
+
+def test_factorial_bool_raises(calc):
+    with pytest.raises(TypeError):
+        calc.factorial(True)
+
+
+def test_factorial_string_raises(calc):
+    with pytest.raises(TypeError):
+        calc.factorial("5")
