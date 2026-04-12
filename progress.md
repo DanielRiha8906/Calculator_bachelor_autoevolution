@@ -17,7 +17,7 @@ None — tests only, no source changes.
 All 105 tests pass (105/105). `TestDivisionIncorrectInputs` now has 11 tests.
 
 ### Duration / Cost / Turns
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 155.8s | Cost: $0.444806 USD | Turns: 15
 
 ---
 
