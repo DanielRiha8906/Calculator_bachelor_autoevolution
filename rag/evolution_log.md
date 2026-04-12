@@ -4,6 +4,22 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 4 — Issue #218: Multiple math operations (2026-04-12)
+
+- **Task:** Add square, cube, square_root, cube_root, power, log, and ln as supported Calculator operations with tests.
+- **Files changed:** `src/calculator.py`, `tests/test_calculator.py`
+- **Outcome:** 63 tests pass. Added 7 new Calculator methods. Added 33 new tests.
+- **Key decisions:**
+  - `cube_root` uses a sign-preserving trick `-((-a)**(1/3))` for negative inputs, since Python's `a**(1/3)` produces a complex number for negative `a`.
+  - `log` validates both `a > 0` and `base > 0 and base != 1` before delegating to `math.log(a, base)`.
+  - `ln` is a thin wrapper around `math.log(a)` with a `a > 0` guard.
+  - `square` and `cube` are pure `**` expressions — no guards needed.
+  - `power` accepts any real exponent via `**`; no special-casing needed.
+- **Lessons learned:** Python `(-8)**(1/3)` returns a complex number, not `-2.0`; the sign-preserving `-(abs(a)**(1/3))` idiom is required for real cube roots of negative numbers.
+- **Cost:** PENDING | **Turns:** PENDING
+
+---
+
 ## Cycle 3 — Issue #215: Factorial operation (2026-04-12)
 
 - **Task:** Add `factorial` as a supported calculator operation with correct input validation and tests.

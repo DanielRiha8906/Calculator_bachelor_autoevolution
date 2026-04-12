@@ -13,6 +13,13 @@ class Calculator {
     +multiply(a, b) : number
     +divide(a, b) : number
     +factorial(n: int) : int
+    +square(a) : number
+    +cube(a) : number
+    +square_root(a) : float
+    +cube_root(a) : float
+    +power(a, b) : number
+    +log(a, base) : float
+    +ln(a) : float
 }
 
 note right of Calculator::divide
@@ -23,6 +30,20 @@ note right of Calculator::factorial
   Raises ValueError if n < 0
   or n is not an integer.
   Delegates to math.factorial(n).
+end note
+
+note right of Calculator::square_root
+  Raises ValueError if a < 0
+end note
+
+note right of Calculator::log
+  Raises ValueError if a <= 0,
+  base <= 0, or base == 1
+end note
+
+note right of Calculator::ln
+  Raises ValueError if a <= 0.
+  Delegates to math.log(a).
 end note
 
 class "__main__" as Main {

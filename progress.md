@@ -2,6 +2,21 @@
 
 ---
 
+## Run: Issue #218 — Multiple math operations (2026-04-12)
+
+- **Branch:** exp3/issue-218-add-math-operations
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `src/calculator.py` — added `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln` methods with input validation
+  - `tests/test_calculator.py` — added 33 tests for new operations (4 for square, 4 for cube, 4 for square_root, 4 for cube_root, 5 for power, 7 for log, 5 for ln)
+- **Purpose:** Add seven new math operations to the Calculator class as required by issue #218.
+- **Risks:** None — purely additive; no existing methods modified.
+- **Tests passed:** Yes — 63/63
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+Duration: 144.3s | Cost: $0.644819 USD | Turns: 36
+
+---
+
 ## Run: Issue #215 — Factorial operation (2026-04-12)
 
 - **Branch:** exp3/issue-215-add-factorial
@@ -88,3 +103,18 @@
 - **Tests passed:** N/A (no source changes)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 - Duration: 61.3s | Cost: $0.214985 USD | Turns: 19
+
+---
+
+## Run: Diagram update (2026-04-12)
+
+- **Branch:** exp3/issue-218-add-math-operations
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln` to `Calculator` class with notes for ValueError conditions
+  - `artifacts/activity_diagram.puml` — added validation and execution flow for all seven new operations
+  - `artifacts/sequence_diagram.puml` — added interaction sequences for all seven new operations including math module delegation and error alt paths
+- **Purpose:** Update PlantUML diagrams to reflect seven new math operations added to Calculator in cycle 4 (issue #218).
+- **Risks:** None — diagram-only change; no source code modified.
+- **Tests passed:** N/A (no source changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: 54.5s | Cost: $0.237316 USD | Turns: 18

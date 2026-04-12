@@ -12,27 +12,24 @@ start
 
 :Instantiate Calculator;
 
-:calc.add(10, 5);
-:Print "Addition: 15";
+:calc.add(a, b);
+:Return a + b;
 
-:calc.subtract(10, 5);
-:Print "Subtraction: 5";
+:calc.subtract(a, b);
+:Return a - b;
 
-:calc.multiply(10, 5);
-:Print "Multiplication: 50";
+:calc.multiply(a, b);
+:Return a * b;
 
 :Call calc.divide(a, b);
-
 if (b == 0?) then (yes)
     :Raise ValueError\n"Division by zero is not allowed";
     stop
 else (no)
     :Return a / b;
-    :Print "Division: <result>";
 endif
 
 :Call calc.factorial(n);
-
 if (n is not int?) then (yes)
     :Raise ValueError\n"Factorial only defined for\nnon-negative integers";
     stop
@@ -42,8 +39,52 @@ else (no)
         stop
     else (no)
         :Return math.factorial(n);
-        :Print "Factorial: <result>";
     endif
+endif
+
+:calc.square(a);
+:Return a ** 2;
+
+:calc.cube(a);
+:Return a ** 3;
+
+:Call calc.square_root(a);
+if (a < 0?) then (yes)
+    :Raise ValueError\n"Square root not defined\nfor negative numbers";
+    stop
+else (no)
+    :Return math.sqrt(a);
+endif
+
+:Call calc.cube_root(a);
+if (a < 0?) then (yes)
+    :Return -((-a) ** (1/3))\n(sign-preserving real root);
+else (no)
+    :Return a ** (1/3);
+endif
+
+:calc.power(a, b);
+:Return a ** b;
+
+:Call calc.log(a, base);
+if (a <= 0?) then (yes)
+    :Raise ValueError\n"a must be positive";
+    stop
+else (no)
+    if (base <= 0 or base == 1?) then (yes)
+        :Raise ValueError\n"Invalid base";
+        stop
+    else (no)
+        :Return math.log(a, base);
+    endif
+endif
+
+:Call calc.ln(a);
+if (a <= 0?) then (yes)
+    :Raise ValueError\n"a must be positive";
+    stop
+else (no)
+    :Return math.log(a);
 endif
 
 stop
