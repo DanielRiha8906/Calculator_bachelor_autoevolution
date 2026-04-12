@@ -9,7 +9,7 @@
 - **Risks:** Low — additive change only; no existing methods modified. Boolean guard ordering is the only subtle invariant.
 - **Tests passed:** Yes — 38 passed in 0.05s
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 124.1s | Cost: $0.424947 USD | Turns: 30
 
 ---
 
