@@ -74,11 +74,14 @@ else no arguments — Interactive REPL mode
   loop REPL — repeats until user quits
 
     Main --> User : print MENU
-    User -> Main : choice (1–12 or "q")
+    User -> Main : choice (1–12, "h", or "q")
 
     alt choice == "q"
       Main --> User : "Goodbye!"
       note right of Main: loop exits here
+    else choice == "h"
+      Main -> Main : _show_history(calc)
+      Main --> User : numbered history entries or "No history yet."
     else choice not in MENU_MAP
       Main --> User : "Unknown choice: ..." message
     else choice is valid (1–12)
@@ -152,6 +155,7 @@ else no arguments — Interactive REPL mode
 
       alt success
         Calc --> Main : result value
+        Main -> Calc : calc.history.append({op, operands, result})
         Main --> User : "Result: <value>"
       else ValueError or ZeroDivisionError
         Calc --> Main : raises exception

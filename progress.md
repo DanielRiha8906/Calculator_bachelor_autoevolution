@@ -1,5 +1,27 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-248-add-history
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 8 changes: added `history: list[dict]` attribute, `__init__()`, and `get_history(): list[dict]` to Calculator class diagram; added `_show_history(calc: Calculator): void` to __main__ module. Activity diagram now shows 'h' choice branch calling `_show_history` and `calc.history.append` on the success path. Sequence diagram now shows `choice == "h"` alt branch and `calc.history.append(...)` call after successful operation.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: 159.4s | Cost: $0.419697 USD | Turns: 19
+
+## Run: Issue #248 — History (2026-04-12)
+
+- **Branch:** exp3/issue-248-add-history
+- **Files changed:** src/calculator.py, src/__main__.py, tests/test_calculator.py, tests/test_main.py
+- **Purpose:** Added operation history to the calculator. `Calculator` now has `self.history: list[dict]` and `get_history()`. `run_operation` appends a history entry `{"op", "operands", "result"}` on success; failed operations are not recorded. Added `_show_history(calc)` helper and REPL 'h' choice to display history. MENU updated to include 'h. history'. Unknown-choice error message updated to mention 'h'.
+- **Risks:** Low — Calculator gains `__init__` (no existing code depended on it being uninitialized); REPL loop adds one new elif branch; `run_operation` appends to `calc.history` only on the success path.
+- **Tests passed:** 125/125
+- **Current branch:** exp3/issue-248-add-history
+- **PR target:** exp3/naive-generic
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
+Duration: 251.0s | Cost: $0.899158 USD | Turns: 40
+
 ## Run: Issue #245 — Input Validation (2026-04-12)
 
 - **Branch:** exp3/issue-245-input-validation

@@ -2,7 +2,7 @@
 
 import pytest
 from unittest.mock import patch
-from src.__main__ import parse_number, run_operation, main, MENU_MAP, cli_main, _format_result, MAX_INPUT_ATTEMPTS
+from src.__main__ import parse_number, run_operation, main, MENU_MAP, cli_main, _format_result, _show_history, MAX_INPUT_ATTEMPTS
 from src.calculator import Calculator
 
 
@@ -420,3 +420,76 @@ def test_main_cli_dispatch_error_exits_1(capsys):
         with pytest.raises(SystemExit) as exc_info:
             main()
     assert exc_info.value.code == 1
+
+
+# --- history ---
+
+def test_run_operation_records_binary_op_in_history(capsys):
+    calc = Calculator()
+    with patch("builtins.input", side_effect=["3", "4"]):
+        run_operation(calc, "add")
+    assert len(calc.history) == 1
+    entry = calc.history[0]
+    assert entry["op"] == "add"
+    assert entry["operands"] == (3.0, 4.0)
+    assert entry["result"] == 7.0
+
+
+def test_run_operation_records_unary_op_in_history(capsys):
+    calc = Calculator()
+    with patch("builtins.input", return_value="9"):
+        run_operation(calc, "square_root")
+    assert len(calc.history) == 1
+    entry = calc.history[0]
+    assert entry["op"] == "square_root"
+    assert entry["operands"] == (9.0,)
+    assert entry["result"] == pytest.approx(3.0)
+
+
+def test_run_operation_error_not_recorded_in_history(capsys):
+    calc = Calculator()
+    with patch("builtins.input", side_effect=["10", "0"]):
+        run_operation(calc, "divide")
+    assert calc.history == []
+
+
+def test_run_operation_multiple_ops_accumulate_in_history(capsys):
+    calc = Calculator()
+    with patch("builtins.input", side_effect=["2", "3"]):
+        run_operation(calc, "add")
+    with patch("builtins.input", return_value="4"):
+        run_operation(calc, "square")
+    assert len(calc.history) == 2
+    assert calc.history[0]["op"] == "add"
+    assert calc.history[1]["op"] == "square"
+
+
+def test_show_history_empty(capsys):
+    calc = Calculator()
+    _show_history(calc)
+    out = capsys.readouterr().out
+    assert "No history yet" in out
+
+
+def test_show_history_with_entries(capsys):
+    calc = Calculator()
+    calc.history.append({"op": "add", "operands": (3.0, 4.0), "result": 7.0})
+    calc.history.append({"op": "square", "operands": (5.0,), "result": 25.0})
+    _show_history(calc)
+    out = capsys.readouterr().out
+    assert "add(3, 4) = 7" in out
+    assert "square(5) = 25" in out
+
+
+def test_main_history_choice_shows_empty(capsys):
+    with patch("sys.argv", ["prog"]), patch("builtins.input", side_effect=["h", "q"]):
+        main()
+    out = capsys.readouterr().out
+    assert "No history yet" in out
+
+
+def test_main_history_shows_after_operation(capsys):
+    with patch("sys.argv", ["prog"]), patch("builtins.input", side_effect=["1", "3", "4", "h", "q"]):
+        main()
+    out = capsys.readouterr().out
+    assert "add(3, 4) = 7" in out

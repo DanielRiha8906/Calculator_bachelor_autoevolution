@@ -2,6 +2,13 @@ import math
 
 
 class Calculator:
+    def __init__(self):
+        self.history: list[dict] = []
+
+    def get_history(self) -> list[dict]:
+        """Return a copy of the operation history list."""
+        return list(self.history)
+
     def add(self, a, b):
         return a + b
 

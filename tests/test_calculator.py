@@ -322,3 +322,31 @@ def test_ln_negative_raises():
     calc = Calculator()
     with pytest.raises(ValueError):
         calc.ln(-1)
+
+
+# --- history ---
+
+def test_history_initially_empty():
+    calc = Calculator()
+    assert calc.get_history() == []
+
+
+def test_history_after_add():
+    calc = Calculator()
+    calc.add(2, 3)
+    assert len(calc.get_history()) == 0  # history is recorded by run_operation, not Calculator methods
+
+
+def test_history_list_is_instance_attribute():
+    calc1 = Calculator()
+    calc2 = Calculator()
+    calc1.history.append({"test": True})
+    assert calc2.get_history() == []
+
+
+def test_get_history_returns_copy():
+    calc = Calculator()
+    calc.history.append({"op": "add", "operands": (1, 2), "result": 3})
+    copy = calc.get_history()
+    copy.append({"op": "fake"})
+    assert len(calc.history) == 1

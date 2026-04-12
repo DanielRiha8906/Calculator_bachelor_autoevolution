@@ -63,7 +63,7 @@ else (no — Interactive REPL mode)
 
   repeat
 
-    :Print MENU (12 operations + quit);
+    :Print MENU (12 operations + h + quit);
     :Read user choice via input();
 
     if (choice == "q"?) then (yes)
@@ -72,40 +72,47 @@ else (no — Interactive REPL mode)
     else (no)
     endif
 
-    :Look up op = MENU_MAP.get(choice);
-
-    if (op is None?) then (yes)
-      :Print "Unknown choice" error message;
+    if (choice == "h"?) then (yes)
+      :_show_history(calc)\nprint numbered history entries;
     else (no)
 
-      note right
-        parse_number() retries up to
-        MAX_INPUT_ATTEMPTS (3) times;
-        prints remaining-attempts feedback
-        on each invalid entry; raises
-        ValueError after all attempts fail
-      end note
+      :Look up op = MENU_MAP.get(choice);
 
-      if (op in BINARY_OPS?) then (yes)
-        :parse_number() → a (first operand);
-        :parse_number() → b (second operand);
-      else (no — UNARY_OPS)
-        :parse_number() → a;
-        if (op in INTEGER_OPS?) then (yes)
-          if (a is whole number?) then (yes)
-            :Convert a float → int;
-          else (no)
-            :Raise ValueError\n"requires whole number";
+      if (op is None?) then (yes)
+        :Print "Unknown choice" error message;
+      else (no)
+
+        note right
+          parse_number() retries up to
+          MAX_INPUT_ATTEMPTS (3) times;
+          prints remaining-attempts feedback
+          on each invalid entry; raises
+          ValueError after all attempts fail
+        end note
+
+        if (op in BINARY_OPS?) then (yes)
+          :parse_number() → a (first operand);
+          :parse_number() → b (second operand);
+        else (no — UNARY_OPS)
+          :parse_number() → a;
+          if (op in INTEGER_OPS?) then (yes)
+            if (a is whole number?) then (yes)
+              :Convert a float → int;
+            else (no)
+              :Raise ValueError\n"requires whole number";
+            endif
           endif
         endif
-      endif
 
-      :Dispatch: getattr(calc, op)(args);
+        :Dispatch: getattr(calc, op)(args);
 
-      if (ValueError or ZeroDivisionError raised?) then (yes)
-        :Print "Error: <exception message>";
-      else (no)
-        :Print "Result: <value>";
+        if (ValueError or ZeroDivisionError raised?) then (yes)
+          :Print "Error: <exception message>";
+        else (no)
+          :calc.history.append\n{op, operands, result};
+          :Print "Result: <value>";
+        endif
+
       endif
 
     endif

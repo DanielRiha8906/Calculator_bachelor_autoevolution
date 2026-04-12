@@ -24,6 +24,7 @@ Operations:
  10. power
  11. log (base-10)
  12. ln (natural log)
+  h. history
   q. quit
 """
 
@@ -77,12 +78,27 @@ def run_operation(calc: Calculator, op: str) -> None:
             a = parse_number("  Enter first number: ")
             b = parse_number("  Enter second number: ")
             result = getattr(calc, op)(a, b)
+            calc.history.append({"op": op, "operands": (a, b), "result": result})
         else:
             a = _to_int_if_needed(op, parse_number("  Enter number: "))
             result = getattr(calc, op)(a)
+            calc.history.append({"op": op, "operands": (a,), "result": result})
         print(f"  Result: {result}")
     except (ValueError, ZeroDivisionError) as exc:
         print(f"  Error: {exc}")
+
+
+def _show_history(calc: Calculator) -> None:
+    """Print the operation history stored in the Calculator instance."""
+    if not calc.history:
+        print("  No history yet.")
+        return
+    print("  History:")
+    for i, entry in enumerate(calc.history, 1):
+        op = entry["op"]
+        operands = ", ".join(_format_result(o) for o in entry["operands"])
+        result = _format_result(entry["result"])
+        print(f"    {i}. {op}({operands}) = {result}")
 
 
 def _format_result(value: "int | float") -> str:
@@ -148,9 +164,12 @@ def main() -> None:
         if choice == "q":
             print("Goodbye!")
             break
+        if choice == "h":
+            _show_history(calc)
+            continue
         op = MENU_MAP.get(choice)
         if op is None:
-            print(f"  Unknown choice: {choice!r}. Please enter a number from 1-12 or 'q'.")
+            print(f"  Unknown choice: {choice!r}. Please enter a number from 1-12, 'h', or 'q'.")
             continue
         run_operation(calc, op)
 
