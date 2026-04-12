@@ -1,0 +1,66 @@
+@startuml class_diagram
+
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+
+package "src" {
+    class Calculator {
+        +add(a, b) : float|int
+        +subtract(a, b) : float|int
+        +multiply(a, b) : float|int
+        +divide(a, b) : float|int
+    }
+
+    class "__main__" as Main <<module>> {
+        +main() : None
+    }
+
+    class "__init__" as Init <<module>> {
+        __all__ : list
+    }
+}
+
+package "tests" {
+    class "test_calculator" as TestModule <<module>> {
+        +calc() : Calculator  <<fixture>>
+        +test_add_positive_integers()
+        +test_add_negative_integers()
+        +test_add_mixed_sign()
+        +test_add_zeros()
+        +test_add_floats()
+        +test_add_large_numbers()
+        +test_subtract_positive_integers()
+        +test_subtract_resulting_negative()
+        +test_subtract_zeros()
+        +test_subtract_floats()
+        +test_subtract_negative_operand()
+        +test_multiply_positive_integers()
+        +test_multiply_by_zero()
+        +test_multiply_negative_numbers()
+        +test_multiply_mixed_sign()
+        +test_multiply_floats()
+        +test_multiply_by_one()
+        +test_multiply_large_numbers()
+        +test_divide_positive_integers()
+        +test_divide_non_even()
+        +test_divide_by_one()
+        +test_divide_negative_dividend()
+        +test_divide_negative_divisor()
+        +test_divide_both_negative()
+        +test_divide_floats()
+        +test_divide_zero_numerator()
+        +test_divide_by_zero_raises()
+        +test_divide_by_zero_float_raises()
+    }
+}
+
+Main --> Calculator : instantiates
+Init ..> Calculator : re-exports
+TestModule --> Calculator : tests via fixture
+
+note right of Calculator
+  Division delegates to Python "/" operator.
+  ZeroDivisionError raised by runtime when b == 0.
+end note
+
+@enduml

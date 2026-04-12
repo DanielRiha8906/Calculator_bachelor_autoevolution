@@ -1,0 +1,72 @@
+@startuml sequence_diagram
+
+skinparam SequenceMessageAlign center
+skinparam ParticipantFontStyle Bold
+
+title Calculator Component Interactions
+
+actor User
+participant "__main__\n(entry point)" as Main
+participant "Calculator" as Calc
+participant "Python Runtime" as Runtime
+
+== Normal Operation (via __main__.py) ==
+
+User -> Main : run module
+activate Main
+
+Main -> Calc : Calculator()
+activate Calc
+Calc --> Main : calc instance
+deactivate Calc
+
+Main -> Calc : calc.add(10, 5)
+activate Calc
+Calc -> Runtime : 10 + 5
+Runtime --> Calc : 15
+Calc --> Main : 15
+deactivate Calc
+
+Main -> Calc : calc.subtract(10, 5)
+activate Calc
+Calc -> Runtime : 10 - 5
+Runtime --> Calc : 5
+Calc --> Main : 5
+deactivate Calc
+
+Main -> Calc : calc.multiply(10, 5)
+activate Calc
+Calc -> Runtime : 10 * 5
+Runtime --> Calc : 50
+Calc --> Main : 50
+deactivate Calc
+
+Main -> Calc : calc.divide(10, 5)
+activate Calc
+Calc -> Runtime : 10 / 5
+Runtime --> Calc : 2.0
+Calc --> Main : 2.0
+deactivate Calc
+
+Main --> User : prints results
+deactivate Main
+
+== Error Path: Division by Zero ==
+
+participant "pytest\ntest suite" as Tests
+
+Tests -> Calc : Calculator()
+activate Calc
+Calc --> Tests : calc instance
+deactivate Calc
+
+Tests -> Calc : calc.divide(1, 0)
+activate Calc
+Calc -> Runtime : 1 / 0
+Runtime --> Calc : raise ZeroDivisionError
+Calc --> Tests : ZeroDivisionError propagated
+deactivate Calc
+
+Tests -> Tests : assert raises(ZeroDivisionError) ✓
+
+@enduml

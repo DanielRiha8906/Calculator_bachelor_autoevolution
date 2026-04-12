@@ -23,3 +23,19 @@ Duration: 90.7s | Cost: $0.350989 USD | Turns: 28
 - **Tests passed:** Yes — `1 passed in 0.01s`
 - **RAG entries consulted:** `rag/codebase_map.md` (codebase map, initialized this run), `rag/index.md`
 - **Duration:** PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
+## Run: update-diagrams — PlantUML diagram creation
+
+- **Branch:** exp3/issue-213-test-suite
+- **PR target:** N/A (diagram-only update, no PR)
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — created; covers Calculator class, __init__, __main__, and test module
+  - `artifacts/activity_diagram.puml` — created; shows calculation/execution flow including ZeroDivisionError path
+  - `artifacts/sequence_diagram.puml` — created; shows interactions between User, __main__, Calculator, Python Runtime, and pytest
+- **Purpose:** Initialize PlantUML architecture diagrams reflecting the current state of src/ (Calculator class with add/subtract/multiply/divide) and the 28-test suite.
+- **Risks:** None — diagram-only, no source or test code modified.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
