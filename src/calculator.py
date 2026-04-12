@@ -1,4 +1,7 @@
+import logging
 import math
+
+logger = logging.getLogger(__name__)
 
 
 class Calculator:
@@ -19,10 +22,18 @@ class Calculator:
         return a * b
 
     def divide(self, a, b):
-        return a / b
+        try:
+            return a / b
+        except ZeroDivisionError:
+            logger.error("divide error: division by zero (a=%s, b=%s)", a, b)
+            raise
 
     def factorial(self, n):
-        return math.factorial(n)
+        try:
+            return math.factorial(n)
+        except ValueError as exc:
+            logger.error("factorial error: %s (n=%s)", exc, n)
+            raise
 
     def square(self, n):
         return n ** 2
@@ -31,7 +42,11 @@ class Calculator:
         return n ** 3
 
     def square_root(self, n):
-        return math.sqrt(n)
+        try:
+            return math.sqrt(n)
+        except ValueError as exc:
+            logger.error("square_root error: %s (n=%s)", exc, n)
+            raise
 
     def cube_root(self, n):
         return math.cbrt(n)
@@ -40,8 +55,16 @@ class Calculator:
         return base ** exp
 
     def log(self, n):
-        return math.log10(n)
+        try:
+            return math.log10(n)
+        except ValueError as exc:
+            logger.error("log error: %s (n=%s)", exc, n)
+            raise
 
     def ln(self, n):
-        return math.log(n)
+        try:
+            return math.log(n)
+        except ValueError as exc:
+            logger.error("ln error: %s (n=%s)", exc, n)
+            raise
 

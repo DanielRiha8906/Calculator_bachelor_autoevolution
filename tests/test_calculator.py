@@ -1,3 +1,4 @@
+import logging
 import pytest
 import math
 from src.calculator import Calculator
@@ -350,3 +351,45 @@ def test_get_history_returns_copy():
     copy = calc.get_history()
     copy.append({"op": "fake"})
     assert len(calc.history) == 1
+
+
+# --- error logging ---
+
+def test_divide_by_zero_logs_error(caplog):
+    calc = Calculator()
+    with caplog.at_level(logging.ERROR, logger="src.calculator"):
+        with pytest.raises(ZeroDivisionError):
+            calc.divide(10, 0)
+    assert any("divide error" in r.message and "division by zero" in r.message for r in caplog.records)
+
+
+def test_factorial_negative_logs_error(caplog):
+    calc = Calculator()
+    with caplog.at_level(logging.ERROR, logger="src.calculator"):
+        with pytest.raises(ValueError):
+            calc.factorial(-1)
+    assert any("factorial error" in r.message for r in caplog.records)
+
+
+def test_square_root_negative_logs_error(caplog):
+    calc = Calculator()
+    with caplog.at_level(logging.ERROR, logger="src.calculator"):
+        with pytest.raises(ValueError):
+            calc.square_root(-4)
+    assert any("square_root error" in r.message for r in caplog.records)
+
+
+def test_log_non_positive_logs_error(caplog):
+    calc = Calculator()
+    with caplog.at_level(logging.ERROR, logger="src.calculator"):
+        with pytest.raises(ValueError):
+            calc.log(0)
+    assert any("log error" in r.message for r in caplog.records)
+
+
+def test_ln_non_positive_logs_error(caplog):
+    calc = Calculator()
+    with caplog.at_level(logging.ERROR, logger="src.calculator"):
+        with pytest.raises(ValueError):
+            calc.ln(-1)
+    assert any("ln error" in r.message for r in caplog.records)

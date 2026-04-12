@@ -1,6 +1,9 @@
+import logging
 import sys
 
 from .calculator import Calculator
+
+logger = logging.getLogger(__name__)
 
 
 UNARY_OPS = {"factorial", "square", "cube", "square_root", "cube_root", "log", "ln"}
@@ -85,6 +88,7 @@ def run_operation(calc: Calculator, op: str) -> None:
             calc.history.append({"op": op, "operands": (a,), "result": result})
         print(f"  Result: {result}")
     except (ValueError, ZeroDivisionError) as exc:
+        logger.error("run_operation %s failed: %s", op, exc)
         print(f"  Error: {exc}")
 
 
@@ -145,6 +149,7 @@ def cli_main(args: list) -> int:
             a = _to_int_if_needed(op, a)
             result = getattr(calc, op)(a)
     except (ValueError, ZeroDivisionError) as exc:
+        logger.error("cli_main %s failed: %s", op, exc)
         print(f"Error: {exc}")
         return 1
 
@@ -153,6 +158,10 @@ def cli_main(args: list) -> int:
 
 
 def main() -> None:
+    logging.basicConfig(
+        level=logging.ERROR,
+        format="%(asctime)s %(name)s %(levelname)s %(message)s",
+    )
     if len(sys.argv) > 1:
         sys.exit(cli_main(sys.argv[1:]))
 
