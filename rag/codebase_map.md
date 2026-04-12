@@ -23,7 +23,7 @@
 - **Last updated:** cycle 0
 
 ## tests/test_calculator.py
-- **Purpose:** Test suite for Calculator class.
-- **Current state:** Contains `test_divide_by_zero_raises` — asserts that `Calculator.divide(10, 0)` raises `ZeroDivisionError`.
-- **Exports:** `test_divide_by_zero_raises`
-- **Last updated:** cycle 1
+- **Purpose:** Full test suite for Calculator class.
+- **Current state:** 23 tests covering all four operations — add, subtract, multiply, divide — with positive, negative, mixed-sign, zero, float, and boundary inputs. Includes `test_divide_by_zero_raises` for the ZeroDivisionError edge case.
+- **Exports:** `test_add_*` (5), `test_subtract_*` (5), `test_multiply_*` (6), `test_divide_*` (7)
+- **Last updated:** cycle 2
