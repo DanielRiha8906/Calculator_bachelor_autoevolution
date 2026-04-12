@@ -190,3 +190,189 @@ def test_factorial_bool_raises(calc):
 def test_factorial_string_raises(calc):
     with pytest.raises(TypeError):
         calc.factorial("5")
+
+
+# ---------------------------------------------------------------------------
+# square
+# ---------------------------------------------------------------------------
+
+def test_square_positive(calc):
+    assert calc.square(4) == 16
+
+
+def test_square_zero(calc):
+    assert calc.square(0) == 0
+
+
+def test_square_negative(calc):
+    assert calc.square(-3) == 9
+
+
+def test_square_float(calc):
+    assert calc.square(2.5) == pytest.approx(6.25)
+
+
+# ---------------------------------------------------------------------------
+# cube
+# ---------------------------------------------------------------------------
+
+def test_cube_positive(calc):
+    assert calc.cube(3) == 27
+
+
+def test_cube_zero(calc):
+    assert calc.cube(0) == 0
+
+
+def test_cube_negative(calc):
+    assert calc.cube(-2) == -8
+
+
+def test_cube_float(calc):
+    assert calc.cube(1.5) == pytest.approx(3.375)
+
+
+# ---------------------------------------------------------------------------
+# square_root
+# ---------------------------------------------------------------------------
+
+def test_square_root_positive(calc):
+    assert calc.square_root(9) == pytest.approx(3.0)
+
+
+def test_square_root_zero(calc):
+    assert calc.square_root(0) == pytest.approx(0.0)
+
+
+def test_square_root_non_perfect(calc):
+    assert calc.square_root(2) == pytest.approx(math.sqrt(2))
+
+
+def test_square_root_float(calc):
+    assert calc.square_root(0.25) == pytest.approx(0.5)
+
+
+def test_square_root_negative_raises(calc):
+    with pytest.raises(ValueError):
+        calc.square_root(-1)
+
+
+def test_square_root_large_negative_raises(calc):
+    with pytest.raises(ValueError):
+        calc.square_root(-100)
+
+
+# ---------------------------------------------------------------------------
+# cube_root
+# ---------------------------------------------------------------------------
+
+def test_cube_root_positive(calc):
+    assert calc.cube_root(27) == pytest.approx(3.0)
+
+
+def test_cube_root_zero(calc):
+    assert calc.cube_root(0) == pytest.approx(0.0)
+
+
+def test_cube_root_negative(calc):
+    assert calc.cube_root(-8) == pytest.approx(-2.0)
+
+
+def test_cube_root_float(calc):
+    assert calc.cube_root(0.125) == pytest.approx(0.5)
+
+
+def test_cube_root_large_negative(calc):
+    assert calc.cube_root(-27) == pytest.approx(-3.0)
+
+
+# ---------------------------------------------------------------------------
+# power
+# ---------------------------------------------------------------------------
+
+def test_power_positive_exponent(calc):
+    assert calc.power(2, 10) == pytest.approx(1024)
+
+
+def test_power_zero_exponent(calc):
+    assert calc.power(5, 0) == pytest.approx(1)
+
+
+def test_power_one_exponent(calc):
+    assert calc.power(7, 1) == pytest.approx(7)
+
+
+def test_power_negative_exponent(calc):
+    assert calc.power(2, -1) == pytest.approx(0.5)
+
+
+def test_power_fractional_exponent(calc):
+    assert calc.power(4, 0.5) == pytest.approx(2.0)
+
+
+def test_power_zero_base(calc):
+    assert calc.power(0, 5) == pytest.approx(0)
+
+
+def test_power_negative_base(calc):
+    assert calc.power(-2, 3) == pytest.approx(-8)
+
+
+# ---------------------------------------------------------------------------
+# log (base-10)
+# ---------------------------------------------------------------------------
+
+def test_log_one(calc):
+    assert calc.log(1) == pytest.approx(0.0)
+
+
+def test_log_ten(calc):
+    assert calc.log(10) == pytest.approx(1.0)
+
+
+def test_log_hundred(calc):
+    assert calc.log(100) == pytest.approx(2.0)
+
+
+def test_log_fraction(calc):
+    assert calc.log(0.1) == pytest.approx(-1.0)
+
+
+def test_log_zero_raises(calc):
+    with pytest.raises(ValueError):
+        calc.log(0)
+
+
+def test_log_negative_raises(calc):
+    with pytest.raises(ValueError):
+        calc.log(-5)
+
+
+# ---------------------------------------------------------------------------
+# ln (natural logarithm)
+# ---------------------------------------------------------------------------
+
+def test_ln_one(calc):
+    assert calc.ln(1) == pytest.approx(0.0)
+
+
+def test_ln_e(calc):
+    assert calc.ln(math.e) == pytest.approx(1.0)
+
+
+def test_ln_positive(calc):
+    assert calc.ln(math.e ** 3) == pytest.approx(3.0)
+
+
+def test_ln_fraction(calc):
+    assert calc.ln(0.5) == pytest.approx(math.log(0.5))
+
+
+def test_ln_zero_raises(calc):
+    with pytest.raises(ValueError):
+        calc.ln(0)
+
+
+def test_ln_negative_raises(calc):
+    with pytest.raises(ValueError):
+        calc.ln(-1)

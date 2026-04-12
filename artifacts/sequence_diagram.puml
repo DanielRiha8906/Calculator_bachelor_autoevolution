@@ -8,7 +8,7 @@ title Calculator Component Interactions
 actor User
 participant "__main__\n(entry point)" as Main
 participant "Calculator" as Calc
-participant "Python Runtime" as Runtime
+participant "Python Runtime\n/ math module" as Runtime
 
 == Normal Operation (via __main__.py) ==
 
@@ -98,5 +98,76 @@ Calc --> Tests : raise TypeError
 deactivate Calc
 
 Tests -> Tests : assert raises(TypeError) ✓
+
+== Square Root: Normal and Error Paths ==
+
+Tests -> Calc : calc.square_root(9)
+activate Calc
+Calc -> Calc : guard: x >= 0
+Calc -> Runtime : math.sqrt(9)
+Runtime --> Calc : 3.0
+Calc --> Tests : 3.0
+deactivate Calc
+
+Tests -> Tests : assert square_root(9) == 3.0 ✓
+
+Tests -> Calc : calc.square_root(-1)
+activate Calc
+Calc -> Calc : guard: x < 0 → raise ValueError
+Calc --> Tests : raise ValueError
+deactivate Calc
+
+Tests -> Tests : assert raises(ValueError) ✓
+
+== Cube Root: Negative Input ==
+
+Tests -> Calc : calc.cube_root(-8)
+activate Calc
+Calc -> Calc : x < 0 → compute -(abs(-8) ** (1/3))
+Calc --> Tests : -2.0
+deactivate Calc
+
+Tests -> Tests : assert cube_root(-8) == approx(-2.0) ✓
+
+== Logarithm: Normal and Error Paths ==
+
+Tests -> Calc : calc.log(100)
+activate Calc
+Calc -> Calc : guard: x > 0
+Calc -> Runtime : math.log10(100)
+Runtime --> Calc : 2.0
+Calc --> Tests : 2.0
+deactivate Calc
+
+Tests -> Tests : assert log(100) == 2.0 ✓
+
+Tests -> Calc : calc.ln(1)
+activate Calc
+Calc -> Calc : guard: x > 0
+Calc -> Runtime : math.log(1)
+Runtime --> Calc : 0.0
+Calc --> Tests : 0.0
+deactivate Calc
+
+Tests -> Tests : assert ln(1) == 0.0 ✓
+
+Tests -> Calc : calc.log(0)
+activate Calc
+Calc -> Calc : guard: x <= 0 → raise ValueError
+Calc --> Tests : raise ValueError
+deactivate Calc
+
+Tests -> Tests : assert raises(ValueError) ✓
+
+== Power ==
+
+Tests -> Calc : calc.power(2, 10)
+activate Calc
+Calc -> Runtime : 2 ** 10
+Runtime --> Calc : 1024
+Calc --> Tests : 1024
+deactivate Calc
+
+Tests -> Tests : assert power(2, 10) == 1024 ✓
 
 @enduml

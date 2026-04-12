@@ -1,3 +1,34 @@
+## Run: update-diagrams — PlantUML diagram update (post-issue-219)
+
+- **Branch:** exp3/issue-219-add-math-operations
+- **PR target:** N/A (diagram-only update)
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added 7 new methods: `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln`; updated note to document domain restrictions and math import; expanded test stubs listing
+  - `artifacts/activity_diagram.puml` — added branches for all 7 new operations; added ValueError paths for `square_root` (negative), `log`/`ln` (non-positive); added cube_root negative-input path
+  - `artifacts/sequence_diagram.puml` — added interaction sequences for `square_root` (normal + error), `cube_root` (negative input), `log`/`ln` (normal + error), and `power`
+- **Purpose:** Sync PlantUML diagrams with cycle-4 changes (issue-219): 7 new Calculator methods added.
+- **Risks:** None — diagram-only, no source or test code modified.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: 100.9s | Cost: $0.311357 USD | Turns: 19
+
+---
+
+## Run: issue-219 — Add multiple math operations
+
+- **Branch:** exp3/issue-219-add-math-operations
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/calculator.py` — added `import math` and 7 new methods: `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln`
+  - `tests/test_calculator.py` — added 38 tests for all new operations (total now 76)
+- **Purpose:** Implement square, cube, square_root, cube_root, power, base-10 log, and natural log as Calculator operations. Edge cases handled: `ValueError` for square_root(negative), log/ln(non-positive); cube_root handles negative inputs via sign-preservation.
+- **Risks:** Low — additive change only; no existing methods modified. cube_root negative-number handling is the only subtle invariant (Python cannot raise negative floats to fractional powers directly).
+- **Tests passed:** Yes — 76 passed in 0.09s
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+Duration: 168.1s | Cost: $0.613095 USD | Turns: 36
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-factorial)
 
 - **Branch:** exp3/issue-216-factorial

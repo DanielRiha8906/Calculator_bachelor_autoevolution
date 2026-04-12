@@ -28,17 +28,28 @@ Per-file summaries: purpose, public API surface, key invariants.
   - `Calculator.multiply(a, b) -> float/int` — returns `a * b`
   - `Calculator.divide(a, b) -> float/int` — returns `a / b`; raises `ZeroDivisionError` naturally when `b == 0`
   - `Calculator.factorial(n: int) -> int` — returns `n!`; raises `TypeError` for non-integers (including bool/float), raises `ValueError` for negative integers
+  - `Calculator.square(x) -> float` — returns `x * x`
+  - `Calculator.cube(x) -> float` — returns `x * x * x`
+  - `Calculator.square_root(x) -> float` — returns `math.sqrt(x)`; raises `ValueError` for `x < 0`
+  - `Calculator.cube_root(x) -> float` — returns real cube root (negative for negative x); uses `-(abs(x)**(1/3))` for negatives
+  - `Calculator.power(base, exp) -> float` — returns `base ** exp`
+  - `Calculator.log(x) -> float` — returns `math.log10(x)`; raises `ValueError` for `x <= 0`
+  - `Calculator.ln(x) -> float` — returns `math.log(x)`; raises `ValueError` for `x <= 0`
 - **Key invariants:**
   - Division delegates directly to Python `/` operator; no explicit zero-check.
   - `ZeroDivisionError` is raised by Python runtime when dividing by zero.
   - Factorial validates input type explicitly: booleans are rejected (`isinstance(n, bool)` checked before `isinstance(n, int)` since `bool` is a subclass of `int`).
   - Factorial is computed iteratively; `factorial(0)` and `factorial(1)` both return 1.
-- **Last updated:** cycle 3 (issue-216)
+  - `square_root` raises `ValueError` for negative inputs (not `math.sqrt`'s `ValueError`; explicit guard for clear messaging).
+  - `cube_root` handles negative inputs by computing `-(abs(x)**(1/3))` to stay in real domain.
+  - `log` and `ln` raise `ValueError` for `x <= 0` with explicit guard before delegating to `math`.
+  - Module imports `math` at the top.
+- **Last updated:** cycle 4 (issue-219)
 
 ---
 
 ## `tests/test_calculator.py`
 - **Purpose:** Comprehensive unit test suite for `Calculator`.
-- **Current state:** 38 tests covering all five operations (add, subtract, multiply, divide, factorial). Includes normal inputs, edge cases (zero operands, negative values, large numbers), floating-point precision via `pytest.approx`, `ZeroDivisionError` for both int and float zero divisors, and factorial boundary/rejection cases. Uses a `calc` pytest fixture.
+- **Current state:** 76 tests covering all twelve operations. Includes normal inputs, edge cases (zero operands, negative values, large numbers), floating-point precision via `pytest.approx`, `ZeroDivisionError` for divide, factorial boundary/rejection, `ValueError` for square_root (negative), log/ln (non-positive), and cube_root negative-input correctness. Uses a `calc` pytest fixture.
 - **Exports:** None
-- **Last updated:** cycle 3 (issue-216)
+- **Last updated:** cycle 4 (issue-219)
