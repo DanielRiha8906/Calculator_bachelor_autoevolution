@@ -1,3 +1,19 @@
+## Run: update-diagrams — PlantUML diagram update (post-issue-222)
+
+- **Branch:** exp3/issue-222-user-input
+- **PR target:** N/A (diagram-only update)
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — updated `__main__` module to expose `OPERATIONS`, `display_menu()`, `get_number()`; added `test_main` module to tests package; updated notes
+  - `artifacts/activity_diagram.puml` — restructured to show interactive CLI session loop as outer swimlane with Calculator computation as inner swimlane; covers all 12 operations and error paths
+  - `artifacts/sequence_diagram.puml` — added interactive session sections: normal binary op, normal unary op, error path caught by main(), unknown key, quit; added test_main.py mock-based sequence
+- **Purpose:** Sync PlantUML diagrams with cycle-5 changes (issue-222): interactive CLI added to `__main__.py` with `OPERATIONS`, `display_menu()`, and `get_number()`.
+- **Risks:** None — diagram-only, no source or test code modified.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-222 — Add interactive user input to calculator CLI
 
 - **Branch:** exp3/issue-222-user-input
