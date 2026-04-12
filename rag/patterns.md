@@ -18,4 +18,18 @@ When asserting equality for results that may involve floating-point arithmetic (
 
 ---
 
+## Pattern: Sign-preserving real cube root for negative inputs
+
+Python's `a ** (1/3)` returns a complex number when `a` is negative (e.g., `(-8) ** (1/3)` is not `-2.0`). To compute a real cube root for negative inputs, use the sign-preserving idiom:
+
+```python
+if a < 0:
+    return -((-a) ** (1 / 3))
+return a ** (1 / 3)
+```
+
+**First observed:** cycle 4, `Calculator.cube_root`
+
+---
+
 <!-- Add further patterns here as they are discovered -->
