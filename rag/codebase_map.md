@@ -33,17 +33,20 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## src/__main__.py
 - **Purpose:** CLI entry point — supports both interactive menu-driven mode and non-interactive single-operation mode (via command-line arguments).
-- **Last updated:** cycle 7
-- **Exports:** `main(args=None)`, `cli_mode(args)`, `show_menu()`, `parse_number(prompt, max_attempts)`, `parse_int(prompt, max_attempts)`, `run_operation(calc, operation)`, `OPERATIONS` dict, `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS`, `_ALL_OPS`, `MAX_ATTEMPTS`, `TooManyAttemptsError`.
+- **Last updated:** cycle 8
+- **Exports:** `main(args=None)`, `cli_mode(args)`, `show_menu()`, `parse_number(prompt, max_attempts)`, `parse_int(prompt, max_attempts)`, `run_operation(calc, operation)`, `clear_history(filepath=None)`, `append_to_history(entry, filepath=None)`, `show_history(filepath=None)`, `OPERATIONS` dict, `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS`, `_ALL_OPS`, `MAX_ATTEMPTS`, `HISTORY_FILE`, `TooManyAttemptsError`.
 - **Key constants:**
   - `MAX_ATTEMPTS = 3` — maximum consecutive invalid inputs before session ends.
+  - `HISTORY_FILE = "history.txt"` — default path for session history (patchable in tests).
   - `OPERATIONS` maps menu keys `"1"`–`"12"` to operation names.
   - `_ONE_ARG_OPS` — `{square, cube, square_root, cube_root, ln}` (one float arg).
   - `_INT_ARG_OPS` — `{factorial}` (one int arg).
   - `_TWO_ARG_OPS` — `{add, subtract, multiply, divide, power, log}` (two float args).
 - **`TooManyAttemptsError`:** Custom exception raised by `parse_number`/`parse_int` after `max_attempts` consecutive invalid inputs.
-- **CLI mode usage:** `python -m src <operation> <value> [<value2>]` — parses via `argparse`, prints result to stdout, returns 0 on success / 1 on error (errors go to stderr). Non-numeric values produce per-field error messages. Never retries.
-- **Interactive mode:** `python -m src` (no args) — presents a numbered menu, loops until user enters `"q"` or session ends due to too many invalid choices/inputs.
+- **History functions:** `clear_history` truncates/creates the file (called at session start); `append_to_history` appends one line per successful operation; `show_history` reads and prints all entries. All three use `None` sentinel defaults so that monkeypatching `HISTORY_FILE` on the module takes effect at call time.
+- **`run_operation` return value:** Returns a history-entry string like `"add(3.0, 4.0) = 7.0"` on success, or `None` on error or unknown operation.
+- **CLI mode usage:** `python -m src <operation> <value> [<value2>]` — parses via `argparse`, prints result to stdout, returns 0 on success / 1 on error (errors go to stderr). Non-numeric values produce per-field error messages. Never retries. History is NOT written in CLI mode.
+- **Interactive mode:** `python -m src` (no args) — clears history, presents a numbered menu with `h` (show history) and `q` (quit) options, loops until user enters `"q"` or session ends.
 - **Dispatch:** `main(args=None)` — if `args` is `None`, uses `sys.argv[1:]`; if non-empty, delegates to `cli_mode(args)` and exits. Passing `args=[]` forces interactive mode (used by tests).
 - **Invariants:** `cli_mode` validates argument count and numeric format per operation; catches `ValueError` from Calculator. `run_operation` lets `TooManyAttemptsError` propagate (caught in `main`); catches `ValueError` for user-facing error display. Interactive loop resets `invalid_op_count` on each valid menu choice.
 
@@ -51,15 +54,16 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## tests/test_main.py
 - **Purpose:** Unit tests for the interactive CLI and cli_mode in `src/__main__.py` using mocked `input()` and `capsys`.
-- **Last updated:** cycle 7
-- **Tests (54 total):**
-  - **show_menu (1):** verifies all operation names and "q" appear in output.
+- **Last updated:** cycle 8
+- **Tests (70 total):**
+  - **show_menu (2):** verifies all operation names and "q" appear in output; verifies "h" appears.
   - **parse_number (5):** valid int, valid float, negative, retry-on-invalid-then-accept, raises-after-max-attempts.
   - **parse_int (3):** valid int, retry-on-float-string-then-accept, raises-after-max-attempts.
-  - **run_operation (16):** one test per operation; plus error tests for divide-by-zero, factorial-negative, square_root-negative, and unknown-operation.
-  - **main interactive (7):** quit immediately, invalid-choice-then-quit, add-then-quit, two-operations-then-quit, error-then-continue, too-many-invalid-choices-ends-session, too-many-invalid-operands-ends-session.
+  - **history helpers (8):** clear_history creates empty file, clear_history overwrites, append_to_history adds entry, append multiple, show_history on empty, show_history on missing file, show_history with entries.
+  - **run_operation (19):** one test per operation; error tests for divide-by-zero, factorial-negative, square_root-negative, and unknown-operation; return-value tests for success (returns history entry) and failure (returns None).
+  - **main interactive (12):** quit immediately, invalid-choice-then-quit, add-then-quit, two-operations-then-quit, error-then-continue, too-many-invalid-choices-ends-session, too-many-invalid-operands-ends-session, show-history-option, history-recorded-after-operation, error-not-recorded, history-cleared-on-new-session, show-history-with-previous-operations.
   - **cli_mode (23):** happy-path test for all 12 operations; error tests for divide-by-zero, factorial-negative, square_root-negative; wrong-arg-count tests for two-arg and one-arg ops; non-numeric tests for two-arg op, one-arg op, and factorial; unknown-operation SystemExit; main() dispatch integration test.
-- **Invariants:** Interactive tests call `main([])` to bypass sys.argv; cli_mode tests call `cli_mode([...])` directly. Errors in cli_mode go to stderr; result goes to stdout.
+- **Invariants:** Interactive tests call `main([])` to bypass sys.argv; cli_mode tests call `cli_mode([...])` directly. Errors in cli_mode go to stderr; result goes to stdout. `autouse` fixture redirects `HISTORY_FILE` to a `tmp_path` for every test.
 
 ---
 

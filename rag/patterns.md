@@ -99,4 +99,24 @@ Then dispatch with a simple `if op in _INT_ARG_OPS / elif op in _ONE_ARG_OPS / e
 
 ---
 
+## Pattern: None-sentinel default for patchable module-level constants
+
+When a function uses a module-level constant as its default argument, binding the constant at definition time prevents test isolation via `monkeypatch.setattr`. Use `None` as the sentinel and resolve the real value inside the function body:
+
+```python
+HISTORY_FILE = "history.txt"
+
+def clear_history(filepath: str | None = None) -> None:
+    if filepath is None:
+        filepath = HISTORY_FILE   # read module attribute at call time
+    with open(filepath, "w") as fh:
+        fh.write("")
+```
+
+Tests that need a different path simply `monkeypatch.setattr(mod, "HISTORY_FILE", tmp_path / "h.txt")` without touching the function signature. Tests that call the function with an explicit path continue to work as before.
+
+**First observed:** cycle 8, `clear_history` / `append_to_history` / `show_history` in `src/__main__.py`
+
+---
+
 <!-- Add further patterns here as they are discovered -->
