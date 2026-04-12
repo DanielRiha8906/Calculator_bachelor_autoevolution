@@ -1,54 +1,110 @@
 @startuml activity_diagram
 
-title Calculator — Interactive REPL Flow
+title Calculator — Execution Flow (CLI + Interactive REPL)
 
 start
 
-:Instantiate Calculator();
-:Print "Welcome to the Calculator!";
+if (sys.argv has arguments?) then (yes — CLI mode)
 
-repeat
+  :cli_main(sys.argv[1:]);
 
-  :Print MENU (12 operations + quit);
-  :Read user choice via input();
+  :op = args[0];
 
-  if (choice == "q"?) then (yes)
-    :Print "Goodbye!";
+  if (op known?) then (no)
+    :Print usage / "Unknown operation" error;
+    :Return exit code 1;
     stop
-  else (no)
+  else (yes)
   endif
 
-  :Look up op = MENU_MAP.get(choice);
-
-  if (op is None?) then (yes)
-    :Print "Unknown choice" error message;
-  else (no)
-
-    if (op in BINARY_OPS?) then (yes)
-      :parse_number() → a (first operand);
-      :parse_number() → b (second operand);
-    else (no — UNARY_OPS)
-      :parse_number() → a;
+  if (op in BINARY_OPS?) then (yes)
+    if (exactly 2 operand args?) then (no)
+      :Print "requires exactly 2 operands" error;
+      :Return exit code 1;
+      stop
+    else (yes)
+      :Parse float a, float b from args;
+    endif
+  else (no — UNARY_OPS)
+    if (exactly 1 operand arg?) then (no)
+      :Print "requires exactly 1 operand" error;
+      :Return exit code 1;
+      stop
+    else (yes)
+      :Parse float a from args;
       if (op in INTEGER_OPS?) then (yes)
         if (a is whole number?) then (yes)
           :Convert a float → int;
         else (no)
-          :Raise ValueError\n"requires whole number";
+          :Print "Error: requires whole number";
+          :Return exit code 1;
+          stop
         endif
       endif
     endif
-
-    :Dispatch: getattr(calc, op)(args);
-
-    if (ValueError or ZeroDivisionError raised?) then (yes)
-      :Print "Error: <exception message>";
-    else (no)
-      :Print "Result: <value>";
-    endif
-
   endif
 
-repeat while (loop continues)
+  :Dispatch: getattr(calc, op)(args);
+
+  if (ValueError or ZeroDivisionError raised?) then (yes)
+    :Print "Error: <exception message>";
+    :Return exit code 1;
+    stop
+  else (no)
+    :Print _format_result(result);
+    :Return exit code 0;
+    stop
+  endif
+
+else (no — Interactive REPL mode)
+
+  :Instantiate Calculator();
+  :Print "Welcome to the Calculator!";
+
+  repeat
+
+    :Print MENU (12 operations + quit);
+    :Read user choice via input();
+
+    if (choice == "q"?) then (yes)
+      :Print "Goodbye!";
+      stop
+    else (no)
+    endif
+
+    :Look up op = MENU_MAP.get(choice);
+
+    if (op is None?) then (yes)
+      :Print "Unknown choice" error message;
+    else (no)
+
+      if (op in BINARY_OPS?) then (yes)
+        :parse_number() → a (first operand);
+        :parse_number() → b (second operand);
+      else (no — UNARY_OPS)
+        :parse_number() → a;
+        if (op in INTEGER_OPS?) then (yes)
+          if (a is whole number?) then (yes)
+            :Convert a float → int;
+          else (no)
+            :Raise ValueError\n"requires whole number";
+          endif
+        endif
+      endif
+
+      :Dispatch: getattr(calc, op)(args);
+
+      if (ValueError or ZeroDivisionError raised?) then (yes)
+        :Print "Error: <exception message>";
+      else (no)
+        :Print "Result: <value>";
+      endif
+
+    endif
+
+  repeat while (loop continues)
+
+endif
 
 stop
 

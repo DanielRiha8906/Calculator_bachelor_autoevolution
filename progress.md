@@ -1,5 +1,15 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-239-cli-mode
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect the CLI mode added in cycle 6. Class diagram now shows `cli_main(args: list) : int` and `_format_result(value: int|float) : str`. Activity diagram now shows both CLI dispatch path and interactive REPL path branching on `sys.argv`. Sequence diagram now shows the full CLI sequence including `cli_main` participant, operand parsing from args, `_format_result`, and `sys.exit` return codes.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Issue #239 — CLI Mode (2026-04-12)
 
 - **Branch:** exp3/issue-239-cli-mode

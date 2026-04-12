@@ -1,58 +1,46 @@
 @startuml sequence_diagram
 
-title Calculator — Interactive CLI Sequence
+title Calculator — CLI and Interactive REPL Sequence
 
 actor User
 participant "__main__\n(main)" as Main
+participant "cli_main" as CLI
 participant "parse_number /\n_to_int_if_needed" as Parser
 participant "Calculator" as Calc
 participant "math\n(stdlib)" as Math
 
-User -> Main : run module (python -m src)
-Main -> Calc ** : Calculator()
-Main --> User : "Welcome to the Calculator!"
+User -> Main : run module (python -m src [args])
 
-loop REPL — repeats until user quits
+alt sys.argv has arguments — CLI mode
 
-  Main --> User : print MENU
-  User -> Main : choice (1–12 or "q")
+  Main -> CLI : cli_main(sys.argv[1:])
+  note right of CLI: op = args[0]; validates op and operand count
 
-  alt choice == "q"
-    Main --> User : "Goodbye!"
-    note right of Main: loop exits here
-  else choice not in MENU_MAP
-    Main --> User : "Unknown choice: ..." message
-  else choice is valid (1–12)
+  alt unknown operation or wrong operand count
+    CLI --> User : "Error: ..." message
+    CLI --> Main : return 1
+    Main -> User : sys.exit(1)
+  else valid operation
 
     alt op in BINARY_OPS (add/subtract/multiply/divide/power)
-      Main -> Parser : parse_number("Enter first number: ")
-      Parser --> User : prompt
-      User -> Parser : raw input
-      Parser --> Main : float a
-
-      Main -> Parser : parse_number("Enter second number: ")
-      Parser --> User : prompt
-      User -> Parser : raw input
-      Parser --> Main : float b
+      CLI -> Parser : float(args[1]) → a
+      CLI -> Parser : float(args[2]) → b
     else op in UNARY_OPS
-      Main -> Parser : parse_number("Enter number: ")
-      Parser --> User : prompt
-      User -> Parser : raw input
-      Parser --> Main : float a
-
+      CLI -> Parser : float(args[1]) → a
       opt op in INTEGER_OPS (factorial)
-        Main -> Parser : _to_int_if_needed(op, a)
+        CLI -> Parser : _to_int_if_needed(op, a)
         alt a is whole number
-          Parser --> Main : int(a)
+          Parser --> CLI : int(a)
         else a is not whole
-          Parser --> Main : raises ValueError
-          Main --> User : "Error: requires whole number"
-          note right of Main: run_operation catches and prints; loop continues
+          Parser --> CLI : raises ValueError
+          CLI --> User : "Error: requires whole number"
+          CLI --> Main : return 1
         end
       end
     end
 
-    Main -> Calc : getattr(calc, op)(args)
+    CLI -> Calc ** : Calculator()
+    CLI -> Calc : getattr(calc, op)(args)
 
     alt ops delegating to math stdlib
       Calc -> Math : factorial / sqrt / cbrt / log10 / log
@@ -64,11 +52,84 @@ loop REPL — repeats until user quits
     end
 
     alt success
-      Calc --> Main : result value
-      Main --> User : "Result: <value>"
+      Calc --> CLI : result value
+      CLI -> CLI : _format_result(result)
+      CLI --> User : formatted result string
+      CLI --> Main : return 0
+      Main -> User : sys.exit(0)
     else ValueError or ZeroDivisionError
-      Calc --> Main : raises exception
-      Main --> User : "Error: <exception message>"
+      Calc --> CLI : raises exception
+      CLI --> User : "Error: <exception message>"
+      CLI --> Main : return 1
+      Main -> User : sys.exit(1)
+    end
+
+  end
+
+else no arguments — Interactive REPL mode
+
+  Main -> Calc ** : Calculator()
+  Main --> User : "Welcome to the Calculator!"
+
+  loop REPL — repeats until user quits
+
+    Main --> User : print MENU
+    User -> Main : choice (1–12 or "q")
+
+    alt choice == "q"
+      Main --> User : "Goodbye!"
+      note right of Main: loop exits here
+    else choice not in MENU_MAP
+      Main --> User : "Unknown choice: ..." message
+    else choice is valid (1–12)
+
+      alt op in BINARY_OPS (add/subtract/multiply/divide/power)
+        Main -> Parser : parse_number("Enter first number: ")
+        Parser --> User : prompt
+        User -> Parser : raw input
+        Parser --> Main : float a
+
+        Main -> Parser : parse_number("Enter second number: ")
+        Parser --> User : prompt
+        User -> Parser : raw input
+        Parser --> Main : float b
+      else op in UNARY_OPS
+        Main -> Parser : parse_number("Enter number: ")
+        Parser --> User : prompt
+        User -> Parser : raw input
+        Parser --> Main : float a
+
+        opt op in INTEGER_OPS (factorial)
+          Main -> Parser : _to_int_if_needed(op, a)
+          alt a is whole number
+            Parser --> Main : int(a)
+          else a is not whole
+            Parser --> Main : raises ValueError
+            Main --> User : "Error: requires whole number"
+            note right of Main: run_operation catches and prints; loop continues
+          end
+        end
+      end
+
+      Main -> Calc : getattr(calc, op)(args)
+
+      alt ops delegating to math stdlib
+        Calc -> Math : factorial / sqrt / cbrt / log10 / log
+        alt valid domain
+          Math --> Calc : computed result
+        else invalid domain (n<0, n<=0, div/0)
+          Math --> Calc : raises ValueError / ZeroDivisionError
+        end
+      end
+
+      alt success
+        Calc --> Main : result value
+        Main --> User : "Result: <value>"
+      else ValueError or ZeroDivisionError
+        Calc --> Main : raises exception
+        Main --> User : "Error: <exception message>"
+      end
+
     end
 
   end
