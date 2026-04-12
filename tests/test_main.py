@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.__main__ import OPERATIONS, display_menu, get_number, main
+from src.__main__ import OPERATIONS, MAX_ATTEMPTS, display_menu, get_number, main
 
 
 # ---------------------------------------------------------------------------
@@ -196,14 +196,14 @@ def test_factorial_negative_shows_error():
 
 
 def test_factorial_float_input_shows_error():
-    # "3.5" cannot be parsed as int, so ValueError is caught
-    output = run_main_with_inputs(["5", "3.5", "q"])
+    # "3.5" cannot be parsed as int; error is shown, then retry with valid input.
+    output = run_main_with_inputs(["5", "3.5", "4", "q"])
     assert output_contains(output, "Error")
 
 
 def test_non_numeric_input_shows_error():
-    # "abc" cannot be parsed as a number; error is shown, then user quits.
-    output = run_main_with_inputs(["1", "abc", "q"])
+    # "abc" cannot be parsed; error is shown, then retry with valid numbers for add.
+    output = run_main_with_inputs(["1", "abc", "5", "3", "q"])
     assert output_contains(output, "Error")
 
 
@@ -216,6 +216,49 @@ def test_unknown_operation_shows_message_and_continues():
     output = run_main_with_inputs(["99", "1", "2", "3", "q"])
     assert output_contains(output, "Unknown")
     assert output_contains(output, "5")  # 2+3=5
+
+
+def test_unknown_operation_error_includes_operation_list():
+    # The error message must name the available operations so the user knows
+    # what to enter next.
+    output = run_main_with_inputs(["99", "q"])
+    assert output_contains(output, "Unknown operation '99'. Available operations")
+
+
+# ---------------------------------------------------------------------------
+# Retry-logic: invalid operand inputs
+# ---------------------------------------------------------------------------
+
+def test_invalid_operand_shows_retry_attempts_remaining():
+    # After first invalid number, the message says how many retries are left.
+    output = run_main_with_inputs(["1", "abc", "5", "3", "q"])
+    assert output_contains(output, "remaining")
+
+
+def test_session_terminates_after_max_invalid_operand_attempts():
+    # MAX_ATTEMPTS consecutive bad numbers exhaust retries and end the session.
+    inputs = ["1"] + ["abc"] * MAX_ATTEMPTS
+    output = run_main_with_inputs(inputs)
+    assert output_contains(output, "Maximum attempts")
+
+
+# ---------------------------------------------------------------------------
+# Retry-logic: invalid operation selections
+# ---------------------------------------------------------------------------
+
+def test_session_terminates_after_max_invalid_operation_attempts():
+    # MAX_ATTEMPTS consecutive unknown operation keys end the session.
+    inputs = ["99"] * MAX_ATTEMPTS
+    output = run_main_with_inputs(inputs)
+    assert output_contains(output, "Maximum attempts")
+
+
+def test_session_continues_before_max_invalid_operation_attempts():
+    # Fewer than MAX_ATTEMPTS invalid selections do not end the session.
+    valid_op_inputs = ["1", "2", "3", "q"]  # add(2,3)=5
+    inputs = ["99"] * (MAX_ATTEMPTS - 1) + valid_op_inputs
+    output = run_main_with_inputs(inputs)
+    assert output_contains(output, "5")
 
 
 # ---------------------------------------------------------------------------
