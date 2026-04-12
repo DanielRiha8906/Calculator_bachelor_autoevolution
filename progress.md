@@ -1,5 +1,16 @@
 # Progress Log
 
+## Run: Issue #220 — Add User Input (2026-04-12)
+
+- **Branch:** exp3/issue-220-user-input
+- **Target PR branch:** exp3/naive-generic
+- **Files changed:** src/__main__.py, tests/test_main.py (new)
+- **Purpose:** Replaced hardcoded demo values in `__main__.py` with a full interactive REPL. Presents a numbered menu of all 12 Calculator operations. `parse_number` loops until the user enters a valid float. `run_operation` dispatches to the correct Calculator method and catches `ValueError`/`ZeroDivisionError` so the loop never crashes. `factorial` inputs are converted float→int (with an error for non-whole numbers).
+- **Risks:** Minimal — no changes to `Calculator` class or existing tests. New code uses only stdlib (`builtins.input`, `getattr`). No new dependencies.
+- **Tests passed:** Yes — 84 collected (58 existing + 26 new in tests/test_main.py), 84 passed.
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Diagram Update (2026-04-12)
 
 - **Branch:** exp3/issue-217-add-math-functions
