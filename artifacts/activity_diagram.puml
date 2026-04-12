@@ -19,42 +19,55 @@ if (args non-empty?) then (yes)
 
         if (operation in _INT_ARG_OPS\n{factorial}?) then (yes)
             if (len(values) != 1?) then (yes)
-                :Print "Error: requires 1 integer argument" to stderr;
+                :stderr: "Error: requires 1 integer argument";
                 stop
             else (no)
-                :n = int(values[0]);
-                :result = calc.factorial(n);
+                if (values[0] is not a valid integer?) then (yes)
+                    :stderr: "Error: '<value>' is not a valid integer";
+                    stop
+                else (no)
+                    :n = int(values[0]);
+                    :result = calc.factorial(n);
+                endif
             endif
         elseif (operation in _ONE_ARG_OPS\n{square, cube, square_root, cube_root, ln}?) then (yes)
             if (len(values) != 1?) then (yes)
-                :Print "Error: requires 1 argument" to stderr;
+                :stderr: "Error: requires 1 argument";
                 stop
             else (no)
-                :a = float(values[0]);
-                :result = calc.<operation>(a);
+                if (values[0] is not a valid number?) then (yes)
+                    :stderr: "Error: '<value>' is not a valid number";
+                    stop
+                else (no)
+                    :a = float(values[0]);
+                    :result = calc.<operation>(a);
+                endif
             endif
         else (two-arg op\nadd / subtract / multiply\ndivide / power / log)
             if (len(values) != 2?) then (yes)
-                :Print "Error: requires 2 arguments" to stderr;
+                :stderr: "Error: requires 2 arguments";
                 stop
             else (no)
-                :a = float(values[0])\nb = float(values[1]);
-                :result = calc.<operation>(a, b);
+                if (any value is not a valid number?) then (yes)
+                    :stderr: "Error: '<value>' is not a valid number";
+                    stop
+                else (no)
+                    :a = float(values[0])\nb = float(values[1]);
+                    :result = calc.<operation>(a, b);
+                endif
             endif
         endif
 
-        if (ValueError raised?) then (yes)
-            :Print "Error: <message>" to stderr;
-            :exit(1);
+        if (ValueError raised from Calculator?) then (yes)
+            :stderr: "Error: <message>"; exit(1);
         else (no)
-            :Print result to stdout;
-            :exit(0);
+            :stdout: print result; exit(0);
         endif
     }
 
 else (no — interactive mode)
 
-    :Instantiate Calculator;
+    :Instantiate Calculator\ninvalid_op_count = 0;
 
     repeat
 
@@ -64,33 +77,42 @@ else (no — interactive mode)
         if (choice == "q"?) then (yes)
             :Print "Goodbye!";
             stop
-        else (no)
-            if (choice in OPERATIONS?) then (yes)
-                :operation = OPERATIONS[choice];
-
-                partition "run_operation(calc, operation)" {
-
-                    if (operation == "factorial"?) then (yes)
-                        :n = parse_int("Enter non-negative integer:")\nnote: retries indefinitely on non-integer;
-                    elseif (two-argument operation?\nadd / subtract / multiply\ndivide / power / log) then (yes)
-                        :a = parse_number("Enter first/dividend/base number:")\nnote: retries indefinitely on invalid float;
-                        :b = parse_number("Enter second/divisor/exponent/base:")\nnote: retries indefinitely on invalid float;
-                    else (one-argument operation\nsquare / cube / square_root\ncube_root / ln)
-                        :a = parse_number("Enter number:")\nnote: retries indefinitely on invalid float;
-                    endif
-
-                    :Call Calculator method with parsed input(s);
-
-                    if (ValueError raised?\ne.g. divide-by-zero, negative sqrt,\nnegative factorial, invalid log base) then (yes)
-                        :Print "Error: <message>";
-                    else (no)
-                        :Print "Result: <value>";
-                    endif
-
-                }
-
+        elseif (choice not in OPERATIONS?) then (yes)
+            :invalid_op_count += 1;
+            if (invalid_op_count >= MAX_ATTEMPTS?) then (yes)
+                :Print "Invalid choice. Too many invalid choices. Ending session.";
+                stop
             else (no)
-                :Print "Invalid choice: '<choice>'";\nnote: loop continues;
+                :Print "Invalid choice: '<choice>'. <remaining> attempt(s) left.";
+            endif
+        else (valid choice)
+            :invalid_op_count = 0;
+            :operation = OPERATIONS[choice];
+
+            partition "run_operation(calc, operation)" {
+
+                if (operation == "factorial"?) then (yes)
+                    :parse_int("Enter non-negative integer:")\nnote: up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
+                elseif (two-argument operation?\nadd / subtract / multiply\ndivide / power / log) then (yes)
+                    :parse_number("Enter first/dividend/base number:")\nnote: up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
+                    :parse_number("Enter second/divisor/exponent/base:")\nnote: up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
+                else (one-argument operation\nsquare / cube / square_root\ncube_root / ln)
+                    :parse_number("Enter number:")\nnote: up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
+                endif
+
+                :Call Calculator method with parsed input(s);
+
+                if (ValueError raised?\ne.g. divide-by-zero, negative sqrt,\nnegative factorial, invalid log base) then (yes)
+                    :Print "Error: <message>";
+                else (no)
+                    :Print "Result: <value>";
+                endif
+
+            }
+
+            if (TooManyAttemptsError propagated from parse?) then (yes)
+                :Print "Too many invalid inputs. Ending session.";
+                stop
             endif
         endif
 

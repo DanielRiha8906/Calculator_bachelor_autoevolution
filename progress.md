@@ -193,3 +193,18 @@ Duration: 154.7s | Cost: $0.404612 USD | Turns: 19
 - **Tests passed:** N/A (no source changes)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 Duration: 108.0s | Cost: $0.330687 USD | Turns: 21
+
+---
+
+## Run: Diagram update (2026-04-12)
+
+- **Branch:** exp3/issue-246-input-validation
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `TooManyAttemptsError` class with note; added `MAX_ATTEMPTS : int = 3` to `__main__`; updated `parse_number`/`parse_int` signatures to include `max_attempts` param; updated notes for `parse_number`, `parse_int`, `run_operation`, `main`, and `cli_mode` to reflect bounded retry, TooManyAttemptsError propagation, invalid_op_count tracking, and per-field CLI validation
+  - `artifacts/activity_diagram.puml` — updated interactive mode to show `invalid_op_count` tracking and session termination on too many invalid menu choices; updated parse steps to show bounded retry (MAX_ATTEMPTS=3) and TooManyAttemptsError exit path; updated CLI mode to show per-field integer/number validation with specific error messages
+  - `artifacts/sequence_diagram.puml` — added `invalid_op_count` tracking note; updated parse_number/parse_int note to show bounded retry and TooManyAttemptsError; added alt frame for TooManyAttemptsError session termination; added per-field validation alts in CLI mode
+- **Purpose:** Update PlantUML diagrams to reflect input validation changes added in cycle 7 (issue #246): bounded retry with TooManyAttemptsError, invalid_op_count tracking, and per-field CLI validation.
+- **Risks:** None — diagram-only change; no source code modified.
+- **Tests passed:** N/A (no source changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
