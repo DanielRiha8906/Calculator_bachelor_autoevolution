@@ -2,6 +2,23 @@
 
 ---
 
+## Run: Issue #249 — Operation history (2026-04-12)
+
+- **Branch:** exp3/issue-249-operation-history
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `src/__main__.py` — added `HISTORY_FILE` constant; `clear_history()`, `append_to_history()`, `show_history()` helpers with None-sentinel defaults; `show_menu()` gains `"h. show history"` line; `run_operation()` return type changed to `str | None` (history entry on success, None on failure); `main()` clears history at session start, handles `"h"` choice, appends successful entries to file.
+  - `tests/test_main.py` — added `autouse` fixture to redirect `HISTORY_FILE` to `tmp_path`; imported new public names; added 16 new tests covering history helpers, run_operation return values, and interactive history flow. Total: 133 tests.
+- **Purpose:** Record all successful calculations during a session to `history.txt`; clear the file on each new session so history never persists across sessions; expose `"h"` menu option to display current session history.
+- **Risks:** None significant. `history.txt` is written in cwd; path is configurable via `HISTORY_FILE` constant.
+- **All tests passed:** Yes (133/133)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #246 — Input validation (2026-04-12)
 
 - **Branch:** exp3/issue-246-input-validation
