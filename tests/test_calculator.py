@@ -153,3 +153,170 @@ def test_factorial_negative_raises(calc):
 def test_factorial_float_raises(calc):
     with pytest.raises(ValueError, match="Factorial is only defined for non-negative integers"):
         calc.factorial(3.0)
+
+
+# ---------------------------------------------------------------------------
+# square
+# ---------------------------------------------------------------------------
+
+def test_square_positive(calc):
+    assert calc.square(4) == 16
+
+
+def test_square_negative(calc):
+    assert calc.square(-3) == 9
+
+
+def test_square_zero(calc):
+    assert calc.square(0) == 0
+
+
+def test_square_float(calc):
+    assert math.isclose(calc.square(2.5), 6.25)
+
+
+# ---------------------------------------------------------------------------
+# cube
+# ---------------------------------------------------------------------------
+
+def test_cube_positive(calc):
+    assert calc.cube(3) == 27
+
+
+def test_cube_negative(calc):
+    assert calc.cube(-2) == -8
+
+
+def test_cube_zero(calc):
+    assert calc.cube(0) == 0
+
+
+def test_cube_float(calc):
+    assert math.isclose(calc.cube(2.0), 8.0)
+
+
+# ---------------------------------------------------------------------------
+# square_root
+# ---------------------------------------------------------------------------
+
+def test_square_root_positive(calc):
+    assert math.isclose(calc.square_root(9), 3.0)
+
+
+def test_square_root_zero(calc):
+    assert calc.square_root(0) == 0.0
+
+
+def test_square_root_float(calc):
+    assert math.isclose(calc.square_root(2.0), math.sqrt(2))
+
+
+def test_square_root_negative_raises(calc):
+    with pytest.raises(ValueError, match="Square root is not defined for negative numbers"):
+        calc.square_root(-1)
+
+
+# ---------------------------------------------------------------------------
+# cube_root
+# ---------------------------------------------------------------------------
+
+def test_cube_root_positive(calc):
+    assert math.isclose(calc.cube_root(27), 3.0)
+
+
+def test_cube_root_negative(calc):
+    assert math.isclose(calc.cube_root(-8), -2.0)
+
+
+def test_cube_root_zero(calc):
+    assert calc.cube_root(0) == 0.0
+
+
+def test_cube_root_float(calc):
+    assert math.isclose(calc.cube_root(8.0), 2.0)
+
+
+# ---------------------------------------------------------------------------
+# power
+# ---------------------------------------------------------------------------
+
+def test_power_positive_exponent(calc):
+    assert calc.power(2, 10) == 1024
+
+
+def test_power_zero_exponent(calc):
+    assert calc.power(5, 0) == 1
+
+
+def test_power_one_exponent(calc):
+    assert calc.power(7, 1) == 7
+
+
+def test_power_negative_exponent(calc):
+    assert math.isclose(calc.power(2, -1), 0.5)
+
+
+def test_power_float_base(calc):
+    assert math.isclose(calc.power(2.0, 3), 8.0)
+
+
+# ---------------------------------------------------------------------------
+# log
+# ---------------------------------------------------------------------------
+
+def test_log_base_10(calc):
+    assert math.isclose(calc.log(100, 10), 2.0)
+
+
+def test_log_base_2(calc):
+    assert math.isclose(calc.log(8, 2), 3.0)
+
+
+def test_log_base_e(calc):
+    assert math.isclose(calc.log(math.e, math.e), 1.0)
+
+
+def test_log_non_positive_raises(calc):
+    with pytest.raises(ValueError, match="Logarithm is not defined for non-positive numbers"):
+        calc.log(0, 10)
+
+
+def test_log_negative_raises(calc):
+    with pytest.raises(ValueError, match="Logarithm is not defined for non-positive numbers"):
+        calc.log(-5, 10)
+
+
+def test_log_invalid_base_raises(calc):
+    with pytest.raises(ValueError, match="Logarithm base must be positive and not equal to 1"):
+        calc.log(10, 1)
+
+
+def test_log_zero_base_raises(calc):
+    with pytest.raises(ValueError, match="Logarithm base must be positive and not equal to 1"):
+        calc.log(10, 0)
+
+
+# ---------------------------------------------------------------------------
+# ln
+# ---------------------------------------------------------------------------
+
+def test_ln_e(calc):
+    assert math.isclose(calc.ln(math.e), 1.0)
+
+
+def test_ln_one(calc):
+    assert math.isclose(calc.ln(1), 0.0)
+
+
+def test_ln_positive(calc):
+    assert math.isclose(calc.ln(math.e ** 3), 3.0)
+
+
+def test_ln_non_positive_raises(calc):
+    with pytest.raises(ValueError, match="Natural logarithm is not defined for non-positive numbers"):
+        calc.ln(0)
+
+
+def test_ln_negative_raises(calc):
+    with pytest.raises(ValueError, match="Natural logarithm is not defined for non-positive numbers"):
+        calc.ln(-1)
