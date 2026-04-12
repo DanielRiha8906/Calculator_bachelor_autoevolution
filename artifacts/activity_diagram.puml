@@ -10,46 +10,92 @@ skinparam activity {
 
 start
 
-:Instantiate Calculator;
+:args = sys.argv[1:] (or passed directly to main());
 
-repeat
+if (args non-empty?) then (yes)
 
-    :show_menu()\nPrint numbered operation menu (1-12) and "q. quit";
-    :choice = input("Select operation:").strip().lower();
+    partition "cli_mode(args)" {
+        :Parse args via argparse\n(operation + values);
 
-    if (choice == "q"?) then (yes)
-        :Print "Goodbye!";
-        stop
-    else (no)
-        if (choice in OPERATIONS?) then (yes)
-            :operation = OPERATIONS[choice];
-
-            partition "run_operation(calc, operation)" {
-
-                if (operation == "factorial"?) then (yes)
-                    :n = parse_int("Enter non-negative integer:")\nnote: retries indefinitely on non-integer;
-                elseif (two-argument operation?\nadd / subtract / multiply\ndivide / power / log) then (yes)
-                    :a = parse_number("Enter first/dividend/base number:")\nnote: retries indefinitely on invalid float;
-                    :b = parse_number("Enter second/divisor/exponent/base:")\nnote: retries indefinitely on invalid float;
-                else (one-argument operation\nsquare / cube / square_root\ncube_root / ln)
-                    :a = parse_number("Enter number:")\nnote: retries indefinitely on invalid float;
-                endif
-
-                :Call Calculator method with parsed input(s);
-
-                if (ValueError raised?\ne.g. divide-by-zero, negative sqrt,\nnegative factorial, invalid log base) then (yes)
-                    :Print "Error: <message>";
-                else (no)
-                    :Print "Result: <value>";
-                endif
-
-            }
-
-        else (no)
-            :Print "Invalid choice: '<choice>'";\nnote: loop continues;
+        if (operation in _INT_ARG_OPS\n{factorial}?) then (yes)
+            if (len(values) != 1?) then (yes)
+                :Print "Error: requires 1 integer argument" to stderr;
+                stop
+            else (no)
+                :n = int(values[0]);
+                :result = calc.factorial(n);
+            endif
+        elseif (operation in _ONE_ARG_OPS\n{square, cube, square_root, cube_root, ln}?) then (yes)
+            if (len(values) != 1?) then (yes)
+                :Print "Error: requires 1 argument" to stderr;
+                stop
+            else (no)
+                :a = float(values[0]);
+                :result = calc.<operation>(a);
+            endif
+        else (two-arg op\nadd / subtract / multiply\ndivide / power / log)
+            if (len(values) != 2?) then (yes)
+                :Print "Error: requires 2 arguments" to stderr;
+                stop
+            else (no)
+                :a = float(values[0])\nb = float(values[1]);
+                :result = calc.<operation>(a, b);
+            endif
         endif
-    endif
 
-repeat while (loop continues)
+        if (ValueError raised?) then (yes)
+            :Print "Error: <message>" to stderr;
+            :exit(1);
+        else (no)
+            :Print result to stdout;
+            :exit(0);
+        endif
+    }
+
+else (no — interactive mode)
+
+    :Instantiate Calculator;
+
+    repeat
+
+        :show_menu()\nPrint numbered operation menu (1-12) and "q. quit";
+        :choice = input("Select operation:").strip().lower();
+
+        if (choice == "q"?) then (yes)
+            :Print "Goodbye!";
+            stop
+        else (no)
+            if (choice in OPERATIONS?) then (yes)
+                :operation = OPERATIONS[choice];
+
+                partition "run_operation(calc, operation)" {
+
+                    if (operation == "factorial"?) then (yes)
+                        :n = parse_int("Enter non-negative integer:")\nnote: retries indefinitely on non-integer;
+                    elseif (two-argument operation?\nadd / subtract / multiply\ndivide / power / log) then (yes)
+                        :a = parse_number("Enter first/dividend/base number:")\nnote: retries indefinitely on invalid float;
+                        :b = parse_number("Enter second/divisor/exponent/base:")\nnote: retries indefinitely on invalid float;
+                    else (one-argument operation\nsquare / cube / square_root\ncube_root / ln)
+                        :a = parse_number("Enter number:")\nnote: retries indefinitely on invalid float;
+                    endif
+
+                    :Call Calculator method with parsed input(s);
+
+                    if (ValueError raised?\ne.g. divide-by-zero, negative sqrt,\nnegative factorial, invalid log base) then (yes)
+                        :Print "Error: <message>";
+                    else (no)
+                        :Print "Result: <value>";
+                    endif
+
+                }
+
+            else (no)
+                :Print "Invalid choice: '<choice>'";\nnote: loop continues;
+            endif
+        endif
+
+    repeat while (loop continues)
+
+endif
 
 @enduml

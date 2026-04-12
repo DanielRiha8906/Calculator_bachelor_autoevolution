@@ -48,11 +48,16 @@ end note
 
 class "__main__" as Main {
     +OPERATIONS : dict
+    +_ONE_ARG_OPS : set
+    +_INT_ARG_OPS : set
+    +_TWO_ARG_OPS : set
+    +_ALL_OPS : set
     +show_menu() : None
     +parse_number(prompt: str) : float
     +parse_int(prompt: str) : int
     +run_operation(calc: Calculator, operation: str) : None
-    +main() : None
+    +cli_mode(args: list[str]) : int
+    +main(args: list[str] | None = None) : None
 }
 
 note right of Main::OPERATIONS
@@ -60,6 +65,20 @@ note right of Main::OPERATIONS
   add, subtract, multiply, divide,
   factorial, square, cube, square_root,
   cube_root, power, log, ln
+end note
+
+note right of Main::_ONE_ARG_OPS
+  {square, cube, square_root, cube_root, ln}
+  — one float argument
+end note
+
+note right of Main::_INT_ARG_OPS
+  {factorial} — one integer argument
+end note
+
+note right of Main::_TWO_ARG_OPS
+  {add, subtract, multiply, divide, power, log}
+  — two float arguments
 end note
 
 note right of Main::parse_number
@@ -76,6 +95,19 @@ note right of Main::run_operation
   Catches ValueError from Calculator
   and prints the error message;
   loop always continues.
+end note
+
+note right of Main::cli_mode
+  Parses args via argparse.
+  Prints result to stdout.
+  Errors go to stderr.
+  Returns 0 on success, 1 on error.
+end note
+
+note right of Main::main
+  If args non-empty: delegates to
+  cli_mode(args) and exits.
+  Otherwise: starts interactive loop.
 end note
 
 Main ..> Calculator : instantiates

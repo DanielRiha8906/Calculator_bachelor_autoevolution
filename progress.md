@@ -2,6 +2,21 @@
 
 ---
 
+## Run: Issue #240 — CLI mode (2026-04-12)
+
+- **Branch:** exp3/issue-240-cli-mode
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `src/__main__.py` — added `cli_mode(args)`, `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS`, `_ALL_OPS`; updated `main(args=None)` signature to dispatch to CLI mode when args are present
+  - `tests/test_main.py` — updated 5 interactive `main()` calls to `main([])`; added 20 new cli_mode tests (12 happy-path + 8 error/edge cases)
+- **Purpose:** Add non-interactive CLI mode so the calculator can be called from bash with operation and values as arguments (`python -m src add 3 4` → prints `7.0`).
+- **Risks:** Minimal — interactive mode unchanged; `main()` signature change is backward compatible via default `args=None`; existing tests required only call-site update from `main()` to `main([])`.
+- **Tests passed:** Yes — 110/110 (63 calculator + 48 main; all pass)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/patterns.md`, `rag/evolution_log.md`
+Duration: 317.8s | Cost: $0.946621 USD | Turns: 37
+
+---
+
 ## Run: Issue #221 — Interactive user input (2026-04-12)
 
 - **Branch:** exp3/issue-221-interactive-input
@@ -148,3 +163,18 @@ Duration: 54.5s | Cost: $0.237316 USD | Turns: 18
 - **Tests passed:** N/A (no source changes)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 Duration: 154.7s | Cost: $0.404612 USD | Turns: 19
+
+---
+
+## Run: Diagram update (2026-04-12)
+
+- **Branch:** exp3/issue-240-cli-mode
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS`, `_ALL_OPS` constants and `cli_mode(args: list[str]) -> int` to `__main__`; updated `main()` signature to `main(args: list[str] | None = None) -> None`
+  - `artifacts/activity_diagram.puml` — added top-level branch for CLI mode (argparse dispatch with arity validation, result/error output, exit codes) vs interactive mode loop
+  - `artifacts/sequence_diagram.puml` — wrapped existing interactive loop in `alt` frame; added CLI mode alt showing argparse dispatch, per-arity Calculator calls, stdout result / stderr error, and exit codes
+- **Purpose:** Update PlantUML diagrams to reflect the non-interactive CLI mode added to `src/__main__.py` in cycle 6 (issue #240).
+- **Risks:** None — diagram-only change; no source code modified.
+- **Tests passed:** N/A (no source changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: 108.0s | Cost: $0.330687 USD | Turns: 21

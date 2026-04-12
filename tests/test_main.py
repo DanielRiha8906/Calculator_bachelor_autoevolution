@@ -1,6 +1,7 @@
-"""Tests for the interactive CLI loop in src/__main__.py."""
+"""Tests for the interactive CLI loop and CLI mode in src/__main__.py."""
 import math
-from unittest.mock import patch, call
+import sys
+from unittest.mock import patch
 import pytest
 
 from src.__main__ import (
@@ -9,6 +10,7 @@ from src.__main__ import (
     parse_int,
     run_operation,
     main,
+    cli_mode,
     OPERATIONS,
 )
 from src.calculator import Calculator
@@ -185,19 +187,21 @@ def test_run_operation_unknown(calc, capsys):
 
 # ---------------------------------------------------------------------------
 # main — full interactive loop
+# Pass args=[] explicitly so main() uses interactive mode regardless of
+# what pytest puts in sys.argv.
 # ---------------------------------------------------------------------------
 
 def test_main_quit_immediately(capsys):
     """User selects 'q' on first prompt — loop exits cleanly."""
     with patch("builtins.input", return_value="q"):
-        main()
+        main([])
     assert "Goodbye" in capsys.readouterr().out
 
 
 def test_main_invalid_choice_then_quit(capsys):
     """Invalid menu choice shows error; 'q' exits cleanly."""
     with patch("builtins.input", side_effect=["99", "q"]):
-        main()
+        main([])
     captured = capsys.readouterr().out
     assert "Invalid choice" in captured
     assert "Goodbye" in captured
@@ -206,7 +210,7 @@ def test_main_invalid_choice_then_quit(capsys):
 def test_main_add_then_quit(capsys):
     """User picks add, enters two numbers, sees result, then quits."""
     with patch("builtins.input", side_effect=["1", "3", "4", "q"]):
-        main()
+        main([])
     captured = capsys.readouterr().out
     assert "7" in captured
     assert "Goodbye" in captured
@@ -217,7 +221,7 @@ def test_main_two_operations_then_quit(capsys):
     # op 1 = add (inputs: 2 and 3)
     # op 2 = square (input: 4)
     with patch("builtins.input", side_effect=["1", "2", "3", "6", "4", "q"]):
-        main()
+        main([])
     captured = capsys.readouterr().out
     assert "5" in captured   # 2 + 3
     assert "16" in captured  # 4^2
@@ -228,7 +232,134 @@ def test_main_error_then_continue(capsys):
     """Division-by-zero error is reported but the loop continues."""
     # op: divide 10 by 0 → error, then quit
     with patch("builtins.input", side_effect=["4", "10", "0", "q"]):
-        main()
+        main([])
     captured = capsys.readouterr().out
     assert "Error" in captured
     assert "Goodbye" in captured
+
+
+# ---------------------------------------------------------------------------
+# cli_mode — non-interactive single-operation execution
+# ---------------------------------------------------------------------------
+
+def test_cli_mode_add(capsys):
+    rc = cli_mode(["add", "3", "4"])
+    assert rc == 0
+    assert "7" in capsys.readouterr().out
+
+
+def test_cli_mode_subtract(capsys):
+    rc = cli_mode(["subtract", "10", "3"])
+    assert rc == 0
+    assert "7" in capsys.readouterr().out
+
+
+def test_cli_mode_multiply(capsys):
+    rc = cli_mode(["multiply", "6", "7"])
+    assert rc == 0
+    assert "42" in capsys.readouterr().out
+
+
+def test_cli_mode_divide(capsys):
+    rc = cli_mode(["divide", "10", "2"])
+    assert rc == 0
+    assert "5" in capsys.readouterr().out
+
+
+def test_cli_mode_power(capsys):
+    rc = cli_mode(["power", "2", "10"])
+    assert rc == 0
+    assert "1024" in capsys.readouterr().out
+
+
+def test_cli_mode_log(capsys):
+    rc = cli_mode(["log", "100", "10"])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert math.isclose(float(out.strip()), 2.0)
+
+
+def test_cli_mode_factorial(capsys):
+    rc = cli_mode(["factorial", "5"])
+    assert rc == 0
+    assert "120" in capsys.readouterr().out
+
+
+def test_cli_mode_square(capsys):
+    rc = cli_mode(["square", "4"])
+    assert rc == 0
+    assert "16" in capsys.readouterr().out
+
+
+def test_cli_mode_cube(capsys):
+    rc = cli_mode(["cube", "3"])
+    assert rc == 0
+    assert "27" in capsys.readouterr().out
+
+
+def test_cli_mode_square_root(capsys):
+    rc = cli_mode(["square_root", "9"])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert math.isclose(float(out.strip()), 3.0)
+
+
+def test_cli_mode_cube_root(capsys):
+    rc = cli_mode(["cube_root", "27"])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert math.isclose(float(out.strip()), 3.0)
+
+
+def test_cli_mode_ln(capsys):
+    import math as _math
+    rc = cli_mode(["ln", str(_math.e)])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert math.isclose(float(out.strip()), 1.0)
+
+
+def test_cli_mode_divide_by_zero_returns_error(capsys):
+    rc = cli_mode(["divide", "10", "0"])
+    assert rc == 1
+    assert "Error" in capsys.readouterr().err
+
+
+def test_cli_mode_factorial_negative_returns_error(capsys):
+    rc = cli_mode(["factorial", "-1"])
+    assert rc == 1
+    assert "Error" in capsys.readouterr().err
+
+
+def test_cli_mode_square_root_negative_returns_error(capsys):
+    rc = cli_mode(["square_root", "-4"])
+    assert rc == 1
+    assert "Error" in capsys.readouterr().err
+
+
+def test_cli_mode_wrong_arg_count_two_arg_op(capsys):
+    """Passing only one value to a two-argument operation returns error."""
+    rc = cli_mode(["add", "3"])
+    assert rc == 1
+    assert "Error" in capsys.readouterr().err
+
+
+def test_cli_mode_wrong_arg_count_one_arg_op(capsys):
+    """Passing two values to a one-argument operation returns error."""
+    rc = cli_mode(["square", "4", "5"])
+    assert rc == 1
+    assert "Error" in capsys.readouterr().err
+
+
+def test_cli_mode_unknown_operation_exits():
+    """argparse raises SystemExit for an unrecognised operation name."""
+    with pytest.raises(SystemExit):
+        cli_mode(["unknown_op", "3"])
+
+
+def test_main_dispatches_to_cli_mode(capsys):
+    """main() with CLI args calls cli_mode and exits with code 0."""
+    with pytest.raises(SystemExit) as exc_info:
+        main(["add", "2", "3"])
+    assert exc_info.value.code == 0
+    assert "5" in capsys.readouterr().out

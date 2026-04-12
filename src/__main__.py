@@ -1,3 +1,6 @@
+import sys
+import argparse
+
 from .calculator import Calculator
 
 OPERATIONS = {
@@ -14,6 +17,12 @@ OPERATIONS = {
     "11": "log",
     "12": "ln",
 }
+
+# Operations grouped by arity and argument type for CLI mode.
+_ONE_ARG_OPS = {"square", "cube", "square_root", "cube_root", "ln"}
+_INT_ARG_OPS = {"factorial"}
+_TWO_ARG_OPS = {"add", "subtract", "multiply", "divide", "power", "log"}
+_ALL_OPS = _ONE_ARG_OPS | _INT_ARG_OPS | _TWO_ARG_OPS
 
 
 def show_menu() -> None:
@@ -97,8 +106,81 @@ def run_operation(calc: Calculator, operation: str) -> None:
         print(f"  Error: {exc}")
 
 
-def main() -> None:
-    """Run the interactive calculator loop until the user quits."""
+def cli_mode(args: list[str]) -> int:
+    """Execute a single operation from command-line arguments.
+
+    Parses *args* (e.g. ``["add", "3", "4"]``), runs the requested
+    Calculator operation, and prints the result to stdout.
+
+    Returns 0 on success, 1 on error.  Errors are written to stderr so that
+    the numeric result is always the only line on stdout.
+    """
+    parser = argparse.ArgumentParser(
+        prog="python -m src",
+        description="Calculator — execute a single operation and print the result.",
+    )
+    parser.add_argument(
+        "operation",
+        choices=sorted(_ALL_OPS),
+        help="Operation to perform.",
+    )
+    parser.add_argument(
+        "values",
+        nargs="+",
+        metavar="VALUE",
+        help="Numeric argument(s) required by the operation.",
+    )
+    parsed = parser.parse_args(args)
+    op = parsed.operation
+    raw = parsed.values
+
+    calc = Calculator()
+    try:
+        if op in _INT_ARG_OPS:
+            if len(raw) != 1:
+                print(
+                    f"Error: '{op}' requires exactly 1 integer argument.",
+                    file=sys.stderr,
+                )
+                return 1
+            result = calc.factorial(int(raw[0]))
+        elif op in _ONE_ARG_OPS:
+            if len(raw) != 1:
+                print(
+                    f"Error: '{op}' requires exactly 1 argument.",
+                    file=sys.stderr,
+                )
+                return 1
+            result = getattr(calc, op)(float(raw[0]))
+        else:  # two-argument operations
+            if len(raw) != 2:
+                print(
+                    f"Error: '{op}' requires exactly 2 arguments.",
+                    file=sys.stderr,
+                )
+                return 1
+            result = getattr(calc, op)(float(raw[0]), float(raw[1]))
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
+    print(result)
+    return 0
+
+
+def main(args: list[str] | None = None) -> None:
+    """Run the calculator in CLI or interactive mode.
+
+    If *args* is provided (or ``sys.argv[1:]`` is non-empty when *args* is
+    ``None``), execute a single operation via :func:`cli_mode` and exit.
+    Otherwise start the interactive menu-driven loop.
+    """
+    if args is None:
+        args = sys.argv[1:]
+    if args:
+        sys.exit(cli_mode(args))
+
+    # Interactive loop
     calc = Calculator()
     while True:
         show_menu()

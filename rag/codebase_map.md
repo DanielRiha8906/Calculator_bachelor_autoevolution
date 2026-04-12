@@ -32,24 +32,32 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## src/__main__.py
-- **Purpose:** Interactive CLI entry point — presents a numbered menu, reads user-selected operation and required numeric inputs, prints the result, and loops until the user quits.
-- **Last updated:** cycle 5
-- **Exports:** `main()`, `show_menu()`, `parse_number(prompt)`, `parse_int(prompt)`, `run_operation(calc, operation)`, `OPERATIONS` dict.
-- **Key constants:** `OPERATIONS` maps menu keys `"1"`–`"12"` to operation names (add, subtract, multiply, divide, factorial, square, cube, square_root, cube_root, power, log, ln).
-- **Invariants:** `main()` loops until user enters `"q"`; invalid choices print an error and re-prompt. `ValueError` from Calculator methods is caught in `run_operation` and displayed — the loop always continues. `parse_number`/`parse_int` retry indefinitely on invalid input. Only calls `Calculator` methods; no side effects beyond stdout/stdin.
+- **Purpose:** CLI entry point — supports both interactive menu-driven mode and non-interactive single-operation mode (via command-line arguments).
+- **Last updated:** cycle 6
+- **Exports:** `main(args=None)`, `cli_mode(args)`, `show_menu()`, `parse_number(prompt)`, `parse_int(prompt)`, `run_operation(calc, operation)`, `OPERATIONS` dict, `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS`, `_ALL_OPS`.
+- **Key constants:**
+  - `OPERATIONS` maps menu keys `"1"`–`"12"` to operation names.
+  - `_ONE_ARG_OPS` — `{square, cube, square_root, cube_root, ln}` (one float arg).
+  - `_INT_ARG_OPS` — `{factorial}` (one int arg).
+  - `_TWO_ARG_OPS` — `{add, subtract, multiply, divide, power, log}` (two float args).
+- **CLI mode usage:** `python -m src <operation> <value> [<value2>]` — parses via `argparse`, prints result to stdout, returns 0 on success / 1 on error (errors go to stderr).
+- **Interactive mode:** `python -m src` (no args) — presents a numbered menu, loops until user enters `"q"`.
+- **Dispatch:** `main(args=None)` — if `args` is `None`, uses `sys.argv[1:]`; if non-empty, delegates to `cli_mode(args)` and exits. Passing `args=[]` forces interactive mode (used by tests).
+- **Invariants:** `cli_mode` validates argument count per operation and catches `ValueError` from Calculator. `run_operation` catches `ValueError` and prints to stdout (interactive error display).
 
 ---
 
 ## tests/test_main.py
-- **Purpose:** Unit tests for the interactive CLI module (`src/__main__.py`) using mocked `input()` and `capsys`.
-- **Last updated:** cycle 5
-- **Tests (28 total):**
+- **Purpose:** Unit tests for the interactive CLI and cli_mode in `src/__main__.py` using mocked `input()` and `capsys`.
+- **Last updated:** cycle 6
+- **Tests (48 total):**
   - **show_menu (1):** verifies all operation names and "q" appear in output.
   - **parse_number (4):** valid int, valid float, negative, retry-on-invalid-then-accept.
   - **parse_int (2):** valid int, retry-on-float-string-then-accept.
   - **run_operation (16):** one test per operation (add, subtract, multiply, divide, power, log, factorial, square, cube, square_root, cube_root, ln); plus error tests for divide-by-zero, factorial-negative, square_root-negative, and unknown-operation.
-  - **main (5):** quit immediately, invalid-choice-then-quit, add-then-quit, two-operations-then-quit, error-then-continue.
-- **Invariants:** Uses `unittest.mock.patch("builtins.input", ...)` to supply canned inputs; never touches real stdin.
+  - **main interactive (5):** quit immediately, invalid-choice-then-quit, add-then-quit, two-operations-then-quit, error-then-continue. All call `main([])` to force interactive mode.
+  - **cli_mode (20):** happy-path test for all 12 operations; error tests for divide-by-zero, factorial-negative, square_root-negative; wrong-arg-count tests for two-arg and one-arg ops; unknown-operation SystemExit; main() dispatch integration test.
+- **Invariants:** Interactive tests call `main([])` to bypass sys.argv; cli_mode tests call `cli_mode([...])` directly. Errors in cli_mode go to stderr; result goes to stdout.
 
 ---
 
