@@ -40,22 +40,27 @@ When a CLI module uses `input()`, extract each distinct responsibility (`parse_n
 
 ---
 
-## Pattern: Retry loop for user input validation
+## Pattern: Bounded retry loop with TooManyAttemptsError
 
-When prompting for a numeric value from the user, loop until a valid value is received rather than raising an exception:
+When prompting for a numeric value from the user, allow a fixed number of attempts (`MAX_ATTEMPTS`) and raise a custom `TooManyAttemptsError` if they are all exhausted. This prevents the session from hanging indefinitely on invalid input and gives the caller a clean way to end the session:
 
 ```python
-while True:
+for attempt in range(1, max_attempts + 1):
     raw = input(prompt).strip()
     try:
         return float(raw)
     except ValueError:
-        print(f"  Invalid number: '{raw}'. Please try again.")
+        remaining = max_attempts - attempt
+        if remaining > 0:
+            print(f"  Invalid number: '{raw}'. Please try again ({remaining} attempt(s) left).")
+        else:
+            print(f"  Invalid number: '{raw}'. No attempts remaining.")
+raise TooManyAttemptsError("Too many invalid number inputs. Ending session.")
 ```
 
-This keeps the UX smooth and avoids exposing internal Python exceptions to the user.
+The caller (interactive loop in `main()`) catches `TooManyAttemptsError` and breaks. CLI mode never retries — explicit number validation returns `1` immediately.
 
-**First observed:** cycle 5, `parse_number` and `parse_int` in `src/__main__.py`
+**First observed:** cycle 7, `parse_number` and `parse_int` in `src/__main__.py` (replaces unbounded while-True retry from cycle 5)
 
 ---
 

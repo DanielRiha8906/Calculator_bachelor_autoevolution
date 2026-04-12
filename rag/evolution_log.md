@@ -4,6 +4,23 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 7 — Issue #246: Input validation (2026-04-12)
+
+- **Task:** Add input validation to the interactive mode — retry on invalid operation or operand input, stop the session after a fixed number of failed attempts. In CLI mode, invalid input returns a clear error message and exits.
+- **Files changed:** `src/__main__.py`, `tests/test_main.py`
+- **Outcome:** 117 tests pass (63 existing calculator tests + 54 CLI/interactive tests). All 110 existing tests continue to pass; 7 new tests added.
+- **Key decisions:**
+  - Added `MAX_ATTEMPTS = 3` constant and `TooManyAttemptsError` custom exception at module level.
+  - `parse_number` and `parse_int` changed from unbounded `while True` loops to bounded `for attempt in range(1, max_attempts + 1)` loops; raise `TooManyAttemptsError` on exhaustion.
+  - `run_operation` unchanged — `TooManyAttemptsError` propagates naturally (it does not inherit from `ValueError`).
+  - `main()` interactive loop now tracks `invalid_op_count`; breaks and prints "Too many invalid choices" when `MAX_ATTEMPTS` consecutive invalid menu choices occur. Also catches `TooManyAttemptsError` from `run_operation` and breaks.
+  - `cli_mode` refactored to parse numbers/integers with explicit `try/except` blocks before calling Calculator, giving per-field error messages like `"'abc' is not a valid number."` instead of relying on Python's float/int error text.
+  - `argparse` result variable renamed from `parsed` to `namespace` to avoid shadowing the new `parsed: list[float]` local used for two-arg ops.
+- **Lessons learned:** `TooManyAttemptsError` not inheriting from `ValueError` is critical — if it did, `run_operation`'s `except ValueError` block would swallow it silently instead of letting it propagate to `main()`.
+- **Cost:** PENDING | **Turns:** PENDING
+
+---
+
 ## Cycle 6 — Issue #240: CLI mode (2026-04-12)
 
 - **Task:** Add a CLI mode so the calculator can be executed from bash using command-line arguments. Allow the user to provide the operation and required values directly in the command and print the result to the terminal.
