@@ -10,7 +10,7 @@
 - **Current branch:** exp3/issue-248-add-history
 - **PR target:** exp3/naive-generic
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 251.0s | Cost: $0.899158 USD | Turns: 40
 
 ## Run: Issue #245 — Input Validation (2026-04-12)
 
