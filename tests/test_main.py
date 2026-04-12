@@ -2,7 +2,7 @@
 
 import pytest
 from unittest.mock import patch
-from src.__main__ import parse_number, run_operation, main, MENU_MAP, cli_main, _format_result
+from src.__main__ import parse_number, run_operation, main, MENU_MAP, cli_main, _format_result, MAX_INPUT_ATTEMPTS
 from src.calculator import Calculator
 
 
@@ -33,6 +33,36 @@ def test_parse_number_retries_on_invalid(capsys):
     captured = capsys.readouterr()
     assert "Invalid number" in captured.out
     assert result == 5.0
+
+
+def test_parse_number_exhausts_retries_raises_value_error(capsys):
+    # All MAX_INPUT_ATTEMPTS inputs are invalid — should raise ValueError
+    bad_inputs = ["x"] * MAX_INPUT_ATTEMPTS
+    with patch("builtins.input", side_effect=bad_inputs):
+        with pytest.raises(ValueError, match="No valid number entered"):
+            parse_number("prompt: ")
+    captured = capsys.readouterr()
+    assert "Invalid number" in captured.out
+    assert "No more attempts remaining" in captured.out
+
+
+def test_parse_number_remaining_count_shown(capsys):
+    # With max_attempts=3: first failure should show "2 attempt(s) remaining"
+    with patch("builtins.input", side_effect=["bad", "5"]):
+        result = parse_number("prompt: ", max_attempts=3)
+    captured = capsys.readouterr()
+    assert "2 attempt(s) remaining" in captured.out
+    assert result == 5.0
+
+
+def test_run_operation_too_many_invalid_inputs_prints_error(capsys):
+    # Provide MAX_INPUT_ATTEMPTS invalid inputs — run_operation should print Error
+    calc = Calculator()
+    bad_inputs = ["x"] * MAX_INPUT_ATTEMPTS
+    with patch("builtins.input", side_effect=bad_inputs):
+        run_operation(calc, "add")
+    out = capsys.readouterr().out
+    assert "Error" in out
 
 
 # --- MENU_MAP completeness ---

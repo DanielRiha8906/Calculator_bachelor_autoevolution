@@ -17,6 +17,10 @@ When `main()` branches on `sys.argv` length, tests that call it directly must pa
 ### Dual-mode entry point via sys.argv
 When a module needs both a non-interactive (scripting) mode and an interactive mode, check `len(sys.argv) > 1` at the top of `main()` and dispatch to a separate function (`cli_main`) that takes the argument list explicitly. This keeps the two modes independently testable and avoids coupling the interactive REPL to argument parsing.
 
+### Bounded retry with optional max_attempts parameter
+When a user-input helper (e.g., `parse_number`) must limit retries, convert the `while True` loop to a `for attempt in range(max_attempts)` loop and raise `ValueError` on exhaustion. Expose `max_attempts` as an optional parameter (defaulting to a module-level constant) so tests can override it without patching the constant. Callers that already catch `ValueError` get the retry-exhaustion error for free — no extra handler needed.
+
 ## Anti-Patterns
 
-(None discovered yet — populated as cycles progress)
+### Infinite retry loops without limit
+Looping forever on invalid user input (e.g., `while True: ... except ValueError: print(...)`) makes the REPL impossible to escape from non-interactively and is harder to test reliably. Prefer bounded loops with a configurable `max_attempts` constant.

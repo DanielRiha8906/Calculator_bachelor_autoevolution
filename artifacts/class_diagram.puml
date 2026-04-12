@@ -22,9 +22,10 @@ package "src" {
         +UNARY_OPS : set
         +BINARY_OPS : set
         +INTEGER_OPS : set
+        +MAX_INPUT_ATTEMPTS : int
         +MENU : str
         +MENU_MAP : dict[str, str]
-        +parse_number(prompt: str) : float
+        +parse_number(prompt: str, max_attempts: int) : float
         -_to_int_if_needed(op: str, value: float) : float | int
         +run_operation(calc: Calculator, op: str) : void
         -_format_result(value: int | float) : str
@@ -76,6 +77,14 @@ note left of Main::INTEGER_OPS
   {"factorial"}: float inputs are
   converted to int before dispatch;
   non-whole values raise ValueError
+end note
+
+note left of Main::MAX_INPUT_ATTEMPTS
+  Default = 3. parse_number retries
+  up to max_attempts times; raises
+  ValueError after all attempts fail.
+  Remaining count printed on each
+  invalid entry.
 end note
 
 note left of Main::cli_main

@@ -26,23 +26,24 @@
 
 ## src/__main__.py
 - **Purpose:** Dual-mode CLI for the Calculator: bash argv mode and interactive REPL.
-- **Exports:** `parse_number(prompt)`, `_to_int_if_needed(op, value)`, `run_operation(calc, op)`, `_format_result(value)`, `cli_main(args)`, `main()`
-- **Module-level constants:** `UNARY_OPS`, `BINARY_OPS`, `INTEGER_OPS`, `MENU`, `MENU_MAP`
+- **Exports:** `parse_number(prompt, max_attempts)`, `_to_int_if_needed(op, value)`, `run_operation(calc, op)`, `_format_result(value)`, `cli_main(args)`, `main()`
+- **Module-level constants:** `UNARY_OPS`, `BINARY_OPS`, `INTEGER_OPS`, `MAX_INPUT_ATTEMPTS`, `MENU`, `MENU_MAP`
 - **Key invariants:**
   - `main()` checks `sys.argv`: if `len(sys.argv) > 1`, calls `cli_main(sys.argv[1:])` and `sys.exit(rc)`; otherwise starts the interactive REPL.
   - `cli_main(args)` parses `[operation, *operands]`, validates arg count, runs the operation, prints `_format_result(result)`, returns 0 on success / 1 on error.
   - `_format_result(value)` converts whole floats to integer strings (7.0 → "7"); fractional floats and ints pass through as-is.
   - `MENU_MAP` maps strings "1"–"12" to the 12 Calculator method names; "q" quits.
-  - `parse_number` loops until the user enters a valid float; never raises.
+  - `parse_number(prompt, max_attempts=MAX_INPUT_ATTEMPTS)` prompts for a valid float up to `max_attempts` times; prints remaining-attempts feedback on each invalid entry; raises `ValueError` after all attempts are exhausted.
+  - `MAX_INPUT_ATTEMPTS = 3` is the module-level default for retry limit.
   - `run_operation` catches `ValueError` and `ZeroDivisionError` and prints "Error: …" without crashing the REPL loop.
   - `INTEGER_OPS = {"factorial"}`: inputs for these ops are converted float→int before dispatch; non-whole numbers raise `ValueError`.
-- **Last updated:** cycle 6
+- **Last updated:** cycle 7
 
 ## tests/test_main.py
 - **Purpose:** Test suite for src/__main__.py (both interactive REPL and bash CLI mode).
-- **Exports:** 52 test functions covering: parse_number (valid int/float/negative/retry), MENU_MAP completeness, run_operation for all 12 operations + error paths, _format_result (whole float, fractional, int), cli_main for all 12 operations + error paths (unknown op, wrong arg count, invalid number, domain errors), and main dispatch (interactive REPL with sys.argv patched to ["prog"], CLI dispatch via sys.argv with 2+ args).
-- **Key invariants:** Uses `unittest.mock.patch("builtins.input", ...)` for REPL tests; uses `patch("sys.argv", ...)` for all `main()` tests to control REPL vs. CLI dispatch; uses `capsys` to capture stdout.
-- **Last updated:** cycle 6
+- **Exports:** 56 test functions covering: parse_number (valid int/float/negative/retry/exhausted retries/remaining-count message), run_operation for all 12 operations + error paths (including too-many-invalid-inputs), MENU_MAP completeness, _format_result (whole float, fractional, int), cli_main for all 12 operations + error paths (unknown op, wrong arg count, invalid number, domain errors), and main dispatch (interactive REPL with sys.argv patched to ["prog"], CLI dispatch via sys.argv with 2+ args).
+- **Key invariants:** Uses `unittest.mock.patch("builtins.input", ...)` for REPL tests; uses `patch("sys.argv", ...)` for all `main()` tests to control REPL vs. CLI dispatch; uses `capsys` to capture stdout; imports `MAX_INPUT_ATTEMPTS` to parameterise retry tests.
+- **Last updated:** cycle 7
 
 ## tests/test_calculator.py
 - **Purpose:** Full test suite for Calculator class.

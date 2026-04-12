@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 7 — Issue #245: Input Validation (2026-04-12)
+- **Task:** Add validation for bad input and let the user retry a few times
+- **Branch:** exp3/issue-245-input-validation
+- **Files changed:** src/__main__.py, tests/test_main.py
+- **Outcome:** Added `MAX_INPUT_ATTEMPTS = 3` constant; changed `parse_number` from infinite-loop to a bounded retry loop with remaining-attempts feedback; on exhaustion raises `ValueError` which `run_operation` already catches. Added 4 new tests (retry exhaustion, remaining count, run_operation error path). 113 tests collected, 113 passed.
+- **Key decisions:** Used a simple `for` loop instead of `while True` to enforce the limit naturally. Kept `max_attempts` as an optional parameter (defaulting to `MAX_INPUT_ATTEMPTS`) so tests can override it without patching the constant. The `ValueError` raised on exhaustion reuses the existing `run_operation` catch clause — no additional handler was needed.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 6 — Issue #239: CLI Mode (2026-04-12)
 - **Task:** Add CLI mode so the calculator can be used from bash
 - **Branch:** exp3/issue-239-cli-mode

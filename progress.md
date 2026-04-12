@@ -1,5 +1,17 @@
 # Progress Log
 
+## Run: Issue #245 — Input Validation (2026-04-12)
+
+- **Branch:** exp3/issue-245-input-validation
+- **Files changed:** src/__main__.py, tests/test_main.py
+- **Purpose:** Added bounded retry logic to `parse_number` (max 3 attempts); on exhaustion raises `ValueError` surfaced by existing `run_operation` error handler. Added `MAX_INPUT_ATTEMPTS = 3` module-level constant and 4 new tests.
+- **Risks:** Low — change is contained to `parse_number`; all existing callers benefit automatically through the already-present `ValueError` catch in `run_operation`.
+- **Tests passed:** 113/113
+- **Current branch:** exp3/issue-245-input-validation
+- **PR target:** exp3/naive-generic
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
+Duration: 201.7s | Cost: $0.810712 USD | Turns: 42
+
 ## Run: Diagram Update (2026-04-12)
 
 - **Branch:** exp3/issue-239-cli-mode
@@ -125,3 +137,13 @@ Duration: 100.8s | Cost: $0.384814 USD | Turns: 29
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
 Duration: 99.9s | Cost: $0.307061 USD | Turns: 19
+
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-245-input-validation
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 7 changes: added `MAX_INPUT_ATTEMPTS : int` constant and corrected `parse_number` signature to include `max_attempts: int` parameter in class diagram; added parse_number retry-logic note to activity diagram; added bounded retry loop frames to parse_number calls in sequence diagram.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: 77.3s | Cost: $0.304995 USD | Turns: 21
