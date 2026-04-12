@@ -13,115 +13,171 @@ participant "__main__" as Main
 participant "Calculator" as Calc
 participant "math" as Math
 
-User -> Main : python -m src
+User -> Main : python -m src [operation [values...]]
 activate Main
-Main -> Calc : <<create>>
-activate Calc
 
-loop interactive menu loop
+alt CLI mode (args non-empty)
 
-    Main -> User : show_menu()\nprint "1. add ... 12. ln  q. quit"
-    User -> Main : enter choice
+    Main -> Main : cli_mode(args)
+    activate Main
+    Main -> Main : argparse.parse_args(args)
+    Main -> Calc : <<create>>
+    activate Calc
 
-    alt choice == "q"
-        Main -> User : print "Goodbye!"
-        note right: program exits
-
-    else invalid choice (not in OPERATIONS)
-        Main -> User : print "Invalid choice: '<choice>'"
-
-    else valid choice (dispatched via OPERATIONS dict)
-
-        Main -> User : prompt for input(s)\n(parse_number / parse_int)
-        note right: both helpers retry indefinitely\non invalid input
-        User -> Main : numeric input(s)
-
-        group run_operation — two-argument operations (add/subtract/multiply/divide/power/log)
-            Main -> Calc : add(a, b) / subtract(a, b) / multiply(a, b)
-            Calc --> Main : a+b / a-b / a*b
-
-            Main -> Calc : divide(a, b)
-            activate Calc
-            alt b == 0
-                Calc --> Main : raise ValueError("Division by zero is not allowed")
-            else b != 0
-                Calc --> Main : a / b
-            end
-            deactivate Calc
-
-            Main -> Calc : power(a, b)
-            Calc --> Main : a ** b
-
-            Main -> Calc : log(a, base)
-            activate Calc
-            alt a <= 0 or base <= 0 or base == 1
-                Calc --> Main : raise ValueError(...)
-            else valid inputs
-                Calc -> Math : log(a, base)
-                Math --> Calc : result
-                Calc --> Main : result
-            end
-            deactivate Calc
+    alt factorial (int arg)
+        Main -> Calc : factorial(n)
+        activate Calc
+        alt n is not int or n < 0
+            Calc --> Main : raise ValueError(...)
+            Main -> User : print "Error: <message>" (stderr)\nexit(1)
+        else valid n
+            Calc -> Math : factorial(n)
+            Math --> Calc : n!
+            Calc --> Main : n!
+            Main -> User : print n! (stdout)\nexit(0)
         end
+        deactivate Calc
 
-        group run_operation — one-argument operations (square/cube/square_root/cube_root/ln)
-            Main -> Calc : square(a)
-            Calc --> Main : a ** 2
-
-            Main -> Calc : cube(a)
-            Calc --> Main : a ** 3
-
-            Main -> Calc : square_root(a)
-            activate Calc
-            alt a < 0
-                Calc --> Main : raise ValueError("Square root not defined for negative numbers")
-            else a >= 0
-                Calc -> Math : sqrt(a)
-                Math --> Calc : result
-                Calc --> Main : result
-            end
-            deactivate Calc
-
-            Main -> Calc : cube_root(a)
-            note right: sign-preserving:\n-((-a)**(1/3)) if a < 0
-            Calc --> Main : result
-
-            Main -> Calc : ln(a)
-            activate Calc
-            alt a <= 0
-                Calc --> Main : raise ValueError("Natural logarithm not defined for non-positive numbers")
-            else a > 0
-                Calc -> Math : log(a)
-                Math --> Calc : result
-                Calc --> Main : result
-            end
-            deactivate Calc
-        end
-
-        group run_operation — factorial
-            Main -> Calc : factorial(n)
-            activate Calc
-            alt n is not int or n < 0
-                Calc --> Main : raise ValueError(...)
-            else valid n
-                Calc -> Math : factorial(n)
-                Math --> Calc : n!
-                Calc --> Main : n!
-            end
-            deactivate Calc
-        end
-
-        alt ValueError raised
-            Main -> User : print "Error: <message>"
+    else one-argument op (square/cube/square_root/cube_root/ln)
+        Main -> Calc : <operation>(float(values[0]))
+        activate Calc
+        alt ValueError raised (e.g. sqrt of negative, ln of non-positive)
+            Calc --> Main : raise ValueError(...)
+            Main -> User : print "Error: <message>" (stderr)\nexit(1)
         else success
-            Main -> User : print "Result: <value>"
+            Calc --> Main : result
+            Main -> User : print result (stdout)\nexit(0)
+        end
+        deactivate Calc
+
+    else two-argument op (add/subtract/multiply/divide/power/log)
+        Main -> Calc : <operation>(float(values[0]), float(values[1]))
+        activate Calc
+        alt ValueError raised (e.g. divide-by-zero, invalid log base)
+            Calc --> Main : raise ValueError(...)
+            Main -> User : print "Error: <message>" (stderr)\nexit(1)
+        else success
+            Calc --> Main : result
+            Main -> User : print result (stdout)\nexit(0)
+        end
+        deactivate Calc
+    end
+
+    deactivate Calc
+    deactivate Main
+
+else interactive mode (no args)
+
+    Main -> Calc : <<create>>
+    activate Calc
+
+    loop interactive menu loop
+
+        Main -> User : show_menu()\nprint "1. add ... 12. ln  q. quit"
+        User -> Main : enter choice
+
+        alt choice == "q"
+            Main -> User : print "Goodbye!"
+            note right: program exits
+
+        else invalid choice (not in OPERATIONS)
+            Main -> User : print "Invalid choice: '<choice>'"
+
+        else valid choice (dispatched via OPERATIONS dict)
+
+            Main -> User : prompt for input(s)\n(parse_number / parse_int)
+            note right: both helpers retry indefinitely\non invalid input
+            User -> Main : numeric input(s)
+
+            group run_operation — two-argument operations (add/subtract/multiply/divide/power/log)
+                Main -> Calc : add(a, b) / subtract(a, b) / multiply(a, b)
+                Calc --> Main : a+b / a-b / a*b
+
+                Main -> Calc : divide(a, b)
+                activate Calc
+                alt b == 0
+                    Calc --> Main : raise ValueError("Division by zero is not allowed")
+                else b != 0
+                    Calc --> Main : a / b
+                end
+                deactivate Calc
+
+                Main -> Calc : power(a, b)
+                Calc --> Main : a ** b
+
+                Main -> Calc : log(a, base)
+                activate Calc
+                alt a <= 0 or base <= 0 or base == 1
+                    Calc --> Main : raise ValueError(...)
+                else valid inputs
+                    Calc -> Math : log(a, base)
+                    Math --> Calc : result
+                    Calc --> Main : result
+                end
+                deactivate Calc
+            end
+
+            group run_operation — one-argument operations (square/cube/square_root/cube_root/ln)
+                Main -> Calc : square(a)
+                Calc --> Main : a ** 2
+
+                Main -> Calc : cube(a)
+                Calc --> Main : a ** 3
+
+                Main -> Calc : square_root(a)
+                activate Calc
+                alt a < 0
+                    Calc --> Main : raise ValueError("Square root not defined for negative numbers")
+                else a >= 0
+                    Calc -> Math : sqrt(a)
+                    Math --> Calc : result
+                    Calc --> Main : result
+                end
+                deactivate Calc
+
+                Main -> Calc : cube_root(a)
+                note right: sign-preserving:\n-((-a)**(1/3)) if a < 0
+                Calc --> Main : result
+
+                Main -> Calc : ln(a)
+                activate Calc
+                alt a <= 0
+                    Calc --> Main : raise ValueError("Natural logarithm not defined for non-positive numbers")
+                else a > 0
+                    Calc -> Math : log(a)
+                    Math --> Calc : result
+                    Calc --> Main : result
+                end
+                deactivate Calc
+            end
+
+            group run_operation — factorial
+                Main -> Calc : factorial(n)
+                activate Calc
+                alt n is not int or n < 0
+                    Calc --> Main : raise ValueError(...)
+                else valid n
+                    Calc -> Math : factorial(n)
+                    Math --> Calc : n!
+                    Calc --> Main : n!
+                end
+                deactivate Calc
+            end
+
+            alt ValueError raised
+                Main -> User : print "Error: <message>"
+            else success
+                Main -> User : print "Result: <value>"
+            end
+
         end
 
     end
 
+    deactivate Calc
+
 end
 
-deactivate Calc
 deactivate Main
 
 @enduml

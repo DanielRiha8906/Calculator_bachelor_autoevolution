@@ -163,3 +163,18 @@ Duration: 54.5s | Cost: $0.237316 USD | Turns: 18
 - **Tests passed:** N/A (no source changes)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 Duration: 154.7s | Cost: $0.404612 USD | Turns: 19
+
+---
+
+## Run: Diagram update (2026-04-12)
+
+- **Branch:** exp3/issue-240-cli-mode
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS`, `_ALL_OPS` constants and `cli_mode(args: list[str]) -> int` to `__main__`; updated `main()` signature to `main(args: list[str] | None = None) -> None`
+  - `artifacts/activity_diagram.puml` — added top-level branch for CLI mode (argparse dispatch with arity validation, result/error output, exit codes) vs interactive mode loop
+  - `artifacts/sequence_diagram.puml` — wrapped existing interactive loop in `alt` frame; added CLI mode alt showing argparse dispatch, per-arity Calculator calls, stdout result / stderr error, and exit codes
+- **Purpose:** Update PlantUML diagrams to reflect the non-interactive CLI mode added to `src/__main__.py` in cycle 6 (issue #240).
+- **Risks:** None — diagram-only change; no source code modified.
+- **Tests passed:** N/A (no source changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
