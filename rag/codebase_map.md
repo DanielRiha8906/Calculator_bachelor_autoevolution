@@ -36,6 +36,6 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## `tests/test_calculator.py`
 - **Purpose:** Test suite for `Calculator`.
-- **Current state:** Imports `pytest`, `math`, and `Calculator` but contains no test functions.
+- **Current state:** Contains `test_divide_by_zero_raises` — asserts `ZeroDivisionError` is raised when calling `divide(1, 0)`.
 - **Exports:** None
-- **Last updated:** cycle 0
+- **Last updated:** cycle 1 (issue-210)
