@@ -14,18 +14,22 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## `src/__main__.py`
 - **Purpose:** Interactive CLI entry point for the Calculator.
-- **Exports:** `main()`, `display_menu()`, `get_number()`, `OPERATIONS`
+- **Exports:** `main()`, `display_menu()`, `get_number()`, `get_number_with_retry()`, `OPERATIONS`, `MAX_ATTEMPTS`
 - **Public API:**
   - `OPERATIONS: dict[str, tuple[str, int]]` — maps menu key to `(operation_name, arity)`; covers all 12 operations
+  - `MAX_ATTEMPTS: int` — maximum failed input attempts before session termination (currently 5)
   - `display_menu() -> None` — prints the numbered operation menu
   - `get_number(prompt, require_int=False) -> int | float` — reads one number from stdin; raises `ValueError` for non-numeric or (when `require_int=True`) non-integer input
-  - `main() -> None` — runs the interactive session loop until the user enters 'q'
+  - `get_number_with_retry(prompt, require_int=False) -> int | float` — wraps `get_number` with retry logic; raises `_SessionExpired` after MAX_ATTEMPTS failures
+  - `main() -> None` — runs the interactive session loop until the user enters 'q' or retries are exhausted
 - **Invariants:**
   - Unary operations (factorial, square, cube, square_root, cube_root, log, ln) prompt for one operand; factorial uses `require_int=True`.
   - Binary operations (add, subtract, multiply, divide, power) prompt for two operands.
-  - `ValueError`, `TypeError`, and `ZeroDivisionError` from operations or input parsing are caught and printed as "Error: <msg>"; the session continues.
-  - Unknown menu keys print a warning; the loop continues without consuming extra input.
-- **Last updated:** cycle 5 (issue-222)
+  - Invalid operation selections print the list of available operations and allow retry; after MAX_ATTEMPTS total invalid selections the session ends.
+  - Invalid operand inputs trigger up to MAX_ATTEMPTS retries per prompt; on exhaustion `_SessionExpired` is raised and the session ends.
+  - `ValueError`, `TypeError`, and `ZeroDivisionError` from calculator operations (not from input parsing) are caught and printed as "Error: <msg>"; the session continues.
+  - `_SessionExpired` (internal exception, not re-exported) propagates out of operand reading and is caught in `main()` to break the session loop.
+- **Last updated:** cycle 7 (issue-247)
 
 ---
 
@@ -67,10 +71,10 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## `tests/test_main.py`
 - **Purpose:** Unit tests for the interactive CLI in `src/__main__.py`.
-- **Current state:** 32 tests covering: OPERATIONS mapping invariants (all 12 ops present, correct arities), `get_number` parsing (int, float, require_int, invalid input), quit behaviour (immediate and case-insensitive), all 12 operations end-to-end through mocked stdin/stdout, error paths (divide-by-zero, sqrt negative, log/ln non-positive, factorial negative/float, non-numeric input), unknown operation key, multi-calculation sessions.
-- **Test strategy:** `unittest.mock.patch` on `builtins.input` (side_effect list) and `builtins.print` (capture). Helper `run_main_with_inputs` flattens all printed args into a list of strings.
+- **Current state:** 37 tests covering: OPERATIONS mapping invariants (all 12 ops present, correct arities), `get_number` parsing (int, float, require_int, invalid input), quit behaviour (immediate and case-insensitive), all 12 operations end-to-end through mocked stdin/stdout, error paths (divide-by-zero, sqrt negative, log/ln non-positive, factorial negative/float, non-numeric input), unknown operation key, available-operations listing on invalid op, retry-attempts-remaining message, session termination after MAX_ATTEMPTS invalid operand inputs, session termination after MAX_ATTEMPTS invalid operation selections, session-continues-before-max test, multi-calculation sessions.
+- **Test strategy:** `unittest.mock.patch` on `builtins.input` (side_effect list) and `builtins.print` (capture). Helper `run_main_with_inputs` flattens all printed args into a list of strings. `MAX_ATTEMPTS` imported from `src.__main__` to avoid hardcoding 5 in tests.
 - **Exports:** None
-- **Last updated:** cycle 5 (issue-222)
+- **Last updated:** cycle 7 (issue-247)
 
 ---
 

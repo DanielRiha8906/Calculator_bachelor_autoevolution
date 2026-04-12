@@ -1,3 +1,37 @@
+## Run: update-diagrams — PlantUML diagram update (post-issue-247)
+
+- **Branch:** exp3/issue-247-input-validation
+- **PR target:** N/A (diagram-only update)
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `MAX_ATTEMPTS : int`, `get_number_with_retry()`, and `_SessionExpired <<exception>>` to `__main__` module; updated note on Main to describe retry logic; updated test_main comment from 32 → 37 tests
+  - `artifacts/activity_diagram.puml` — updated invalid-op branch to show `invalid_op_attempts` counter with MAX_ATTEMPTS termination; replaced `get_number()` calls with `get_number_with_retry()` calls annotated with MAX_ATTEMPTS limit; added `_SessionExpired` exit path in exception handler
+  - `artifacts/sequence_diagram.puml` — updated unknown-op section to show `invalid_op_attempts` counter; added "Session Termination (max invalid operation selections)" section; added "Retry on Invalid Operand Input" section showing get_number_with_retry behavior and _SessionExpired propagation; updated test_main section to 37 tests with two new retry-scenario sequences
+- **Purpose:** Sync PlantUML diagrams with cycle-7 changes (issue-247): `get_number_with_retry`, `MAX_ATTEMPTS`, `_SessionExpired` added to `src/__main__.py`; interactive CLI retry logic and session-termination paths now reflected in all three diagrams.
+- **Risks:** None — diagram-only, no source or test code modified.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+
+Duration: 197.4s | Cost: $0.565318 USD | Turns: 25
+
+---
+
+## Run: issue-247 — Input validation with retry logic (interactive CLI)
+
+- **Branch:** exp3/issue-247-input-validation
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/__main__.py` — added `MAX_ATTEMPTS = 5`, `_SessionExpired` internal exception, `get_number_with_retry()`; updated `main()` to track invalid operation selections (terminate after MAX_ATTEMPTS) and use `get_number_with_retry` for operand input (retry + terminate per prompt)
+  - `tests/test_main.py` — updated 2 tests whose input sequences broke under retry logic; added 4 new tests covering available-operations listing, retry remaining message, session termination after max invalid operands, and session termination after max invalid operation selections; total test count 37 (up from 32)
+- **Purpose:** Issue #247 — add input validation with retry logic to the guided interactive mode. CLI (main.py) unchanged as it already fails fast.
+- **Risks:** None — `_SessionExpired` is an internal exception that does not inherit from ValueError/TypeError/ZeroDivisionError, so it cannot accidentally be silenced by the existing error-display handler.
+- **Tests passed:** 141/141
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md` (src/__main__.py, tests/test_main.py entries)
+- **Tokens used / Cost / Turns:** PENDING
+
+Duration: 402.3s | Cost: $1.115346 USD | Turns: 37
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-issue-243)
 
 - **Branch:** exp3/issue-243-cli-args

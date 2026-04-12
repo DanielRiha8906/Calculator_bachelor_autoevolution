@@ -69,3 +69,49 @@ For operations like log, ln, square_root that have restricted domains, raise
 `ValueError` explicitly before calling `math.*` functions. This provides
 controlled error messages and makes the contract explicit in the source code,
 even though `math.sqrt(-1)` and `math.log(0)` also raise `ValueError`.
+
+## Pattern: internal sentinel exception for loop-break signals
+
+When a helper function inside a loop needs to signal "abort the loop" without
+conflating that signal with a normal error, raise a private exception class
+(e.g. `_SessionExpired`) that does NOT inherit from the exceptions the loop
+already catches. The loop's outer except block catches it and breaks.
+
+```python
+class _SessionExpired(Exception):
+    """Raised internally when retries are exhausted."""
+
+def get_number_with_retry(prompt):
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        try:
+            return get_number(prompt)
+        except ValueError:
+            if attempt == MAX_ATTEMPTS:
+                raise _SessionExpired()
+
+# In main():
+try:
+    a = get_number_with_retry("Enter number: ")
+except _SessionExpired:
+    break
+except (ValueError, TypeError, ZeroDivisionError) as exc:
+    print(f"Error: {exc}")
+```
+
+Applied in `src/__main__.py` for operand-input retry termination.
+
+## Pattern: import MAX_ATTEMPTS in tests instead of hardcoding retry counts
+
+When testing retry-count-dependent behaviour, import the constant from the
+module under test so tests do not need to be updated when the constant changes.
+
+```python
+from src.__main__ import main, MAX_ATTEMPTS
+
+def test_session_terminates():
+    inputs = ["99"] * MAX_ATTEMPTS
+    output = run_main_with_inputs(inputs)
+    assert output_contains(output, "Maximum attempts")
+```
+
+Applied in `tests/test_main.py`.

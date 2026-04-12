@@ -21,9 +21,12 @@ package "src" {
 
     class "__main__" as Main <<module>> {
         +OPERATIONS : dict[str, tuple[str, int]]
+        +MAX_ATTEMPTS : int
         +display_menu() : None
         +get_number(prompt, require_int=False) : int|float
+        +get_number_with_retry(prompt, require_int=False) : int|float
         +main() : None
+        -{static} _SessionExpired <<exception>>
     }
 
     class "__init__" as Init <<module>> {
@@ -59,7 +62,7 @@ package "tests" {
 
     class "test_main" as TestMain <<module>> {
         +run_main_with_inputs(inputs) : list[str]  <<helper>>
-        ' 32 tests covering interactive CLI
+        ' 37 tests covering interactive CLI
         +test_operations_map_*()
         +test_get_number_*()
         +test_quit_*()
@@ -107,10 +110,17 @@ note left of Main
   Arity 1: factorial, square, cube, square_root,
             cube_root, log, ln.
   Arity 2: add, subtract, multiply, divide, power.
+  MAX_ATTEMPTS=5: max failed input attempts before
+  session terminates.
   get_number: parses as int first, then float;
   require_int=True forces strict integer (factorial).
+  get_number_with_retry: wraps get_number; prints
+  remaining-attempts message on each failure; raises
+  _SessionExpired after MAX_ATTEMPTS failures.
   main: session loop; catches ValueError/TypeError/
-  ZeroDivisionError per iteration and prints error.
+  ZeroDivisionError per iteration and prints error;
+  tracks invalid op selections (terminate after
+  MAX_ATTEMPTS); catches _SessionExpired to break.
 end note
 
 note right of CLI
