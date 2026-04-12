@@ -4,6 +4,17 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 2 — Issue #213: Comprehensive test suite
+
+- **Task:** Create a unit test suite for all Calculator operations covering normal inputs and edge cases.
+- **Files changed:** `tests/test_calculator.py` (expanded from 1 to 28 tests; added fixture, full add/subtract/multiply/divide coverage with float, zero, negative, and large-number cases)
+- **Test result:** 28 passed
+- **Key decisions:** Used `pytest.approx` for float comparisons; kept existing `test_divide_by_zero_raises` intact and added `test_divide_by_zero_float_raises`; no source changes required.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 1 — Issue #210: ZeroDivisionError test coverage
 
 - **Task:** Add focused test asserting `Calculator.divide` raises `ZeroDivisionError` when divisor is zero.
