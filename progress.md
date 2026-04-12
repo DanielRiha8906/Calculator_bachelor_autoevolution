@@ -73,3 +73,18 @@
 - **Tests passed:** N/A (no source changes)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 - Duration: 39.8s | Cost: $0.177952 USD | Turns: 16
+
+---
+
+## Run: Diagram update (2026-04-12)
+
+- **Branch:** exp3/issue-215-add-factorial
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `factorial(n: int): int` to `Calculator` class with note describing ValueError conditions
+  - `artifacts/activity_diagram.puml` — added factorial validation flow (type check, negativity check, delegate to math.factorial)
+  - `artifacts/sequence_diagram.puml` — added `factorial(5)` call showing `math` module delegation and error alt path
+- **Purpose:** Update PlantUML diagrams to reflect factorial method added to Calculator in cycle 3 (issue #215).
+- **Risks:** None — diagram-only change; no source code modified.
+- **Tests passed:** N/A (no source changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- Duration: PENDING | Cost: PENDING | Turns: PENDING

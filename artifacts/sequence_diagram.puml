@@ -10,6 +10,7 @@ skinparam sequence {
 
 participant "__main__" as Main
 participant "Calculator" as Calc
+participant "math" as Math
 
 Main -> Main : main()
 Main -> Calc : <<create>>
@@ -30,6 +31,17 @@ alt b == 0
     Calc --> Main : raise ValueError("Division by zero is not allowed")
 else b != 0
     Calc --> Main : 2.0
+end
+deactivate Calc
+
+Main -> Calc : factorial(5)
+activate Calc
+alt n is not int or n < 0
+    Calc --> Main : raise ValueError(...)
+else valid n
+    Calc -> Math : factorial(5)
+    Math --> Calc : 120
+    Calc --> Main : 120
 end
 deactivate Calc
 
