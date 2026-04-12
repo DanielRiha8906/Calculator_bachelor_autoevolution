@@ -45,6 +45,24 @@ return x ** (1 / 3)
 This is different from square root: square root of a negative has no real result,
 so `ValueError` is correct. Cube root of a negative number *does* have a real result.
 
+## Pattern: mock builtins.input with side_effect list for CLI tests
+
+When testing an interactive loop driven by `input()`, patch `builtins.input`
+with `side_effect=list_of_strings`. Each call to `input()` consumes the next
+element. If the list runs out before the loop exits, `StopIteration` is raised
+— which means every test must include exactly enough inputs (including the
+final `"q"`) to reach a clean exit. Patch `builtins.print` in the same
+context manager to capture all output without console noise.
+
+```python
+with patch("builtins.input", side_effect=["1", "3", "4", "q"]), \
+     patch("builtins.print") as mock_print:
+    main()
+output = [str(a) for call in mock_print.call_args_list for a in call.args]
+```
+
+Applied in `tests/test_main.py`.
+
 ## Pattern: guard-then-delegate for math domain errors
 
 For operations like log, ln, square_root that have restricted domains, raise

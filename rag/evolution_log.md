@@ -4,6 +4,17 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 5 — Issue #222: Interactive user input for CLI
+
+- **Task:** Replace the hardcoded demo in `src/__main__.py` with a menu-driven interactive session. The loop reads the user's operation choice and the required operands, computes the result, displays it, and continues until the user enters 'q'. Unary ops prompt for one number (factorial requires int); binary ops prompt for two.
+- **Files changed:** `src/__main__.py` (full rewrite; added `OPERATIONS`, `display_menu`, `get_number`, updated `main`), `tests/test_main.py` (new file; 32 tests)
+- **Test result:** 108 passed (76 existing + 32 new)
+- **Key decisions:** `get_number` with `require_int=True` is used only for factorial to preserve Calculator.factorial's integer-only contract. `ValueError`, `TypeError`, and `ZeroDivisionError` are caught in the session loop so errors display a message without terminating the session. Unknown menu keys are handled with a warning, not a crash.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 4 — Issue #219: Add multiple math operations
 
 - **Task:** Add square, cube, square_root, cube_root, power, log (base-10), and ln as Calculator methods. Handle edge cases: negative inputs for square_root, log, ln raise `ValueError`; cube_root accepts negative inputs and returns negative real results.
