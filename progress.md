@@ -28,4 +28,4 @@
 - **Risks:** None — diagram-only change; no source code modified.
 - **Tests passed:** N/A (no source changes)
 - **RAG entries consulted:** `rag/codebase_map.md` (via prior run; not re-read this run)
-- Duration: PENDING | Cost: PENDING | Turns: PENDING
+- Duration: 46.3s | Cost: $0.195395 USD | Turns: 15
