@@ -8,7 +8,7 @@
 - **Risks:** None — diagram-only update; no source or test changes.
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 78.4s | Cost: $0.263965 USD | Turns: 18
 
 ## Run: Issue #239 — CLI Mode (2026-04-12)
 
