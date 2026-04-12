@@ -9,7 +9,7 @@
 - **Risks:** Minimal — no changes to `Calculator` class or existing tests. New code uses only stdlib (`builtins.input`, `getattr`). No new dependencies.
 - **Tests passed:** Yes — 84 collected (58 existing + 26 new in tests/test_main.py), 84 passed.
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 182.5s | Cost: $0.580864 USD | Turns: 34
 
 ## Run: Diagram Update (2026-04-12)
 
