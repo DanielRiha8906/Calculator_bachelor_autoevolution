@@ -1,0 +1,33 @@
+@startuml activity_diagram
+
+skinparam ActivityFontSize 13
+skinparam ArrowFontSize 12
+
+title Calculator Execution Flow
+
+start
+
+:Instantiate Calculator;
+
+:Select operation\n(add / subtract / multiply / divide);
+
+if (Operation is divide?) then (yes)
+    if (Divisor b == 0?) then (yes)
+        :Python raises ZeroDivisionError;
+        stop
+    else (no)
+        :Compute a / b;
+    endif
+elseif (Operation is add?) then (yes)
+    :Compute a + b;
+elseif (Operation is subtract?) then (yes)
+    :Compute a - b;
+else (multiply)
+    :Compute a * b;
+endif
+
+:Return numeric result\n(int or float);
+
+stop
+
+@enduml
