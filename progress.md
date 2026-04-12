@@ -11,7 +11,7 @@
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 197.4s | Cost: $0.565318 USD | Turns: 25
 
 ---
 
