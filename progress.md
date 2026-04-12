@@ -2,6 +2,21 @@
 
 ---
 
+## Run: Issue #218 — Multiple math operations (2026-04-12)
+
+- **Branch:** exp3/issue-218-add-math-operations
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `src/calculator.py` — added `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln` methods with input validation
+  - `tests/test_calculator.py` — added 33 tests for new operations (4 for square, 4 for cube, 4 for square_root, 4 for cube_root, 5 for power, 7 for log, 5 for ln)
+- **Purpose:** Add seven new math operations to the Calculator class as required by issue #218.
+- **Risks:** None — purely additive; no existing methods modified.
+- **Tests passed:** Yes — 63/63
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #215 — Factorial operation (2026-04-12)
 
 - **Branch:** exp3/issue-215-add-factorial
