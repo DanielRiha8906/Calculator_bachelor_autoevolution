@@ -12,10 +12,17 @@ class Calculator {
     +subtract(a, b) : number
     +multiply(a, b) : number
     +divide(a, b) : number
+    +factorial(n: int) : int
 }
 
 note right of Calculator::divide
   Raises ValueError if b == 0
+end note
+
+note right of Calculator::factorial
+  Raises ValueError if n < 0
+  or n is not an integer.
+  Delegates to math.factorial(n).
 end note
 
 class "__main__" as Main {

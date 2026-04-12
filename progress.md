@@ -2,6 +2,21 @@
 
 ---
 
+## Run: Issue #215 — Factorial operation (2026-04-12)
+
+- **Branch:** exp3/issue-215-add-factorial
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `src/calculator.py` — added `import math` and `Calculator.factorial(n)` method with input validation
+  - `tests/test_calculator.py` — added 6 factorial tests (zero, one, small, large, negative raises, float raises)
+- **Purpose:** Add factorial as a supported calculator operation with correct validation and test coverage.
+- **Risks:** None — purely additive change; no existing methods modified.
+- **Tests passed:** Yes — 30/30
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+- Duration: 97.4s | Cost: $0.349491 USD | Turns: 26
+
+---
+
 ## Run: Issue #209 — ZeroDivisionError (2026-04-12)
 
 - **Branch:** exp3/issue-209-zero-division
@@ -58,3 +73,18 @@
 - **Tests passed:** N/A (no source changes)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 - Duration: 39.8s | Cost: $0.177952 USD | Turns: 16
+
+---
+
+## Run: Diagram update (2026-04-12)
+
+- **Branch:** exp3/issue-215-add-factorial
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `factorial(n: int): int` to `Calculator` class with note describing ValueError conditions
+  - `artifacts/activity_diagram.puml` — added factorial validation flow (type check, negativity check, delegate to math.factorial)
+  - `artifacts/sequence_diagram.puml` — added `factorial(5)` call showing `math` module delegation and error alt path
+- **Purpose:** Update PlantUML diagrams to reflect factorial method added to Calculator in cycle 3 (issue #215).
+- **Risks:** None — diagram-only change; no source code modified.
+- **Tests passed:** N/A (no source changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- Duration: 61.3s | Cost: $0.214985 USD | Turns: 19

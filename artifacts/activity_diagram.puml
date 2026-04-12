@@ -31,6 +31,21 @@ else (no)
     :Print "Division: <result>";
 endif
 
+:Call calc.factorial(n);
+
+if (n is not int?) then (yes)
+    :Raise ValueError\n"Factorial only defined for\nnon-negative integers";
+    stop
+else (no)
+    if (n < 0?) then (yes)
+        :Raise ValueError\n"Factorial not defined\nfor negative integers";
+        stop
+    else (no)
+        :Return math.factorial(n);
+        :Print "Factorial: <result>";
+    endif
+endif
+
 stop
 
 @enduml

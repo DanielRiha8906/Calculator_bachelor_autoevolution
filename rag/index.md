@@ -5,6 +5,6 @@ Master index of summarized files. `last-updated` is the cycle number when the su
 | File | One-line purpose | Last-updated |
 |------|-----------------|--------------|
 | src/__init__.py | Package init — exports Calculator class | 0 |
-| src/calculator.py | Core Calculator class with add/subtract/multiply/divide | 1 |
+| src/calculator.py | Core Calculator class with add/subtract/multiply/divide/factorial | 3 |
 | src/__main__.py | CLI entry point — runs a demo of all four operations | 0 |
-| tests/test_calculator.py | Full unit test suite for Calculator — 24 tests covering add/subtract/multiply/divide | 2 |
+| tests/test_calculator.py | Full unit test suite for Calculator — 30 tests covering add/subtract/multiply/divide/factorial | 3 |
