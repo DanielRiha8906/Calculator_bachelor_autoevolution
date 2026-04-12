@@ -10,7 +10,7 @@
 - **Current branch:** exp3/issue-245-input-validation
 - **PR target:** exp3/naive-generic
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 201.7s | Cost: $0.810712 USD | Turns: 42
 
 ## Run: Diagram Update (2026-04-12)
 
