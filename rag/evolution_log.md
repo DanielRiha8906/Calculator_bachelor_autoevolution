@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 8 — Issue #248: History (2026-04-12)
+- **Task:** Add history of operations to the calculator
+- **Branch:** exp3/issue-248-add-history
+- **Files changed:** src/calculator.py, src/__main__.py, tests/test_calculator.py, tests/test_main.py
+- **Outcome:** Added `self.history: list[dict]` and `get_history()` to Calculator; `run_operation` appends `{"op", "operands", "result"}` on success (errors are not recorded); added `_show_history(calc)` helper; REPL 'h' choice displays history; MENU updated to show 'h' option. 125 tests collected, 125 passed.
+- **Key decisions:** History is recorded externally (in `run_operation`) rather than inside Calculator methods — keeps computation methods side-effect-free. Only successful operations are recorded (failed inputs/domain errors produce no entry). `get_history()` returns a copy to prevent external mutation of internal state.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 7 — Issue #245: Input Validation (2026-04-12)
 - **Task:** Add validation for bad input and let the user retry a few times
 - **Branch:** exp3/issue-245-input-validation

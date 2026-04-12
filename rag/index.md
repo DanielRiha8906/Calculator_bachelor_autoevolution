@@ -1,14 +1,14 @@
 # RAG Index
 
-Last updated: cycle 7
+Last updated: cycle 8
 
 | File | Purpose | Last Updated Cycle |
 |------|---------|-------------------|
 | src/__init__.py | Package init, exports Calculator | 0 |
-| src/calculator.py | Calculator class with add/subtract/multiply/divide/factorial/square/cube/square_root/cube_root/power/log/ln | 4 |
-| src/__main__.py | CLI + interactive REPL: bash argv dispatch (cli_main), numbered menu REPL, parse_number (retry-limited), _format_result | 7 |
-| tests/test_calculator.py | Full test suite: 58 tests for all 12 operations | 4 |
-| tests/test_main.py | CLI tests: 56 tests covering parse_number (incl. retry-limit), MENU_MAP, run_operation, cli_main (all 12 ops + errors), main dispatch | 7 |
+| src/calculator.py | Calculator class with add/subtract/multiply/divide/factorial/square/cube/square_root/cube_root/power/log/ln; history list and get_history() | 8 |
+| src/__main__.py | CLI + interactive REPL: bash argv dispatch (cli_main), numbered menu REPL, parse_number (retry-limited), _format_result, _show_history, 'h' history choice | 8 |
+| tests/test_calculator.py | Full test suite: 62 tests for all 12 operations + history invariants | 8 |
+| tests/test_main.py | CLI tests: 71 tests covering parse_number (incl. retry-limit), MENU_MAP, run_operation (incl. history recording), _show_history, cli_main (all 12 ops + errors), main dispatch, history REPL flow | 8 |
 
 ## RAG Files
 | RAG File | Purpose |
