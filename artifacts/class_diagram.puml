@@ -4,6 +4,9 @@ title Calculator — Class Diagram
 
 package "src" {
     class Calculator {
+        +history : list[dict]
+        +__init__()
+        +get_history() : list[dict]
         +add(a, b) : number
         +subtract(a, b) : number
         +multiply(a, b) : number
@@ -29,6 +32,7 @@ package "src" {
         -_to_int_if_needed(op: str, value: float) : float | int
         +run_operation(calc: Calculator, op: str) : void
         -_format_result(value: int | float) : str
+        -_show_history(calc: Calculator) : void
         +cli_main(args: list) : int
         +main() : void
     }
@@ -36,6 +40,14 @@ package "src" {
 
 Main ..> Calculator : instantiates
 Main ..> Calculator : dispatches via getattr(calc, op)
+
+note right of Calculator::history
+  Per-instance history list.
+  Entries: {"op": str, "operands": tuple, "result": float|int}.
+  Appended by run_operation on success;
+  failed operations are not recorded.
+  get_history() returns a shallow copy.
+end note
 
 note right of Calculator::divide
   Raises ZeroDivisionError
@@ -69,8 +81,9 @@ note right of Calculator::ln
 end note
 
 note left of Main::MENU_MAP
-  Maps "1"–"12" to operation names
-  "q" is handled directly in main()
+  Maps "1"–"12" to operation names.
+  "h" shows history; "q" quits.
+  Both handled directly in main().
 end note
 
 note left of Main::INTEGER_OPS
@@ -97,6 +110,12 @@ note left of Main::_format_result
   Whole floats shown as integers
   (7.0 → "7"); fractional and
   int values pass through as-is
+end note
+
+note left of Main::_show_history
+  Prints numbered entries:
+  op(operands) = result
+  or "No history yet." if empty
 end note
 
 @enduml

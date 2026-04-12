@@ -1,5 +1,15 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-248-add-history
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 8 changes: added `history: list[dict]` attribute, `__init__()`, and `get_history(): list[dict]` to Calculator class diagram; added `_show_history(calc: Calculator): void` to __main__ module. Activity diagram now shows 'h' choice branch calling `_show_history` and `calc.history.append` on the success path. Sequence diagram now shows `choice == "h"` alt branch and `calc.history.append(...)` call after successful operation.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Issue #248 — History (2026-04-12)
 
 - **Branch:** exp3/issue-248-add-history
