@@ -1,3 +1,39 @@
+## Run: Diagram update — PlantUML artifacts (task/issue-210-zero-division-coverage)
+
+**Date:** 2026-04-12
+**Branch:** task/issue-210-zero-division-coverage
+**Target:** exp2/expert-generic
+
+### Files changed
+
+- `artifacts/class_diagram.puml` — verified accurate; no changes required
+- `artifacts/activity_diagram.puml` — verified accurate; no changes required
+- `artifacts/sequence_diagram.puml` — verified accurate; no changes required
+
+### Purpose
+
+Routine diagram sync pass. All three PlantUML diagrams were reviewed against the
+current state of `src/`. The only change since the previous diagram update was
+issue #210 (test-only: four additional ZeroDivisionError test cases, no source
+code modifications). Diagram content remains correct and complete; no updates
+were necessary.
+
+### Risks
+
+None. No source or test files were modified.
+
+### Test results
+
+N/A — diagram-only run.
+
+### PR target
+
+exp2/expert-generic (never main)
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #210 — ZeroDivisionError focused test coverage (task/issue-210-zero-division-coverage)
 
 **Date:** 2026-04-12
