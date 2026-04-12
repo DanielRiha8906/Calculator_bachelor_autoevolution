@@ -2,6 +2,21 @@
 
 ---
 
+## Run: Issue #221 — Interactive user input (2026-04-12)
+
+- **Branch:** exp3/issue-221-interactive-input
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `src/__main__.py` — replaced static demo with interactive menu loop; added `show_menu()`, `parse_number()`, `parse_int()`, `run_operation()`, and updated `main()` to loop until "q"
+  - `tests/test_main.py` — new file with 28 tests covering all helpers, all 12 operations, and main loop scenarios
+- **Purpose:** Add runtime user input so the calculator reads the selected operation and values interactively, shows results, and allows continued use after each result.
+- **Risks:** None — `src/calculator.py` and `tests/test_calculator.py` unchanged; change is purely additive to the CLI layer.
+- **Tests passed:** Yes — 91/91 (63 existing + 28 new)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #218 — Multiple math operations (2026-04-12)
 
 - **Branch:** exp3/issue-218-add-math-operations
