@@ -1,3 +1,18 @@
+## Run: issue-219 — Add multiple math operations
+
+- **Branch:** exp3/issue-219-add-math-operations
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/calculator.py` — added `import math` and 7 new methods: `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln`
+  - `tests/test_calculator.py` — added 38 tests for all new operations (total now 76)
+- **Purpose:** Implement square, cube, square_root, cube_root, power, base-10 log, and natural log as Calculator operations. Edge cases handled: `ValueError` for square_root(negative), log/ln(non-positive); cube_root handles negative inputs via sign-preservation.
+- **Risks:** Low — additive change only; no existing methods modified. cube_root negative-number handling is the only subtle invariant (Python cannot raise negative floats to fractional powers directly).
+- **Tests passed:** Yes — 76 passed in 0.09s
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-factorial)
 
 - **Branch:** exp3/issue-216-factorial

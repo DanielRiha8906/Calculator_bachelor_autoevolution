@@ -4,6 +4,17 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 4 — Issue #219: Add multiple math operations
+
+- **Task:** Add square, cube, square_root, cube_root, power, log (base-10), and ln as Calculator methods. Handle edge cases: negative inputs for square_root, log, ln raise `ValueError`; cube_root accepts negative inputs and returns negative real results.
+- **Files changed:** `src/calculator.py` (added 7 methods + `import math`), `tests/test_calculator.py` (added 38 tests; total now 76)
+- **Test result:** 76 passed
+- **Key decisions:** cube_root uses `-(abs(x)**(1/3))` for negatives to avoid Python's inability to raise negative floats to fractional powers. Explicit `ValueError` guards in square_root, log, and ln provide clear error messages before delegating to `math`. square and cube use simple multiplication rather than `math.pow` to avoid float coercion for integer inputs.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 3 — Issue #216: Add factorial operation
 
 - **Task:** Add `factorial` as a supported calculator operation with proper input validation.
