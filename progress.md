@@ -2,6 +2,23 @@
 
 ---
 
+## Run: Diagram update (2026-04-12)
+
+- **Branch:** exp3/issue-252-add-error-logging
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `ERROR_LOG_FILE` constant and `append_to_error_log` function to `__main__` class; added notes for both; updated notes for `parse_number`, `parse_int`, `run_operation`, `cli_mode`, and `main` to describe error-logging behaviour.
+  - `artifacts/activity_diagram.puml` — added `append_to_error_log(...)` action labels at every error exit in `cli_mode`; added error-log call before `invalid_op_count` increment in the interactive menu loop; updated parse-step labels inside `run_operation` to note per-attempt error logging; updated `ValueError` exit in `run_operation` to show error-log call.
+  - `artifacts/sequence_diagram.puml` — added `error.log` participant; added `append_to_error_log` write calls at all validation and calculation error points in both `cli_mode` and interactive mode (invalid menu choice, each parse failure, each Calculator ValueError).
+- **Purpose:** Reflect cycle 9 (issue #252) changes — error logging feature — in all three PlantUML diagrams.
+- **Risks:** None — diagram-only change; no source code modified.
+- **All tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #252 — Error Logging (2026-04-12)
 
 - **Branch:** exp3/issue-252-add-error-logging
