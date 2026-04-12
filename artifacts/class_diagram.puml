@@ -31,6 +31,14 @@ package "src" {
     }
 }
 
+class "main" as CLI <<module>> {
+    -{static} _BINARY_OPS : set[str]
+    -{static} _UNARY_OPS : set[str]
+    -{static} _ALL_OPS : set[str]
+    +_parse_operand(value: str, require_int=False) : int|float
+    +main(argv: list[str] | None) : int
+}
+
 package "tests" {
     class "test_calculator" as TestCalc <<module>> {
         +calc() : Calculator  <<fixture>>
@@ -60,12 +68,26 @@ package "tests" {
         +test_unknown_key()
         +test_multi_session_*()
     }
+
+    class "test_cli" as TestCLI <<module>> {
+        +run_cli(args) : tuple[int, str, str]  <<helper>>
+        ' 28 tests covering bash CLI
+        +test_no_args()
+        +test_unknown_op()
+        +test_arg_count_binary_*()
+        +test_arg_count_unary_*()
+        +test_all_12_ops_*()
+        +test_error_paths_*()
+        +test_non_numeric_operand()
+    }
 }
 
 Main --> Calculator : instantiates & delegates
 Init ..> Calculator : re-exports
+CLI --> Calculator : instantiates & delegates
 TestCalc --> Calculator : tests via fixture
 TestMain --> Main : tests via mocked stdin/stdout
+TestCLI --> CLI : tests via capsys
 
 note right of Calculator
   Division: delegates to Python "/" operator.
@@ -89,6 +111,17 @@ note left of Main
   require_int=True forces strict integer (factorial).
   main: session loop; catches ValueError/TypeError/
   ZeroDivisionError per iteration and prints error.
+end note
+
+note right of CLI
+  Non-interactive bash CLI: one invocation, one result.
+  Exit code 0 on success, 1 on any error.
+  _BINARY_OPS: add, subtract, multiply, divide, power.
+  _UNARY_OPS: factorial, square, cube, square_root,
+              cube_root, log, ln.
+  _parse_operand: int first, then float;
+  require_int=True for factorial.
+  Errors go to stderr; result goes to stdout.
 end note
 
 @enduml

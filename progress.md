@@ -1,3 +1,19 @@
+## Run: update-diagrams — PlantUML diagram update (post-issue-243)
+
+- **Branch:** exp3/issue-243-cli-args
+- **PR target:** N/A (diagram-only update)
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `main` CLI module (root-level) with `_BINARY_OPS`, `_UNARY_OPS`, `_ALL_OPS`, `_parse_operand()`, `main()`; added `test_cli` module to tests package; added note on CLI semantics; updated CLI→Calculator relationship
+  - `artifacts/activity_diagram.puml` — added "Bash CLI Mode" section showing argv validation, arg-count checks, operand parsing, delegation to Calculator Computation, and stdout/stderr output with exit codes
+  - `artifacts/sequence_diagram.puml` — added bash CLI interaction sections: normal binary op, normal unary op, error (unknown op), error (wrong arg count), error (computation failure); added test_cli.py capsys-based test sequences
+- **Purpose:** Sync PlantUML diagrams with cycle-6 changes (issue-243): `main.py` bash CLI and `tests/test_cli.py` added.
+- **Risks:** None — diagram-only, no source or test code modified.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-243 — Add CLI argument mode
 
 - **Branch:** exp3/issue-243-cli-args

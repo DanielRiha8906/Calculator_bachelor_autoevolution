@@ -3,9 +3,15 @@
 skinparam ActivityFontSize 13
 skinparam ArrowFontSize 12
 
-title Calculator — Interactive CLI and Computation Flow
+title Calculator — Execution Flows
 
-|Interactive CLI (main())|
+|Interactive CLI (src/__main__.py)|
+|Bash CLI (main.py)|
+|Calculator Computation|
+
+== Interactive Mode (python -m src) ==
+
+|Interactive CLI (src/__main__.py)|
 
 start
 
@@ -33,7 +39,7 @@ repeat
       |Calculator Computation|
       :Call calc.<name>(a);
     else (no — arity == 2)
-      |Interactive CLI (main())|
+      |Interactive CLI (src/__main__.py)|
       :get_number() → a;
       :get_number() → b;
       |Calculator Computation|
@@ -92,7 +98,7 @@ repeat
       endif
     endif
 
-    |Interactive CLI (main())|
+    |Interactive CLI (src/__main__.py)|
     if (operation raised exception?) then (yes)
       :Print "Error: <message>";
     else (no)
@@ -102,5 +108,68 @@ repeat
   endif
 
 repeat while (session continues)
+
+== Bash CLI Mode (python main.py <op> [args]) ==
+
+|Bash CLI (main.py)|
+
+start
+
+:Receive argv (sys.argv[1:]);
+
+if (argv is empty?) then (yes)
+  :Print usage to stderr;
+  :Exit code 1;
+  stop
+endif
+
+:operation = argv[0];
+
+if (operation not in _ALL_OPS?) then (yes)
+  :Print "Error: unknown operation" to stderr;
+  :Exit code 1;
+  stop
+endif
+
+if (operation in _BINARY_OPS?) then (yes)
+  if (len(argv) != 3?) then (yes)
+    :Print "requires exactly two operands" to stderr;
+    :Exit code 1;
+    stop
+  else (no — correct arg count)
+    :_parse_operand(argv[1]) → a;
+    :_parse_operand(argv[2]) → b;
+    |Calculator Computation|
+    :Call calc.<operation>(a, b);
+    :Compute result (see operation branches above);
+  endif
+else (unary op)
+  |Bash CLI (main.py)|
+  if (len(argv) != 2?) then (yes)
+    :Print "requires exactly one operand" to stderr;
+    :Exit code 1;
+    stop
+  else (no — correct arg count)
+    if (operation == "factorial"?) then (yes)
+      :_parse_operand(argv[1], require_int=True) → a;
+    else (no)
+      :_parse_operand(argv[1]) → a;
+    endif
+    |Calculator Computation|
+    :Call calc.<operation>(a);
+    :Compute result (see operation branches above);
+  endif
+endif
+
+|Bash CLI (main.py)|
+if (operation raised exception?) then (yes)
+  :Print "Error: <message>" to stderr;
+  :Exit code 1;
+  stop
+else (no)
+  :Print result to stdout;
+  :Exit code 0;
+  stop
+endif
 
 @enduml

@@ -96,6 +96,78 @@ User -> Main : enter choice "q"
 Main --> User : "Goodbye!"
 deactivate Main
 
+== Bash CLI — Normal Binary Operation ==
+
+actor Shell
+participant "main.py\n(CLI entry)" as CLI
+
+Shell -> CLI : python main.py add 5 7
+activate CLI
+
+CLI -> CLI : operation = "add"\nis_binary = True\nlen(argv) == 3 ✓
+CLI -> CLI : _parse_operand("5") → 5
+CLI -> CLI : _parse_operand("7") → 7
+
+CLI -> Calc : Calculator().add(5, 7)
+activate Calc
+Calc -> Runtime : 5 + 7
+Runtime --> Calc : 12
+Calc --> CLI : 12
+deactivate Calc
+
+CLI --> Shell : stdout: "12"\nexit code: 0
+deactivate CLI
+
+== Bash CLI — Normal Unary Operation ==
+
+Shell -> CLI : python main.py factorial 5
+activate CLI
+
+CLI -> CLI : operation = "factorial"\nis_binary = False\nlen(argv) == 2 ✓
+CLI -> CLI : _parse_operand("5", require_int=True) → 5
+
+CLI -> Calc : Calculator().factorial(5)
+activate Calc
+Calc -> Calc : validate type & value
+Calc -> Calc : iterate: 1*2*3*4*5
+Calc --> CLI : 120
+deactivate Calc
+
+CLI --> Shell : stdout: "120"\nexit code: 0
+deactivate CLI
+
+== Bash CLI — Error: Unknown Operation ==
+
+Shell -> CLI : python main.py modulo 10 3
+activate CLI
+CLI -> CLI : "modulo" not in _ALL_OPS
+CLI --> Shell : stderr: "Error: unknown operation 'modulo'."\nexit code: 1
+deactivate CLI
+
+== Bash CLI — Error: Wrong Argument Count ==
+
+Shell -> CLI : python main.py add 5
+activate CLI
+CLI -> CLI : "add" in _BINARY_OPS\nlen(argv) == 2 ≠ 3
+CLI --> Shell : stderr: "Error: 'add' requires exactly two operands."\nexit code: 1
+deactivate CLI
+
+== Bash CLI — Error: Computation Failure ==
+
+Shell -> CLI : python main.py square_root -4
+activate CLI
+CLI -> CLI : operation = "square_root"\nlen(argv) == 2 ✓
+CLI -> CLI : _parse_operand("-4") → -4
+
+CLI -> Calc : Calculator().square_root(-4)
+activate Calc
+Calc -> Calc : guard: x < 0 → raise ValueError
+Calc --> CLI : raise ValueError
+deactivate Calc
+
+CLI --> Shell : stderr: "Error: square root is not defined for negative numbers"\nexit code: 1
+deactivate CLI
+
 == Unit Tests — Calculator Direct (test_calculator.py) ==
 
 participant "pytest\ntest suite" as Tests
@@ -192,5 +264,39 @@ Main -> MockIO : print("Goodbye!")
 deactivate Main
 
 Tests -> MockIO : assert "Result: 3.0" in captured output ✓
+
+== Unit Tests — Bash CLI (test_cli.py) ==
+
+participant "pytest\ncapsys" as Capsys
+
+Tests -> CLI : main(["add", "5", "7"])
+activate CLI
+CLI -> Calc : Calculator().add(5, 7)
+activate Calc
+Calc --> CLI : 12
+deactivate Calc
+CLI --> Tests : exit code 0
+deactivate CLI
+
+Tests -> Capsys : assert stdout == "12\n" ✓
+
+Tests -> CLI : main(["square_root", "-4"])
+activate CLI
+CLI -> Calc : Calculator().square_root(-4)
+activate Calc
+Calc --> CLI : raise ValueError
+deactivate Calc
+CLI --> Tests : exit code 1
+deactivate CLI
+
+Tests -> Capsys : assert stderr contains "square root" ✓
+
+Tests -> CLI : main(["add", "5"])
+activate CLI
+CLI -> CLI : "add" in _BINARY_OPS, len(argv) != 3
+CLI --> Tests : exit code 1
+deactivate CLI
+
+Tests -> Capsys : assert stderr contains "two operands" ✓
 
 @enduml
