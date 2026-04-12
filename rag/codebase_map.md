@@ -13,13 +13,13 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## src/calculator.py
 - **Purpose:** Defines the `Calculator` class — the core computation unit.
+- **Last updated:** cycle 1
 - **Public API:**
   - `Calculator.add(a, b)` → `a + b`
   - `Calculator.subtract(a, b)` → `a - b`
   - `Calculator.multiply(a, b)` → `a * b`
-  - `Calculator.divide(a, b)` → `a / b` (raises `ZeroDivisionError` if `b == 0` at cycle 0; no guard)
+  - `Calculator.divide(a, b)` → `a / b`; raises `ValueError("Division by zero is not allowed")` when `b == 0`
 - **Invariants:** No state — all methods are pure functions of their arguments.
-- **Known issues (cycle 0):** `divide` does not guard against `b == 0`; raises a raw Python `ZeroDivisionError`.
 
 ---
 
@@ -32,5 +32,9 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## tests/test_calculator.py
 - **Purpose:** Unit test suite for `Calculator`.
-- **State at cycle 0:** Only contains imports (`import pytest`, `import math`, `from src.calculator import Calculator`). No test functions defined yet.
+- **Last updated:** cycle 1
+- **Tests:**
+  - `test_divide_by_zero_raises` — asserts `ValueError` with message "Division by zero is not allowed" when dividing by 0
+  - `test_divide_normal` — asserts `divide(10, 2) == 5.0`
+  - `test_divide_negative_denominator` — asserts `divide(9, -3) == -3.0`
 - **Invariants:** Must import from `src.calculator`, not from the package root.
