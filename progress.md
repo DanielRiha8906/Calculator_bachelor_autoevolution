@@ -9,7 +9,7 @@
 - **Risks:** Minimal — no changes to Calculator class. All new code is in `__main__.py`. Three existing tests needed `patch("sys.argv", ["prog"])` to remain valid after the argv-check was added to `main()`.
 - **Tests passed:** Yes — 110 collected (58 calculator + 52 CLI/main), 110 passed.
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 204.5s | Cost: $0.685364 USD | Turns: 33
 
 ## Run: Issue #220 — Add User Input (2026-04-12)
 
