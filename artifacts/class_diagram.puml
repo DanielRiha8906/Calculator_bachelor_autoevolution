@@ -47,9 +47,38 @@ note right of Calculator::ln
 end note
 
 class "__main__" as Main {
+    +OPERATIONS : dict
+    +show_menu() : None
+    +parse_number(prompt: str) : float
+    +parse_int(prompt: str) : int
+    +run_operation(calc: Calculator, operation: str) : None
     +main() : None
 }
 
+note right of Main::OPERATIONS
+  Maps keys "1"-"12" to operation names:
+  add, subtract, multiply, divide,
+  factorial, square, cube, square_root,
+  cube_root, power, log, ln
+end note
+
+note right of Main::parse_number
+  Retries indefinitely on
+  invalid float input
+end note
+
+note right of Main::parse_int
+  Retries indefinitely on
+  non-integer input
+end note
+
+note right of Main::run_operation
+  Catches ValueError from Calculator
+  and prints the error message;
+  loop always continues.
+end note
+
 Main ..> Calculator : instantiates
+Main ..> Calculator : delegates operations to
 
 @enduml

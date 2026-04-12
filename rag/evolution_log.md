@@ -4,6 +4,21 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 5 — Issue #221: Interactive user input (2026-04-12)
+
+- **Task:** Add interactive user input so the calculator reads the selected operation and required values at runtime; allow the user to continue after each result.
+- **Files changed:** `src/__main__.py`, `tests/test_main.py` (new)
+- **Outcome:** 91 tests pass (63 existing + 28 new). `src/__main__.py` replaced with a full interactive loop; `tests/test_main.py` added.
+- **Key decisions:**
+  - Implemented `show_menu()`, `parse_number()`, `parse_int()`, and `run_operation()` as standalone helpers so each concern is testable in isolation.
+  - `parse_number` and `parse_int` retry indefinitely on invalid input, printing a clear error message, rather than propagating exceptions — this keeps the UX smooth.
+  - `run_operation` catches `ValueError` from Calculator methods and prints it as a user-facing error without crashing the loop.
+  - `OPERATIONS` dict maps string keys `"1"`–`"12"` to operation names, keeping the menu and dispatch logic in sync with a single source of truth.
+  - Tests use `unittest.mock.patch("builtins.input", side_effect=[...])` to supply canned inputs; `capsys` verifies stdout content.
+- **Cost:** PENDING | **Turns:** PENDING
+
+---
+
 ## Cycle 4 — Issue #218: Multiple math operations (2026-04-12)
 
 - **Task:** Add square, cube, square_root, cube_root, power, log, and ln as supported Calculator operations with tests.

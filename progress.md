@@ -2,6 +2,21 @@
 
 ---
 
+## Run: Issue #221 — Interactive user input (2026-04-12)
+
+- **Branch:** exp3/issue-221-interactive-input
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `src/__main__.py` — replaced static demo with interactive menu loop; added `show_menu()`, `parse_number()`, `parse_int()`, `run_operation()`, and updated `main()` to loop until "q"
+  - `tests/test_main.py` — new file with 28 tests covering all helpers, all 12 operations, and main loop scenarios
+- **Purpose:** Add runtime user input so the calculator reads the selected operation and values interactively, shows results, and allows continued use after each result.
+- **Risks:** None — `src/calculator.py` and `tests/test_calculator.py` unchanged; change is purely additive to the CLI layer.
+- **Tests passed:** Yes — 91/91 (63 existing + 28 new)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+Duration: 203.6s | Cost: $0.699409 USD | Turns: 36
+
+---
+
 ## Run: Issue #218 — Multiple math operations (2026-04-12)
 
 - **Branch:** exp3/issue-218-add-math-operations
@@ -118,3 +133,18 @@ Duration: 144.3s | Cost: $0.644819 USD | Turns: 36
 - **Tests passed:** N/A (no source changes)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 Duration: 54.5s | Cost: $0.237316 USD | Turns: 18
+
+---
+
+## Run: Diagram update (2026-04-12)
+
+- **Branch:** exp3/issue-221-interactive-input
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — updated `__main__` class to expose all five functions (`show_menu`, `parse_number`, `parse_int`, `run_operation`, `main`) and the `OPERATIONS` constant with notes describing retry behaviour and error handling
+  - `artifacts/activity_diagram.puml` — rewritten to show the full interactive CLI loop: show menu → read choice → validate → run_operation (dispatch by argument count) → print result or error
+  - `artifacts/sequence_diagram.puml` — restructured to add `User` actor, wrap all interactions in a `loop` frame, and show input prompting via `parse_number`/`parse_int`; per-operation groups retained for all 12 operations
+- **Purpose:** Update PlantUML diagrams to reflect the interactive CLI layer added to `src/__main__.py` in cycle 5 (issue #221).
+- **Risks:** None — diagram-only change; no source code modified.
+- **Tests passed:** N/A (no source changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: 154.7s | Cost: $0.404612 USD | Turns: 19

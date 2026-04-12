@@ -12,81 +12,44 @@ start
 
 :Instantiate Calculator;
 
-:calc.add(a, b);
-:Return a + b;
+repeat
 
-:calc.subtract(a, b);
-:Return a - b;
+    :show_menu()\nPrint numbered operation menu (1-12) and "q. quit";
+    :choice = input("Select operation:").strip().lower();
 
-:calc.multiply(a, b);
-:Return a * b;
-
-:Call calc.divide(a, b);
-if (b == 0?) then (yes)
-    :Raise ValueError\n"Division by zero is not allowed";
-    stop
-else (no)
-    :Return a / b;
-endif
-
-:Call calc.factorial(n);
-if (n is not int?) then (yes)
-    :Raise ValueError\n"Factorial only defined for\nnon-negative integers";
-    stop
-else (no)
-    if (n < 0?) then (yes)
-        :Raise ValueError\n"Factorial not defined\nfor negative integers";
+    if (choice == "q"?) then (yes)
+        :Print "Goodbye!";
         stop
     else (no)
-        :Return math.factorial(n);
+        if (choice in OPERATIONS?) then (yes)
+            :operation = OPERATIONS[choice];
+
+            partition "run_operation(calc, operation)" {
+
+                if (operation == "factorial"?) then (yes)
+                    :n = parse_int("Enter non-negative integer:")\nnote: retries indefinitely on non-integer;
+                elseif (two-argument operation?\nadd / subtract / multiply\ndivide / power / log) then (yes)
+                    :a = parse_number("Enter first/dividend/base number:")\nnote: retries indefinitely on invalid float;
+                    :b = parse_number("Enter second/divisor/exponent/base:")\nnote: retries indefinitely on invalid float;
+                else (one-argument operation\nsquare / cube / square_root\ncube_root / ln)
+                    :a = parse_number("Enter number:")\nnote: retries indefinitely on invalid float;
+                endif
+
+                :Call Calculator method with parsed input(s);
+
+                if (ValueError raised?\ne.g. divide-by-zero, negative sqrt,\nnegative factorial, invalid log base) then (yes)
+                    :Print "Error: <message>";
+                else (no)
+                    :Print "Result: <value>";
+                endif
+
+            }
+
+        else (no)
+            :Print "Invalid choice: '<choice>'";\nnote: loop continues;
+        endif
     endif
-endif
 
-:calc.square(a);
-:Return a ** 2;
-
-:calc.cube(a);
-:Return a ** 3;
-
-:Call calc.square_root(a);
-if (a < 0?) then (yes)
-    :Raise ValueError\n"Square root not defined\nfor negative numbers";
-    stop
-else (no)
-    :Return math.sqrt(a);
-endif
-
-:Call calc.cube_root(a);
-if (a < 0?) then (yes)
-    :Return -((-a) ** (1/3))\n(sign-preserving real root);
-else (no)
-    :Return a ** (1/3);
-endif
-
-:calc.power(a, b);
-:Return a ** b;
-
-:Call calc.log(a, base);
-if (a <= 0?) then (yes)
-    :Raise ValueError\n"a must be positive";
-    stop
-else (no)
-    if (base <= 0 or base == 1?) then (yes)
-        :Raise ValueError\n"Invalid base";
-        stop
-    else (no)
-        :Return math.log(a, base);
-    endif
-endif
-
-:Call calc.ln(a);
-if (a <= 0?) then (yes)
-    :Raise ValueError\n"a must be positive";
-    stop
-else (no)
-    :Return math.log(a);
-endif
-
-stop
+repeat while (loop continues)
 
 @enduml

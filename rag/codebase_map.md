@@ -32,9 +32,24 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## src/__main__.py
-- **Purpose:** CLI entry point for manual smoke-testing the calculator.
-- **Exports:** `main()` function; executed when `python -m src` is run.
-- **Invariants:** Only calls `Calculator` methods; no side effects beyond stdout.
+- **Purpose:** Interactive CLI entry point — presents a numbered menu, reads user-selected operation and required numeric inputs, prints the result, and loops until the user quits.
+- **Last updated:** cycle 5
+- **Exports:** `main()`, `show_menu()`, `parse_number(prompt)`, `parse_int(prompt)`, `run_operation(calc, operation)`, `OPERATIONS` dict.
+- **Key constants:** `OPERATIONS` maps menu keys `"1"`–`"12"` to operation names (add, subtract, multiply, divide, factorial, square, cube, square_root, cube_root, power, log, ln).
+- **Invariants:** `main()` loops until user enters `"q"`; invalid choices print an error and re-prompt. `ValueError` from Calculator methods is caught in `run_operation` and displayed — the loop always continues. `parse_number`/`parse_int` retry indefinitely on invalid input. Only calls `Calculator` methods; no side effects beyond stdout/stdin.
+
+---
+
+## tests/test_main.py
+- **Purpose:** Unit tests for the interactive CLI module (`src/__main__.py`) using mocked `input()` and `capsys`.
+- **Last updated:** cycle 5
+- **Tests (28 total):**
+  - **show_menu (1):** verifies all operation names and "q" appear in output.
+  - **parse_number (4):** valid int, valid float, negative, retry-on-invalid-then-accept.
+  - **parse_int (2):** valid int, retry-on-float-string-then-accept.
+  - **run_operation (16):** one test per operation (add, subtract, multiply, divide, power, log, factorial, square, cube, square_root, cube_root, ln); plus error tests for divide-by-zero, factorial-negative, square_root-negative, and unknown-operation.
+  - **main (5):** quit immediately, invalid-choice-then-quit, add-then-quit, two-operations-then-quit, error-then-continue.
+- **Invariants:** Uses `unittest.mock.patch("builtins.input", ...)` to supply canned inputs; never touches real stdin.
 
 ---
 
