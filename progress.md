@@ -12,7 +12,7 @@
 - **Risks:** None — `src/__main__.py` (interactive CLI), `src/calculator.py`, and all existing tests are untouched. Change is purely additive.
 - **Tests passed:** 136 passed (108 existing + 28 new)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 203.2s | Cost: $0.762545 USD | Turns: 42
 
 ---
 
