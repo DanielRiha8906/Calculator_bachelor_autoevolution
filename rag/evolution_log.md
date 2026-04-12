@@ -4,6 +4,16 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 2 — Issue #212: Full test suite (2026-04-12)
+
+- **Task:** Create a unit test suite covering all arithmetic operations and verify expected results are valid inputs.
+- **Files changed:** `tests/test_calculator.py`
+- **Outcome:** 24 tests pass. Added 21 new tests for `add`, `subtract`, `multiply`, and expanded `divide` coverage. No source changes required.
+- **Key decisions:** Kept all existing divide tests intact; grouped new tests by operation using comment headers; used `math.isclose` for float assertions to avoid floating-point precision failures.
+- **Lessons learned:** Float comparisons require `math.isclose`; identity-element tests (add 0, multiply by 1) are cheap and verify boundary correctness explicitly.
+
+---
+
 ## Cycle 1 — Issue #209: ZeroDivisionError (2026-04-12)
 
 - **Task:** Add unit test for division by zero; fix `divide` to handle it correctly.
