@@ -52,3 +52,13 @@ Duration: 100.8s | Cost: $0.384814 USD | Turns: 29
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
 - Duration: 35.9s | Cost: $0.152743 USD | Turns: 17
+
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-214-add-factorial
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect `Calculator.factorial(n)` added in cycle 3. Added `factorial` method to class diagram with ValueError note; noted factorial availability in activity diagram; added factorial sequence with `math` participant in sequence diagram.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+- Duration: PENDING | Cost: PENDING | Turns: PENDING
