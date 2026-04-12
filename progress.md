@@ -1,5 +1,17 @@
 # Progress Log
 
+## Run: Issue #245 — Input Validation (2026-04-12)
+
+- **Branch:** exp3/issue-245-input-validation
+- **Files changed:** src/__main__.py, tests/test_main.py
+- **Purpose:** Added bounded retry logic to `parse_number` (max 3 attempts); on exhaustion raises `ValueError` surfaced by existing `run_operation` error handler. Added `MAX_INPUT_ATTEMPTS = 3` module-level constant and 4 new tests.
+- **Risks:** Low — change is contained to `parse_number`; all existing callers benefit automatically through the already-present `ValueError` catch in `run_operation`.
+- **Tests passed:** 113/113
+- **Current branch:** exp3/issue-245-input-validation
+- **PR target:** exp3/naive-generic
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Diagram Update (2026-04-12)
 
 - **Branch:** exp3/issue-239-cli-mode
