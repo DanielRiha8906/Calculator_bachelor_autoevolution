@@ -4,6 +4,17 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 6 — Issue #243: CLI mode (bash argument-based access)
+
+- **Task:** Add a command-line interface so the calculator can be used from bash by passing the operation and operand values as arguments (`python main.py add 5 7`, `python main.py factorial 5`). Support all 12 existing operations with correct arity handling. Print errors to stderr and use exit codes.
+- **Files changed:** `main.py` (new file; `main()`, `_parse_operand()`, operation sets), `tests/test_cli.py` (new file; 28 tests)
+- **Test result:** 136 passed (108 existing + 28 new)
+- **Key decisions:** Created `main.py` at repo root rather than modifying `src/__main__.py`, keeping interactive and argument-based CLIs cleanly separated. `_parse_operand` mirrors the `get_number` approach from the interactive CLI but operates on string args rather than stdin. factorial uses `require_int=True` to preserve Calculator.factorial's integer contract. All errors go to stderr with exit code 1; success prints to stdout with exit code 0.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 5 — Issue #222: Interactive user input for CLI
 
 - **Task:** Replace the hardcoded demo in `src/__main__.py` with a menu-driven interactive session. The loop reads the user's operation choice and the required operands, computes the result, displays it, and continues until the user enters 'q'. Unary ops prompt for one number (factorial requires int); binary ops prompt for two.

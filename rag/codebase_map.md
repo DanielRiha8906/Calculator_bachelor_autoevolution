@@ -71,3 +71,29 @@ Per-file summaries: purpose, public API surface, key invariants.
 - **Test strategy:** `unittest.mock.patch` on `builtins.input` (side_effect list) and `builtins.print` (capture). Helper `run_main_with_inputs` flattens all printed args into a list of strings.
 - **Exports:** None
 - **Last updated:** cycle 5 (issue-222)
+
+---
+
+## `main.py`
+- **Purpose:** Bash-accessible command-line entry point for the Calculator. Accepts `<operation> [operand1] [operand2]` as positional CLI arguments, computes the result, and prints it to stdout. Not interactive — one invocation, one result.
+- **Public API:**
+  - `main(argv: list[str] | None = None) -> int` — parses args, runs the operation, prints result; returns exit code (0 success, 1 error)
+  - `_parse_operand(value: str, require_int: bool = False)` — converts a string CLI arg to int or float
+  - `_BINARY_OPS`, `_UNARY_OPS`, `_ALL_OPS` — sets defining which operations take two vs one operand
+- **Invariants:**
+  - Binary ops (add, subtract, multiply, divide, power) require exactly 2 operands.
+  - Unary ops (factorial, square, cube, square_root, cube_root, log, ln) require exactly 1 operand.
+  - factorial uses `require_int=True` in `_parse_operand` to preserve Calculator.factorial's integer contract.
+  - All errors (wrong arg count, unknown op, non-numeric operand, computation error) print to stderr and return exit code 1.
+  - Result is printed to stdout with `print(result)`.
+  - `if __name__ == "__main__": sys.exit(main())` wires exit code to the shell.
+- **Last updated:** cycle 6 (issue-243)
+
+---
+
+## `tests/test_cli.py`
+- **Purpose:** Unit tests for the bash CLI in `main.py`.
+- **Current state:** 28 tests covering: argument-count validation (no args, too few, too many for binary and unary ops), unknown operation, all 12 operations (normal inputs and float variants), error paths (divide-by-zero, sqrt negative, log/ln non-positive, factorial float/negative), and non-numeric operand.
+- **Test strategy:** Call `main(args)` directly with a list of strings; use pytest `capsys` to capture stdout/stderr. Helper `run_cli` returns `(exit_code, stdout, stderr)`.
+- **Exports:** None
+- **Last updated:** cycle 6 (issue-243)
