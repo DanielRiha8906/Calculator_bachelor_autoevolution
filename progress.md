@@ -94,3 +94,13 @@ Duration: 100.8s | Cost: $0.384814 USD | Turns: 29
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
 - Duration: 51.0s | Cost: $0.192411 USD | Turns: 19
+
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-220-user-input
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect the interactive REPL introduced in cycle 5. Class diagram now shows full `__main__` module API (parse_number, _to_int_if_needed, run_operation, module-level constants). Activity and sequence diagrams replaced the outdated hardcoded demo flow with the actual while-loop REPL: menu display, choice dispatch, binary/unary operand prompting, INTEGER_OPS int conversion, and ValueError/ZeroDivisionError error handling.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING

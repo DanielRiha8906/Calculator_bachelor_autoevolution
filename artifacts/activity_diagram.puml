@@ -1,81 +1,54 @@
 @startuml activity_diagram
 
-title Calculator — Main Execution Flow
+title Calculator — Interactive REPL Flow
 
 start
 
-:Import Calculator from src;
-
 :Instantiate Calculator();
+:Print "Welcome to the Calculator!";
 
-partition "Basic Arithmetic" {
-  :Call calc.add(10, 5);
-  :Print "Addition: 15";
+repeat
 
-  :Call calc.subtract(10, 5);
-  :Print "Subtraction: 5";
+  :Print MENU (12 operations + quit);
+  :Read user choice via input();
 
-  :Call calc.multiply(10, 5);
-  :Print "Multiplication: 50";
-
-  :Call calc.divide(a, b);
-  if (divisor == 0?) then (yes)
-    #pink:Raise ZeroDivisionError;
+  if (choice == "q"?) then (yes)
+    :Print "Goodbye!";
     stop
   else (no)
-    :Return quotient;
-    :Print result;
   endif
-}
 
-partition "Powers & Roots" {
-  :Call calc.square(n);
-  :Return n ** 2;
+  :Look up op = MENU_MAP.get(choice);
 
-  :Call calc.cube(n);
-  :Return n ** 3;
-
-  :Call calc.power(base, exp);
-  :Return base ** exp;
-
-  :Call calc.square_root(n);
-  if (n < 0?) then (yes)
-    #pink:Raise ValueError;
-    stop
+  if (op is None?) then (yes)
+    :Print "Unknown choice" error message;
   else (no)
-    :Return math.sqrt(n);
+
+    if (op in BINARY_OPS?) then (yes)
+      :parse_number() → a (first operand);
+      :parse_number() → b (second operand);
+    else (no — UNARY_OPS)
+      :parse_number() → a;
+      if (op in INTEGER_OPS?) then (yes)
+        if (a is whole number?) then (yes)
+          :Convert a float → int;
+        else (no)
+          :Raise ValueError\n"requires whole number";
+        endif
+      endif
+    endif
+
+    :Dispatch: getattr(calc, op)(args);
+
+    if (ValueError or ZeroDivisionError raised?) then (yes)
+      :Print "Error: <exception message>";
+    else (no)
+      :Print "Result: <value>";
+    endif
+
   endif
 
-  :Call calc.cube_root(n);
-  :Return math.cbrt(n);
-  note right: Handles negative inputs
-}
-
-partition "Combinatorics & Logarithms" {
-  :Call calc.factorial(n);
-  if (n < 0?) then (yes)
-    #pink:Raise ValueError;
-    stop
-  else (no)
-    :Return math.factorial(n);
-  endif
-
-  :Call calc.log(n);
-  if (n <= 0?) then (yes)
-    #pink:Raise ValueError;
-    stop
-  else (no)
-    :Return math.log10(n);
-  endif
-
-  :Call calc.ln(n);
-  if (n <= 0?) then (yes)
-    #pink:Raise ValueError;
-    stop
-  else (no)
-    :Return math.log(n);
-  endif
-}
+repeat while (loop continues)
 
 stop
 

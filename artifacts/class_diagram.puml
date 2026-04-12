@@ -19,11 +19,20 @@ package "src" {
     }
 
     class "__main__" as Main <<module>> {
+        +UNARY_OPS : set
+        +BINARY_OPS : set
+        +INTEGER_OPS : set
+        +MENU : str
+        +MENU_MAP : dict[str, str]
+        +parse_number(prompt: str) : float
+        -_to_int_if_needed(op: str, value: float) : float | int
+        +run_operation(calc: Calculator, op: str) : void
         +main() : void
     }
 }
 
 Main ..> Calculator : instantiates
+Main ..> Calculator : dispatches via getattr(calc, op)
 
 note right of Calculator::divide
   Raises ZeroDivisionError
@@ -54,6 +63,17 @@ end note
 note right of Calculator::ln
   Delegates to math.log(n)
   Raises ValueError for n <= 0
+end note
+
+note left of Main::MENU_MAP
+  Maps "1"–"12" to operation names
+  "q" is handled directly in main()
+end note
+
+note left of Main::INTEGER_OPS
+  {"factorial"}: float inputs are
+  converted to int before dispatch;
+  non-whole values raise ValueError
 end note
 
 @enduml
