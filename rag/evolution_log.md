@@ -4,6 +4,17 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 7 — Issue #247: Input validation with retry logic (interactive CLI)
+
+- **Task:** Add input validation with retry logic to the interactive CLI. Invalid operation selections show the list of available operations and allow retry; after MAX_ATTEMPTS (5) total invalid selections the session terminates. Invalid operand inputs retry up to MAX_ATTEMPTS times per prompt before ending the session. CLI (main.py) already fails fast — no changes needed there.
+- **Files changed:** `src/__main__.py` (added `MAX_ATTEMPTS`, `_SessionExpired`, `get_number_with_retry`; updated `main` to track invalid op attempts and use retry for operand reads), `tests/test_main.py` (updated 2 tests with adjusted input sequences; added 4 new tests covering retry and termination paths; total 37 tests)
+- **Test result:** 141 passed
+- **Key decisions:** `_SessionExpired` (internal exception) propagates out of `get_number_with_retry` and is caught in `main()` to break the loop — this keeps the termination logic cleanly separated from the normal `ValueError`/`TypeError`/`ZeroDivisionError` error-display path. Invalid operation attempts are tracked as a running session total (no reset on valid selection) so abusive or confused input terminates the session regardless of interspersed valid operations. The "remaining attempts" message is printed on each non-final failure so the user knows how many tries they have left.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 6 — Issue #243: CLI mode (bash argument-based access)
 
 - **Task:** Add a command-line interface so the calculator can be used from bash by passing the operation and operand values as arguments (`python main.py add 5 7`, `python main.py factorial 5`). Support all 12 existing operations with correct arity handling. Print errors to stderr and use exit codes.
