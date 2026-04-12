@@ -1,5 +1,16 @@
 # Progress Log
 
+## Run: Issue #217 — Add Multiple Math Functions (2026-04-12)
+
+- **Branch:** exp3/issue-217-add-math-functions
+- **Target PR branch:** exp3/naive-generic
+- **Files changed:** src/calculator.py, tests/test_calculator.py
+- **Purpose:** Added 7 new Calculator methods: square, cube, square_root, cube_root, power, log (base-10), ln (natural log). Added 30 new tests covering all seven operations with positive, negative, zero, float, and error-path inputs.
+- **Risks:** Minimal — all delegation to stdlib (`math.sqrt`, `math.cbrt`, `math.log10`, `math.log`). `math.cbrt` requires Python 3.11+ which is satisfied by project's Python 3.12 requirement. No new dependencies added.
+- **Tests passed:** Yes — 58 collected, 58 passed.
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Issue #208 — ZeroDivisionTest (2026-04-12)
 
 - **Branch:** exp3/issue-208-zero-division-test
