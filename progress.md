@@ -18,7 +18,7 @@ None — diagram-only change, no source or test modifications.
 No tests affected; diagrams are documentation artifacts.
 
 ### Duration / Cost / Turns
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 56.0s | Cost: $0.395343 USD | Turns: 25
 
 ---
 
