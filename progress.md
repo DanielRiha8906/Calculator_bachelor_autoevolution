@@ -8,7 +8,7 @@
 - **Risks:** None — additive test-only change; no source code modified.
 - **Tests passed:** Yes — 28 passed in 0.03s
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 90.7s | Cost: $0.350989 USD | Turns: 28
 
 ---
 
