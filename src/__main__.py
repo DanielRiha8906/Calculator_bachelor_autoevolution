@@ -3,6 +3,13 @@ import argparse
 
 from .calculator import Calculator
 
+MAX_ATTEMPTS = 3
+
+
+class TooManyAttemptsError(Exception):
+    """Raised when the user exceeds the maximum number of invalid input attempts."""
+
+
 OPERATIONS = {
     "1": "add",
     "2": "subtract",
@@ -33,24 +40,40 @@ def show_menu() -> None:
     print("  q. quit")
 
 
-def parse_number(prompt: str) -> float:
-    """Prompt the user until a valid number is entered and return it as float."""
-    while True:
+def parse_number(prompt: str, max_attempts: int = MAX_ATTEMPTS) -> float:
+    """Prompt the user until a valid number is entered and return it as float.
+
+    Raises TooManyAttemptsError after *max_attempts* consecutive invalid inputs.
+    """
+    for attempt in range(1, max_attempts + 1):
         raw = input(prompt).strip()
         try:
             return float(raw)
         except ValueError:
-            print(f"  Invalid number: '{raw}'. Please try again.")
+            remaining = max_attempts - attempt
+            if remaining > 0:
+                print(f"  Invalid number: '{raw}'. Please try again ({remaining} attempt(s) left).")
+            else:
+                print(f"  Invalid number: '{raw}'. No attempts remaining.")
+    raise TooManyAttemptsError("Too many invalid number inputs. Ending session.")
 
 
-def parse_int(prompt: str) -> int:
-    """Prompt the user until a valid integer is entered and return it."""
-    while True:
+def parse_int(prompt: str, max_attempts: int = MAX_ATTEMPTS) -> int:
+    """Prompt the user until a valid integer is entered and return it.
+
+    Raises TooManyAttemptsError after *max_attempts* consecutive invalid inputs.
+    """
+    for attempt in range(1, max_attempts + 1):
         raw = input(prompt).strip()
         try:
             return int(raw)
         except ValueError:
-            print(f"  Invalid integer: '{raw}'. Please try again.")
+            remaining = max_attempts - attempt
+            if remaining > 0:
+                print(f"  Invalid integer: '{raw}'. Please try again ({remaining} attempt(s) left).")
+            else:
+                print(f"  Invalid integer: '{raw}'. No attempts remaining.")
+    raise TooManyAttemptsError("Too many invalid integer inputs. Ending session.")
 
 
 def run_operation(calc: Calculator, operation: str) -> None:
@@ -130,9 +153,9 @@ def cli_mode(args: list[str]) -> int:
         metavar="VALUE",
         help="Numeric argument(s) required by the operation.",
     )
-    parsed = parser.parse_args(args)
-    op = parsed.operation
-    raw = parsed.values
+    namespace = parser.parse_args(args)
+    op = namespace.operation
+    raw = namespace.values
 
     calc = Calculator()
     try:
@@ -143,7 +166,12 @@ def cli_mode(args: list[str]) -> int:
                     file=sys.stderr,
                 )
                 return 1
-            result = calc.factorial(int(raw[0]))
+            try:
+                n = int(raw[0])
+            except ValueError:
+                print(f"Error: '{raw[0]}' is not a valid integer.", file=sys.stderr)
+                return 1
+            result = calc.factorial(n)
         elif op in _ONE_ARG_OPS:
             if len(raw) != 1:
                 print(
@@ -151,7 +179,12 @@ def cli_mode(args: list[str]) -> int:
                     file=sys.stderr,
                 )
                 return 1
-            result = getattr(calc, op)(float(raw[0]))
+            try:
+                a = float(raw[0])
+            except ValueError:
+                print(f"Error: '{raw[0]}' is not a valid number.", file=sys.stderr)
+                return 1
+            result = getattr(calc, op)(a)
         else:  # two-argument operations
             if len(raw) != 2:
                 print(
@@ -159,7 +192,14 @@ def cli_mode(args: list[str]) -> int:
                     file=sys.stderr,
                 )
                 return 1
-            result = getattr(calc, op)(float(raw[0]), float(raw[1]))
+            parsed: list[float] = []
+            for v in raw[:2]:
+                try:
+                    parsed.append(float(v))
+                except ValueError:
+                    print(f"Error: '{v}' is not a valid number.", file=sys.stderr)
+                    return 1
+            result = getattr(calc, op)(*parsed)
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
@@ -182,6 +222,7 @@ def main(args: list[str] | None = None) -> None:
 
     # Interactive loop
     calc = Calculator()
+    invalid_op_count = 0
     while True:
         show_menu()
         choice = input("Select operation: ").strip().lower()
@@ -189,9 +230,19 @@ def main(args: list[str] | None = None) -> None:
             print("Goodbye!")
             break
         if choice not in OPERATIONS:
-            print(f"  Invalid choice: '{choice}'. Please select a valid option.")
+            invalid_op_count += 1
+            remaining = MAX_ATTEMPTS - invalid_op_count
+            if remaining <= 0:
+                print(f"  Invalid choice: '{choice}'. Too many invalid choices. Ending session.")
+                break
+            print(f"  Invalid choice: '{choice}'. Please select a valid option ({remaining} attempt(s) left).")
             continue
-        run_operation(calc, OPERATIONS[choice])
+        invalid_op_count = 0
+        try:
+            run_operation(calc, OPERATIONS[choice])
+        except TooManyAttemptsError as exc:
+            print(f"  {exc}")
+            break
 
 
 if __name__ == "__main__":
