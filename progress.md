@@ -1,5 +1,17 @@
 # Progress Log
 
+## Run: Issue #251 — Error Logging (2026-04-12)
+
+- **Branch:** exp3/issue-251-add-error-logging
+- **Files changed:** src/calculator.py, src/__main__.py, tests/test_calculator.py, tests/test_main.py
+- **Purpose:** Added error logging to the calculator. Module-level `logger = logging.getLogger(__name__)` added to both `src/calculator.py` and `src/__main__.py`. Error-prone Calculator methods (divide, factorial, square_root, log, ln) now log at ERROR level before re-raising. `run_operation` and `cli_main` in `__main__.py` log caught exceptions. `main()` configures `logging.basicConfig(level=ERROR)` at startup.
+- **Risks:** Low — logging is purely additive; exceptions are re-raised unchanged so all caller contracts and existing tests remain valid.
+- **Tests passed:** 134/134
+- **Current branch:** exp3/issue-251-add-error-logging
+- **Intended PR target:** exp3/naive-generic
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Diagram Update (2026-04-12)
 
 - **Branch:** exp3/issue-248-add-history
