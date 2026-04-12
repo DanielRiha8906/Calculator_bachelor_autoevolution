@@ -1,10 +1,12 @@
 import sys
 import argparse
+from datetime import datetime
 
 from .calculator import Calculator
 
 MAX_ATTEMPTS = 3
 HISTORY_FILE = "history.txt"
+ERROR_LOG_FILE = "error.log"
 
 
 class TooManyAttemptsError(Exception):
@@ -71,6 +73,20 @@ def show_history(filepath: "str | None" = None) -> None:
             print(f"  {i}. {line}")
 
 
+def append_to_error_log(message: str, filepath: "str | None" = None) -> None:
+    """Append a timestamped error entry to the error log file.
+
+    Uses *ERROR_LOG_FILE* when *filepath* is ``None`` so that monkeypatching the
+    module attribute in tests affects the default without needing to re-bind the
+    function's default argument.
+    """
+    if filepath is None:
+        filepath = ERROR_LOG_FILE
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(filepath, "a", encoding="utf-8") as fh:
+        fh.write(f"[{timestamp}] {message}\n")
+
+
 def show_menu() -> None:
     """Print the operation menu to stdout."""
     print("\n--- Calculator ---")
@@ -90,6 +106,7 @@ def parse_number(prompt: str, max_attempts: int = MAX_ATTEMPTS) -> float:
         try:
             return float(raw)
         except ValueError:
+            append_to_error_log(f"invalid_input: '{raw}' is not a valid number")
             remaining = max_attempts - attempt
             if remaining > 0:
                 print(f"  Invalid number: '{raw}'. Please try again ({remaining} attempt(s) left).")
@@ -108,6 +125,7 @@ def parse_int(prompt: str, max_attempts: int = MAX_ATTEMPTS) -> int:
         try:
             return int(raw)
         except ValueError:
+            append_to_error_log(f"invalid_input: '{raw}' is not a valid integer")
             remaining = max_attempts - attempt
             if remaining > 0:
                 print(f"  Invalid integer: '{raw}'. Please try again ({remaining} attempt(s) left).")
@@ -178,11 +196,13 @@ def run_operation(calc: Calculator, operation: str) -> "str | None":
             result = calc.ln(a)
             entry = f"ln({a}) = {result}"
         else:
+            append_to_error_log(f"unsupported_operation: '{operation}'")
             print(f"  Unknown operation: {operation}")
             return None
         print(f"  Result: {result}")
         return entry
     except ValueError as exc:
+        append_to_error_log(f"calculation_error: {exc}")
         print(f"  Error: {exc}")
         return None
 
@@ -219,46 +239,47 @@ def cli_mode(args: list[str]) -> int:
     try:
         if op in _INT_ARG_OPS:
             if len(raw) != 1:
-                print(
-                    f"Error: '{op}' requires exactly 1 integer argument.",
-                    file=sys.stderr,
-                )
+                msg = f"'{op}' requires exactly 1 integer argument"
+                append_to_error_log(f"invalid_input: {msg}")
+                print(f"Error: {msg}.", file=sys.stderr)
                 return 1
             try:
                 n = int(raw[0])
             except ValueError:
+                append_to_error_log(f"invalid_input: '{raw[0]}' is not a valid integer")
                 print(f"Error: '{raw[0]}' is not a valid integer.", file=sys.stderr)
                 return 1
             result = calc.factorial(n)
         elif op in _ONE_ARG_OPS:
             if len(raw) != 1:
-                print(
-                    f"Error: '{op}' requires exactly 1 argument.",
-                    file=sys.stderr,
-                )
+                msg = f"'{op}' requires exactly 1 argument"
+                append_to_error_log(f"invalid_input: {msg}")
+                print(f"Error: {msg}.", file=sys.stderr)
                 return 1
             try:
                 a = float(raw[0])
             except ValueError:
+                append_to_error_log(f"invalid_input: '{raw[0]}' is not a valid number")
                 print(f"Error: '{raw[0]}' is not a valid number.", file=sys.stderr)
                 return 1
             result = getattr(calc, op)(a)
         else:  # two-argument operations
             if len(raw) != 2:
-                print(
-                    f"Error: '{op}' requires exactly 2 arguments.",
-                    file=sys.stderr,
-                )
+                msg = f"'{op}' requires exactly 2 arguments"
+                append_to_error_log(f"invalid_input: {msg}")
+                print(f"Error: {msg}.", file=sys.stderr)
                 return 1
             parsed: list[float] = []
             for v in raw[:2]:
                 try:
                     parsed.append(float(v))
                 except ValueError:
+                    append_to_error_log(f"invalid_input: '{v}' is not a valid number")
                     print(f"Error: '{v}' is not a valid number.", file=sys.stderr)
                     return 1
             result = getattr(calc, op)(*parsed)
     except ValueError as exc:
+        append_to_error_log(f"calculation_error: {exc}")
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
@@ -292,6 +313,7 @@ def main(args: list[str] | None = None) -> None:
             show_history()
             continue
         if choice not in OPERATIONS:
+            append_to_error_log(f"invalid_input: '{choice}' is not a valid menu choice")
             invalid_op_count += 1
             remaining = MAX_ATTEMPTS - invalid_op_count
             if remaining <= 0:

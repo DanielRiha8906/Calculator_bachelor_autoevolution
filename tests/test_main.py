@@ -1,5 +1,6 @@
 """Tests for the interactive CLI loop and CLI mode in src/__main__.py."""
 import math
+import re
 import sys
 from unittest.mock import patch
 import pytest
@@ -15,10 +16,12 @@ from src.__main__ import (
     clear_history,
     append_to_history,
     show_history,
+    append_to_error_log,
     OPERATIONS,
     TooManyAttemptsError,
     MAX_ATTEMPTS,
     HISTORY_FILE,
+    ERROR_LOG_FILE,
 )
 from src.calculator import Calculator
 
@@ -29,13 +32,15 @@ def calc():
 
 
 @pytest.fixture(autouse=True)
-def isolate_history(tmp_path, monkeypatch):
-    """Redirect all history file operations to a temp directory.
+def isolate_files(tmp_path, monkeypatch):
+    """Redirect history and error log file operations to a temp directory.
 
-    This prevents tests from writing to or reading from a real ``history.txt``
-    in the working directory, keeping test runs clean and independent.
+    This prevents tests from writing to or reading from real ``history.txt``
+    or ``error.log`` files in the working directory, keeping test runs clean
+    and independent.
     """
     monkeypatch.setattr(_main_mod, "HISTORY_FILE", str(tmp_path / "history.txt"))
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", str(tmp_path / "error.log"))
 
 
 # ---------------------------------------------------------------------------
@@ -112,6 +117,173 @@ def test_show_history_with_entries(tmp_path, capsys):
     captured = capsys.readouterr().out
     assert "add(1.0, 2.0) = 3.0" in captured
     assert "factorial(5) = 120" in captured
+
+
+# ---------------------------------------------------------------------------
+# append_to_error_log
+# ---------------------------------------------------------------------------
+
+def test_append_to_error_log_adds_timestamped_entry(tmp_path):
+    """Each entry has a timestamp prefix and the supplied message."""
+    log_path = str(tmp_path / "e.log")
+    append_to_error_log("test_error: something went wrong", log_path)
+    content = open(log_path).read()
+    # Timestamp format: [YYYY-MM-DD HH:MM:SS]
+    assert re.search(r"\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]", content)
+    assert "test_error: something went wrong" in content
+
+
+def test_append_to_error_log_multiple_entries(tmp_path):
+    """Multiple calls each produce a separate line in the log."""
+    log_path = str(tmp_path / "e.log")
+    append_to_error_log("first_error: msg1", log_path)
+    append_to_error_log("second_error: msg2", log_path)
+    lines = open(log_path).read().splitlines()
+    assert len(lines) == 2
+    assert "first_error: msg1" in lines[0]
+    assert "second_error: msg2" in lines[1]
+
+
+def test_append_to_error_log_uses_module_constant(tmp_path, monkeypatch):
+    """When no filepath is given, ERROR_LOG_FILE constant is used."""
+    log_path = str(tmp_path / "default.log")
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    append_to_error_log("default_path_test")
+    content = open(log_path).read()
+    assert "default_path_test" in content
+
+
+# ---------------------------------------------------------------------------
+# Error logging — parse_number and parse_int
+# ---------------------------------------------------------------------------
+
+def test_parse_number_logs_invalid_input(tmp_path, monkeypatch):
+    """Each invalid number input is written to the error log."""
+    log_path = str(tmp_path / "e.log")
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    with patch("builtins.input", side_effect=["bad", "5"]):
+        parse_number("Enter: ")
+    content = open(log_path).read()
+    assert "invalid_input" in content
+    assert "bad" in content
+
+
+def test_parse_int_logs_invalid_input(tmp_path, monkeypatch):
+    """Each invalid integer input is written to the error log."""
+    log_path = str(tmp_path / "e.log")
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    with patch("builtins.input", side_effect=["3.5", "3"]):
+        parse_int("Enter: ")
+    content = open(log_path).read()
+    assert "invalid_input" in content
+    assert "3.5" in content
+
+
+# ---------------------------------------------------------------------------
+# Error logging — run_operation
+# ---------------------------------------------------------------------------
+
+def test_run_operation_logs_calculation_error(calc, tmp_path, monkeypatch):
+    """A Calculator ValueError (e.g. divide by zero) is written to the error log."""
+    log_path = str(tmp_path / "e.log")
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    with patch("builtins.input", side_effect=["10", "0"]):
+        run_operation(calc, "divide")
+    content = open(log_path).read()
+    assert "calculation_error" in content
+    assert "Division by zero" in content
+
+
+def test_run_operation_logs_unknown_operation(calc, tmp_path, monkeypatch):
+    """An unknown operation name is written to the error log."""
+    log_path = str(tmp_path / "e.log")
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    run_operation(calc, "unknown_op")
+    content = open(log_path).read()
+    assert "unsupported_operation" in content
+    assert "unknown_op" in content
+
+
+def test_run_operation_success_does_not_log_error(calc, tmp_path, monkeypatch):
+    """A successful operation writes nothing to the error log."""
+    log_path = str(tmp_path / "e.log")
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    with patch("builtins.input", side_effect=["3", "4"]):
+        run_operation(calc, "add")
+    import os
+    assert not os.path.exists(log_path)
+
+
+# ---------------------------------------------------------------------------
+# Error logging — interactive main() loop
+# ---------------------------------------------------------------------------
+
+def test_main_invalid_choice_logged(tmp_path, monkeypatch):
+    """Invalid menu choices are written to the error log."""
+    log_path = str(tmp_path / "e.log")
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    with patch("builtins.input", side_effect=["99", "q"]):
+        main([])
+    content = open(log_path).read()
+    assert "invalid_input" in content
+    assert "99" in content
+
+
+def test_main_error_log_separate_from_history(tmp_path, monkeypatch):
+    """Errors are written to the error log, not to the history file."""
+    hist_path = str(tmp_path / "history.txt")
+    log_path = str(tmp_path / "error.log")
+    monkeypatch.setattr(_main_mod, "HISTORY_FILE", hist_path)
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    # Divide by zero: error should appear in error log, not in history
+    with patch("builtins.input", side_effect=["4", "10", "0", "q"]):
+        main([])
+    hist_lines = open(hist_path).read().splitlines()
+    log_content = open(log_path).read()
+    assert hist_lines == []
+    assert "calculation_error" in log_content
+
+
+# ---------------------------------------------------------------------------
+# Error logging — cli_mode
+# ---------------------------------------------------------------------------
+
+def test_cli_mode_logs_calculation_error(tmp_path, monkeypatch):
+    """A Calculator error in cli_mode is written to the error log."""
+    log_path = str(tmp_path / "e.log")
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    cli_mode(["divide", "10", "0"])
+    content = open(log_path).read()
+    assert "calculation_error" in content
+    assert "Division by zero" in content
+
+
+def test_cli_mode_logs_invalid_number_input(tmp_path, monkeypatch):
+    """A non-numeric value in cli_mode is written to the error log."""
+    log_path = str(tmp_path / "e.log")
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    cli_mode(["add", "abc", "3"])
+    content = open(log_path).read()
+    assert "invalid_input" in content
+    assert "abc" in content
+
+
+def test_cli_mode_logs_wrong_arg_count(tmp_path, monkeypatch):
+    """Wrong argument count in cli_mode is written to the error log."""
+    log_path = str(tmp_path / "e.log")
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    cli_mode(["add", "3"])
+    content = open(log_path).read()
+    assert "invalid_input" in content
+
+
+def test_cli_mode_success_does_not_log_error(tmp_path, monkeypatch, capsys):
+    """A successful cli_mode call writes nothing to the error log."""
+    log_path = str(tmp_path / "e.log")
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    cli_mode(["add", "3", "4"])
+    import os
+    assert not os.path.exists(log_path)
 
 
 # ---------------------------------------------------------------------------
