@@ -1,3 +1,27 @@
+## Run: diagram-update — Update PlantUML diagrams to reflect current source state
+
+- **Branch:** task/issue-208-zero-division-test
+- **Date:** 2026-04-12
+
+### Files changed
+- `artifacts/class_diagram.puml` — added 5 new test methods to `TestDivisionIncorrectInputs`: `test_divide_by_float_zero`, `test_divide_zero_by_zero`, `test_divide_list_numerator`, `test_divide_list_denominator`, `test_divide_both_none`
+- `artifacts/activity_diagram.puml` — no changes (source code unchanged; diagram remains accurate)
+- `artifacts/sequence_diagram.puml` — no changes (source code unchanged; diagram remains accurate)
+
+### Purpose
+Synchronise diagram artifacts with the tests added in the issue-208 run so the class diagram accurately reflects all 11 methods in `TestDivisionIncorrectInputs`.
+
+### Risks
+None — diagram-only change, no source or test modifications.
+
+### Test results
+No tests affected; diagrams are documentation artifacts.
+
+### Duration / Cost / Turns
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-208 — Add tests for incorrect inputs in division (V3 ZeroDivisionTest)
 
 - **Branch:** task/issue-208-zero-division-test

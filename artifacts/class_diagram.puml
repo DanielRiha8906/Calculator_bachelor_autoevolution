@@ -165,6 +165,11 @@ package "tests" {
         +test_divide_string_denominator() : void
         +test_divide_none_numerator() : void
         +test_divide_none_denominator() : void
+        +test_divide_by_float_zero() : void
+        +test_divide_zero_by_zero() : void
+        +test_divide_list_numerator() : void
+        +test_divide_list_denominator() : void
+        +test_divide_both_none() : void
     }
 
     class TestFactorial {
