@@ -4,6 +4,17 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 8 — Issue #250: Session history for interactive CLI
+
+- **Task:** Add operation history to the calculator so calculations performed during the current session are tracked and can be shown on request. Record entries in function-style format (`name(args) = result`). Write history to `history.txt` on session end; start each new session with a fresh history.
+- **Files changed:** `src/__main__.py` (added `HISTORY_FILE`, `format_history_entry()`, `save_history()`; updated `display_menu()` to include 'h'; updated `main()` to maintain history list, record each successful result, display on 'h', write file on all exit paths), `tests/test_main.py` (updated imports; added 15 new tests; total 52 tests)
+- **Test result:** 156 passed
+- **Key decisions:** `save_history` uses `path=None` with a runtime lookup of `HISTORY_FILE` (instead of a default-arg capture) so tests can cleanly patch the module-level constant via `patch("src.__main__.HISTORY_FILE", ...)`. History is only appended on successful calculation; error paths (ValueError, etc.) do not add entries. 'h' is not counted as an invalid operation for retry purposes — it is checked before the unknown-op branch.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 7 — Issue #247: Input validation with retry logic (interactive CLI)
 
 - **Task:** Add input validation with retry logic to the interactive CLI. Invalid operation selections show the list of available operations and allow retry; after MAX_ATTEMPTS (5) total invalid selections the session terminates. Invalid operand inputs retry up to MAX_ATTEMPTS times per prompt before ending the session. CLI (main.py) already fails fast — no changes needed there.

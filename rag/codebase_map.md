@@ -13,23 +13,30 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## `src/__main__.py`
-- **Purpose:** Interactive CLI entry point for the Calculator.
-- **Exports:** `main()`, `display_menu()`, `get_number()`, `get_number_with_retry()`, `OPERATIONS`, `MAX_ATTEMPTS`
+- **Purpose:** Interactive CLI entry point for the Calculator with per-session history.
+- **Exports:** `main()`, `display_menu()`, `get_number()`, `get_number_with_retry()`, `format_history_entry()`, `save_history()`, `OPERATIONS`, `MAX_ATTEMPTS`, `HISTORY_FILE`
 - **Public API:**
   - `OPERATIONS: dict[str, tuple[str, int]]` — maps menu key to `(operation_name, arity)`; covers all 12 operations
   - `MAX_ATTEMPTS: int` — maximum failed input attempts before session termination (currently 5)
-  - `display_menu() -> None` — prints the numbered operation menu
+  - `HISTORY_FILE: str` — path where session history is written on session end (default `"history.txt"`)
+  - `display_menu() -> None` — prints the numbered operation menu; includes 'h. history' and 'q. quit' options
   - `get_number(prompt, require_int=False) -> int | float` — reads one number from stdin; raises `ValueError` for non-numeric or (when `require_int=True`) non-integer input
   - `get_number_with_retry(prompt, require_int=False) -> int | float` — wraps `get_number` with retry logic; raises `_SessionExpired` after MAX_ATTEMPTS failures
-  - `main() -> None` — runs the interactive session loop until the user enters 'q' or retries are exhausted
+  - `format_history_entry(name, args, result) -> str` — formats a calculation as `name(arg1, arg2) = result`
+  - `save_history(history, path=None) -> None` — writes history list to `path` (or `HISTORY_FILE` if None); overwrites any previous content so each session starts fresh
+  - `main() -> None` — runs the interactive session loop until the user enters 'q' or retries are exhausted; on 'h' displays current session history; on quit/expiry writes history to HISTORY_FILE
 - **Invariants:**
   - Unary operations (factorial, square, cube, square_root, cube_root, log, ln) prompt for one operand; factorial uses `require_int=True`.
   - Binary operations (add, subtract, multiply, divide, power) prompt for two operands.
+  - Successful calculations are appended to `history` as `format_history_entry(name, (a[, b]), result)` entries.
+  - 'h' input during the session displays the history list; "No history yet." if empty.
+  - `save_history` is called on every exit path (normal quit, max-invalid-ops, `_SessionExpired`).
+  - `save_history` reads `HISTORY_FILE` at call time (not as a default arg default) so tests can patch it.
   - Invalid operation selections print the list of available operations and allow retry; after MAX_ATTEMPTS total invalid selections the session ends.
   - Invalid operand inputs trigger up to MAX_ATTEMPTS retries per prompt; on exhaustion `_SessionExpired` is raised and the session ends.
   - `ValueError`, `TypeError`, and `ZeroDivisionError` from calculator operations (not from input parsing) are caught and printed as "Error: <msg>"; the session continues.
   - `_SessionExpired` (internal exception, not re-exported) propagates out of operand reading and is caught in `main()` to break the session loop.
-- **Last updated:** cycle 7 (issue-247)
+- **Last updated:** cycle 8 (issue-250)
 
 ---
 
@@ -71,10 +78,10 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## `tests/test_main.py`
 - **Purpose:** Unit tests for the interactive CLI in `src/__main__.py`.
-- **Current state:** 37 tests covering: OPERATIONS mapping invariants (all 12 ops present, correct arities), `get_number` parsing (int, float, require_int, invalid input), quit behaviour (immediate and case-insensitive), all 12 operations end-to-end through mocked stdin/stdout, error paths (divide-by-zero, sqrt negative, log/ln non-positive, factorial negative/float, non-numeric input), unknown operation key, available-operations listing on invalid op, retry-attempts-remaining message, session termination after MAX_ATTEMPTS invalid operand inputs, session termination after MAX_ATTEMPTS invalid operation selections, session-continues-before-max test, multi-calculation sessions.
-- **Test strategy:** `unittest.mock.patch` on `builtins.input` (side_effect list) and `builtins.print` (capture). Helper `run_main_with_inputs` flattens all printed args into a list of strings. `MAX_ATTEMPTS` imported from `src.__main__` to avoid hardcoding 5 in tests.
+- **Current state:** 52 tests covering: OPERATIONS mapping invariants (all 12 ops present, correct arities), `get_number` parsing (int, float, require_int, invalid input), quit behaviour (immediate and case-insensitive), all 12 operations end-to-end through mocked stdin/stdout, error paths (divide-by-zero, sqrt negative, log/ln non-positive, factorial negative/float, non-numeric input), unknown operation key, available-operations listing on invalid op, retry-attempts-remaining message, session termination after MAX_ATTEMPTS invalid operand inputs, session termination after MAX_ATTEMPTS invalid operation selections, session-continues-before-max test, multi-calculation sessions, `format_history_entry` (binary/unary/float), `save_history` (writes/empty/overwrites), session history display ('h' key: empty message, after one/multiple calcs, header), history file written on quit/expiry/empty session, new session starts fresh, display_menu includes 'h' option.
+- **Test strategy:** `unittest.mock.patch` on `builtins.input` (side_effect list) and `builtins.print` (capture). Helper `run_main_with_inputs` flattens all printed args into a list of strings. `MAX_ATTEMPTS` and `HISTORY_FILE` imported from `src.__main__`. History file tests patch `src.__main__.HISTORY_FILE` and use `tmp_path` fixture to avoid writing real files.
 - **Exports:** None
-- **Last updated:** cycle 7 (issue-247)
+- **Last updated:** cycle 8 (issue-250)
 
 ---
 
