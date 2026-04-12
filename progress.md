@@ -8,7 +8,7 @@
 - **Risks:** None — diagram-only update, no source code changes.
 - **Tests passed:** N/A — no code changes.
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 61.5s | Cost: $0.220107 USD | Turns: 19
 
 ## Run: Issue #217 — Add Multiple Math Functions (2026-04-12)
 
