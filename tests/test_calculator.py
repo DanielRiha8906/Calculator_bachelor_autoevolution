@@ -123,6 +123,26 @@ class TestDivisionIncorrectInputs:
         with pytest.raises(TypeError):
             self.calc.divide(10, None)
 
+    def test_divide_by_float_zero(self):
+        with pytest.raises(ZeroDivisionError):
+            self.calc.divide(10, 0.0)
+
+    def test_divide_zero_by_zero(self):
+        with pytest.raises(ZeroDivisionError):
+            self.calc.divide(0, 0)
+
+    def test_divide_list_numerator(self):
+        with pytest.raises(TypeError):
+            self.calc.divide([1, 2], 2)
+
+    def test_divide_list_denominator(self):
+        with pytest.raises(TypeError):
+            self.calc.divide(10, [1, 2])
+
+    def test_divide_both_none(self):
+        with pytest.raises(TypeError):
+            self.calc.divide(None, None)
+
 
 class TestFactorial:
     def setup_method(self):

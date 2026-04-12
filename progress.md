@@ -1,3 +1,26 @@
+## Run: issue-208 — Add tests for incorrect inputs in division (V3 ZeroDivisionTest)
+
+- **Branch:** task/issue-208-zero-division-test
+- **Target PR branch:** exp2/naive-generic
+- **Date:** 2026-04-12
+
+### Files changed
+- `tests/test_calculator.py` — added 5 new tests to `TestDivisionIncorrectInputs`: `test_divide_by_float_zero` (explicit `0.0` denominator), `test_divide_zero_by_zero` (`0/0`), `test_divide_list_numerator` (list as numerator), `test_divide_list_denominator` (list as denominator), `test_divide_both_none` (both args None)
+
+### Purpose
+Extend V2 division error test coverage (Issue #101) with additional edge cases for V3: float zero denominator, zero-by-zero, and list-type inputs — ensuring the division error boundary is fully characterized for the thesis experiment.
+
+### Risks
+None — tests only, no source changes.
+
+### Test results
+All 105 tests pass (105/105). `TestDivisionIncorrectInputs` now has 11 tests.
+
+### Duration / Cost / Turns
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-194 — Add tkinter GUI for the calculator
 
 - **Branch:** task/issue-194-add-gui
