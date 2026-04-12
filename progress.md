@@ -1,3 +1,27 @@
+## Run: Issue #209 — ZeroDivisionError unit tests
+
+**Branch:** task/issue-209-zero-division-error
+**Target branch:** exp2/structured-generic
+**Date:** 2026-04-12
+
+### Files changed
+- `tests/operations/test_arithmetic.py` — Added two new edge-case unit tests for `ZeroDivisionError`:
+  - `test_divide_zero_by_zero_raises`: verifies that `divide(0, 0)` raises `ZeroDivisionError` with message "Cannot divide by zero".
+  - `test_divide_negative_numerator_by_zero_raises`: verifies that `divide(-5, 0)` raises `ZeroDivisionError` with message "Cannot divide by zero".
+
+### Purpose
+Issue #209 requested a unit test for division by zero and an implementation update if needed. The existing `divide` function in `src/operations/arithmetic.py` already guards against zero denominators with an explicit `ZeroDivisionError`. A basic test (`test_divide_by_zero_raises`, positive-numerator case) already existed. This run fills the remaining edge-case gaps: zero-over-zero and negative-numerator-over-zero, completing coverage of all numerator sign variants.
+
+### Risks
+- None. No source code was modified; only tests were added.
+
+### Test results
+All 271 tests passed (full suite excluding GUI tests that require a display).
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: PlantUML diagram update
 
 **Branch:** task/issue-195-gui-tkinter

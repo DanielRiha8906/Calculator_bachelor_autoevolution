@@ -95,3 +95,13 @@ def test_divide_returns_float():
 def test_divide_by_zero_raises():
     with pytest.raises(ZeroDivisionError, match="Cannot divide by zero"):
         divide(10, 0)
+
+
+def test_divide_zero_by_zero_raises():
+    with pytest.raises(ZeroDivisionError, match="Cannot divide by zero"):
+        divide(0, 0)
+
+
+def test_divide_negative_numerator_by_zero_raises():
+    with pytest.raises(ZeroDivisionError, match="Cannot divide by zero"):
+        divide(-5, 0)
