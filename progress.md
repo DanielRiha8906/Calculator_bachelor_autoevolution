@@ -1,3 +1,18 @@
+## Run: issue-216 — Add factorial operation
+
+- **Branch:** exp3/issue-216-factorial
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/calculator.py` — added `Calculator.factorial(n: int) -> int` with input validation
+  - `tests/test_calculator.py` — added 10 factorial tests (boundary cases 0/1, normal values, TypeError and ValueError rejection); total now 38 tests
+- **Purpose:** Implement factorial as a new Calculator operation. Handles non-negative integers correctly; rejects negatives (ValueError), non-integers including floats (TypeError), and booleans (TypeError, since bool is a subclass of int).
+- **Risks:** Low — additive change only; no existing methods modified. Boolean guard ordering is the only subtle invariant.
+- **Tests passed:** Yes — 38 passed in 0.05s
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-213 — Comprehensive unit test suite
 
 - **Branch:** exp3/issue-213-test-suite
