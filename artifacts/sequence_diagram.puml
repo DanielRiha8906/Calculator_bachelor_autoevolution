@@ -7,18 +7,33 @@ title Calculator Component Interactions
 
 actor User
 participant "__main__\n(entry point)" as Main
+participant "OPERATIONS\nmap" as Ops
 participant "Calculator" as Calc
 participant "Python Runtime\n/ math module" as Runtime
 
-== Normal Operation (via __main__.py) ==
+== Interactive Session — Normal Binary Operation ==
 
-User -> Main : run module
+User -> Main : python -m src
 activate Main
 
 Main -> Calc : Calculator()
 activate Calc
 Calc --> Main : calc instance
 deactivate Calc
+
+Main -> Main : display_menu()
+Main --> User : prints 12 operations + "q. quit"
+
+User -> Main : enter choice "1" (add)
+Main -> Ops : lookup "1"
+Ops --> Main : ("add", arity=2)
+
+Main --> User : "Enter first number: "
+User -> Main : "10"
+Main -> Main : get_number("Enter first number:")
+Main --> User : "Enter second number: "
+User -> Main : "5"
+Main -> Main : get_number("Enter second number:")
 
 Main -> Calc : calc.add(10, 5)
 activate Calc
@@ -27,31 +42,61 @@ Runtime --> Calc : 15
 Calc --> Main : 15
 deactivate Calc
 
-Main -> Calc : calc.subtract(10, 5)
+Main --> User : "Result: 15"
+
+== Interactive Session — Normal Unary Operation ==
+
+User -> Main : enter choice "5" (factorial)
+Main -> Ops : lookup "5"
+Ops --> Main : ("factorial", arity=1)
+
+Main --> User : "Enter integer: "
+User -> Main : "5"
+Main -> Main : get_number("Enter integer:", require_int=True)
+
+Main -> Calc : calc.factorial(5)
 activate Calc
-Calc -> Runtime : 10 - 5
-Runtime --> Calc : 5
-Calc --> Main : 5
+Calc -> Calc : validate type (not bool, is int)
+Calc -> Calc : validate value (n >= 0)
+Calc -> Calc : iterate: 1*2*3*4*5
+Calc --> Main : 120
 deactivate Calc
 
-Main -> Calc : calc.multiply(10, 5)
+Main --> User : "Result: 120"
+
+== Interactive Session — Error Path (caught by main()) ==
+
+User -> Main : enter choice "4" (divide)
+Main -> Ops : lookup "4"
+Ops --> Main : ("divide", arity=2)
+
+Main -> Main : get_number() → a=1
+Main -> Main : get_number() → b=0
+
+Main -> Calc : calc.divide(1, 0)
 activate Calc
-Calc -> Runtime : 10 * 5
-Runtime --> Calc : 50
-Calc --> Main : 50
+Calc -> Runtime : 1 / 0
+Runtime --> Calc : raise ZeroDivisionError
+Calc --> Main : ZeroDivisionError propagated
 deactivate Calc
 
-Main -> Calc : calc.divide(10, 5)
-activate Calc
-Calc -> Runtime : 10 / 5
-Runtime --> Calc : 2.0
-Calc --> Main : 2.0
-deactivate Calc
+Main --> User : "Error: division by zero"
+note right: session continues — error is caught\nby except (ValueError, TypeError, ZeroDivisionError)
 
-Main --> User : prints results
+== Interactive Session — Unknown Operation Key ==
+
+User -> Main : enter choice "99"
+Main -> Ops : lookup "99"
+Ops --> Main : (not found)
+Main --> User : "Unknown operation '99'. Please enter a number from the menu."
+
+== Interactive Session — Quit ==
+
+User -> Main : enter choice "q"
+Main --> User : "Goodbye!"
 deactivate Main
 
-== Error Path: Division by Zero ==
+== Unit Tests — Calculator Direct (test_calculator.py) ==
 
 participant "pytest\ntest suite" as Tests
 
@@ -60,46 +105,12 @@ activate Calc
 Calc --> Tests : calc instance
 deactivate Calc
 
-Tests -> Calc : calc.divide(1, 0)
+Tests -> Calc : calc.subtract(10, 5)
 activate Calc
-Calc -> Runtime : 1 / 0
-Runtime --> Calc : raise ZeroDivisionError
-Calc --> Tests : ZeroDivisionError propagated
+Calc -> Runtime : 10 - 5
+Runtime --> Calc : 5
+Calc --> Tests : 5
 deactivate Calc
-
-Tests -> Tests : assert raises(ZeroDivisionError) ✓
-
-== Factorial: Normal Path ==
-
-Tests -> Calc : calc.factorial(5)
-activate Calc
-Calc -> Calc : validate type (not bool, is int)
-Calc -> Calc : validate value (n >= 0)
-Calc -> Calc : iterate: 1*2*3*4*5
-Calc --> Tests : 120
-deactivate Calc
-
-Tests -> Tests : assert factorial(5) == 120 ✓
-
-== Factorial: Error Paths ==
-
-Tests -> Calc : calc.factorial(-1)
-activate Calc
-Calc -> Calc : validate value (n < 0)
-Calc --> Tests : raise ValueError
-deactivate Calc
-
-Tests -> Tests : assert raises(ValueError) ✓
-
-Tests -> Calc : calc.factorial(True)
-activate Calc
-Calc -> Calc : validate type (isinstance bool → reject)
-Calc --> Tests : raise TypeError
-deactivate Calc
-
-Tests -> Tests : assert raises(TypeError) ✓
-
-== Square Root: Normal and Error Paths ==
 
 Tests -> Calc : calc.square_root(9)
 activate Calc
@@ -109,8 +120,6 @@ Runtime --> Calc : 3.0
 Calc --> Tests : 3.0
 deactivate Calc
 
-Tests -> Tests : assert square_root(9) == 3.0 ✓
-
 Tests -> Calc : calc.square_root(-1)
 activate Calc
 Calc -> Calc : guard: x < 0 → raise ValueError
@@ -118,8 +127,6 @@ Calc --> Tests : raise ValueError
 deactivate Calc
 
 Tests -> Tests : assert raises(ValueError) ✓
-
-== Cube Root: Negative Input ==
 
 Tests -> Calc : calc.cube_root(-8)
 activate Calc
@@ -129,8 +136,6 @@ deactivate Calc
 
 Tests -> Tests : assert cube_root(-8) == approx(-2.0) ✓
 
-== Logarithm: Normal and Error Paths ==
-
 Tests -> Calc : calc.log(100)
 activate Calc
 Calc -> Calc : guard: x > 0
@@ -138,8 +143,6 @@ Calc -> Runtime : math.log10(100)
 Runtime --> Calc : 2.0
 Calc --> Tests : 2.0
 deactivate Calc
-
-Tests -> Tests : assert log(100) == 2.0 ✓
 
 Tests -> Calc : calc.ln(1)
 activate Calc
@@ -149,8 +152,6 @@ Runtime --> Calc : 0.0
 Calc --> Tests : 0.0
 deactivate Calc
 
-Tests -> Tests : assert ln(1) == 0.0 ✓
-
 Tests -> Calc : calc.log(0)
 activate Calc
 Calc -> Calc : guard: x <= 0 → raise ValueError
@@ -158,8 +159,6 @@ Calc --> Tests : raise ValueError
 deactivate Calc
 
 Tests -> Tests : assert raises(ValueError) ✓
-
-== Power ==
 
 Tests -> Calc : calc.power(2, 10)
 activate Calc
@@ -169,5 +168,29 @@ Calc --> Tests : 1024
 deactivate Calc
 
 Tests -> Tests : assert power(2, 10) == 1024 ✓
+
+== Unit Tests — Interactive CLI (test_main.py) ==
+
+participant "mock\nstdin/stdout" as MockIO
+
+Tests -> MockIO : patch builtins.input (side_effect list)
+Tests -> MockIO : patch builtins.print (capture)
+
+Tests -> Main : main()
+activate Main
+Main -> MockIO : input() → "8" (square_root)
+Main -> Ops : lookup "8"
+Ops --> Main : ("square_root", arity=1)
+Main -> MockIO : input("Enter number: ") → "9"
+Main -> Calc : calc.square_root(9)
+activate Calc
+Calc --> Main : 3.0
+deactivate Calc
+Main -> MockIO : print("Result: 3.0")
+Main -> MockIO : input() → "q"
+Main -> MockIO : print("Goodbye!")
+deactivate Main
+
+Tests -> MockIO : assert "Result: 3.0" in captured output ✓
 
 @enduml

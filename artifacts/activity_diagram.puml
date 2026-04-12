@@ -3,74 +3,104 @@
 skinparam ActivityFontSize 13
 skinparam ArrowFontSize 12
 
-title Calculator Execution Flow
+title Calculator — Interactive CLI and Computation Flow
+
+|Interactive CLI (main())|
 
 start
 
 :Instantiate Calculator;
+:display_menu() — print all 12 operations;
 
-:Select operation\n(add / subtract / multiply / divide /\nfactorial / square / cube / square_root /\ncube_root / power / log / ln);
+repeat
 
-if (Operation is divide?) then (yes)
-    if (Divisor b == 0?) then (yes)
+  :Read user choice from stdin;
+
+  if (choice.lower() == 'q'?) then (yes)
+    :Print "Goodbye!";
+    stop
+  elseif (choice not in OPERATIONS?) then (yes)
+    :Print unknown operation warning;
+  else (no — valid key)
+    :Look up (name, arity) from OPERATIONS;
+
+    if (arity == 1?) then (yes)
+      if (name == "factorial"?) then (yes)
+        :get_number(require_int=True)\nparse strictly as int;
+      else (no)
+        :get_number()\nparse as int, fallback to float;
+      endif
+      |Calculator Computation|
+      :Call calc.<name>(a);
+    else (no — arity == 2)
+      |Interactive CLI (main())|
+      :get_number() → a;
+      :get_number() → b;
+      |Calculator Computation|
+      :Call calc.<name>(a, b);
+    endif
+
+    if (Operation is add?) then (yes)
+      :Compute a + b;
+    elseif (Operation is subtract?) then (yes)
+      :Compute a - b;
+    elseif (Operation is multiply?) then (yes)
+      :Compute a * b;
+    elseif (Operation is divide?) then (yes)
+      if (b == 0?) then (yes)
         :Python raises ZeroDivisionError;
-        stop
-    else (no)
+      else (no)
         :Compute a / b;
-    endif
-elseif (Operation is add?) then (yes)
-    :Compute a + b;
-elseif (Operation is subtract?) then (yes)
-    :Compute a - b;
-elseif (Operation is multiply?) then (yes)
-    :Compute a * b;
-elseif (Operation is factorial?) then (yes)
-    if (n is bool or not int?) then (yes)
+      endif
+    elseif (Operation is factorial?) then (yes)
+      if (n is bool or not int?) then (yes)
         :Raise TypeError;
-        stop
-    elseif (n < 0?) then (yes)
+      elseif (n < 0?) then (yes)
         :Raise ValueError;
-        stop
-    else (no)
-        :Compute n! iteratively\n(result = 1; for i in 2..n: result *= i);
-    endif
-elseif (Operation is square?) then (yes)
-    :Compute x * x;
-elseif (Operation is cube?) then (yes)
-    :Compute x * x * x;
-elseif (Operation is square_root?) then (yes)
-    if (x < 0?) then (yes)
+      else (no)
+        :Compute n! iteratively\n(result=1; for i in 2..n: result*=i);
+      endif
+    elseif (Operation is square?) then (yes)
+      :Compute x * x;
+    elseif (Operation is cube?) then (yes)
+      :Compute x * x * x;
+    elseif (Operation is square_root?) then (yes)
+      if (x < 0?) then (yes)
         :Raise ValueError\n(undefined in reals);
-        stop
-    else (no)
+      else (no)
         :Compute math.sqrt(x);
-    endif
-elseif (Operation is cube_root?) then (yes)
-    if (x < 0?) then (yes)
+      endif
+    elseif (Operation is cube_root?) then (yes)
+      if (x < 0?) then (yes)
         :Compute -(abs(x) ** (1/3))\n(real negative cube root);
-    else (no)
+      else (no)
         :Compute x ** (1/3);
-    endif
-elseif (Operation is power?) then (yes)
-    :Compute base ** exp;
-elseif (Operation is log?) then (yes)
-    if (x <= 0?) then (yes)
+      endif
+    elseif (Operation is power?) then (yes)
+      :Compute base ** exp;
+    elseif (Operation is log?) then (yes)
+      if (x <= 0?) then (yes)
         :Raise ValueError\n(log undefined for non-positive);
-        stop
-    else (no)
+      else (no)
         :Compute math.log10(x);
-    endif
-else (ln)
-    if (x <= 0?) then (yes)
+      endif
+    else (ln)
+      if (x <= 0?) then (yes)
         :Raise ValueError\n(ln undefined for non-positive);
-        stop
-    else (no)
+      else (no)
         :Compute math.log(x);
+      endif
     endif
-endif
 
-:Return numeric result\n(int or float);
+    |Interactive CLI (main())|
+    if (operation raised exception?) then (yes)
+      :Print "Error: <message>";
+    else (no)
+      :Print "Result: <value>";
+    endif
 
-stop
+  endif
+
+repeat while (session continues)
 
 @enduml

@@ -1,3 +1,38 @@
+## Run: update-diagrams — PlantUML diagram update (post-issue-222)
+
+- **Branch:** exp3/issue-222-user-input
+- **PR target:** N/A (diagram-only update)
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — updated `__main__` module to expose `OPERATIONS`, `display_menu()`, `get_number()`; added `test_main` module to tests package; updated notes
+  - `artifacts/activity_diagram.puml` — restructured to show interactive CLI session loop as outer swimlane with Calculator computation as inner swimlane; covers all 12 operations and error paths
+  - `artifacts/sequence_diagram.puml` — added interactive session sections: normal binary op, normal unary op, error path caught by main(), unknown key, quit; added test_main.py mock-based sequence
+- **Purpose:** Sync PlantUML diagrams with cycle-5 changes (issue-222): interactive CLI added to `__main__.py` with `OPERATIONS`, `display_menu()`, and `get_number()`.
+- **Risks:** None — diagram-only, no source or test code modified.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: 150.7s | Cost: $0.354150 USD | Turns: 19
+
+---
+
+## Run: issue-222 — Add interactive user input to calculator CLI
+
+- **Branch:** exp3/issue-222-user-input
+- **PR target:** exp3/expert-generic (PR #256)
+- **Files changed:**
+  - `src/__main__.py` — rewritten: added `OPERATIONS` dict, `display_menu()`, `get_number()`, interactive `main()` session loop
+  - `tests/test_main.py` — new file: 32 tests for the interactive CLI
+  - `rag/index.md` — updated `src/__main__.py` entry (cycle 5); added `tests/test_main.py` entry
+  - `rag/codebase_map.md` — updated `src/__main__.py` summary; added `tests/test_main.py` summary
+  - `rag/evolution_log.md` — added cycle 5 entry
+  - `rag/patterns.md` — added `mock builtins.input with side_effect list` pattern
+- **Purpose:** Replace hardcoded demo with a menu-driven interactive session that reads operation and operands at runtime, supports all 12 Calculator operations, handles one-operand vs two-operand ops correctly, and loops until the user quits.
+- **Risks:** None — `Calculator` class and existing 76 tests untouched. Change scoped to entry point only.
+- **Tests passed:** 108 (76 existing + 32 new) — all pass
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: 280.8s | Cost: $0.932654 USD | Turns: 42
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-issue-219)
 
 - **Branch:** exp3/issue-219-add-math-operations

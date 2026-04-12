@@ -20,6 +20,9 @@ package "src" {
     }
 
     class "__main__" as Main <<module>> {
+        +OPERATIONS : dict[str, tuple[str, int]]
+        +display_menu() : None
+        +get_number(prompt, require_int=False) : int|float
         +main() : None
     }
 
@@ -29,7 +32,7 @@ package "src" {
 }
 
 package "tests" {
-    class "test_calculator" as TestModule <<module>> {
+    class "test_calculator" as TestCalc <<module>> {
         +calc() : Calculator  <<fixture>>
         ' 76 tests covering all 12 operations
         +test_add_*()
@@ -45,11 +48,24 @@ package "tests" {
         +test_log_*()
         +test_ln_*()
     }
+
+    class "test_main" as TestMain <<module>> {
+        +run_main_with_inputs(inputs) : list[str]  <<helper>>
+        ' 32 tests covering interactive CLI
+        +test_operations_map_*()
+        +test_get_number_*()
+        +test_quit_*()
+        +test_all_12_ops_end_to_end_*()
+        +test_error_paths_*()
+        +test_unknown_key()
+        +test_multi_session_*()
+    }
 }
 
-Main --> Calculator : instantiates
+Main --> Calculator : instantiates & delegates
 Init ..> Calculator : re-exports
-TestModule --> Calculator : tests via fixture
+TestCalc --> Calculator : tests via fixture
+TestMain --> Main : tests via mocked stdin/stdout
 
 note right of Calculator
   Division: delegates to Python "/" operator.
@@ -62,6 +78,17 @@ note right of Calculator
   ln: natural log via math.log; raises ValueError for x <= 0.
   power: returns base ** exp (no domain restriction).
   Imports: math
+end note
+
+note left of Main
+  OPERATIONS: maps "1"–"12" to (name, arity) pairs.
+  Arity 1: factorial, square, cube, square_root,
+            cube_root, log, ln.
+  Arity 2: add, subtract, multiply, divide, power.
+  get_number: parses as int first, then float;
+  require_int=True forces strict integer (factorial).
+  main: session loop; catches ValueError/TypeError/
+  ZeroDivisionError per iteration and prints error.
 end note
 
 @enduml
