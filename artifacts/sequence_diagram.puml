@@ -85,19 +85,47 @@ else no arguments — Interactive REPL mode
 
       alt op in BINARY_OPS (add/subtract/multiply/divide/power)
         Main -> Parser : parse_number("Enter first number: ")
-        Parser --> User : prompt
-        User -> Parser : raw input
-        Parser --> Main : float a
+        loop up to MAX_INPUT_ATTEMPTS (3) retries
+          Parser --> User : prompt
+          User -> Parser : raw input
+          alt valid float
+            Parser --> Main : float a
+          else invalid — attempts remaining
+            Parser --> User : "Invalid number. N attempt(s) remaining"
+          else no attempts remaining
+            Parser --> Main : raises ValueError
+            Main --> User : "Error: No valid number entered"
+            note right of Main: run_operation catches; REPL loop continues
+          end
+        end
 
         Main -> Parser : parse_number("Enter second number: ")
-        Parser --> User : prompt
-        User -> Parser : raw input
-        Parser --> Main : float b
+        loop up to MAX_INPUT_ATTEMPTS (3) retries
+          Parser --> User : prompt
+          User -> Parser : raw input
+          alt valid float
+            Parser --> Main : float b
+          else invalid — attempts remaining
+            Parser --> User : "Invalid number. N attempt(s) remaining"
+          else no attempts remaining
+            Parser --> Main : raises ValueError
+            Main --> User : "Error: No valid number entered"
+          end
+        end
       else op in UNARY_OPS
         Main -> Parser : parse_number("Enter number: ")
-        Parser --> User : prompt
-        User -> Parser : raw input
-        Parser --> Main : float a
+        loop up to MAX_INPUT_ATTEMPTS (3) retries
+          Parser --> User : prompt
+          User -> Parser : raw input
+          alt valid float
+            Parser --> Main : float a
+          else invalid — attempts remaining
+            Parser --> User : "Invalid number. N attempt(s) remaining"
+          else no attempts remaining
+            Parser --> Main : raises ValueError
+            Main --> User : "Error: No valid number entered"
+          end
+        end
 
         opt op in INTEGER_OPS (factorial)
           Main -> Parser : _to_int_if_needed(op, a)

@@ -137,3 +137,13 @@ Duration: 100.8s | Cost: $0.384814 USD | Turns: 29
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
 Duration: 99.9s | Cost: $0.307061 USD | Turns: 19
+
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-245-input-validation
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 7 changes: added `MAX_INPUT_ATTEMPTS : int` constant and corrected `parse_number` signature to include `max_attempts: int` parameter in class diagram; added parse_number retry-logic note to activity diagram; added bounded retry loop frames to parse_number calls in sequence diagram.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING

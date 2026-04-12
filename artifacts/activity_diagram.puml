@@ -78,6 +78,14 @@ else (no — Interactive REPL mode)
       :Print "Unknown choice" error message;
     else (no)
 
+      note right
+        parse_number() retries up to
+        MAX_INPUT_ATTEMPTS (3) times;
+        prints remaining-attempts feedback
+        on each invalid entry; raises
+        ValueError after all attempts fail
+      end note
+
       if (op in BINARY_OPS?) then (yes)
         :parse_number() → a (first operand);
         :parse_number() → b (second operand);
