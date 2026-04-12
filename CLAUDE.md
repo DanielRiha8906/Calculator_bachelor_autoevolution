@@ -100,7 +100,7 @@ These rules exist because the subject of this project is code that modifies itse
 
 ## Git hygiene
 
-- **Branch per experiment.** Each self-evolution run or hypothesis gets its own branch: `experiment/<description>`.
+- **Branch per experiment.** Each self-evolution run or hypothesis gets its own branch: `exp3/<description>`.
 - **Commit messages:** imperative mood, present tense, ≤72 chars subject. Body explains *why*, not *what*.
 - **Never commit to `main` directly.** Always work through an experiment branch or worktree branch and review.
 - **Never amend published commits.** If a fix is needed, make a new commit.
