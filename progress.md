@@ -1,5 +1,17 @@
 # Progress Log
 
+## Run: Issue #248 — History (2026-04-12)
+
+- **Branch:** exp3/issue-248-add-history
+- **Files changed:** src/calculator.py, src/__main__.py, tests/test_calculator.py, tests/test_main.py
+- **Purpose:** Added operation history to the calculator. `Calculator` now has `self.history: list[dict]` and `get_history()`. `run_operation` appends a history entry `{"op", "operands", "result"}` on success; failed operations are not recorded. Added `_show_history(calc)` helper and REPL 'h' choice to display history. MENU updated to include 'h. history'. Unknown-choice error message updated to mention 'h'.
+- **Risks:** Low — Calculator gains `__init__` (no existing code depended on it being uninitialized); REPL loop adds one new elif branch; `run_operation` appends to `calc.history` only on the success path.
+- **Tests passed:** 125/125
+- **Current branch:** exp3/issue-248-add-history
+- **PR target:** exp3/naive-generic
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Issue #245 — Input Validation (2026-04-12)
 
 - **Branch:** exp3/issue-245-input-validation
