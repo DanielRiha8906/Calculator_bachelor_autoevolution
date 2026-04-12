@@ -11,7 +11,7 @@
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md` (src/__main__.py, tests/test_main.py entries)
 - **Tokens used / Cost / Turns:** PENDING
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 402.3s | Cost: $1.115346 USD | Turns: 37
 
 ---
 
