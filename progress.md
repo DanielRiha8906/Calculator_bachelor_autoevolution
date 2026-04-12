@@ -10,7 +10,7 @@
 - **Current branch:** exp3/issue-251-add-error-logging
 - **Intended PR target:** exp3/naive-generic
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 274.1s | Cost: $0.924365 USD | Turns: 45
 
 ## Run: Diagram Update (2026-04-12)
 
