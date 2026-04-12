@@ -46,19 +46,36 @@ note right of Calculator::ln
   Delegates to math.log(a).
 end note
 
+class TooManyAttemptsError {
+  «exception»
+}
+
+note right of TooManyAttemptsError
+  Raised by parse_number / parse_int
+  after max_attempts consecutive
+  invalid inputs; propagates out of
+  run_operation and is caught in main().
+end note
+
 class "__main__" as Main {
+    +MAX_ATTEMPTS : int = 3
     +OPERATIONS : dict
     +_ONE_ARG_OPS : set
     +_INT_ARG_OPS : set
     +_TWO_ARG_OPS : set
     +_ALL_OPS : set
     +show_menu() : None
-    +parse_number(prompt: str) : float
-    +parse_int(prompt: str) : int
+    +parse_number(prompt: str, max_attempts: int) : float
+    +parse_int(prompt: str, max_attempts: int) : int
     +run_operation(calc: Calculator, operation: str) : None
     +cli_mode(args: list[str]) : int
     +main(args: list[str] | None = None) : None
 }
+
+note right of Main::MAX_ATTEMPTS
+  Maximum consecutive invalid inputs
+  before session ends; default = 3
+end note
 
 note right of Main::OPERATIONS
   Maps keys "1"-"12" to operation names:
@@ -82,35 +99,43 @@ note right of Main::_TWO_ARG_OPS
 end note
 
 note right of Main::parse_number
-  Retries indefinitely on
-  invalid float input
+  Retries up to max_attempts times on
+  invalid float input; raises
+  TooManyAttemptsError on exhaustion
 end note
 
 note right of Main::parse_int
-  Retries indefinitely on
-  non-integer input
+  Retries up to max_attempts times on
+  non-integer input; raises
+  TooManyAttemptsError on exhaustion
 end note
 
 note right of Main::run_operation
   Catches ValueError from Calculator
-  and prints the error message;
-  loop always continues.
+  and prints the error message.
+  TooManyAttemptsError is NOT caught
+  here — it propagates to main().
 end note
 
 note right of Main::cli_mode
   Parses args via argparse.
+  Validates arg count and numeric/integer
+  format per field with clear per-field
+  error messages to stderr.
   Prints result to stdout.
-  Errors go to stderr.
   Returns 0 on success, 1 on error.
 end note
 
 note right of Main::main
   If args non-empty: delegates to
   cli_mode(args) and exits.
-  Otherwise: starts interactive loop.
+  Interactive loop tracks invalid_op_count;
+  session ends when count reaches MAX_ATTEMPTS
+  or TooManyAttemptsError is raised.
 end note
 
 Main ..> Calculator : instantiates
 Main ..> Calculator : delegates operations to
+Main ..> TooManyAttemptsError : raises / catches
 
 @enduml

@@ -2,6 +2,21 @@
 
 ---
 
+## Run: Issue #246 — Input validation (2026-04-12)
+
+- **Branch:** exp3/issue-246-input-validation
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `src/__main__.py` — added `MAX_ATTEMPTS = 3`, `TooManyAttemptsError`; `parse_number` and `parse_int` now use bounded retry loop and raise `TooManyAttemptsError` on exhaustion; `main()` interactive loop tracks `invalid_op_count` and breaks on too many bad choices; catches `TooManyAttemptsError` from `run_operation`; `cli_mode` gains explicit per-field number/int validation with clear error messages; argparse result renamed `namespace` to avoid shadowing.
+  - `tests/test_main.py` — added `TooManyAttemptsError`, `MAX_ATTEMPTS` imports; added 7 new tests covering: parse_number raises after max attempts, parse_int raises after max attempts, interactive session ends on too many invalid choices, interactive session ends on too many invalid operands, CLI non-numeric two-arg error, CLI non-numeric one-arg error, CLI non-integer factorial error.
+- **Purpose:** Prevent interactive mode from looping indefinitely on invalid input; provide a fixed retry limit and clean session termination. Improve CLI error messages for non-numeric values.
+- **Risks:** Minimal — MAX_ATTEMPTS=3 is a constant, easy to change; TooManyAttemptsError not inheriting from ValueError ensures it is never accidentally swallowed by run_operation's except block.
+- **Tests passed:** Yes — 117/117 (63 calculator + 54 main; all pass)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+Duration: 292.9s | Cost: $1.036777 USD | Turns: 39
+
+---
+
 ## Run: Issue #240 — CLI mode (2026-04-12)
 
 - **Branch:** exp3/issue-240-cli-mode
@@ -178,3 +193,18 @@ Duration: 154.7s | Cost: $0.404612 USD | Turns: 19
 - **Tests passed:** N/A (no source changes)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 Duration: 108.0s | Cost: $0.330687 USD | Turns: 21
+
+---
+
+## Run: Diagram update (2026-04-12)
+
+- **Branch:** exp3/issue-246-input-validation
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `TooManyAttemptsError` class with note; added `MAX_ATTEMPTS : int = 3` to `__main__`; updated `parse_number`/`parse_int` signatures to include `max_attempts` param; updated notes for `parse_number`, `parse_int`, `run_operation`, `main`, and `cli_mode` to reflect bounded retry, TooManyAttemptsError propagation, invalid_op_count tracking, and per-field CLI validation
+  - `artifacts/activity_diagram.puml` — updated interactive mode to show `invalid_op_count` tracking and session termination on too many invalid menu choices; updated parse steps to show bounded retry (MAX_ATTEMPTS=3) and TooManyAttemptsError exit path; updated CLI mode to show per-field integer/number validation with specific error messages
+  - `artifacts/sequence_diagram.puml` — added `invalid_op_count` tracking note; updated parse_number/parse_int note to show bounded retry and TooManyAttemptsError; added alt frame for TooManyAttemptsError session termination; added per-field validation alts in CLI mode
+- **Purpose:** Update PlantUML diagrams to reflect input validation changes added in cycle 7 (issue #246): bounded retry with TooManyAttemptsError, invalid_op_count tracking, and per-field CLI validation.
+- **Risks:** None — diagram-only change; no source code modified.
+- **Tests passed:** N/A (no source changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: 216.1s | Cost: $0.502483 USD | Turns: 19

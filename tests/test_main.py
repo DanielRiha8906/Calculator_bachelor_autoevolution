@@ -12,6 +12,8 @@ from src.__main__ import (
     main,
     cli_mode,
     OPERATIONS,
+    TooManyAttemptsError,
+    MAX_ATTEMPTS,
 )
 from src.calculator import Calculator
 
@@ -61,6 +63,14 @@ def test_parse_number_retries_on_invalid_then_accepts(capsys):
     assert "Invalid number" in captured
 
 
+def test_parse_number_raises_after_max_attempts():
+    """TooManyAttemptsError is raised after MAX_ATTEMPTS consecutive invalid inputs."""
+    bad_inputs = ["abc"] * MAX_ATTEMPTS
+    with patch("builtins.input", side_effect=bad_inputs):
+        with pytest.raises(TooManyAttemptsError):
+            parse_number("Enter: ")
+
+
 # ---------------------------------------------------------------------------
 # parse_int
 # ---------------------------------------------------------------------------
@@ -76,6 +86,14 @@ def test_parse_int_retries_on_float_string_then_accepts(capsys):
     assert result == 3
     captured = capsys.readouterr().out
     assert "Invalid integer" in captured
+
+
+def test_parse_int_raises_after_max_attempts():
+    """TooManyAttemptsError is raised after MAX_ATTEMPTS consecutive invalid inputs."""
+    bad_inputs = ["abc"] * MAX_ATTEMPTS
+    with patch("builtins.input", side_effect=bad_inputs):
+        with pytest.raises(TooManyAttemptsError):
+            parse_int("Enter: ")
 
 
 # ---------------------------------------------------------------------------
@@ -238,6 +256,27 @@ def test_main_error_then_continue(capsys):
     assert "Goodbye" in captured
 
 
+def test_main_too_many_invalid_choices_ends_session(capsys):
+    """Session ends after MAX_ATTEMPTS consecutive invalid menu choices."""
+    bad_choices = ["99"] * MAX_ATTEMPTS
+    with patch("builtins.input", side_effect=bad_choices):
+        main([])
+    captured = capsys.readouterr().out
+    assert "Too many invalid choices" in captured
+    assert "Goodbye" not in captured
+
+
+def test_main_too_many_invalid_operands_ends_session(capsys):
+    """Session ends when operand input exceeds the retry limit."""
+    # Select add ("1"), then provide MAX_ATTEMPTS invalid numbers
+    bad_operands = ["abc"] * MAX_ATTEMPTS
+    with patch("builtins.input", side_effect=["1"] + bad_operands):
+        main([])
+    captured = capsys.readouterr().out
+    assert "Too many" in captured
+    assert "Goodbye" not in captured
+
+
 # ---------------------------------------------------------------------------
 # cli_mode — non-interactive single-operation execution
 # ---------------------------------------------------------------------------
@@ -355,6 +394,33 @@ def test_cli_mode_unknown_operation_exits():
     """argparse raises SystemExit for an unrecognised operation name."""
     with pytest.raises(SystemExit):
         cli_mode(["unknown_op", "3"])
+
+
+def test_cli_mode_non_numeric_two_arg_returns_error(capsys):
+    """Non-numeric value for a two-argument op prints a clear error and returns 1."""
+    rc = cli_mode(["add", "abc", "3"])
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert "Error" in captured.err
+    assert "abc" in captured.err
+
+
+def test_cli_mode_non_numeric_one_arg_returns_error(capsys):
+    """Non-numeric value for a one-argument op prints a clear error and returns 1."""
+    rc = cli_mode(["square", "xyz"])
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert "Error" in captured.err
+    assert "xyz" in captured.err
+
+
+def test_cli_mode_non_integer_factorial_returns_error(capsys):
+    """Non-integer value for factorial prints a clear error and returns 1."""
+    rc = cli_mode(["factorial", "abc"])
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert "Error" in captured.err
+    assert "abc" in captured.err
 
 
 def test_main_dispatches_to_cli_mode(capsys):
