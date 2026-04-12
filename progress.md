@@ -9,7 +9,7 @@
 - **Risks:** Low — additive change only; no existing methods modified. cube_root negative-number handling is the only subtle invariant (Python cannot raise negative floats to fractional powers directly).
 - **Tests passed:** Yes — 76 passed in 0.09s
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 168.1s | Cost: $0.613095 USD | Turns: 36
 
 ---
 
