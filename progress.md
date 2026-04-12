@@ -1,3 +1,36 @@
+## Run: update-diagrams — PlantUML diagram update (post-issue-250)
+
+- **Branch:** exp3/issue-250-session-history
+- **PR target:** N/A (diagram-only update)
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `HISTORY_FILE : str`, `format_history_entry()`, `save_history()` to `__main__` module; updated note on Main to describe history tracking; updated test_main comment from 37 → 52 tests with new test stubs
+  - `artifacts/activity_diagram.puml` — added `history = []` to initialization note; added 'h' branch showing history display (empty vs non-empty); added `save_history()` calls on all exit paths (quit, max-invalid-ops, _SessionExpired); added `format_history_entry` + `history.append` step after successful calculations
+  - `artifacts/sequence_diagram.puml` — updated `display_menu()` output to include "h. history"; added "History Display" section showing 'h' key behavior (empty/non-empty); added `history.append` after successful calc results; added `save_history()` call on quit; updated test_main to 52 tests; added history display test scenario
+- **Purpose:** Sync PlantUML diagrams with cycle-8 changes (issue-250): `HISTORY_FILE`, `format_history_entry()`, `save_history()`, per-session history list, 'h' display command, and save-on-exit added to `src/__main__.py`.
+- **Risks:** None — diagram-only, no source or test code modified.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+
+Duration: 133.1s | Cost: $0.543177 USD | Turns: 30
+
+---
+
+## Run: issue-250 — Session history for interactive CLI
+
+- **Branch:** exp3/issue-250-session-history
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/__main__.py` — added `HISTORY_FILE` constant, `format_history_entry()`, `save_history()`; updated `display_menu()` to include 'h' option; updated `main()` to maintain a per-session history list, record each successful calculation as a function-style entry (`name(args) = result`), display history on 'h' input, and write history to HISTORY_FILE on session end (quit, expiry, or max-attempts termination)
+  - `tests/test_main.py` — updated imports to include `HISTORY_FILE`, `format_history_entry`, `save_history`; added 15 new tests covering: `format_history_entry` (binary, unary, float result), `save_history` (writes, empty, overwrites), history display during session (empty, after one calc, multiple entries, header), history file written on quit/expiry/empty, new session starts with fresh history, display_menu includes 'h'; total 52 tests (up from 37)
+- **Purpose:** Issue #250 — add operation history to the interactive calculator. Calculations performed during the current session are tracked in memory, can be shown on demand ('h'), and are written to history.txt when the session ends. Each new session starts with a fresh history.
+- **Risks:** Low — change is scoped to src/__main__.py only; Calculator class and CLI (main.py) are untouched. save_history reads HISTORY_FILE at call time (not as a default arg) so tests can patch it cleanly.
+- **Tests passed:** 156/156
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md` (src/__main__.py, tests/test_main.py entries)
+
+Duration: 238.6s | Cost: $0.890200 USD | Turns: 41
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-issue-247)
 
 - **Branch:** exp3/issue-247-input-validation

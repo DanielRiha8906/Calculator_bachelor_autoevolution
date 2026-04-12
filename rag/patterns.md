@@ -115,3 +115,23 @@ def test_session_terminates():
 ```
 
 Applied in `tests/test_main.py`.
+
+## Pattern: avoid default-arg capture for patchable module constants
+
+When a module-level constant (e.g. `HISTORY_FILE`) needs to be patchable in
+tests, do NOT use it as a default argument value:
+
+```python
+# Anti-pattern: default captured at definition time — patch has no effect
+def save_history(history, path=HISTORY_FILE):
+    ...
+
+# Correct: look up constant at call time
+def save_history(history, path=None):
+    if path is None:
+        path = HISTORY_FILE
+    ...
+```
+
+Tests can then `patch("src.__main__.HISTORY_FILE", tmp_path)` and the function
+will pick up the patched value. Applied in `save_history` / `tests/test_main.py`.
