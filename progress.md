@@ -13,7 +13,7 @@
 - **Risks:** Minimal — interactive mode unchanged; `main()` signature change is backward compatible via default `args=None`; existing tests required only call-site update from `main()` to `main([])`.
 - **Tests passed:** Yes — 110/110 (63 calculator + 48 main; all pass)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/patterns.md`, `rag/evolution_log.md`
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 317.8s | Cost: $0.946621 USD | Turns: 37
 
 ---
 
