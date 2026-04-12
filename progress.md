@@ -2,6 +2,40 @@
 
 ---
 
+## Run: Diagram update (2026-04-12)
+
+- **Branch:** exp3/issue-249-operation-history
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `HISTORY_FILE` constant; added `clear_history`, `append_to_history`, `show_history` helper functions; updated `run_operation` return type to `str | None`; updated notes for `main` and `cli_mode`.
+  - `artifacts/activity_diagram.puml` — added `clear_history()` call at session start; added `"h"` choice branch (show_history); added `append_to_history(entry)` call after successful operation; updated `show_menu` label; updated `run_operation` partition to show return values.
+  - `artifacts/sequence_diagram.puml` — added `history.txt` participant; added `clear_history()` call at session start; added `"h"` choice branch with `show_history()` / file read interaction; added `append_to_history(entry)` call on success; updated error branch note (run_operation returns None, no history written).
+- **Purpose:** Reflect Cycle 8 (issue #249) changes — operation history feature — in all three PlantUML diagrams.
+- **Risks:** None — diagram-only change, no source code modified.
+- **All tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: 123.0s | Cost: $0.443561 USD | Turns: 20
+
+---
+
+## Run: Issue #249 — Operation history (2026-04-12)
+
+- **Branch:** exp3/issue-249-operation-history
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `src/__main__.py` — added `HISTORY_FILE` constant; `clear_history()`, `append_to_history()`, `show_history()` helpers with None-sentinel defaults; `show_menu()` gains `"h. show history"` line; `run_operation()` return type changed to `str | None` (history entry on success, None on failure); `main()` clears history at session start, handles `"h"` choice, appends successful entries to file.
+  - `tests/test_main.py` — added `autouse` fixture to redirect `HISTORY_FILE` to `tmp_path`; imported new public names; added 16 new tests covering history helpers, run_operation return values, and interactive history flow. Total: 133 tests.
+- **Purpose:** Record all successful calculations during a session to `history.txt`; clear the file on each new session so history never persists across sessions; expose `"h"` menu option to display current session history.
+- **Risks:** None significant. `history.txt` is written in cwd; path is configurable via `HISTORY_FILE` constant.
+- **All tests passed:** Yes (133/133)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: 408.3s | Cost: $1.351955 USD | Turns: 49
+
+---
+
 ## Run: Issue #246 — Input validation (2026-04-12)
 
 - **Branch:** exp3/issue-246-input-validation

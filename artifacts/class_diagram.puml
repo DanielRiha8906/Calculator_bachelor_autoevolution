@@ -59,15 +59,19 @@ end note
 
 class "__main__" as Main {
     +MAX_ATTEMPTS : int = 3
+    +HISTORY_FILE : str = "history.txt"
     +OPERATIONS : dict
     +_ONE_ARG_OPS : set
     +_INT_ARG_OPS : set
     +_TWO_ARG_OPS : set
     +_ALL_OPS : set
+    +clear_history(filepath: str | None) : None
+    +append_to_history(entry: str, filepath: str | None) : None
+    +show_history(filepath: str | None) : None
     +show_menu() : None
     +parse_number(prompt: str, max_attempts: int) : float
     +parse_int(prompt: str, max_attempts: int) : int
-    +run_operation(calc: Calculator, operation: str) : None
+    +run_operation(calc: Calculator, operation: str) : str | None
     +cli_mode(args: list[str]) : int
     +main(args: list[str] | None = None) : None
 }
@@ -75,6 +79,12 @@ class "__main__" as Main {
 note right of Main::MAX_ATTEMPTS
   Maximum consecutive invalid inputs
   before session ends; default = 3
+end note
+
+note right of Main::HISTORY_FILE
+  Default path for session history file.
+  Patchable via monkeypatch in tests.
+  History is NOT kept between sessions.
 end note
 
 note right of Main::OPERATIONS
@@ -98,6 +108,24 @@ note right of Main::_TWO_ARG_OPS
   — two float arguments
 end note
 
+note right of Main::clear_history
+  Truncates or creates HISTORY_FILE,
+  removing any previous session data.
+  Called once at interactive session start.
+end note
+
+note right of Main::append_to_history
+  Appends one formatted entry line to
+  HISTORY_FILE after each successful
+  operation in interactive mode.
+end note
+
+note right of Main::show_history
+  Reads and prints all entries from
+  HISTORY_FILE to stdout.
+  Triggered by the "h" menu option.
+end note
+
 note right of Main::parse_number
   Retries up to max_attempts times on
   invalid float input; raises
@@ -111,10 +139,11 @@ note right of Main::parse_int
 end note
 
 note right of Main::run_operation
-  Catches ValueError from Calculator
-  and prints the error message.
-  TooManyAttemptsError is NOT caught
-  here — it propagates to main().
+  Returns "op(args) = result" string on
+  success; returns None on error or unknown
+  operation. Catches ValueError from
+  Calculator. TooManyAttemptsError is NOT
+  caught here — it propagates to main().
 end note
 
 note right of Main::cli_mode
@@ -124,14 +153,17 @@ note right of Main::cli_mode
   error messages to stderr.
   Prints result to stdout.
   Returns 0 on success, 1 on error.
+  History is NOT written in CLI mode.
 end note
 
 note right of Main::main
   If args non-empty: delegates to
   cli_mode(args) and exits.
-  Interactive loop tracks invalid_op_count;
-  session ends when count reaches MAX_ATTEMPTS
-  or TooManyAttemptsError is raised.
+  Interactive loop: clears history at start,
+  handles "h" (show history), tracks
+  invalid_op_count; session ends when count
+  reaches MAX_ATTEMPTS or TooManyAttemptsError
+  is raised. Appends successful entries to history.
 end note
 
 Main ..> Calculator : instantiates

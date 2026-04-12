@@ -4,6 +4,7 @@ import argparse
 from .calculator import Calculator
 
 MAX_ATTEMPTS = 3
+HISTORY_FILE = "history.txt"
 
 
 class TooManyAttemptsError(Exception):
@@ -32,11 +33,50 @@ _TWO_ARG_OPS = {"add", "subtract", "multiply", "divide", "power", "log"}
 _ALL_OPS = _ONE_ARG_OPS | _INT_ARG_OPS | _TWO_ARG_OPS
 
 
+def clear_history(filepath: "str | None" = None) -> None:
+    """Clear (or create) the history file, removing any previous session data.
+
+    Uses *HISTORY_FILE* when *filepath* is ``None`` so that monkeypatching the
+    module attribute in tests affects the default without needing to re-bind the
+    function's default argument.
+    """
+    if filepath is None:
+        filepath = HISTORY_FILE
+    with open(filepath, "w", encoding="utf-8") as fh:
+        fh.write("")
+
+
+def append_to_history(entry: str, filepath: "str | None" = None) -> None:
+    """Append a single history entry (one line) to the history file."""
+    if filepath is None:
+        filepath = HISTORY_FILE
+    with open(filepath, "a", encoding="utf-8") as fh:
+        fh.write(entry + "\n")
+
+
+def show_history(filepath: "str | None" = None) -> None:
+    """Print all history entries from the current session to stdout."""
+    if filepath is None:
+        filepath = HISTORY_FILE
+    try:
+        with open(filepath, "r", encoding="utf-8") as fh:
+            lines = fh.read().splitlines()
+    except FileNotFoundError:
+        lines = []
+    if not lines:
+        print("  No history yet.")
+    else:
+        print("\n--- History ---")
+        for i, line in enumerate(lines, start=1):
+            print(f"  {i}. {line}")
+
+
 def show_menu() -> None:
     """Print the operation menu to stdout."""
     print("\n--- Calculator ---")
     for key, name in OPERATIONS.items():
         print(f"  {key}. {name}")
+    print("  h. show history")
     print("  q. quit")
 
 
@@ -76,57 +116,75 @@ def parse_int(prompt: str, max_attempts: int = MAX_ATTEMPTS) -> int:
     raise TooManyAttemptsError("Too many invalid integer inputs. Ending session.")
 
 
-def run_operation(calc: Calculator, operation: str) -> None:
-    """Collect inputs for *operation*, execute it, and print the result."""
+def run_operation(calc: Calculator, operation: str) -> "str | None":
+    """Collect inputs for *operation*, execute it, and print the result.
+
+    Returns a history entry string (e.g. ``"add(3.0, 4.0) = 7.0"``) on
+    success, or ``None`` when the operation fails or is not recognised.
+    """
     try:
         if operation == "add":
             a = parse_number("  Enter first number: ")
             b = parse_number("  Enter second number: ")
             result = calc.add(a, b)
+            entry = f"add({a}, {b}) = {result}"
         elif operation == "subtract":
             a = parse_number("  Enter first number: ")
             b = parse_number("  Enter second number: ")
             result = calc.subtract(a, b)
+            entry = f"subtract({a}, {b}) = {result}"
         elif operation == "multiply":
             a = parse_number("  Enter first number: ")
             b = parse_number("  Enter second number: ")
             result = calc.multiply(a, b)
+            entry = f"multiply({a}, {b}) = {result}"
         elif operation == "divide":
             a = parse_number("  Enter dividend: ")
             b = parse_number("  Enter divisor: ")
             result = calc.divide(a, b)
+            entry = f"divide({a}, {b}) = {result}"
         elif operation == "factorial":
             n = parse_int("  Enter non-negative integer: ")
             result = calc.factorial(n)
+            entry = f"factorial({n}) = {result}"
         elif operation == "square":
             a = parse_number("  Enter number: ")
             result = calc.square(a)
+            entry = f"square({a}) = {result}"
         elif operation == "cube":
             a = parse_number("  Enter number: ")
             result = calc.cube(a)
+            entry = f"cube({a}) = {result}"
         elif operation == "square_root":
             a = parse_number("  Enter number: ")
             result = calc.square_root(a)
+            entry = f"square_root({a}) = {result}"
         elif operation == "cube_root":
             a = parse_number("  Enter number: ")
             result = calc.cube_root(a)
+            entry = f"cube_root({a}) = {result}"
         elif operation == "power":
             a = parse_number("  Enter base: ")
             b = parse_number("  Enter exponent: ")
             result = calc.power(a, b)
+            entry = f"power({a}, {b}) = {result}"
         elif operation == "log":
             a = parse_number("  Enter number: ")
             base = parse_number("  Enter base: ")
             result = calc.log(a, base)
+            entry = f"log({a}, {base}) = {result}"
         elif operation == "ln":
             a = parse_number("  Enter number: ")
             result = calc.ln(a)
+            entry = f"ln({a}) = {result}"
         else:
             print(f"  Unknown operation: {operation}")
-            return
+            return None
         print(f"  Result: {result}")
+        return entry
     except ValueError as exc:
         print(f"  Error: {exc}")
+        return None
 
 
 def cli_mode(args: list[str]) -> int:
@@ -222,6 +280,7 @@ def main(args: list[str] | None = None) -> None:
 
     # Interactive loop
     calc = Calculator()
+    clear_history()
     invalid_op_count = 0
     while True:
         show_menu()
@@ -229,6 +288,9 @@ def main(args: list[str] | None = None) -> None:
         if choice == "q":
             print("Goodbye!")
             break
+        if choice == "h":
+            show_history()
+            continue
         if choice not in OPERATIONS:
             invalid_op_count += 1
             remaining = MAX_ATTEMPTS - invalid_op_count
@@ -239,7 +301,9 @@ def main(args: list[str] | None = None) -> None:
             continue
         invalid_op_count = 0
         try:
-            run_operation(calc, OPERATIONS[choice])
+            entry = run_operation(calc, OPERATIONS[choice])
+            if entry is not None:
+                append_to_history(entry)
         except TooManyAttemptsError as exc:
             print(f"  {exc}")
             break

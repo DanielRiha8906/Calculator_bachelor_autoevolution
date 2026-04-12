@@ -4,6 +4,25 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 8 — Issue #249: Operation history (2026-04-12)
+
+- **Task:** Add operation history to the calculator so calculations performed during the current session are recorded. Keep the history in `history.txt`, allow it to be displayed on request in interactive mode, and do not keep the history between separate sessions.
+- **Files changed:** `src/__main__.py`, `tests/test_main.py`
+- **Outcome:** 133 tests pass (63 calculator + 70 CLI/interactive). All 117 prior tests continue to pass; 16 new tests added.
+- **Key decisions:**
+  - Added `HISTORY_FILE = "history.txt"` module constant (relative to cwd) so the path is patchable in tests.
+  - Added three focused helpers: `clear_history()`, `append_to_history(entry)`, `show_history()`. All use `None` sentinel defaults that resolve to the module-level `HISTORY_FILE` at call time — critical for test isolation via `monkeypatch.setattr`.
+  - `run_operation()` return type changed from `None` to `str | None`: returns a formatted history entry on success, `None` on error or unknown operation. No change to its printing behaviour.
+  - `main()` calls `clear_history()` once at interactive session start (wiping any previous session), then `append_to_history(entry)` after each successful `run_operation()`.
+  - Added `"h"` branch in the interactive loop before the `OPERATIONS` check; pressing `h` calls `show_history()` and continues the loop.
+  - `show_menu()` updated to display the `"h. show history"` option between the numbered operations and `"q. quit"`.
+  - CLI mode (`cli_mode`) left unchanged — history is an interactive-only feature.
+  - `autouse` fixture in `tests/test_main.py` redirects `HISTORY_FILE` to a `tmp_path` for every test, preventing any file system pollution.
+- **Lessons learned:** Python function default arguments are evaluated at definition time, not call time. Using `None` as a sentinel and resolving to the module attribute inside the function body is the correct pattern for making module-level constants patchable by monkeypatch without changing callers.
+- **Cost:** PENDING | **Turns:** PENDING
+
+---
+
 ## Cycle 7 — Issue #246: Input validation (2026-04-12)
 
 - **Task:** Add input validation to the interactive mode — retry on invalid operation or operand input, stop the session after a fixed number of failed attempts. In CLI mode, invalid input returns a clear error message and exits.

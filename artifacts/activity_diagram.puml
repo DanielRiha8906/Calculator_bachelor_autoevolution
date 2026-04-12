@@ -67,16 +67,18 @@ if (args non-empty?) then (yes)
 
 else (no — interactive mode)
 
-    :Instantiate Calculator\ninvalid_op_count = 0;
+    :Instantiate Calculator\nclear_history()\ninvalid_op_count = 0;
 
     repeat
 
-        :show_menu()\nPrint numbered operation menu (1-12) and "q. quit";
+        :show_menu()\nPrint numbered operation menu (1-12),\n"h. show history", and "q. quit";
         :choice = input("Select operation:").strip().lower();
 
         if (choice == "q"?) then (yes)
             :Print "Goodbye!";
             stop
+        elseif (choice == "h"?) then (yes)
+            :show_history()\nPrint all entries from history file;
         elseif (choice not in OPERATIONS?) then (yes)
             :invalid_op_count += 1;
             if (invalid_op_count >= MAX_ATTEMPTS?) then (yes)
@@ -103,9 +105,9 @@ else (no — interactive mode)
                 :Call Calculator method with parsed input(s);
 
                 if (ValueError raised?\ne.g. divide-by-zero, negative sqrt,\nnegative factorial, invalid log base) then (yes)
-                    :Print "Error: <message>";
+                    :Print "Error: <message>"\nreturn None;
                 else (no)
-                    :Print "Result: <value>";
+                    :Print "Result: <value>"\nreturn "op(args) = result" entry string;
                 endif
 
             }
@@ -113,6 +115,8 @@ else (no — interactive mode)
             if (TooManyAttemptsError propagated from parse?) then (yes)
                 :Print "Too many invalid inputs. Ending session.";
                 stop
+            elseif (entry != None?) then (yes)
+                :append_to_history(entry)\nWrite entry line to history file;
             endif
         endif
 
