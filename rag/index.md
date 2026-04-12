@@ -1,13 +1,13 @@
 # RAG Index
 
-Last updated: cycle 3
+Last updated: cycle 4
 
 | File | Purpose | Last Updated Cycle |
 |------|---------|-------------------|
 | src/__init__.py | Package init, exports Calculator | 0 |
-| src/calculator.py | Calculator class with add/subtract/multiply/divide/factorial | 3 |
+| src/calculator.py | Calculator class with add/subtract/multiply/divide/factorial/square/cube/square_root/cube_root/power/log/ln | 4 |
 | src/__main__.py | Entry point demonstrating Calculator usage | 0 |
-| tests/test_calculator.py | Full test suite: 28 tests for add/subtract/multiply/divide/factorial | 3 |
+| tests/test_calculator.py | Full test suite: 58 tests for all 12 operations | 4 |
 
 ## RAG Files
 | RAG File | Purpose |
