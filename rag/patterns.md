@@ -10,4 +10,12 @@ When a method can receive invalid input (e.g., zero divisor), raise a `ValueErro
 
 ---
 
+## Pattern: Use math.isclose for float assertions
+
+When asserting equality for results that may involve floating-point arithmetic (floats as inputs or outputs), use `math.isclose(result, expected)` rather than `==`. This avoids failures caused by IEEE 754 representation errors (e.g., `1.1 + 2.2 != 3.3` in exact arithmetic).
+
+**First observed:** cycle 2, `tests/test_calculator.py` (add, subtract, multiply, divide float tests)
+
+---
+
 <!-- Add further patterns here as they are discovered -->

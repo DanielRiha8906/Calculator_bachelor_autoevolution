@@ -31,10 +31,11 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## tests/test_calculator.py
-- **Purpose:** Unit test suite for `Calculator`.
-- **Last updated:** cycle 1
-- **Tests:**
-  - `test_divide_by_zero_raises` — asserts `ValueError` with message "Division by zero is not allowed" when dividing by 0
-  - `test_divide_normal` — asserts `divide(10, 2) == 5.0`
-  - `test_divide_negative_denominator` — asserts `divide(9, -3) == -3.0`
-- **Invariants:** Must import from `src.calculator`, not from the package root.
+- **Purpose:** Unit test suite for `Calculator` — full coverage of all four arithmetic operations.
+- **Last updated:** cycle 2
+- **Tests (24 total):**
+  - **add (5):** positive numbers, negative numbers, mixed sign, zero identity, floats
+  - **subtract (6):** positive numbers, negative numbers, mixed sign, zero, floats, same-number-gives-zero
+  - **multiply (6):** positive numbers, negative numbers, mixed sign, zero, identity (×1), floats
+  - **divide (7):** divide-by-zero `ValueError`, normal, negative denominator, negative numerator, both negative, floats, fractional result
+- **Invariants:** Must import from `src.calculator`, not from the package root; uses `math.isclose` for float comparisons.

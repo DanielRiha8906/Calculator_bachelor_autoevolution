@@ -17,6 +17,20 @@
 
 ---
 
+## Run: Issue #212 — Full test suite (2026-04-12)
+
+- **Branch:** exp3/issue-212-test-suite
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `tests/test_calculator.py` — expanded from 3 divide-only tests to 24 tests covering add (5), subtract (6), multiply (6), divide (7)
+- **Purpose:** Create a complete unit test suite for all Calculator arithmetic operations as required by issue #212.
+- **Risks:** None — test-only change; no source code modified.
+- **Tests passed:** Yes — 24/24
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`
+- Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update (2026-04-12)
 
 - **Branch:** exp3/issue-209-zero-division
