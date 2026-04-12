@@ -26,7 +26,7 @@ jobs:
         actions: read
     uses: ./.github/workflows/claude-implement-shared.yml
     with:
-      branch: exp2/expert-generic
+      branch: exp3/expert-generic
       experiment_name: expert-generic
       issue_number: ${{ github.event.issue.number || inputs.issue_number }}
       issue_title: ${{ github.event.issue.title || inputs.issue_title }}
