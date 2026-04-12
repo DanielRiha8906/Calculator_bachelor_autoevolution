@@ -31,7 +31,7 @@
 - **Risks:** Minimal — added `import math` at module level; `math` is stdlib so no new dependencies. All existing 23 tests continue to pass.
 - **Tests passed:** Yes — 28 collected, 28 passed.
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 100.8s | Cost: $0.384814 USD | Turns: 29
 
 ## Run: Diagram Update (2026-04-12)
 
