@@ -29,7 +29,7 @@ None. Test-only change; no source code modified.
 
 exp2/expert-generic (never main)
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 82.2s | Cost: $0.303698 USD | Turns: 21
 
 ---
 
