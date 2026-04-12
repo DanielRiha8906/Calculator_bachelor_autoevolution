@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 4 — Issue #217: Add Multiple Math Functions (2026-04-12)
+- **Task:** Add square, cube, square root, cube root, power, log and ln to Calculator
+- **Branch:** exp3/issue-217-add-math-functions
+- **Files changed:** src/calculator.py, tests/test_calculator.py
+- **Outcome:** Added 7 new methods; 58 tests collected, 58 passed.
+- **Key decisions:** Used `math.cbrt` (Python 3.11+, project targets 3.12) for cube root to correctly handle negative inputs. Used `math.sqrt` for square root (raises ValueError for negative). Implemented `log` as base-10 via `math.log10`, `ln` as natural log via `math.log`. Both log/ln raise ValueError for domain violations via stdlib delegation. `power` uses `**` operator directly.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 3 — Issue #214: Add Factorial (2026-04-12)
 - **Task:** Add factorial operation to Calculator
 - **Branch:** exp3/issue-214-add-factorial

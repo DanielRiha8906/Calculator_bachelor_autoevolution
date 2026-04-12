@@ -1,5 +1,26 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-217-add-math-functions
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect the full 12-method Calculator API (square, cube, square_root, cube_root, power, log, ln were missing from prior diagrams which only showed 5 methods).
+- **Risks:** None — diagram-only update, no source code changes.
+- **Tests passed:** N/A — no code changes.
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: 61.5s | Cost: $0.220107 USD | Turns: 19
+
+## Run: Issue #217 — Add Multiple Math Functions (2026-04-12)
+
+- **Branch:** exp3/issue-217-add-math-functions
+- **Target PR branch:** exp3/naive-generic
+- **Files changed:** src/calculator.py, tests/test_calculator.py
+- **Purpose:** Added 7 new Calculator methods: square, cube, square_root, cube_root, power, log (base-10), ln (natural log). Added 30 new tests covering all seven operations with positive, negative, zero, float, and error-path inputs.
+- **Risks:** Minimal — all delegation to stdlib (`math.sqrt`, `math.cbrt`, `math.log10`, `math.log`). `math.cbrt` requires Python 3.11+ which is satisfied by project's Python 3.12 requirement. No new dependencies added.
+- **Tests passed:** Yes — 58 collected, 58 passed.
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
+Duration: 127.1s | Cost: $0.470713 USD | Turns: 28
+
 ## Run: Issue #208 — ZeroDivisionTest (2026-04-12)
 
 - **Branch:** exp3/issue-208-zero-division-test

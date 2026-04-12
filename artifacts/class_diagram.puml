@@ -9,6 +9,13 @@ package "src" {
         +multiply(a, b) : number
         +divide(a, b) : number
         +factorial(n) : int
+        +square(n) : number
+        +cube(n) : number
+        +square_root(n) : float
+        +cube_root(n) : float
+        +power(base, exp) : number
+        +log(n) : float
+        +ln(n) : float
     }
 
     class "__main__" as Main <<module>> {
@@ -26,6 +33,27 @@ end note
 note right of Calculator::factorial
   Delegates to math.factorial(n)
   Raises ValueError for n < 0
+end note
+
+note right of Calculator::square_root
+  Delegates to math.sqrt(n)
+  Raises ValueError for n < 0
+end note
+
+note right of Calculator::cube_root
+  Delegates to math.cbrt(n)
+  Handles negative inputs
+  Requires Python 3.11+
+end note
+
+note right of Calculator::log
+  Delegates to math.log10(n)
+  Raises ValueError for n <= 0
+end note
+
+note right of Calculator::ln
+  Delegates to math.log(n)
+  Raises ValueError for n <= 0
 end note
 
 @enduml

@@ -5,44 +5,99 @@ title Calculator — Component Interaction Sequence
 actor User
 participant "__main__\n(main)" as Main
 participant "Calculator" as Calc
-participant "math" as Math
+participant "math\n(stdlib)" as Math
 
 User -> Main : run module
 
 Main -> Calc : Calculator()
 activate Calc
 
-Main -> Calc : add(10, 5)
-Calc --> Main : 15
+group Basic Arithmetic
+  Main -> Calc : add(10, 5)
+  Calc --> Main : 15
 
-Main -> Calc : subtract(10, 5)
-Calc --> Main : 5
+  Main -> Calc : subtract(10, 5)
+  Calc --> Main : 5
 
-Main -> Calc : multiply(10, 5)
-Calc --> Main : 50
+  Main -> Calc : multiply(10, 5)
+  Calc --> Main : 50
 
-Main -> Calc : divide(10, 5)
-alt divisor != 0
-    Calc --> Main : 2.0
-else divisor == 0
-    Calc --> Main : raises ZeroDivisionError
+  Main -> Calc : divide(a, b)
+  alt b != 0
+      Calc --> Main : a / b
+  else b == 0
+      Calc --> Main : raises ZeroDivisionError
+  end
 end
 
-note over Calc, Math
-  factorial delegates to stdlib
-end note
+group Powers & Roots
+  Main -> Calc : square(n)
+  Calc --> Main : n ** 2
 
-Main -> Calc : factorial(n)
-activate Math
-Calc -> Math : math.factorial(n)
-alt n >= 0
-    Math --> Calc : n!
-    Calc --> Main : n!
-else n < 0
-    Math --> Calc : raises ValueError
-    Calc --> Main : raises ValueError
+  Main -> Calc : cube(n)
+  Calc --> Main : n ** 3
+
+  Main -> Calc : power(base, exp)
+  Calc --> Main : base ** exp
+
+  Main -> Calc : square_root(n)
+  activate Math
+  alt n >= 0
+      Calc -> Math : math.sqrt(n)
+      Math --> Calc : √n
+      Calc --> Main : √n
+  else n < 0
+      Math --> Calc : raises ValueError
+      Calc --> Main : raises ValueError
+  end
+  deactivate Math
+
+  Main -> Calc : cube_root(n)
+  activate Math
+  Calc -> Math : math.cbrt(n)
+  Math --> Calc : ∛n
+  Calc --> Main : ∛n
+  note right of Math: Handles negative inputs\nRequires Python 3.11+
+  deactivate Math
 end
-deactivate Math
+
+group Combinatorics & Logarithms
+  Main -> Calc : factorial(n)
+  activate Math
+  alt n >= 0
+      Calc -> Math : math.factorial(n)
+      Math --> Calc : n!
+      Calc --> Main : n!
+  else n < 0
+      Math --> Calc : raises ValueError
+      Calc --> Main : raises ValueError
+  end
+  deactivate Math
+
+  Main -> Calc : log(n)
+  activate Math
+  alt n > 0
+      Calc -> Math : math.log10(n)
+      Math --> Calc : log₁₀(n)
+      Calc --> Main : log₁₀(n)
+  else n <= 0
+      Math --> Calc : raises ValueError
+      Calc --> Main : raises ValueError
+  end
+  deactivate Math
+
+  Main -> Calc : ln(n)
+  activate Math
+  alt n > 0
+      Calc -> Math : math.log(n)
+      Math --> Calc : ln(n)
+      Calc --> Main : ln(n)
+  else n <= 0
+      Math --> Calc : raises ValueError
+      Calc --> Main : raises ValueError
+  end
+  deactivate Math
+end
 
 deactivate Calc
 
