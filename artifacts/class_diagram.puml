@@ -9,6 +9,7 @@ package "src" {
         +subtract(a, b) : float|int
         +multiply(a, b) : float|int
         +divide(a, b) : float|int
+        +factorial(n: int) : int
     }
 
     class "__main__" as Main <<module>> {
@@ -51,6 +52,16 @@ package "tests" {
         +test_divide_zero_numerator()
         +test_divide_by_zero_raises()
         +test_divide_by_zero_float_raises()
+        +test_factorial_zero()
+        +test_factorial_one()
+        +test_factorial_positive_integer()
+        +test_factorial_larger_integer()
+        +test_factorial_negative_raises()
+        +test_factorial_negative_large_raises()
+        +test_factorial_float_raises()
+        +test_factorial_non_integer_raises()
+        +test_factorial_bool_raises()
+        +test_factorial_string_raises()
     }
 }
 
@@ -61,6 +72,8 @@ TestModule --> Calculator : tests via fixture
 note right of Calculator
   Division delegates to Python "/" operator.
   ZeroDivisionError raised by runtime when b == 0.
+  factorial: iterative; rejects bool/float/non-int
+  (TypeError) and negatives (ValueError).
 end note
 
 @enduml

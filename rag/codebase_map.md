@@ -27,15 +27,18 @@ Per-file summaries: purpose, public API surface, key invariants.
   - `Calculator.subtract(a, b) -> float/int` — returns `a - b`
   - `Calculator.multiply(a, b) -> float/int` — returns `a * b`
   - `Calculator.divide(a, b) -> float/int` — returns `a / b`; raises `ZeroDivisionError` naturally when `b == 0`
+  - `Calculator.factorial(n: int) -> int` — returns `n!`; raises `TypeError` for non-integers (including bool/float), raises `ValueError` for negative integers
 - **Key invariants:**
   - Division delegates directly to Python `/` operator; no explicit zero-check.
   - `ZeroDivisionError` is raised by Python runtime when dividing by zero.
-- **Last updated:** cycle 0
+  - Factorial validates input type explicitly: booleans are rejected (`isinstance(n, bool)` checked before `isinstance(n, int)` since `bool` is a subclass of `int`).
+  - Factorial is computed iteratively; `factorial(0)` and `factorial(1)` both return 1.
+- **Last updated:** cycle 3 (issue-216)
 
 ---
 
 ## `tests/test_calculator.py`
 - **Purpose:** Comprehensive unit test suite for `Calculator`.
-- **Current state:** 28 tests covering all four operations (add, subtract, multiply, divide). Includes normal inputs, edge cases (zero operands, negative values, large numbers), floating-point precision via `pytest.approx`, and `ZeroDivisionError` for both int and float zero divisors. Uses a `calc` pytest fixture.
+- **Current state:** 38 tests covering all five operations (add, subtract, multiply, divide, factorial). Includes normal inputs, edge cases (zero operands, negative values, large numbers), floating-point precision via `pytest.approx`, `ZeroDivisionError` for both int and float zero divisors, and factorial boundary/rejection cases. Uses a `calc` pytest fixture.
 - **Exports:** None
-- **Last updated:** cycle 2 (issue-213)
+- **Last updated:** cycle 3 (issue-216)

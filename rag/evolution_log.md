@@ -4,6 +4,17 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 3 — Issue #216: Add factorial operation
+
+- **Task:** Add `factorial` as a supported calculator operation with proper input validation.
+- **Files changed:** `src/calculator.py` (added `factorial` method), `tests/test_calculator.py` (added 10 factorial tests; total now 38)
+- **Test result:** 38 passed
+- **Key decisions:** Rejected booleans explicitly (`isinstance(n, bool)` guard before `isinstance(n, int)`) since `bool` is a subclass of `int` in Python. Implemented iteratively to avoid recursion overhead. Raises `TypeError` for non-integer types, `ValueError` for negatives.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 2 — Issue #213: Comprehensive test suite
 
 - **Task:** Create a unit test suite for all Calculator operations covering normal inputs and edge cases.
