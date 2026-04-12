@@ -9,7 +9,7 @@ start
 
 :Instantiate Calculator;
 
-:Select operation\n(add / subtract / multiply / divide);
+:Select operation\n(add / subtract / multiply / divide / factorial);
 
 if (Operation is divide?) then (yes)
     if (Divisor b == 0?) then (yes)
@@ -22,8 +22,18 @@ elseif (Operation is add?) then (yes)
     :Compute a + b;
 elseif (Operation is subtract?) then (yes)
     :Compute a - b;
-else (multiply)
+elseif (Operation is multiply?) then (yes)
     :Compute a * b;
+else (factorial)
+    if (n is bool or not int?) then (yes)
+        :Raise TypeError;
+        stop
+    elseif (n < 0?) then (yes)
+        :Raise ValueError;
+        stop
+    else (no)
+        :Compute n! iteratively\n(result = 1; for i in 2..n: result *= i);
+    endif
 endif
 
 :Return numeric result\n(int or float);

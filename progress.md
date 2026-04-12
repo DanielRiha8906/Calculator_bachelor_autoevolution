@@ -1,3 +1,19 @@
+## Run: update-diagrams — PlantUML diagram update (post-factorial)
+
+- **Branch:** exp3/issue-216-factorial
+- **PR target:** N/A (diagram-only update)
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `factorial(n: int) -> int` to Calculator; added 10 factorial test stubs to test module; updated Calculator note
+  - `artifacts/activity_diagram.puml` — added factorial branch with TypeError/ValueError error paths and iterative computation step
+  - `artifacts/sequence_diagram.puml` — added factorial normal path and error path (ValueError, TypeError) interaction sequences
+- **Purpose:** Sync PlantUML diagrams with cycle-3 changes: Calculator.factorial added in issue-216.
+- **Risks:** None — diagram-only, no source or test code modified.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-216 — Add factorial operation
 
 - **Branch:** exp3/issue-216-factorial

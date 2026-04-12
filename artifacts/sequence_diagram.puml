@@ -69,4 +69,34 @@ deactivate Calc
 
 Tests -> Tests : assert raises(ZeroDivisionError) ✓
 
+== Factorial: Normal Path ==
+
+Tests -> Calc : calc.factorial(5)
+activate Calc
+Calc -> Calc : validate type (not bool, is int)
+Calc -> Calc : validate value (n >= 0)
+Calc -> Calc : iterate: 1*2*3*4*5
+Calc --> Tests : 120
+deactivate Calc
+
+Tests -> Tests : assert factorial(5) == 120 ✓
+
+== Factorial: Error Paths ==
+
+Tests -> Calc : calc.factorial(-1)
+activate Calc
+Calc -> Calc : validate value (n < 0)
+Calc --> Tests : raise ValueError
+deactivate Calc
+
+Tests -> Tests : assert raises(ValueError) ✓
+
+Tests -> Calc : calc.factorial(True)
+activate Calc
+Calc -> Calc : validate type (isinstance bool → reject)
+Calc --> Tests : raise TypeError
+deactivate Calc
+
+Tests -> Tests : assert raises(TypeError) ✓
+
 @enduml
