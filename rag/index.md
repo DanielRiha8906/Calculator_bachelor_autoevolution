@@ -7,7 +7,7 @@ Last updated: cycle 0 (bootstrap)
 | src/__init__.py | Package init, exports Calculator | 0 |
 | src/calculator.py | Calculator class with add/subtract/multiply/divide | 0 |
 | src/__main__.py | Entry point demonstrating Calculator usage | 0 |
-| tests/test_calculator.py | Test suite for Calculator (imports only, no tests yet) | 0 |
+| tests/test_calculator.py | Test suite for Calculator; ZeroDivisionError test added | 1 |
 
 ## RAG Files
 | RAG File | Purpose |

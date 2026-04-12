@@ -24,5 +24,6 @@
 
 ## tests/test_calculator.py
 - **Purpose:** Test suite for Calculator class.
-- **Current state:** Imports only (`pytest`, `math`, `Calculator`). No test functions defined yet.
-- **Last updated:** cycle 0
+- **Current state:** Contains `test_divide_by_zero_raises` — asserts that `Calculator.divide(10, 0)` raises `ZeroDivisionError`.
+- **Exports:** `test_divide_by_zero_raises`
+- **Last updated:** cycle 1
