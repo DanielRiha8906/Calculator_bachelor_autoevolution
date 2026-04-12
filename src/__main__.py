@@ -7,6 +7,8 @@ UNARY_OPS = {"factorial", "square", "cube", "square_root", "cube_root", "log", "
 BINARY_OPS = {"add", "subtract", "multiply", "divide", "power"}
 # Operations that require integer operands
 INTEGER_OPS = {"factorial"}
+# Maximum number of attempts allowed when prompting the user for a valid number
+MAX_INPUT_ATTEMPTS = 3
 
 MENU = """
 Operations:
@@ -41,14 +43,22 @@ MENU_MAP = {
 }
 
 
-def parse_number(prompt: str) -> float:
-    """Prompt the user until a valid number is entered."""
-    while True:
+def parse_number(prompt: str, max_attempts: int = MAX_INPUT_ATTEMPTS) -> float:
+    """Prompt the user until a valid number is entered or max_attempts are exhausted.
+
+    Raises ValueError if a valid number is not entered within max_attempts tries.
+    """
+    for attempt in range(max_attempts):
         raw = input(prompt).strip()
         try:
             return float(raw)
         except ValueError:
-            print(f"  Invalid number: {raw!r}. Please enter a numeric value.")
+            remaining = max_attempts - attempt - 1
+            if remaining > 0:
+                print(f"  Invalid number: {raw!r}. Please enter a numeric value. ({remaining} attempt(s) remaining)")
+            else:
+                print(f"  Invalid number: {raw!r}. No more attempts remaining.")
+    raise ValueError(f"No valid number entered after {max_attempts} attempt(s)")
 
 
 def _to_int_if_needed(op: str, value: float) -> "float | int":
