@@ -125,3 +125,31 @@ def test_divide_floats():
 def test_divide_results_in_fraction():
     calc = Calculator()
     assert calc.divide(1, 3) == pytest.approx(1 / 3)
+
+
+# --- factorial ---
+
+def test_factorial_zero():
+    calc = Calculator()
+    assert calc.factorial(0) == 1
+
+
+def test_factorial_one():
+    calc = Calculator()
+    assert calc.factorial(1) == 1
+
+
+def test_factorial_positive():
+    calc = Calculator()
+    assert calc.factorial(5) == 120
+
+
+def test_factorial_large():
+    calc = Calculator()
+    assert calc.factorial(10) == 3628800
+
+
+def test_factorial_negative_raises():
+    calc = Calculator()
+    with pytest.raises(ValueError):
+        calc.factorial(-1)

@@ -22,6 +22,17 @@
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md
 - Duration: 92.6s | Cost: $0.318279 USD | Turns: 26
 
+## Run: Issue #214 — Add Factorial (2026-04-12)
+
+- **Branch:** exp3/issue-214-add-factorial
+- **Target PR branch:** exp3/naive-generic
+- **Files changed:** src/calculator.py, tests/test_calculator.py
+- **Purpose:** Added `Calculator.factorial(n)` using `math.factorial`; raises `ValueError` for negative inputs. Added 5 tests: factorial(0), factorial(1), factorial(5), factorial(10), and negative-input error case.
+- **Risks:** Minimal — added `import math` at module level; `math` is stdlib so no new dependencies. All existing 23 tests continue to pass.
+- **Tests passed:** Yes — 28 collected, 28 passed.
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
+Duration: 100.8s | Cost: $0.384814 USD | Turns: 29
+
 ## Run: Diagram Update (2026-04-12)
 
 - **Branch:** exp3/issue-208-zero-division-test
@@ -41,3 +52,13 @@
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
 - Duration: 35.9s | Cost: $0.152743 USD | Turns: 17
+
+## Run: Diagram Update (2026-04-12)
+
+- **Branch:** exp3/issue-214-add-factorial
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect `Calculator.factorial(n)` added in cycle 3. Added `factorial` method to class diagram with ValueError note; noted factorial availability in activity diagram; added factorial sequence with `math` participant in sequence diagram.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+- Duration: 51.0s | Cost: $0.192411 USD | Turns: 19

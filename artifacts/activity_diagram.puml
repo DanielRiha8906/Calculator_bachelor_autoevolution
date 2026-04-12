@@ -27,6 +27,12 @@ else (no)
   :Print "Division: 2.0";
 endif
 
+note right
+  factorial is available on
+  Calculator instances but not
+  called in __main__.main()
+end note
+
 stop
 
 @enduml

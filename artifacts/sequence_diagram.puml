@@ -5,6 +5,7 @@ title Calculator — Component Interaction Sequence
 actor User
 participant "__main__\n(main)" as Main
 participant "Calculator" as Calc
+participant "math" as Math
 
 User -> Main : run module
 
@@ -26,6 +27,22 @@ alt divisor != 0
 else divisor == 0
     Calc --> Main : raises ZeroDivisionError
 end
+
+note over Calc, Math
+  factorial delegates to stdlib
+end note
+
+Main -> Calc : factorial(n)
+activate Math
+Calc -> Math : math.factorial(n)
+alt n >= 0
+    Math --> Calc : n!
+    Calc --> Main : n!
+else n < 0
+    Math --> Calc : raises ValueError
+    Calc --> Main : raises ValueError
+end
+deactivate Math
 
 deactivate Calc
 
