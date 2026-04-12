@@ -2,6 +2,21 @@
 
 ---
 
+## Run: Issue #240 — CLI mode (2026-04-12)
+
+- **Branch:** exp3/issue-240-cli-mode
+- **Target branch:** exp3/structured-generic
+- **Files changed:**
+  - `src/__main__.py` — added `cli_mode(args)`, `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS`, `_ALL_OPS`; updated `main(args=None)` signature to dispatch to CLI mode when args are present
+  - `tests/test_main.py` — updated 5 interactive `main()` calls to `main([])`; added 20 new cli_mode tests (12 happy-path + 8 error/edge cases)
+- **Purpose:** Add non-interactive CLI mode so the calculator can be called from bash with operation and values as arguments (`python -m src add 3 4` → prints `7.0`).
+- **Risks:** Minimal — interactive mode unchanged; `main()` signature change is backward compatible via default `args=None`; existing tests required only call-site update from `main()` to `main([])`.
+- **Tests passed:** Yes — 110/110 (63 calculator + 48 main; all pass)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/patterns.md`, `rag/evolution_log.md`
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #221 — Interactive user input (2026-04-12)
 
 - **Branch:** exp3/issue-221-interactive-input
