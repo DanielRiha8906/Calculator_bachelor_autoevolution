@@ -22,6 +22,12 @@ package "src" {
             +power(base, exp) : float
             +log(x) : float
             +ln(x) : float
+            +sin(x) : float
+            +cos(x) : float
+            +tan(x) : float
+            +cot(x) : float
+            +asin(x) : float
+            +acos(x) : float
         }
 
         class "operations/__init__" as OpsInit <<module>> {
@@ -31,7 +37,7 @@ package "src" {
 
     class Calculator {
         ' No methods defined directly on Calculator.
-        ' All 12 ops are inherited via MRO:
+        ' All 18 ops are inherited via MRO:
         ' Calculator → BasicOperations → ScientificOperations → object
     }
 
@@ -49,10 +55,11 @@ package "src" {
     }
 
     class "__main__" as Main <<module>> {
-        +OPERATIONS : dict[str, tuple[str, int]]
+        +NORMAL_OPERATIONS : dict[str, tuple[str, int]]
+        +SCIENTIFIC_OPERATIONS : dict[str, tuple[str, int]]
         +MAX_ATTEMPTS : int
         +HISTORY_FILE : str
-        +display_menu() : None
+        +display_menu(operations, mode_name) : None
         +get_number(prompt, require_int=False) : int|float
         +get_number_with_retry(prompt, require_int=False) : int|float
         +format_history_entry(name, args, result) : str
@@ -79,7 +86,7 @@ class "main" as CLI <<module>> {
 package "tests" {
     class "test_calculator" as TestCalc <<module>> {
         +calc() : Calculator  <<fixture>>
-        ' 76 tests covering all 12 operations
+        ' 76 tests covering all 18 operations
         +test_add_*()
         +test_subtract_*()
         +test_multiply_*()
@@ -96,7 +103,7 @@ package "tests" {
 
     class "test_session" as TestSession <<module>> {
         +session() : CalculatorSession  <<fixture>>
-        ' 37 tests covering CalculatorSession
+        ' 49 tests covering CalculatorSession
         +test_op_sets_*()
         +test_format_entry_*()
         +test_execute_*()
@@ -106,11 +113,13 @@ package "tests" {
 
     class "test_main" as TestMain <<module>> {
         +run_main_with_inputs(inputs) : list[str]  <<helper>>
-        ' 56 tests covering interactive CLI
+        ' 80+ tests covering interactive CLI
         +test_operations_map_*()
+        +test_mode_switching_*()
         +test_get_number_*()
         +test_quit_*()
-        +test_all_12_ops_end_to_end_*()
+        +test_all_18_ops_end_to_end_*()
+        +test_trig_ops_*()
         +test_error_paths_*()
         +test_unknown_key()
         +test_multi_session_*()
@@ -174,7 +183,7 @@ Conftest ..> ErrLog : patches ERROR_LOG_FILE
 note right of Calculator
   Cycle-12 modularization: Calculator adds no methods.
   MRO: Calculator → BasicOperations → ScientificOperations → object.
-  All 12 operations come from the two mixin classes.
+  All 18 operations come from the two mixin classes.
   Public API is identical to the pre-modularization class;
   no callers (session, CLIs, tests) required updating.
 end note
@@ -187,7 +196,7 @@ note right of BasicOperations
 end note
 
 note right of ScientificOperations
-  Eight advanced operations.  Imports math.
+  14 advanced operations.  Imports math.
   factorial: guards bool before int (bool is int subclass);
     raises TypeError for non-int/bool, ValueError for negatives.
   square_root: raises ValueError for x < 0.
@@ -195,41 +204,52 @@ note right of ScientificOperations
   log: base-10 via math.log10; raises ValueError for x <= 0.
   ln: natural log via math.log; raises ValueError for x <= 0.
   power: base ** exp (no domain restriction).
+  Trig (all accept/return degrees; math.radians/degrees for conversion):
+    sin, cos: no domain restriction.
+    tan: raises ValueError when cos(x) ≈ 0 (odd multiples of 90°).
+    cot: raises ValueError when sin(x) ≈ 0 (multiples of 180°).
+    asin, acos: raise ValueError for |x| > 1.
+  Domain guards use abs(val) < 1e-10 threshold for near-zero.
 end note
 
 note left of Main
-  OPERATIONS: maps "1"–"12" to (name, arity) pairs.
-  Arity 1: factorial, square, cube, square_root,
-            cube_root, log, ln.
-  Arity 2: add, subtract, multiply, divide, power.
-  MAX_ATTEMPTS=5: max failed input attempts before
-  session terminates.
+  Two operation maps (cycle-14, issue-281):
+    NORMAL_OPERATIONS: keys "1"-"6"
+      add(1), subtract(2), multiply(3), divide(4),
+      square(5), square_root(6)
+    SCIENTIFIC_OPERATIONS: keys "1"-"18"
+      same as Normal plus:
+      factorial(7), cube(8), cube_root(9), power(10),
+      log(11), ln(12), sin(13), cos(14), tan(15),
+      cot(16), asin(17), acos(18)
+  Mode switch: 'm' prompts mode selection (1=Normal, 2=Scientific).
+    Unknown mode choice retains current mode.
+    Mode switch does NOT reset session history.
+  MAX_ATTEMPTS=5: max failed input attempts before session terminates.
   HISTORY_FILE="history.txt": path for session history.
   get_number: parses as int first, then float;
-  require_int=True forces strict integer (factorial).
-  get_number_with_retry: wraps get_number; prints
-  remaining-attempts message on each failure; raises
-  _SessionExpired after MAX_ATTEMPTS failures.
-  format_history_entry: delegates to CalculatorSession.format_entry;
-  kept for backward-compatible test imports.
+    require_int=True forces strict integer (factorial).
+  get_number_with_retry: wraps get_number; prints remaining-attempts
+    message on each failure; raises _SessionExpired after MAX_ATTEMPTS.
+  format_history_entry: delegates to CalculatorSession.format_entry.
   save_history: overwrites HISTORY_FILE with history list;
-  called on all exit paths (quit, expiry, max-attempts).
+    called on all exit paths (quit, expiry, max-attempts).
   main: creates CalculatorSession; 'h' displays history;
-  computation dispatched via session.execute();
-  catches ValueError/TypeError/ZeroDivisionError per
-  iteration; tracks invalid op selections
-  (terminate after MAX_ATTEMPTS); catches _SessionExpired.
+    'm' triggers mode selection; computation dispatched via
+    session.execute(); catches ValueError/TypeError/ZeroDivisionError
+    per iteration; tracks invalid op selections (terminate after
+    MAX_ATTEMPTS); catches _SessionExpired.
 end note
 
 note right of CalculatorSession
-  BINARY_OPS: {add, subtract, multiply, divide, power}.
-  UNARY_OPS: {factorial, square, cube, square_root,
-              cube_root, log, ln}.
-  ALL_OPS: BINARY_OPS | UNARY_OPS (12 operations total).
+  BINARY_OPS: {add, subtract, multiply, divide, power} — 5 ops.
+  UNARY_OPS: {factorial, square, cube, square_root, cube_root,
+              log, ln, sin, cos, tan, cot, asin, acos} — 13 ops.
+  ALL_OPS: BINARY_OPS | UNARY_OPS (18 operations total).
   Both CLIs import BINARY_OPS/ALL_OPS from here —
   single source of truth for operation arity metadata.
   execute(): dispatches via getattr(_calc, name)(*args);
-  failed calls (any exception) do NOT append to history.
+    failed calls (any exception) do NOT append to history.
   format_entry(): static; "name(arg1, arg2) = result".
   history(): returns a defensive copy.
   save(): writes history to file (overwrites).
@@ -241,7 +261,7 @@ note right of CLI
   Imports BINARY_OPS, ALL_OPS from src.session
   (no local copies — single source of truth).
   _parse_operand: int first, then float;
-  require_int=True for factorial.
+    require_int=True for factorial.
   Errors go to stderr; result goes to stdout.
 end note
 

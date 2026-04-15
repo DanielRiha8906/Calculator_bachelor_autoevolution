@@ -1,3 +1,24 @@
+## Run: update-diagrams — PlantUML diagram update (post-issue-281)
+
+- **Branch:** exp3/issue-281-scientific-mode
+- **PR target:** N/A (diagram-only run)
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added 6 trig methods (sin, cos, tan, cot, asin, acos) to ScientificOperations; replaced OPERATIONS with NORMAL_OPERATIONS/SCIENTIFIC_OPERATIONS in __main__; updated notes for 14-op ScientificOperations, 18-op ALL_OPS, test counts (session: 49, test_main: 80+)
+  - `artifacts/activity_diagram.puml` — added 'm' mode-switch branch to interactive loop; added trig computation branches (sin, cos, tan, cot, asin, acos with domain guards); updated display_menu signature with mode params; updated operation map notes
+  - `artifacts/sequence_diagram.puml` — added mode-switch sequence; added trig operation example (sin(90)=1.0); updated Calculator note for 18 ops; updated test counts; updated OPERATIONS map references to current_ops/NORMAL_OPERATIONS/SCIENTIFIC_OPERATIONS
+  - `progress.md` — appended this run summary
+- **Purpose:** Bring PlantUML diagrams in sync with cycle-14 changes (issue-281): Scientific mode in interactive CLI, 6 new trig operations in ScientificOperations, 18 total ops in session metadata.
+- **Risks:** None — no source or test code modified.
+- **Tests passed:** N/A (diagram-only run)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-281 — Scientific Mode — Expert/generic
 
 - **Branch:** exp3/issue-281-scientific-mode
