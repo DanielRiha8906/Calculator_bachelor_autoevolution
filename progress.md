@@ -1,5 +1,18 @@
 # Progress Log
 
+## Run: Issue #279 Scientific Mode (2026-04-15)
+
+- **Branch:** exp3/issue-279-scientific-mode
+- **Target PR branch:** exp3/naive-generic
+- **Files changed:** src/operations/scientific.py, src/operations/__init__.py, src/calculator.py, src/__main__.py, tests/test_calculator.py, tests/test_main.py
+- **Purpose:** Implement scientific calculator mode (issue #279). Adds 10 scientific operations (sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, exp) and interactive mode switching via 'm' key in the REPL.
+- **Risks:** None significant. SCIENTIFIC_UNARY_OPS kept separate from UNARY_OPS to preserve existing test assertions on exact set membership.
+- **Tests passed:** 188/188
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md, rag/evolution_log.md
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Diagram Update (2026-04-15)
 
 - **Branch:** exp3/issue-276-documentation
