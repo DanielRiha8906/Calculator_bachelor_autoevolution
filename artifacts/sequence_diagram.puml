@@ -327,6 +327,147 @@ deactivate Session
 CLI --> Shell : stderr: "Error: square root is not defined for negative numbers"\nexit code: 1
 deactivate CLI
 
+== GUI — Startup ==
+
+actor "GUI User" as GUIUser
+participant "gui_main.py\n(GUI entry)" as GUIEntry
+participant "CalculatorGUI\n(src/gui.py)" as GUI
+participant "Section Widgets\n(Mode/Op/Operand/Result/History)" as Widgets
+
+GUIUser -> GUIEntry : python gui_main.py
+activate GUIEntry
+GUIEntry -> GUI : src.gui.main() → CalculatorGUI(root)
+activate GUI
+GUI -> Session : CalculatorSession()
+activate Session
+Session -> Calc : Calculator()
+activate Calc
+Calc --> Session : _calc instance
+deactivate Calc
+Session --> GUI : session instance
+deactivate Session
+GUI -> Widgets : build 6 sections:\nModeSelector, OperationSelector, OperandSection,\nResultDisplay (+ buttons), HistoryPanel
+Widgets --> GUI : section instances
+GUI -> GUI : _on_arity_change() — set initial Operand B visibility
+GUI --> GUIEntry : CalculatorGUI ready
+deactivate GUI
+GUIEntry -> GUIEntry : root.mainloop()
+GUIEntry --> GUIUser : Calculator window opens\n(Normal mode, Binary type, "add" selected)
+deactivate GUIEntry
+
+== GUI — Calculate (Binary Operation) ==
+
+GUIUser -> GUI : select "add" (Binary), enter a=10, b=5
+GUIUser -> GUI : click Calculate (or press Enter)
+activate GUI
+GUI -> GUI : _on_calculate(): op_name="add"
+GUI -> Widgets : operand_section.get_operands("add")
+activate Widgets
+Widgets -> Widgets : _parse_number("10") → 10\n_parse_number("5") → 5\nop in BINARY_OPS → return (10, 5)
+Widgets --> GUI : (10, 5)
+deactivate Widgets
+GUI -> Session : session.execute("add", 10, 5)
+activate Session
+Session -> Calc : _calc.add(10, 5)
+activate Calc
+Calc -> Runtime : 10 + 5
+Runtime --> Calc : 15
+Calc --> Session : 15
+deactivate Calc
+Session -> Session : _history.append("add(10, 5) = 15")
+Session --> GUI : 15
+deactivate Session
+GUI -> Widgets : result_section.show_result(15)
+GUI -> Widgets : history_section.refresh(["add(10, 5) = 15"])
+Widgets --> GUIUser : result label: "15"\nhistory panel: "add(10, 5) = 15"
+deactivate GUI
+
+== GUI — Mode Switch (Normal → Scientific) ==
+
+GUIUser -> GUI : select "Scientific" radio button
+activate GUI
+GUI -> GUI : _on_mode_change()
+GUI -> Widgets : op_section.refresh_for_mode()
+activate Widgets
+Widgets -> Widgets : _refresh(): mode="Scientific", op_type="Binary"\nsets combobox values = _SCIENTIFIC_BINARY\n["add","subtract","multiply","divide","power"]
+Widgets -> GUI : on_arity_change() callback
+deactivate Widgets
+GUI -> GUI : _on_arity_change(): "add" in BINARY_OPS → is_binary=True
+GUI -> Widgets : operand_section.set_binary_mode(True, "add")
+Widgets --> GUIUser : Operand B remains visible\ncombobox updated for Scientific mode
+deactivate GUI
+
+== GUI — Unary Op (factorial): Operand B Hidden ==
+
+GUIUser -> GUI : select "Unary" type, choose "factorial"
+activate GUI
+GUI -> GUI : _on_arity_change(): "factorial" not in BINARY_OPS → is_binary=False
+GUI -> Widgets : operand_section.set_binary_mode(False, "factorial")
+activate Widgets
+Widgets -> Widgets : grid_remove() Operand B label + entry\nset Operand A label to "Operand A (integer):"
+Widgets --> GUIUser : Operand B hidden; A label shows "(integer)" hint
+deactivate Widgets
+deactivate GUI
+
+GUIUser -> GUI : enter a=5, click Calculate
+activate GUI
+GUI -> Widgets : operand_section.get_operands("factorial")
+activate Widgets
+Widgets -> Widgets : int("5") → 5\nop not in BINARY_OPS → return (5,)
+Widgets --> GUI : (5,)
+deactivate Widgets
+GUI -> Session : session.execute("factorial", 5)
+activate Session
+Session -> Calc : _calc.factorial(5)
+activate Calc
+Calc -> Calc : validate type & value; iterate
+Calc --> Session : 120
+deactivate Calc
+Session --> GUI : 120
+deactivate Session
+GUI -> Widgets : result_section.show_result(120)
+GUI -> Widgets : history_section.refresh([..., "factorial(5) = 120"])
+Widgets --> GUIUser : result: "120"; history updated
+deactivate GUI
+
+== GUI — Error Path (Computation Failure) ==
+
+participant "error_logger" as ErrLog
+
+GUIUser -> GUI : select "divide" (Binary), enter a=1, b=0
+GUIUser -> GUI : click Calculate
+activate GUI
+GUI -> Widgets : operand_section.get_operands("divide") → (1, 0)
+Widgets --> GUI : (1, 0)
+GUI -> Session : session.execute("divide", 1, 0)
+activate Session
+Session -> Calc : _calc.divide(1, 0)
+activate Calc
+Calc -> Runtime : 1 / 0
+Runtime --> Calc : raise ZeroDivisionError
+Calc --> Session : ZeroDivisionError propagated
+deactivate Calc
+Session --> GUI : ZeroDivisionError (history NOT appended)
+deactivate Session
+GUI -> ErrLog : log_error("gui", "calculation error in divide: ...")
+GUI -> Widgets : result_section.show_error("division by zero")
+Widgets --> GUIUser : result label (red): "Error: division by zero"
+deactivate GUI
+
+== GUI — Clear ==
+
+GUIUser -> GUI : click Clear
+activate GUI
+GUI -> GUI : _on_clear()
+GUI -> GUI : operand_a_var.set(""), operand_b_var.set("")
+GUI -> Widgets : result_section.clear()
+activate Widgets
+Widgets -> Widgets : label.configure(text="—", fg=blue)
+Widgets --> GUIUser : operand fields empty; result resets to "—"
+deactivate Widgets
+note right of GUI: session history is NOT cleared\nby _on_clear() — only UI state resets
+deactivate GUI
+
 == Unit Tests — Calculator Direct (test_calculator.py) ==
 
 participant "pytest\ntest suite" as Tests
@@ -516,5 +657,41 @@ CLI --> Tests : exit code 1
 deactivate CLI
 
 Tests -> Capsys : assert stderr contains "square root" ✓
+
+== Unit Tests — GUI (test_gui.py) ==
+note over Tests: 43 tests (skipped if tkinter absent)
+
+Tests -> GUI : CalculatorGUI(root)  ' via app fixture
+activate GUI
+GUI -> Session : CalculatorSession()
+activate Session
+Session --> GUI : session
+deactivate Session
+GUI --> Tests : app instance
+deactivate GUI
+
+Tests -> GUI : app._op_name_var.set("add")\napp._operand_a_var.set("3")\napp._operand_b_var.set("4")\napp._on_calculate()
+activate GUI
+GUI -> Session : session.execute("add", 3, 4)
+activate Session
+Session -> Calc : _calc.add(3, 4)
+activate Calc
+Calc --> Session : 7
+deactivate Calc
+Session --> GUI : 7
+deactivate Session
+GUI -> Widgets : result_section.show_result(7)
+GUI --> Tests : (result displayed)
+deactivate GUI
+
+Tests -> Tests : assert result label text == "7" ✓
+
+Tests -> GUI : app._on_clear()
+activate GUI
+GUI -> GUI : operand vars cleared; result_section.clear()
+GUI --> Tests : (UI reset)
+deactivate GUI
+
+Tests -> Tests : assert result label text == "—" ✓
 
 @enduml

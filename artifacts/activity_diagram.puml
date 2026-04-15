@@ -8,6 +8,7 @@ title Calculator — Execution Flows
 |Interactive CLI (src/__main__.py)|
 |CalculatorSession (src/session.py)|
 |Bash CLI (main.py)|
+|GUI (src/gui.py)|
 |Calculator Computation|
 
 == Interactive Mode (python -m src) ==
@@ -278,5 +279,91 @@ else (no)
   :Exit code 0;
   stop
 endif
+
+== GUI Mode (python gui_main.py) ==
+
+|GUI (src/gui.py)|
+
+start
+
+:python gui_main.py → src.gui.main()\ncreate tk.Tk() root, CalculatorGUI(root), root.mainloop();
+note right
+  CalculatorGUI.__init__:
+    - creates CalculatorSession (private _session)
+    - builds 6 labelled sections:
+        1. Mode (Normal/Scientific radio buttons)
+        2. Operation (Binary/Unary radios + combobox)
+        3. Operands (A always; B shown for binary only)
+        4. Buttons (Calculate, Clear)
+        5. Result (large-font label)
+        6. Session History (scrollable text area)
+    - initial state: Normal mode, Binary type, "add" selected
+    - binds <Return> key → _on_calculate()
+    - calls _on_arity_change() to set initial Operand B visibility
+end note
+
+repeat
+
+  if (User selects Normal/Scientific mode radio?) then (yes)
+    :_on_mode_change()\n→ op_section.refresh_for_mode()\n→ rebuild combobox values for new mode\n→ _on_arity_change() to update Operand B;
+    note right
+      Normal Binary:   [add, subtract, multiply, divide]
+      Normal Unary:    [square, square_root]
+      Scientific Binary: [add, subtract, multiply, divide, power]
+      Scientific Unary:  [square, square_root, factorial, cube,
+                           cube_root, log, ln, sin, cos, tan,
+                           cot, asin, acos]
+      Mode switch does NOT reset session history.
+    end note
+  elseif (User changes op type (Binary/Unary) or op name?) then (yes)
+    :_on_arity_change()\n→ operand_section.set_binary_mode(is_binary, op_name)\n→ show Operand B if binary; hide if unary;
+    note right
+      factorial: Operand A label shows "(integer)" hint.
+      Other unary: plain "Operand A:" label.
+    end note
+  elseif (User clicks Calculate or presses Enter?) then (yes)
+    :_on_calculate(): read op_name from _op_name_var;
+
+    if (op_name is empty?) then (yes)
+      :result_section.show_error("No operation selected.");
+    else (no)
+      :operand_section.get_operands(op_name)\n  int(raw_a) for factorial\n  _parse_number(raw_a) for all other ops\n  adds b = _parse_number(raw_b) if op_name in BINARY_OPS;
+
+      if (ValueError from operand parsing?) then (yes)
+        :log_error("gui", f"calculation error in {op_name}: {exc}");
+        :result_section.show_error(str(exc));
+      else (no)
+        |CalculatorSession (src/session.py)|
+        :session.execute(op_name, *operands)\n  → getattr(_calc, op_name)(*operands);
+
+        |Calculator Computation|
+        :Compute result\n(same 18-operation branches as Interactive/Bash CLI sections);
+
+        |CalculatorSession (src/session.py)|
+        if (exception raised?) then (yes)
+          :Propagate exception to CalculatorGUI;
+        else (no)
+          :Append format_entry to _history; return result;
+        endif
+
+        |GUI (src/gui.py)|
+        if (ValueError / TypeError / ZeroDivisionError?) then (yes)
+          :log_error("gui", f"calculation error in {op_name}: {exc}");
+          :result_section.show_error(str(exc));
+          note right: error shown in red; history NOT updated
+        else (no)
+          :result_section.show_result(result);
+          :history_section.refresh(session.history());
+        endif
+      endif
+    endif
+  elseif (User clicks Clear?) then (yes)
+    :_on_clear():\n  operand_a_var.set("")\n  operand_b_var.set("")\n  result_section.clear();
+    note right: session history is NOT cleared by Clear
+  else (User closes window)
+    stop
+  endif
+
+repeat while (window open)
 
 @enduml

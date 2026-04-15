@@ -1,3 +1,24 @@
+## Run: update-diagrams — PlantUML diagram update (post-issue-303 GUI)
+
+- **Branch:** exp3/issue-303-gui-redesign
+- **PR target:** N/A (diagram-only run)
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added cycle-15 GUI classes: `_SectionFrame`, `ModeSelector`, `OperationSelector`, `OperandSection`, `ResultDisplay`, `HistoryPanel`, `CalculatorGUI`, `gui` module; added `gui_main` root module; added `test_gui` test module; added all GUI relationships and notes including operation catalogues, section ownership, error logging, and CalculatorGUI behaviour invariants
+  - `artifacts/activity_diagram.puml` — added `|GUI (src/gui.py)|` swimlane; added `== GUI Mode ==` section covering startup, mode switch, op type/name change, Calculate (success and error paths), and Clear flows
+  - `artifacts/sequence_diagram.puml` — added `== GUI — Startup ==`, `== GUI — Calculate (Binary Operation) ==`, `== GUI — Mode Switch ==`, `== GUI — Unary Op (factorial) ==`, `== GUI — Error Path ==`, `== GUI — Clear ==`, `== Unit Tests — GUI ==` sections
+  - `progress.md` — appended this run summary
+- **Purpose:** Reflect cycle-15 tkinter GUI (`src/gui.py`, `gui_main.py`, `tests/test_gui.py`) in all three PlantUML diagrams.
+- **Risks:** None — diagram-only change; no source code modified.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md` (gui.py, gui_main.py, test_gui.py entries)
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-303 — GUI Look — Expert/generic
 
 - **Branch:** exp3/issue-303-gui-redesign

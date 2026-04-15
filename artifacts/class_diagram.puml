@@ -76,11 +76,94 @@ package "src" {
     class "__init__" as Init <<module>> {
         __all__ : list
     }
+
+    package "gui.py" {
+        class _SectionFrame <<ttk.LabelFrame>> {
+            +__init__(parent: tk.Widget, title: str)
+        }
+
+        class ModeSelector {
+            -{field} _var : tk.StringVar
+            -{field} _frame : _SectionFrame
+            +frame : _SectionFrame
+            +__init__(parent, mode_var, on_change) : None
+        }
+
+        class OperationSelector {
+            -{field} _mode_var : tk.StringVar
+            -{field} _op_type_var : tk.StringVar
+            -{field} _op_name_var : tk.StringVar
+            -{field} _frame : _SectionFrame
+            -{field} _combo : ttk.Combobox
+            +frame : _SectionFrame
+            +__init__(parent, mode_var, op_type_var, op_name_var, on_arity_change) : None
+            +refresh_for_mode() : None
+        }
+
+        class OperandSection {
+            -{field} _a_var : tk.StringVar
+            -{field} _b_var : tk.StringVar
+            -{field} _frame : _SectionFrame
+            +frame : _SectionFrame
+            +__init__(parent, operand_a_var, operand_b_var) : None
+            +set_binary_mode(is_binary, op_name) : None
+            +get_operands(op_name) : tuple
+        }
+
+        class ResultDisplay {
+            -{field} _frame : _SectionFrame
+            -{field} _label : tk.Label
+            +frame : _SectionFrame
+            +__init__(parent) : None
+            +show_result(value) : None
+            +show_error(message: str) : None
+            +clear() : None
+        }
+
+        class HistoryPanel {
+            -{field} _frame : _SectionFrame
+            -{field} _text : tk.Text
+            +frame : _SectionFrame
+            +__init__(parent) : None
+            +refresh(entries: list[str]) : None
+            +clear() : None
+        }
+
+        class CalculatorGUI {
+            -{field} _root : tk.Tk
+            -{field} _session : CalculatorSession
+            -{field} _mode_var : tk.StringVar
+            -{field} _op_type_var : tk.StringVar
+            -{field} _op_name_var : tk.StringVar
+            -{field} _operand_a_var : tk.StringVar
+            -{field} _operand_b_var : tk.StringVar
+            -{field} _mode_section : ModeSelector
+            -{field} _op_section : OperationSelector
+            -{field} _operand_section : OperandSection
+            -{field} _result_section : ResultDisplay
+            -{field} _history_section : HistoryPanel
+            +__init__(root: tk.Tk) : None
+            -_on_mode_change() : None
+            -_on_arity_change() : None
+            -_on_calculate() : None
+            -_on_clear() : None
+        }
+
+        class "gui" as Gui <<module>> {
+            +_parse_number(raw: str) : int|float
+            +main() : None
+        }
+    }
 }
 
 class "main" as CLI <<module>> {
     +_parse_operand(value: str, require_int=False) : int|float
     +main(argv: list[str] | None) : int
+}
+
+class "gui_main" as GUIMain <<module>> {
+    ' Entry point: python gui_main.py
+    ' No logic; delegates entirely to src.gui.main()
 }
 
 package "tests" {
@@ -150,6 +233,24 @@ package "tests" {
         +test_one_entry_per_line()
     }
 
+    class "test_gui" as TestGUI <<module>> {
+        +root() : tk.Tk <<fixture>>
+        +app() : CalculatorGUI <<fixture>>
+        ' 43 tests (module skipped if tkinter absent via pytest.importorskip)
+        +test_parse_number_*()
+        +test_mode_selector_*()
+        +test_operation_selector_*()
+        +test_operand_section_*()
+        +test_result_display_*()
+        +test_history_panel_*()
+        +test_calculate_*()
+        +test_error_*()
+        +test_history_*()
+        +test_clear_*()
+        +test_mode_switch_*()
+        +test_factorial_*()
+    }
+
     class "conftest" as Conftest <<module>> {
         +isolate_error_log() <<autouse fixture>>
     }
@@ -172,12 +273,28 @@ CLI --> ErrLog : calls log_error
 Init ..> Calculator : re-exports
 Init ..> CalculatorSession : re-exports
 
+' GUI relationships (cycle-15)
+CalculatorGUI --> CalculatorSession : owns & delegates
+CalculatorGUI *-- ModeSelector : owns
+CalculatorGUI *-- OperationSelector : owns
+CalculatorGUI *-- OperandSection : owns
+CalculatorGUI *-- ResultDisplay : owns
+CalculatorGUI *-- HistoryPanel : owns
+CalculatorGUI --> ErrLog : calls log_error on errors
+ModeSelector *-- _SectionFrame : owns
+OperationSelector *-- _SectionFrame : owns
+OperandSection *-- _SectionFrame : owns
+ResultDisplay *-- _SectionFrame : owns
+HistoryPanel *-- _SectionFrame : owns
+GUIMain ..> Gui : delegates to main()
+
 ' Test relationships
 TestCalc --> Calculator : tests via fixture
 TestSession --> CalculatorSession : tests via fixture
 TestMain --> Main : tests via mocked stdin/stdout
 TestCLI --> CLI : tests via capsys
 TestErrLog --> ErrLog : tests via fixture
+TestGUI --> CalculatorGUI : tests via fixture
 Conftest ..> ErrLog : patches ERROR_LOG_FILE
 
 note right of Calculator
@@ -263,6 +380,35 @@ note right of CLI
   _parse_operand: int first, then float;
     require_int=True for factorial.
   Errors go to stderr; result goes to stdout.
+end note
+
+note right of CalculatorGUI
+  Cycle-15 GUI (issue-303): tkinter-based; six labelled sections.
+  Sections: Mode (Normal/Scientific radio buttons),
+    Operation (Binary/Unary type radios + combobox),
+    Operands (A always shown; B shown for binary ops, hidden for unary),
+    Buttons (Calculate, Clear),
+    Result (large-font label, blue for result, red for error),
+    Session History (scrollable monospaced text area).
+  Operand B shown/hidden dynamically by set_binary_mode().
+  factorial enforces integer input via int() in get_operands().
+  _on_calculate(): reads op_name, gets operands, calls
+    session.execute(), shows result or error; calls log_error on error.
+  _on_clear(): clears operand fields + result area only;
+    does NOT reset session history.
+  Enter key bound to _on_calculate().
+  Mode catalogues (module-level constants):
+    _NORMAL_BINARY:   [add, subtract, multiply, divide]
+    _NORMAL_UNARY:    [square, square_root]
+    _SCIENTIFIC_BINARY: [add, subtract, multiply, divide, power]
+    _SCIENTIFIC_UNARY:  [square, square_root, factorial, cube, cube_root,
+                         log, ln, sin, cos, tan, cot, asin, acos]
+end note
+
+note right of GUIMain
+  Root-level GUI entry point (cycle-15, issue-303).
+  No logic; delegates entirely to src.gui.main().
+  Usage: python gui_main.py
 end note
 
 @enduml
