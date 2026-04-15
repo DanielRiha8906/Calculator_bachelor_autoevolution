@@ -17,7 +17,7 @@
 - **Cost:** PENDING
 - **Turns:** PENDING
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 298.4s | Cost: $1.091514 USD | Turns: 49
 
 ---
 
