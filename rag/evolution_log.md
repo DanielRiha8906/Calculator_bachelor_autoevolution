@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 15 — Issue #301: GUI styling (2026-04-15)
+- **Task:** Give the calculator GUI a new and stylish look
+- **Branch:** exp3/issue-301-stylish-gui-look
+- **Files changed:** src/gui.py
+- **Outcome:** Replaced the previous mixed-colour scheme with a cohesive modern dark theme inspired by the iOS calculator. Key changes: black display background, charcoal window (#1c1c1e), orange operator/equals buttons (#ff9f0a), dark-gray digit and unary buttons, light-gray C button with dark text for contrast, green Sci toggle (#30d158), blue History button (#0a84ff). Introduced a local `_btn()` helper inside `_build_ui` that applies flat relief, no border, hand cursor, and consistent vertical padding to every button — removing duplicated kwarg blocks. Increased display font (28→36 bold) and main button font (16→20 bold). Added `root.columnconfigure(weight=1, minsize=78)` for even column distribution and `root.minsize(320,560)`. No logic changes — 234 tests, 234 passed.
+- **Key decisions:** All visual constants (colours, fonts) grouped at the top of `_build_ui` behind named locals so future restyling only touches one block. `_btn()` is a local closure (not a method) because it is a pure UI factory used only during construction. Chose orange operators (#ff9f0a) as the single accent colour for immediate visual recognition of operation keys without overcomplicating the palette.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 14 — Issue #282: GUI (2026-04-15)
 - **Task:** Add a tkinter GUI for the calculator app while keeping existing CLI/REPL functionality
 - **Branch:** exp3/issue-282-gui-tkinter

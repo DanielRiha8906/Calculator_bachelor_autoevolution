@@ -96,6 +96,7 @@
 - **Module-level docstring:** Present — documents launch methods.
 - **Imports:** `import tkinter as tk`, `from tkinter import messagebox`, `from .calculator import Calculator, BINARY_OPS`
 - **Module-level:** `logger = logging.getLogger(__name__)`
+- **Visual design (cycle 15):** Modern dark iOS-inspired theme. Colour palette defined at top of `_build_ui`: black display (D_BG), charcoal window (BG=#1c1c1e), orange operators (C_OP=#ff9f0a), gray digits (C_DIGIT=#333333), dark-gray unary buttons (C_UNARY), light-gray C button with dark text, green Sci (C_CTL_SCI), blue Hist (C_CTL_HIST). Local `_btn()` helper applies `relief="flat"`, `borderwidth=0`, `cursor="hand2"`, and consistent padding to every button. Display font 36-bold, main button font 20-bold. `root.columnconfigure(weight=1, minsize=78)` distributes columns evenly; `root.minsize(320,560)`.
 - **Public API:**
   - `CalculatorGUI(root)` — attaches calculator GUI to a `tk.Tk` root window
   - `CalculatorGUI.press_digit(digit)` — appends digit/decimal to `_current_input`; guards against double decimals and leading zeros
@@ -114,7 +115,7 @@
   - On any error, display shows "Error", `_current_input` is cleared, but `_pending_op`/`_first_operand` may remain set.
   - Scientific panel (`sci_frame`) is hidden by default; `toggle_mode()` calls `grid()` or `grid_remove()` to show/hide it.
   - GUI and CLI/REPL interfaces share no state — each has its own `Calculator` instance.
-- **Last updated:** cycle 14
+- **Last updated:** cycle 15
 
 ## tests/test_main.py
 - **Purpose:** Test suite for src/__main__.py (both interactive REPL and bash CLI mode), including scientific mode and the --gui flag.

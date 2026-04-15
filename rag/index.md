@@ -1,13 +1,13 @@
 # RAG Index
 
-Last updated: cycle 14
+Last updated: cycle 15
 
 | File | Purpose | Last Updated Cycle |
 |------|---------|-------------------|
 | src/__init__.py | Package init, exports Calculator | 12 |
 | src/calculator.py | Calculator class; UNARY_OPS/BINARY_OPS/INTEGER_OPS/SCIENTIFIC_UNARY_OPS constants; 22 ops total; execute() dispatch; error logging | 13 |
 | src/__main__.py | Interface layer: GUI (--gui flag), CLI + interactive REPL with normal/scientific mode switching ('m'); MENU_MAP, SCIENTIFIC_MENU_MAP | 14 |
-| src/gui.py | Tkinter GUI: CalculatorGUI class + launch_gui(); all 22 ops via buttons; sci panel toggle; history dialog | 14 |
+| src/gui.py | Tkinter GUI: CalculatorGUI class + launch_gui(); all 22 ops via buttons; sci panel toggle; history dialog; iOS-inspired dark theme | 15 |
 | src/operations/__init__.py | Operations sub-package init; re-exports all arithmetic, advanced, and scientific functions | 13 |
 | src/operations/arithmetic.py | Pure functions: add, subtract, multiply, divide | 11 |
 | src/operations/advanced.py | Pure functions: factorial, square, cube, square_root, cube_root, power, log, ln | 11 |

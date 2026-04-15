@@ -1,5 +1,16 @@
 # Progress Log
 
+## Run: Issue #301 — GUI styling (2026-04-15)
+
+- **Branch:** exp3/issue-301-stylish-gui-look
+- **Intended PR target:** exp3/naive-generic
+- **Files changed:** src/gui.py, rag/index.md, rag/codebase_map.md, rag/evolution_log.md
+- **Purpose:** Restyle the tkinter calculator GUI with a modern iOS-inspired dark theme (Issue #301). Replaced the previous mixed flat-colour scheme with a cohesive palette (black display, charcoal window, orange operators, dark-gray digit/unary buttons, light-gray C button, green Sci, blue Hist). Introduced a local `_btn()` helper to apply flat relief, no-border, hand-cursor, and consistent padding to every button. Increased display font (28→36 bold) and main button font (16→20 bold). Added `columnconfigure` for even column distribution and `minsize` for stable minimum window size. No logic changes.
+- **Risks:** Visual appearance depends on font availability; Arial is used as it ships with most desktop environments. Flat relief may look slightly different across OS themes but the colour scheme is explicitly set so the result is consistent.
+- **Tests passed:** Yes — 234/234 (all existing tests unchanged; GUI tests mock tkinter so visual changes are transparent to the test suite).
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md (src/gui.py entry), rag/patterns.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Diagram Update (2026-04-15)
 
 - **Branch:** exp3/issue-282-gui-tkinter
