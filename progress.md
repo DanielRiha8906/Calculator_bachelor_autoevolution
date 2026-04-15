@@ -8,7 +8,7 @@
 - **Risks:** None — diagram-only update; no source or test changes.
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 244.7s | Cost: $0.566647 USD | Turns: 19
 
 ## Run: Issue #269 — Logic Separation (2026-04-15)
 
