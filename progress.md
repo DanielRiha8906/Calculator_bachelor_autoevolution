@@ -1,5 +1,15 @@
 # Progress Log
 
+## Run: Issue #276 — Documentation (2026-04-15)
+
+- **Branch:** exp3/issue-276-documentation → PR targeting exp3/naive-generic
+- **Files changed:** src/__init__.py, src/calculator.py, src/__main__.py, README.md, rag/index.md, rag/codebase_map.md, rag/evolution_log.md
+- **Purpose:** Add documentation for the calculator application. Added module-level docstrings to src/__init__.py, src/calculator.py, and src/__main__.py. Added class docstring and __init__ docstring to Calculator. Added individual method docstrings to all 12 Calculator operation methods. Added main() docstring. Expanded README.md from a placeholder title to a full user guide.
+- **Risks:** Purely additive changes; no logic altered. All 149 tests pass.
+- **Tests passed:** 149/149
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Diagram Update (2026-04-15)
 
 - **Branch:** exp3/issue-273-modularization
