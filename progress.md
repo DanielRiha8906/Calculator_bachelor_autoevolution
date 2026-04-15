@@ -15,7 +15,7 @@
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md (gui.py, __main__.py, interactive.py, history.py, calculator.py)
 - **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 302.4s | Cost: $0.943822 USD | Turns: 33
 
 ---
 
