@@ -248,4 +248,63 @@ This keeps mode state local to the loop, avoids conditional logic scattered thro
 
 ---
 
+## Pattern: Dependency injection of external modules for GUI testability
+
+When a GUI class needs a UI toolkit (e.g., tkinter) and must be tested headlessly in CI, inject the toolkit's module references as constructor parameters instead of importing them at the top of the file:
+
+```python
+class CalculatorApp:
+    def __init__(self, root, _tk, _ttk, _messagebox):
+        self._tk = _tk
+        self._ttk = _ttk
+        self._messagebox = _messagebox
+        ...
+
+def launch_gui():
+    import tkinter as tk
+    from tkinter import ttk, messagebox
+    root = tk.Tk()
+    CalculatorApp(root, _tk=tk, _ttk=ttk, _messagebox=messagebox)
+    root.mainloop()
+```
+
+This avoids module-level imports (so the module loads even without tkinter installed), eliminates `sys.modules` patching in tests, and makes the testability contract explicit in the class signature. Tests simply pass `MagicMock` objects:
+
+```python
+a = CalculatorApp(root, _tk=MagicMock(), _ttk=MagicMock(), _messagebox=MagicMock())
+```
+
+**First observed:** cycle 14, `CalculatorApp` in `src/interface/gui.py`.
+
+---
+
+## Pattern: Extract pure-logic method from GUI handler for isolated testing
+
+GUI event handlers typically mix widget interaction (reading entry values, calling `result_var.set(...)`) with business logic (parsing numbers, running calculations). Extract the computation into a separate method with no widget dependencies so it can be tested without any GUI setup:
+
+```python
+def _on_calculate(self):
+    # Widget interaction
+    sel = self._op_listbox.curselection()
+    result, entry = self._compute(
+        self._operations[sel[0]],
+        self._entry_a.get(),
+        self._entry_b.get(),
+    )
+    self._result_var.set(str(result))
+
+def _compute(self, operation, value_a, value_b):
+    # Pure logic — no widget access
+    a = float(value_a.strip())
+    b = float(value_b.strip())
+    result = self._calc.execute(operation, a, b)
+    return result, f"{operation}({a}, {b}) = {result}"
+```
+
+Tests for `_compute` need no tkinter at all; tests for `_on_calculate` only need the widget mocks to return the right values.
+
+**First observed:** cycle 14, `CalculatorApp._compute` in `src/interface/gui.py`.
+
+---
+
 <!-- Add further patterns here as they are discovered -->

@@ -4,6 +4,25 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 14 — Issue #283: GUI (2026-04-15)
+
+- **Task:** Add a tkinter graphical user interface providing access to all calculator functionality (normal and scientific mode), operation inputs, result display, and session history viewer, while keeping existing CLI and interactive modes working.
+- **Files changed:** `src/interface/gui.py` (new), `src/__main__.py`, `tests/test_gui.py` (new), `tests/test_main.py`
+- **Outcome:** 197 tests pass (68 calculator + 92 main/CLI + 40 GUI). All prior tests continue to pass; 41 new tests added (40 GUI + 1 `--gui` dispatch).
+- **Key decisions:**
+  - `CalculatorApp` receives `_tk`, `_ttk`, `_messagebox` module references via constructor parameters (dependency injection). This allows the module to be imported without tkinter installed and tests to pass MagicMocks directly without patching `sys.modules`.
+  - `launch_gui()` performs a lazy `import tkinter` inside the function body (not at module level), so `from .interface.gui import launch_gui` in `src/__main__.py` never triggers a tkinter import at module load time.
+  - `_compute(operation, value_a, value_b)` is extracted as a pure-logic method with no tkinter dependencies; it is the primary target for computation tests.
+  - GUI uses normal/scientific mode with radio buttons (same modes as interactive CLI) and a scrollable Listbox for operation selection. Arity logic (1 vs 2 inputs, integer vs float) mirrors `_OP_PROMPTS`/arity sets from `interactive.py`.
+  - Session history is accumulated in `self._history` (list) AND written to the shared `history.txt` via `append_to_history()`, matching interactive mode behaviour. History file is cleared at session start via `clear_history()`.
+  - History viewer opens as a read-only `Toplevel` window, consistent with GUI conventions.
+  - `main()` updated: `--gui` flag (checked before CLI args) calls `launch_gui()` and returns. All other paths unchanged.
+  - `launch_gui` re-exported from `src.__main__` for backward compatibility.
+- **Lessons learned:** Dependency injection for module references (passing `_tk`, `_ttk`, `_messagebox` as constructor params) is cleaner than patching `sys.modules` for tkinter GUI testing. It avoids import-ordering pitfalls and makes the testability contract explicit in the class signature.
+- **Cost:** PENDING | **Turns:** PENDING
+
+---
+
 ## Cycle 13 — Issue #280: Scientific Mode (2026-04-15)
 
 - **Task:** Add a scientific mode to the calculator and allow the user to switch between normal and scientific functionality in interactive mode. Normal mode is limited to the four basic operations; scientific mode provides the expanded set of eight advanced functions.
