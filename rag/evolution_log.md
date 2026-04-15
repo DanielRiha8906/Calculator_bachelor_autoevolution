@@ -4,6 +4,22 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 9 — Issue #252: Error Logging (2026-04-12)
+
+- **Task:** Add error logging to the calculator so failures and invalid usage are recorded in a local log file (`error.log`), separate from the operation history.
+- **Files changed:** `src/__main__.py`, `tests/test_main.py`
+- **Outcome:** 147 tests pass (63 calculator + 84 CLI/interactive). All 133 prior tests continue to pass; 14 new tests added.
+- **Key decisions:**
+  - Added `ERROR_LOG_FILE = "error.log"` module constant alongside `HISTORY_FILE`, using the same `None`-sentinel default pattern so tests can monkeypatch it without touching function signatures.
+  - Added `append_to_error_log(message, filepath=None)` which writes `[YYYY-MM-DD HH:MM:SS] message\n` via `datetime.now()`. Append-only — never cleared, persists across sessions (unlike history which is cleared on start).
+  - Logging points: invalid number in `parse_number`, invalid integer in `parse_int`, invalid menu choice in interactive loop, unknown operation in `run_operation`, `ValueError` from Calculator in `run_operation`, all `cli_mode` error paths (wrong arg count, non-numeric, calculation errors).
+  - Successful operations produce no error log entry (verified by negative tests that check the log file does not exist).
+  - Updated `autouse` fixture from `isolate_history` to `isolate_files` to redirect both constants.
+- **Lessons learned:** Negative tests (asserting the file does not exist on success) are a clean way to verify that logging is strictly error-only with no false positives.
+- **Cost:** PENDING | **Turns:** PENDING
+
+---
+
 ## Cycle 8 — Issue #249: Operation history (2026-04-12)
 
 - **Task:** Add operation history to the calculator so calculations performed during the current session are recorded. Keep the history in `history.txt`, allow it to be displayed on request in interactive mode, and do not keep the history between separate sessions.

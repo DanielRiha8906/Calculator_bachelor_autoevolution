@@ -119,4 +119,48 @@ Tests that need a different path simply `monkeypatch.setattr(mod, "HISTORY_FILE"
 
 ---
 
+## Pattern: Separate error log from operation history
+
+When a CLI records both successful operations (history) and failures (errors), keep them in distinct files rather than mixing them into a single log. This makes both files easier to read and reason about:
+
+- `history.txt` — one line per successful operation, cleared at session start.
+- `error.log` — append-only timestamped error records, never cleared (survives across sessions).
+
+The error log helper mirrors the history helpers in signature and uses the same `None`-sentinel pattern:
+
+```python
+ERROR_LOG_FILE = "error.log"
+
+def append_to_error_log(message: str, filepath: str | None = None) -> None:
+    if filepath is None:
+        filepath = ERROR_LOG_FILE
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(filepath, "a", encoding="utf-8") as fh:
+        fh.write(f"[{timestamp}] {message}\n")
+```
+
+The autouse test fixture must redirect **both** constants to `tmp_path` so tests stay isolated.
+
+**First observed:** cycle 9, `append_to_error_log` in `src/__main__.py`
+
+---
+
+## Pattern: Negative test to verify error-only logging
+
+When a function should write to an error log only on failure, add a negative test that asserts the log file does not exist after a successful call. This is simpler than checking the file is empty (which would require creating the file first) and guarantees no false-positive log entries:
+
+```python
+def test_success_does_not_log_error(tmp_path, monkeypatch):
+    log_path = str(tmp_path / "e.log")
+    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    # perform a successful operation
+    ...
+    import os
+    assert not os.path.exists(log_path)
+```
+
+**First observed:** cycle 9, error log tests in `tests/test_main.py`
+
+---
+
 <!-- Add further patterns here as they are discovered -->

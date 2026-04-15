@@ -4,6 +4,41 @@
 
 ## Run: Diagram update (2026-04-12)
 
+- **Branch:** exp3/issue-252-add-error-logging
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `ERROR_LOG_FILE` constant and `append_to_error_log` function to `__main__` class; added notes for both; updated notes for `parse_number`, `parse_int`, `run_operation`, `cli_mode`, and `main` to describe error-logging behaviour.
+  - `artifacts/activity_diagram.puml` — added `append_to_error_log(...)` action labels at every error exit in `cli_mode`; added error-log call before `invalid_op_count` increment in the interactive menu loop; updated parse-step labels inside `run_operation` to note per-attempt error logging; updated `ValueError` exit in `run_operation` to show error-log call.
+  - `artifacts/sequence_diagram.puml` — added `error.log` participant; added `append_to_error_log` write calls at all validation and calculation error points in both `cli_mode` and interactive mode (invalid menu choice, each parse failure, each Calculator ValueError).
+- **Purpose:** Reflect cycle 9 (issue #252) changes — error logging feature — in all three PlantUML diagrams.
+- **Risks:** None — diagram-only change; no source code modified.
+- **All tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: 239.4s | Cost: $0.739317 USD | Turns: 25
+
+---
+
+## Run: Issue #252 — Error Logging (2026-04-12)
+
+- **Branch:** exp3/issue-252-add-error-logging
+- **Files changed:**
+  - `src/__main__.py` — added `ERROR_LOG_FILE` constant; added `append_to_error_log(message, filepath=None)` helper; added error log calls in `parse_number`, `parse_int`, `run_operation` (unknown op + ValueError), interactive loop (invalid menu choice), and all `cli_mode` error paths.
+  - `tests/test_main.py` — updated `isolate_history` fixture to also redirect `ERROR_LOG_FILE` (renamed to `isolate_files`); imported `append_to_error_log` and `ERROR_LOG_FILE`; added 14 new tests covering error log append, timestamp format, module-constant usage, logging from parse functions, run_operation, main() interactive loop, and cli_mode; added negative tests verifying successful operations do not produce log entries.
+- **Purpose:** Record failures and invalid usage in a local `error.log` file, separate from the operation history, so that debugging and audit of error conditions is possible without mixing them with normal history.
+- **Risks:** None — additive change only; error logging uses the same `None`-sentinel pattern as history helpers for safe test isolation.
+- **All tests passed:** Yes — 147 tests (63 calculator + 84 CLI/interactive, including 14 new).
+- **Current branch:** exp3/issue-252-add-error-logging
+- **Intended PR target:** exp3/structured-generic
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: 315.0s | Cost: $1.212037 USD | Turns: 46
+
+---
+
+## Run: Diagram update (2026-04-12)
+
 - **Branch:** exp3/issue-249-operation-history
 - **Files changed:**
   - `artifacts/class_diagram.puml` — added `HISTORY_FILE` constant; added `clear_history`, `append_to_history`, `show_history` helper functions; updated `run_operation` return type to `str | None`; updated notes for `main` and `cli_mode`.

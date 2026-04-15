@@ -12,6 +12,7 @@ actor "User" as User
 participant "__main__" as Main
 participant "Calculator" as Calc
 participant "history.txt" as History
+participant "error.log" as ErrorLog
 participant "math" as Math
 
 User -> Main : python -m src [operation [values...]]
@@ -28,16 +29,19 @@ alt CLI mode (args non-empty)
     alt factorial (int arg)
         Main -> Main : validate len(values)==1
         alt len != 1
+            Main -> ErrorLog : append_to_error_log("invalid_input: ...")
             Main -> User : stderr: "Error: requires 1 integer argument"\nexit(1)
         else len == 1
             Main -> Main : validate int(values[0])
             alt not a valid integer
+                Main -> ErrorLog : append_to_error_log("invalid_input: ...")
                 Main -> User : stderr: "Error: not a valid integer"\nexit(1)
             else valid
                 Main -> Calc : factorial(n)
                 activate Calc
                 alt n is not int or n < 0
                     Calc --> Main : raise ValueError(...)
+                    Main -> ErrorLog : append_to_error_log("calculation_error: ...")
                     Main -> User : stderr: "Error: <message>"\nexit(1)
                 else valid n
                     Calc -> Math : factorial(n)
@@ -52,16 +56,19 @@ alt CLI mode (args non-empty)
     else one-argument op (square/cube/square_root/cube_root/ln)
         Main -> Main : validate len(values)==1
         alt len != 1
+            Main -> ErrorLog : append_to_error_log("invalid_input: ...")
             Main -> User : stderr: "Error: requires 1 argument"\nexit(1)
         else len == 1
             Main -> Main : validate float(values[0])
             alt not a valid number
+                Main -> ErrorLog : append_to_error_log("invalid_input: ...")
                 Main -> User : stderr: "Error: not a valid number"\nexit(1)
             else valid
                 Main -> Calc : <operation>(float(values[0]))
                 activate Calc
                 alt ValueError raised (e.g. sqrt of negative, ln of non-positive)
                     Calc --> Main : raise ValueError(...)
+                    Main -> ErrorLog : append_to_error_log("calculation_error: ...")
                     Main -> User : stderr: "Error: <message>"\nexit(1)
                 else success
                     Calc --> Main : result
@@ -74,16 +81,19 @@ alt CLI mode (args non-empty)
     else two-argument op (add/subtract/multiply/divide/power/log)
         Main -> Main : validate len(values)==2
         alt len != 2
+            Main -> ErrorLog : append_to_error_log("invalid_input: ...")
             Main -> User : stderr: "Error: requires 2 arguments"\nexit(1)
         else len == 2
             Main -> Main : validate float(values[0]), float(values[1])
             alt any value is not a valid number
+                Main -> ErrorLog : append_to_error_log("invalid_input: ...")
                 Main -> User : stderr: "Error: not a valid number"\nexit(1)
             else all valid
                 Main -> Calc : <operation>(float(values[0]), float(values[1]))
                 activate Calc
                 alt ValueError raised (e.g. divide-by-zero, invalid log base)
                     Calc --> Main : raise ValueError(...)
+                    Main -> ErrorLog : append_to_error_log("calculation_error: ...")
                     Main -> User : stderr: "Error: <message>"\nexit(1)
                 else success
                     Calc --> Main : result
@@ -119,6 +129,7 @@ else interactive mode (no args)
             Main -> User : print "--- History ---\n  1. ...\n  2. ..."
 
         else invalid choice (not in OPERATIONS)
+            Main -> ErrorLog : append_to_error_log("invalid_input: ...")
             Main -> Main : invalid_op_count += 1
             alt invalid_op_count >= MAX_ATTEMPTS (3)
                 Main -> User : print "Too many invalid choices. Ending session."
@@ -132,7 +143,7 @@ else interactive mode (no args)
             Main -> Main : operation = OPERATIONS[choice]
 
             Main -> User : prompt for input(s)\n(parse_number / parse_int)
-            note right: each helper retries up to MAX_ATTEMPTS=3\ntimes on invalid input, then raises\nTooManyAttemptsError
+            note right: each invalid attempt → append_to_error_log;\neach helper retries up to MAX_ATTEMPTS=3\ntimes on invalid input, then raises\nTooManyAttemptsError
             User -> Main : numeric input(s)
 
             alt TooManyAttemptsError raised (input retry limit exhausted)
@@ -149,6 +160,7 @@ else interactive mode (no args)
                     activate Calc
                     alt b == 0
                         Calc --> Main : raise ValueError("Division by zero is not allowed")
+                        Main -> ErrorLog : append_to_error_log("calculation_error: ...")
                     else b != 0
                         Calc --> Main : a / b
                     end
@@ -161,6 +173,7 @@ else interactive mode (no args)
                     activate Calc
                     alt a <= 0 or base <= 0 or base == 1
                         Calc --> Main : raise ValueError(...)
+                        Main -> ErrorLog : append_to_error_log("calculation_error: ...")
                     else valid inputs
                         Calc -> Math : log(a, base)
                         Math --> Calc : result
@@ -180,6 +193,7 @@ else interactive mode (no args)
                     activate Calc
                     alt a < 0
                         Calc --> Main : raise ValueError("Square root not defined for negative numbers")
+                        Main -> ErrorLog : append_to_error_log("calculation_error: ...")
                     else a >= 0
                         Calc -> Math : sqrt(a)
                         Math --> Calc : result
@@ -195,6 +209,7 @@ else interactive mode (no args)
                     activate Calc
                     alt a <= 0
                         Calc --> Main : raise ValueError("Natural logarithm not defined for non-positive numbers")
+                        Main -> ErrorLog : append_to_error_log("calculation_error: ...")
                     else a > 0
                         Calc -> Math : log(a)
                         Math --> Calc : result
@@ -208,6 +223,7 @@ else interactive mode (no args)
                     activate Calc
                     alt n is not int or n < 0
                         Calc --> Main : raise ValueError(...)
+                        Main -> ErrorLog : append_to_error_log("calculation_error: ...")
                     else valid n
                         Calc -> Math : factorial(n)
                         Math --> Calc : n!

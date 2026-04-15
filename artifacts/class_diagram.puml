@@ -60,6 +60,7 @@ end note
 class "__main__" as Main {
     +MAX_ATTEMPTS : int = 3
     +HISTORY_FILE : str = "history.txt"
+    +ERROR_LOG_FILE : str = "error.log"
     +OPERATIONS : dict
     +_ONE_ARG_OPS : set
     +_INT_ARG_OPS : set
@@ -68,6 +69,7 @@ class "__main__" as Main {
     +clear_history(filepath: str | None) : None
     +append_to_history(entry: str, filepath: str | None) : None
     +show_history(filepath: str | None) : None
+    +append_to_error_log(message: str, filepath: str | None) : None
     +show_menu() : None
     +parse_number(prompt: str, max_attempts: int) : float
     +parse_int(prompt: str, max_attempts: int) : int
@@ -85,6 +87,13 @@ note right of Main::HISTORY_FILE
   Default path for session history file.
   Patchable via monkeypatch in tests.
   History is NOT kept between sessions.
+end note
+
+note right of Main::ERROR_LOG_FILE
+  Default path for error log file.
+  Patchable via monkeypatch in tests.
+  Append-only; never cleared across sessions.
+  Stores timestamped failure/invalid-input records.
 end note
 
 note right of Main::OPERATIONS
@@ -126,15 +135,30 @@ note right of Main::show_history
   Triggered by the "h" menu option.
 end note
 
+note right of Main::append_to_error_log
+  Appends "[YYYY-MM-DD HH:MM:SS] <message>"
+  to ERROR_LOG_FILE. Called on:
+  — invalid number input (parse_number)
+  — invalid integer input (parse_int)
+  — invalid menu choice (main loop)
+  — unknown operation (run_operation)
+  — calculation ValueError (run_operation)
+  — wrong arg count / non-numeric / calc
+    error (cli_mode).
+  Uses None-sentinel default like history helpers.
+end note
+
 note right of Main::parse_number
   Retries up to max_attempts times on
-  invalid float input; raises
+  invalid float input; each failed attempt
+  calls append_to_error_log; raises
   TooManyAttemptsError on exhaustion
 end note
 
 note right of Main::parse_int
   Retries up to max_attempts times on
-  non-integer input; raises
+  non-integer input; each failed attempt
+  calls append_to_error_log; raises
   TooManyAttemptsError on exhaustion
 end note
 
@@ -142,15 +166,17 @@ note right of Main::run_operation
   Returns "op(args) = result" string on
   success; returns None on error or unknown
   operation. Catches ValueError from
-  Calculator. TooManyAttemptsError is NOT
+  Calculator (logs to error log).
+  TooManyAttemptsError is NOT
   caught here — it propagates to main().
 end note
 
 note right of Main::cli_mode
   Parses args via argparse.
   Validates arg count and numeric/integer
-  format per field with clear per-field
-  error messages to stderr.
+  format per field; all validation and
+  calculation errors written to error log
+  and printed to stderr.
   Prints result to stdout.
   Returns 0 on success, 1 on error.
   History is NOT written in CLI mode.
@@ -161,9 +187,11 @@ note right of Main::main
   cli_mode(args) and exits.
   Interactive loop: clears history at start,
   handles "h" (show history), tracks
-  invalid_op_count; session ends when count
-  reaches MAX_ATTEMPTS or TooManyAttemptsError
-  is raised. Appends successful entries to history.
+  invalid_op_count; invalid menu choices
+  logged to error log; session ends when
+  count reaches MAX_ATTEMPTS or
+  TooManyAttemptsError is raised.
+  Appends successful entries to history.
 end note
 
 Main ..> Calculator : instantiates

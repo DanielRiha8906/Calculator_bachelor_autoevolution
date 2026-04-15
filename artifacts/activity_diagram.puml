@@ -19,11 +19,11 @@ if (args non-empty?) then (yes)
 
         if (operation in _INT_ARG_OPS\n{factorial}?) then (yes)
             if (len(values) != 1?) then (yes)
-                :stderr: "Error: requires 1 integer argument";
+                :append_to_error_log("invalid_input: ...")\nstderr: "Error: requires 1 integer argument";
                 stop
             else (no)
                 if (values[0] is not a valid integer?) then (yes)
-                    :stderr: "Error: '<value>' is not a valid integer";
+                    :append_to_error_log("invalid_input: ...")\nstderr: "Error: '<value>' is not a valid integer";
                     stop
                 else (no)
                     :n = int(values[0]);
@@ -32,11 +32,11 @@ if (args non-empty?) then (yes)
             endif
         elseif (operation in _ONE_ARG_OPS\n{square, cube, square_root, cube_root, ln}?) then (yes)
             if (len(values) != 1?) then (yes)
-                :stderr: "Error: requires 1 argument";
+                :append_to_error_log("invalid_input: ...")\nstderr: "Error: requires 1 argument";
                 stop
             else (no)
                 if (values[0] is not a valid number?) then (yes)
-                    :stderr: "Error: '<value>' is not a valid number";
+                    :append_to_error_log("invalid_input: ...")\nstderr: "Error: '<value>' is not a valid number";
                     stop
                 else (no)
                     :a = float(values[0]);
@@ -45,11 +45,11 @@ if (args non-empty?) then (yes)
             endif
         else (two-arg op\nadd / subtract / multiply\ndivide / power / log)
             if (len(values) != 2?) then (yes)
-                :stderr: "Error: requires 2 arguments";
+                :append_to_error_log("invalid_input: ...")\nstderr: "Error: requires 2 arguments";
                 stop
             else (no)
                 if (any value is not a valid number?) then (yes)
-                    :stderr: "Error: '<value>' is not a valid number";
+                    :append_to_error_log("invalid_input: ...")\nstderr: "Error: '<value>' is not a valid number";
                     stop
                 else (no)
                     :a = float(values[0])\nb = float(values[1]);
@@ -59,7 +59,7 @@ if (args non-empty?) then (yes)
         endif
 
         if (ValueError raised from Calculator?) then (yes)
-            :stderr: "Error: <message>"; exit(1);
+            :append_to_error_log("calculation_error: ...")\nstderr: "Error: <message>"; exit(1);
         else (no)
             :stdout: print result; exit(0);
         endif
@@ -80,7 +80,7 @@ else (no — interactive mode)
         elseif (choice == "h"?) then (yes)
             :show_history()\nPrint all entries from history file;
         elseif (choice not in OPERATIONS?) then (yes)
-            :invalid_op_count += 1;
+            :append_to_error_log("invalid_input: ...")\ninvalid_op_count += 1;
             if (invalid_op_count >= MAX_ATTEMPTS?) then (yes)
                 :Print "Invalid choice. Too many invalid choices. Ending session.";
                 stop
@@ -94,18 +94,18 @@ else (no — interactive mode)
             partition "run_operation(calc, operation)" {
 
                 if (operation == "factorial"?) then (yes)
-                    :parse_int("Enter non-negative integer:")\nnote: up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
+                    :parse_int("Enter non-negative integer:")\nnote: each invalid try → append_to_error_log;\n      up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
                 elseif (two-argument operation?\nadd / subtract / multiply\ndivide / power / log) then (yes)
-                    :parse_number("Enter first/dividend/base number:")\nnote: up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
-                    :parse_number("Enter second/divisor/exponent/base:")\nnote: up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
+                    :parse_number("Enter first/dividend/base number:")\nnote: each invalid try → append_to_error_log;\n      up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
+                    :parse_number("Enter second/divisor/exponent/base:")\nnote: each invalid try → append_to_error_log;\n      up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
                 else (one-argument operation\nsquare / cube / square_root\ncube_root / ln)
-                    :parse_number("Enter number:")\nnote: up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
+                    :parse_number("Enter number:")\nnote: each invalid try → append_to_error_log;\n      up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
                 endif
 
                 :Call Calculator method with parsed input(s);
 
                 if (ValueError raised?\ne.g. divide-by-zero, negative sqrt,\nnegative factorial, invalid log base) then (yes)
-                    :Print "Error: <message>"\nreturn None;
+                    :append_to_error_log("calculation_error: ...")\nPrint "Error: <message>"\nreturn None;
                 else (no)
                     :Print "Result: <value>"\nreturn "op(args) = result" entry string;
                 endif
