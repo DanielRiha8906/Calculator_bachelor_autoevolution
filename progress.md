@@ -2,6 +2,24 @@
 
 ---
 
+## Run: Diagram update (2026-04-15)
+
+- **Branch:** exp3/issue-277-add-documentation
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — verified accurate; no structural source changes since last diagram run (issue #277 was documentation-only: docstrings added to `src/__init__.py` and `Calculator`, no class/module relationships altered)
+  - `artifacts/activity_diagram.puml` — verified accurate; execution flow unchanged
+  - `artifacts/sequence_diagram.puml` — verified accurate; component interactions unchanged
+  - `progress.md` — appended this run entry
+- **Purpose:** Verify PlantUML diagrams on current experiment branch after issue #277 documentation run. No diagram content changes required; source structure is identical to cycle 11 post-modularization state.
+- **Risks:** None — no source code modified.
+- **All tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #277 — Documentation (2026-04-15)
 
 - **Branch:** exp3/issue-277-add-documentation
