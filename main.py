@@ -20,13 +20,8 @@ Exit codes:
 
 import sys
 
-from src.calculator import Calculator
+from src.session import CalculatorSession, ALL_OPS, BINARY_OPS
 from src.error_logger import log_error
-
-# Maps operation name to arity (number of operands required).
-_BINARY_OPS = {"add", "subtract", "multiply", "divide", "power"}
-_UNARY_OPS = {"factorial", "square", "cube", "square_root", "cube_root", "log", "ln"}
-_ALL_OPS = _BINARY_OPS | _UNARY_OPS
 
 _USAGE = (
     "Usage: python main.py <operation> <operand> [operand2]\n"
@@ -76,13 +71,13 @@ def main(argv: list[str] | None = None) -> int:
 
     operation = argv[0]
 
-    if operation not in _ALL_OPS:
+    if operation not in ALL_OPS:
         log_error("cli", f"unknown operation '{operation}'")
         print(f"Error: unknown operation '{operation}'.", file=sys.stderr)
         print(_USAGE, file=sys.stderr)
         return 1
 
-    is_binary = operation in _BINARY_OPS
+    is_binary = operation in BINARY_OPS
 
     if is_binary:
         if len(argv) != 3:
@@ -103,18 +98,17 @@ def main(argv: list[str] | None = None) -> int:
             print(_USAGE, file=sys.stderr)
             return 1
 
-    calc = Calculator()
-    method = getattr(calc, operation)
+    session = CalculatorSession()
 
     try:
         if is_binary:
             a = _parse_operand(argv[1])
             b = _parse_operand(argv[2])
-            result = method(a, b)
+            result = session.execute(operation, a, b)
         else:
             require_int = operation == "factorial"
             a = _parse_operand(argv[1], require_int=require_int)
-            result = method(a)
+            result = session.execute(operation, a)
     except (ValueError, TypeError, ZeroDivisionError) as exc:
         log_error("cli", f"error in '{operation}': {exc}")
         print(f"Error: {exc}", file=sys.stderr)
