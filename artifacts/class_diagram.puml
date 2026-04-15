@@ -84,7 +84,7 @@ note right of Calculator::execute
   non-callable operation names.
   Entry point for all operation dispatch
   from the interface layer (run_operation,
-  cli_mode).
+  cli_mode, CalculatorApp._compute).
 end note
 note right of Calculator
   No state — all methods are pure delegates.
@@ -232,12 +232,70 @@ package "src.interface" {
       History is NOT written in CLI mode.
     end note
 
+    class CalculatorApp {
+        -_mode : str
+        -_history : list[str]
+        -_operations : list[str]
+        -_calc : Calculator
+        +__init__(root, _tk, _ttk, _messagebox)
+        +_build_ui() : None
+        +_refresh_operations() : None
+        +_on_mode_change() : None
+        +_on_operation_select(_event) : None
+        +_on_calculate() : None
+        +_on_show_history() : None
+        +_compute(operation: str, value_a: str, value_b: str) : tuple
+    }
+    note right of CalculatorApp
+      tkinter is NOT imported at module level.
+      launch_gui() performs a lazy import and
+      passes modules via _tk/_ttk/_messagebox.
+      Clears history file at session start.
+      Supports normal mode (4 ops) and
+      scientific mode (12 ops).
+    end note
+    note right of CalculatorApp::_compute
+      Pure-logic helper — no tkinter calls.
+      Parses string inputs, delegates to
+      Calculator.execute, returns (result,
+      history_entry) tuple. Raises ValueError
+      on parse failures or calculation errors.
+    end note
+    note right of CalculatorApp::_on_mode_change
+      Switches _mode, clears entry fields,
+      resets result display, refreshes listbox.
+    end note
+    note right of CalculatorApp::_on_calculate
+      Reads widget state, calls _compute,
+      updates result display and in-memory
+      _history list, appends to history file.
+      Shows error dialog on ValueError.
+    end note
+    note right of CalculatorApp::_on_show_history
+      Opens a read-only Toplevel window
+      listing the session's _history entries.
+    end note
+
+    class "gui" as GUI << (M,orchid) module >> {
+        +launch_gui() : None
+    }
+    note right of GUI::launch_gui
+      Imports tkinter lazily; creates root
+      Tk window; instantiates CalculatorApp
+      with injected tk/ttk/messagebox modules;
+      calls root.mainloop() (blocks until closed).
+    end note
+
     Interactive ..> History : calls append_to_error_log
     Interactive ..> TooManyAttemptsError : raises
     CLI ..> History : calls append_to_error_log
     CLI ..> Interactive : imports _ONE_ARG_OPS,\n_INT_ARG_OPS, _TWO_ARG_OPS, _ALL_OPS
     CLI ..> Calculator : instantiates + calls execute()
     Interactive ..> Calculator : calls execute() via run_operation
+    GUI ..> CalculatorApp : instantiates
+    CalculatorApp ..> Calculator : instantiates + calls execute()
+    CalculatorApp ..> History : calls clear_history,\nappend_to_history
+    CalculatorApp ..> Interactive : imports _ONE_ARG_OPS, _INT_ARG_OPS,\nNORMAL_MODE_OPERATIONS,\nSCIENTIFIC_MODE_OPERATIONS
 
 }
 
@@ -247,9 +305,10 @@ class "__main__" as Main << (M,orchid) module >> {
     +main(args: list[str]|None = None) : None
 }
 note right of Main
-  Top-level entry point. Dispatches to
-  cli_mode(args) when args are present,
-  otherwise starts the interactive menu loop.
+  Top-level entry point. Dispatches to:
+  — launch_gui() when args[0] == "--gui"
+  — cli_mode(args) when args are present
+  — interactive menu loop otherwise.
   Interactive loop tracks mode ("normal" or
   "scientific") and current_ops dict; the "s"
   key toggles between NORMAL_MODE_OPERATIONS
@@ -261,7 +320,7 @@ note right of Main
   OPERATIONS, TooManyAttemptsError, show_menu,
   parse_number, parse_int, run_operation,
   cli_mode, clear_history, append_to_history,
-  show_history, append_to_error_log).
+  show_history, append_to_error_log, launch_gui).
   Monkeypatching must target
   src.interface.history, not src.__main__.
 end note
@@ -271,5 +330,6 @@ Main ..> Interactive : calls show_menu, run_operation
 Main ..> CLI : calls cli_mode
 Main ..> History : calls clear_history,\nappend_to_history, show_history,\nappend_to_error_log
 Main ..> TooManyAttemptsError : catches in interactive loop
+Main ..> GUI : calls launch_gui (--gui mode)
 
 @enduml

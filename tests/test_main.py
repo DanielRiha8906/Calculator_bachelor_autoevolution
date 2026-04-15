@@ -824,3 +824,10 @@ def test_main_dispatches_to_cli_mode(capsys):
         main(["add", "2", "3"])
     assert exc_info.value.code == 0
     assert "5" in capsys.readouterr().out
+
+
+def test_main_gui_flag_launches_gui():
+    """main(["--gui"]) calls launch_gui and returns without entering interactive mode."""
+    with patch("src.__main__.launch_gui") as mock_launch:
+        main(["--gui"])
+    mock_launch.assert_called_once()

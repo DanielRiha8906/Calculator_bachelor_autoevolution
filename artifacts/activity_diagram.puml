@@ -9,7 +9,7 @@ skinparam activity {
 }
 
 note
-  Module structure (cycle 13):
+  Module structure (cycle 14):
   main() lives in src.__main__
   cli_mode() lives in src.interface.cli
   run_operation / parse_number / parse_int /
@@ -17,6 +17,8 @@ note
   History helpers live in src.interface.history
   Calculator delegates to src.operations.basic
     and src.operations.scientific
+  GUI (CalculatorApp / launch_gui) lives in
+    src.interface.gui
 end note
 
 start
@@ -24,6 +26,11 @@ start
 :args = sys.argv[1:] (or passed directly to main());
 
 if (args non-empty?) then (yes)
+
+    if (args[0] == "--gui"?) then (yes)
+        :launch_gui()\nCreate root Tk window, instantiate CalculatorApp,\nenter mainloop (blocks until window closed);
+        stop
+    else (no — CLI args)
 
     partition "cli_mode(args)" {
         :Parse args via argparse\n(operation + values);
@@ -75,6 +82,8 @@ if (args non-empty?) then (yes)
             :stdout: print result; exit(0);
         endif
     }
+
+    endif
 
 else (no — interactive mode)
 

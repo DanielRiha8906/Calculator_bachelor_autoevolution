@@ -119,18 +119,39 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## src/__main__.py
 - **Purpose:** CLI entry point — `main()` function + re-exports from sub-modules for backward compatibility.
-- **Last updated:** cycle 13
+- **Last updated:** cycle 14
 - **Exports (re-exported from sub-modules):**
   - `HISTORY_FILE`, `ERROR_LOG_FILE` from `src.interface.history`
   - `clear_history`, `append_to_history`, `show_history`, `append_to_error_log` from `src.interface.history`
   - `MAX_ATTEMPTS`, `NORMAL_MODE_OPERATIONS`, `SCIENTIFIC_MODE_OPERATIONS`, `OPERATIONS`, `TooManyAttemptsError` from `src.interface.interactive`
   - `show_menu`, `parse_number`, `parse_int`, `run_operation` from `src.interface.interactive`
   - `cli_mode` from `src.interface.cli`
-- **Defined here:** `main(args=None)` — dispatches to CLI mode or starts the interactive loop.
-- **Interactive loop mode state:** `main()` tracks `mode` (`"normal"` or `"scientific"`) and `current_ops` dict. The `"s"` key toggles mode; choices are validated against `current_ops` only. Scientific operations (keys `"5"`–`"12"`) are inaccessible in normal mode until the user switches.
-- **Invariants:** Re-exports allow old `from src.__main__ import X` statements to continue working. However, monkeypatching `HISTORY_FILE`/`ERROR_LOG_FILE` must target `src.interface.history`, not `src.__main__`.
+  - `launch_gui` from `src.interface.gui`
+- **Defined here:** `main(args=None)` — dispatches to GUI, CLI, or interactive mode.
+- **`--gui` flag:** if `args[0] == "--gui"`, calls `launch_gui()` and returns.
+- **Interactive loop mode state:** `main()` tracks `mode` (`"normal"` or `"scientific"`) and `current_ops` dict. The `"s"` key toggles mode.
+- **Invariants:** Re-exports allow old `from src.__main__ import X` statements to continue working. Monkeypatching `HISTORY_FILE`/`ERROR_LOG_FILE` must target `src.interface.history`.
 - **CLI mode usage:** `python -m src <operation> <value> [<value2>]`
 - **Interactive mode:** `python -m src` (no args)
+- **GUI mode:** `python -m src --gui`
+
+---
+
+## src/interface/gui.py
+- **Purpose:** Optional tkinter graphical user interface for the calculator.
+- **Last updated:** cycle 14
+- **Public API:**
+  - `CalculatorApp(root, _tk, _ttk, _messagebox)` — builds and manages all GUI widgets; accepts tkinter modules as constructor parameters for testability (dependency injection).
+    - `_mode`: `"normal"` or `"scientific"` — tracks current mode.
+    - `_history`: list of history entry strings for the current session.
+    - `_operations`: list of operation names for the current mode listbox.
+    - `_compute(operation, value_a, value_b) -> (result, entry)` — pure-logic helper; parses strings and delegates to `Calculator.execute`. Raises `ValueError` on bad input or calculation errors.
+    - `_on_mode_change()` — switches mode, clears entries, refreshes listbox.
+    - `_on_calculate()` — reads widget state, calls `_compute`, updates result display and history.
+    - `_on_show_history()` — opens a `Toplevel` history viewer.
+  - `launch_gui()` — imports tkinter, creates root window, instantiates `CalculatorApp`, enters `mainloop()`.
+- **Design note:** tkinter is NOT imported at module level. `launch_gui()` performs a lazy import and passes the modules to `CalculatorApp` via `_tk`, `_ttk`, `_messagebox` parameters. This allows the module to be imported without tkinter installed and tests to inject MagicMocks directly.
+- **Invariants:** Clears history file at session start (same as interactive mode). All file I/O uses `history.py` helpers. `_compute` is pure (no tkinter calls); all widget interactions are in `_on_*` methods.
 
 ---
 
@@ -156,8 +177,23 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## tests/test_main.py
-- **Purpose:** Unit tests for the interactive CLI and cli_mode — 91 tests with mocked input.
-- **Last updated:** cycle 13
-- **Key change from cycle 13:** Added import of `NORMAL_MODE_OPERATIONS` and `SCIENTIFIC_MODE_OPERATIONS` from `src.interface.interactive`. Updated `test_show_menu_prints_all_operations` → `test_show_menu_prints_normal_operations_by_default` to match new default behavior. Updated `test_main_two_operations_then_quit` to use two normal-mode operations. Added 5 new tests for mode switching and `show_menu` mode variants.
-- **Tests (91 total):** 84 prior tests (7 net new, 2 updated).
+- **Purpose:** Unit tests for the interactive CLI and cli_mode — 92 tests with mocked input.
+- **Last updated:** cycle 14
+- **Key change from cycle 14:** Added `test_main_gui_flag_launches_gui` — verifies `main(["--gui"])` calls `launch_gui()` via `patch("src.__main__.launch_gui")`.
+- **Tests (92 total):** 91 prior tests + 1 new `--gui` dispatch test.
 - **Invariants:** Tests import `src.interface.history as _history_mod` for monkeypatching. All other imports remain via `src.__main__` re-exports. Interactive tests call `main([])` to bypass sys.argv; cli_mode tests call `cli_mode([...])` directly.
+
+---
+
+## tests/test_gui.py
+- **Purpose:** Headless tests for the tkinter GUI — 40 tests using dependency-injected MagicMock tkinter objects.
+- **Last updated:** cycle 14
+- **Tests (40 total):**
+  - `launch_gui` source code inspection (2)
+  - Initialisation: normal mode, empty history, 4 operations (3)
+  - Mode switching: scientific/normal toggle, result/entry reset (6)
+  - `_compute`: all 12 operations + error paths (15)
+  - `_on_calculate`: success, history list, history file, error paths, no-selection (7)
+  - History accumulation: multiple calcs, failed calc not appended (2)
+  - `autouse` `isolate_files` fixture redirects history/error-log to tmp_path (1)
+- **Invariants:** No real tkinter in tests — `CalculatorApp` receives MagicMock `_tk`, `_ttk`, `_messagebox`. Widget instance vars are replaced with fresh mocks after `__init__`. `_compute` tests need no tkinter at all.
