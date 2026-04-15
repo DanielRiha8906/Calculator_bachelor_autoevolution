@@ -1,5 +1,15 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-15)
+
+- **Branch:** exp3/issue-276-documentation
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Verified and confirmed all three PlantUML diagrams are accurate and up-to-date with cycle 12 state. Cycle 12 (documentation) added only docstrings — no structural changes — so diagrams required no modifications. Diagrams reflect: full Calculator class API (12 operations + execute + get_history), module-level constants (UNARY_OPS, BINARY_OPS, INTEGER_OPS, _to_int_if_needed), src.operations sub-package (arithmetic, advanced, scientific modules), __main__ interface layer (cli_main, REPL, parse_number, run_operation, _format_result, _show_history, MENU_MAP), and all delegation/error-logging flows.
+- **Risks:** None — diagram-only verification run; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Issue #276 — Documentation (2026-04-15)
 
 - **Branch:** exp3/issue-276-documentation → PR targeting exp3/naive-generic
