@@ -7,28 +7,64 @@
 - **Last updated:** cycle 0
 
 ## src/calculator.py
-- **Purpose:** Core arithmetic calculator class with per-instance operation history, error logging, and operation dispatch.
+- **Purpose:** Core calculator facade: per-instance history, error logging, and operation dispatch; delegates operation implementations to the `src.operations` sub-package.
+- **Imports:** `from .operations import arithmetic, advanced`
 - **Module-level constants:** `UNARY_OPS`, `BINARY_OPS`, `INTEGER_OPS` — sets classifying all 12 operations by arity and type requirements.
 - **Module-level helpers:** `_to_int_if_needed(op, value)` — coerces value to int for INTEGER_OPS, raises ValueError for non-whole numbers.
 - **Module-level:** `logger = logging.getLogger(__name__)` — logs errors at ERROR level before re-raising.
 - **Public API:**
   - `Calculator.__init__()` → initialises `self.history: list[dict]` to `[]`
   - `Calculator.get_history()` → returns a shallow copy of `self.history`
-  - `Calculator.add(a, b)` → `a + b`
-  - `Calculator.subtract(a, b)` → `a - b`
-  - `Calculator.multiply(a, b)` → `a * b`
-  - `Calculator.divide(a, b)` → `a / b` (logs and raises `ZeroDivisionError` if `b == 0`)
-  - `Calculator.factorial(n)` → `math.factorial(n)` (logs and raises `ValueError` for negative `n`)
-  - `Calculator.square(n)` → `n ** 2`
-  - `Calculator.cube(n)` → `n ** 3`
-  - `Calculator.square_root(n)` → `math.sqrt(n)` (logs and raises `ValueError` for negative `n`)
-  - `Calculator.cube_root(n)` → `math.cbrt(n)` (handles negative inputs; requires Python 3.11+)
-  - `Calculator.power(base, exp)` → `base ** exp`
-  - `Calculator.log(n)` → `math.log10(n)` (logs and raises `ValueError` for `n <= 0`)
-  - `Calculator.ln(n)` → `math.log(n)` (logs and raises `ValueError` for `n <= 0`)
+  - `Calculator.add(a, b)` → delegates to `arithmetic.add`
+  - `Calculator.subtract(a, b)` → delegates to `arithmetic.subtract`
+  - `Calculator.multiply(a, b)` → delegates to `arithmetic.multiply`
+  - `Calculator.divide(a, b)` → delegates to `arithmetic.divide` (logs and raises `ZeroDivisionError` if `b == 0`)
+  - `Calculator.factorial(n)` → delegates to `advanced.factorial` (logs and raises `ValueError` for negative `n`)
+  - `Calculator.square(n)` → delegates to `advanced.square`
+  - `Calculator.cube(n)` → delegates to `advanced.cube`
+  - `Calculator.square_root(n)` → delegates to `advanced.square_root` (logs and raises `ValueError` for negative `n`)
+  - `Calculator.cube_root(n)` → delegates to `advanced.cube_root` (handles negative inputs; requires Python 3.11+)
+  - `Calculator.power(base, exp)` → delegates to `advanced.power`
+  - `Calculator.log(n)` → delegates to `advanced.log` (logs and raises `ValueError` for `n <= 0`)
+  - `Calculator.ln(n)` → delegates to `advanced.ln` (logs and raises `ValueError` for `n <= 0`)
   - `Calculator.execute(op, *operands)` → dispatches by op name, applies _to_int_if_needed for INTEGER_OPS, records history on success, propagates exceptions unchanged; raises ValueError for unknown ops.
-- **Key invariants:** History is recorded by `execute()`, not by individual Calculator methods. Each history entry is `{"op": str, "operands": tuple, "result": float|int}`. Failed operations are not recorded. `get_history()` returns a copy — callers cannot mutate internal state. Each Calculator instance has its own independent history. Error-logging methods log before re-raising — exceptions still propagate unchanged.
-- **Last updated:** cycle 10
+- **Key invariants:** History is recorded by `execute()`, not by individual Calculator methods. Each history entry is `{"op": str, "operands": tuple, "result": float|int}`. Failed operations are not recorded. `get_history()` returns a copy — callers cannot mutate internal state. Each Calculator instance has its own independent history. Error-logging methods log before re-raising — exceptions still propagate unchanged. Operation functions in sub-modules are pure (no logging/history side effects).
+- **Last updated:** cycle 11
+
+## src/operations/__init__.py
+- **Purpose:** Operations sub-package initializer; re-exports all arithmetic and advanced operation functions for convenience.
+- **Exports:** `add`, `subtract`, `multiply`, `divide`, `factorial`, `square`, `cube`, `square_root`, `cube_root`, `power`, `log`, `ln`
+- **Last updated:** cycle 11
+
+## src/operations/arithmetic.py
+- **Purpose:** Pure arithmetic operation functions with no side effects.
+- **Public API:**
+  - `add(a, b)` → `a + b`
+  - `subtract(a, b)` → `a - b`
+  - `multiply(a, b)` → `a * b`
+  - `divide(a, b)` → `a / b` (raises `ZeroDivisionError` natively if `b == 0`)
+- **Key invariants:** No logging, no state. All functions are pure.
+- **Last updated:** cycle 11
+
+## src/operations/advanced.py
+- **Purpose:** Pure advanced mathematical operation functions (power, roots, factorial, logarithms) with no side effects.
+- **Imports:** `math`
+- **Public API:**
+  - `factorial(n)` → `math.factorial(n)` (raises `ValueError` for negative `n`)
+  - `square(n)` → `n ** 2`
+  - `cube(n)` → `n ** 3`
+  - `square_root(n)` → `math.sqrt(n)` (raises `ValueError` for negative `n`)
+  - `cube_root(n)` → `math.cbrt(n)` (handles negative inputs; requires Python 3.11+)
+  - `power(base, exp)` → `base ** exp`
+  - `log(n)` → `math.log10(n)` (raises `ValueError` for `n <= 0`)
+  - `ln(n)` → `math.log(n)` (raises `ValueError` for `n <= 0`)
+- **Key invariants:** No logging, no state. All functions are pure.
+- **Last updated:** cycle 11
+
+## src/operations/scientific.py
+- **Purpose:** Placeholder stub module for future scientific calculator mode operations (trigonometric, hyperbolic, etc.). Currently empty.
+- **Public API:** None yet.
+- **Last updated:** cycle 11
 
 ## src/__main__.py
 - **Purpose:** Pure interface layer for the Calculator: bash argv mode and interactive REPL, with error logging. Operation classification and dispatch logic now live in calculator.py.

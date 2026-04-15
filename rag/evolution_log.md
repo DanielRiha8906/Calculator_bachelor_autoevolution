@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 11 — Issue #273: Modularization (2026-04-15)
+- **Task:** Refactor the calculator into more modules and prepare the structure for a future scientific mode
+- **Branch:** exp3/issue-273-modularization
+- **Files changed:** src/calculator.py, src/operations/__init__.py (new), src/operations/arithmetic.py (new), src/operations/advanced.py (new), src/operations/scientific.py (new)
+- **Outcome:** Created `src/operations/` sub-package. Extracted pure arithmetic functions (add/subtract/multiply/divide) into `arithmetic.py` and pure advanced functions (factorial/square/cube/square_root/cube_root/power/log/ln) into `advanced.py`. Added `scientific.py` as a placeholder stub for future scientific mode. Calculator methods now delegate to these pure functions; error logging and history recording remain in the Calculator layer. 149 tests collected, 149 passed.
+- **Key decisions:** Operation functions are pure (no logging, no state) — this keeps the operations modules reusable and testable in isolation. Calculator retains logging/history as cross-cutting concerns. scientific.py is an empty stub with a docstring; it signals intent without adding speculative logic. Public Calculator API is unchanged, so all existing tests pass without modification.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 10 — Issue #269: Logic Separation (2026-04-15)
 - **Task:** Separate calculator logic from the interface layer
 - **Branch:** exp3/issue-269-logic-separation

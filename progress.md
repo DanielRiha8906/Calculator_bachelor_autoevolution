@@ -1,5 +1,15 @@
 # Progress Log
 
+## Run: Issue #273 — Modularization (2026-04-15)
+
+- **Branch:** exp3/issue-273-modularization → PR targeting exp3/naive-generic
+- **Files changed:** src/calculator.py, src/operations/__init__.py (new), src/operations/arithmetic.py (new), src/operations/advanced.py (new), src/operations/scientific.py (new), rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
+- **Purpose:** Modularize calculator into an `src/operations/` sub-package and prepare structure for a future scientific mode. Pure operation functions extracted to `arithmetic.py` and `advanced.py`; `scientific.py` stub added as entry point for future scientific ops. Calculator methods now delegate to these pure functions while retaining error logging and history recording.
+- **Risks:** Minimal. Public Calculator API is unchanged; all 149 tests pass without modification. The only structural change is that operation implementations moved from inline methods to external pure functions — behaviour is identical.
+- **Tests passed:** 149/149
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Diagram Update (2026-04-15)
 
 - **Branch:** exp3/issue-269-logic-separation

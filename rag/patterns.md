@@ -29,6 +29,9 @@ When a Calculator method catches an exception to emit a log record (e.g., `ZeroD
 ### Named-dispatch execute() method for logic/interface separation
 When a class has multiple operations that share cross-cutting concerns (history recording, input coercion), add an `execute(op, *operands)` method that dispatches by name, applies the shared logic (coercion, history), and propagates exceptions unchanged. The interface layer calls `execute()` with pre-parsed values rather than calling individual methods directly and then applying concerns like history tracking itself. This keeps the interface as pure I/O and the class as the authority on all operation semantics.
 
+### Operations sub-package for separation of pure math from calculator logic
+When the Calculator class grows to hold many operations, extract the operation implementations into a dedicated `src/operations/` sub-package with separate modules by category (arithmetic, advanced, scientific). Operation functions in the sub-modules are pure (no logging, no state). The Calculator class retains ownership of cross-cutting concerns (history recording, error logging, type coercion) and delegates computation to the sub-modules. This prepares for a future scientific mode by providing a named stub module (`scientific.py`) that can be filled incrementally without touching other files.
+
 ## Anti-Patterns
 
 ### Infinite retry loops without limit
