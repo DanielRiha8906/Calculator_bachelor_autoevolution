@@ -2,6 +2,25 @@
 
 ---
 
+## Run: Issue #283 — Add GUI (2026-04-15)
+
+- **Branch:** exp3/issue-283-add-gui
+- **PR target:** exp3/structured-generic
+- **Files changed:**
+  - `src/interface/gui.py` (new) — `CalculatorApp` class with tkinter GUI; `launch_gui()` entry-point; tkinter injected via constructor for headless testing
+  - `src/__main__.py` — added `--gui` flag dispatch in `main()`; added `launch_gui` re-export
+  - `tests/test_gui.py` (new) — 40 headless GUI tests using MagicMock tkinter injection
+  - `tests/test_main.py` — added `test_main_gui_flag_launches_gui`
+- **Purpose:** Add a tkinter GUI providing normal/scientific mode, all 12 operations, result display, and session history viewer via `python -m src --gui`. Existing interactive and CLI modes are unchanged.
+- **Risks:** tkinter is not available in the test runner environment (not installed), but the lazy-import + dependency-injection design means tests pass without it. Real GUI requires Python with tkinter installed.
+- **All tests passed:** yes — 197 tests (68 calculator + 92 main/CLI + 40 GUI) pass
+- **RAG entries consulted:** codebase_map.md (interactive.py, __main__.py, history.py), evolution_log.md (cycle 13)
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update after issue #280 scientific mode (2026-04-15)
 
 - **Branch:** exp3/issue-280-add-scientific-mode
