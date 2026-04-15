@@ -136,6 +136,37 @@ def save_history(history, path=None):
 Tests can then `patch("src.__main__.HISTORY_FILE", tmp_path)` and the function
 will pick up the patched value. Applied in `save_history` / `tests/test_main.py`.
 
+## Pattern: keep thin wrapper functions for test backward compatibility
+
+When refactoring a module-level function into a class method, keep the
+original function as a one-line wrapper that delegates to the class method.
+This avoids breaking existing tests that import the function directly,
+while still achieving the desired separation of concerns.
+
+```python
+# Before (in src/__main__.py):
+def format_history_entry(name, args, result):
+    args_str = ", ".join(str(a) for a in args)
+    return f"{name}({args_str}) = {result}"
+
+# After: logic moved to CalculatorSession.format_entry; wrapper preserved
+def format_history_entry(name, args, result):
+    return CalculatorSession.format_entry(name, args, result)
+```
+
+Applied in `src/__main__.py` for `format_history_entry` during the
+logic-separation refactor (issue-271).
+
+## Pattern: centralise operation metadata to eliminate duplication
+
+When multiple entry points (interactive CLI, bash CLI) need to know which
+operations take one vs two operands, define `BINARY_OPS`/`UNARY_OPS`/`ALL_OPS`
+in a single shared module and import from there. Avoid duplicating these sets.
+
+Before issue-271: `main.py` defined `_BINARY_OPS`, `_UNARY_OPS`, `_ALL_OPS`
+independently from `__main__.py`'s `OPERATIONS` dict. These could drift.
+After: both import from `src.session`.
+
 ## Pattern: autouse conftest fixture for cross-cutting side effects
 
 When a feature produces side effects (file writes, network calls) on every error path,

@@ -6,9 +6,9 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## `src/__init__.py`
 - **Purpose:** Package initializer for the `src` package.
-- **Exports:** `Calculator`
-- **Invariants:** Re-exports `Calculator` from `calculator.py`; no logic of its own.
-- **Last updated:** cycle 0
+- **Exports:** `Calculator`, `CalculatorSession`
+- **Invariants:** Re-exports `Calculator` from `calculator.py` and `CalculatorSession` from `session.py`; no logic of its own.
+- **Last updated:** cycle 11 (issue-271)
 
 ---
 
@@ -22,21 +22,16 @@ Per-file summaries: purpose, public API surface, key invariants.
   - `display_menu() -> None` — prints the numbered operation menu; includes 'h. history' and 'q. quit' options
   - `get_number(prompt, require_int=False) -> int | float` — reads one number from stdin; raises `ValueError` for non-numeric or (when `require_int=True`) non-integer input
   - `get_number_with_retry(prompt, require_int=False) -> int | float` — wraps `get_number` with retry logic; raises `_SessionExpired` after MAX_ATTEMPTS failures; each failed attempt calls `log_error("interactive", ...)`
-  - `format_history_entry(name, args, result) -> str` — formats a calculation as `name(arg1, arg2) = result`
+  - `format_history_entry(name, args, result) -> str` — delegates to `CalculatorSession.format_entry`; kept for backward compatibility with existing tests
   - `save_history(history, path=None) -> None` — writes history list to `path` (or `HISTORY_FILE` if None); overwrites any previous content so each session starts fresh
-  - `main() -> None` — runs the interactive session loop until the user enters 'q' or retries are exhausted; on 'h' displays current session history; on quit/expiry writes history to HISTORY_FILE
+  - `main() -> None` — runs the interactive session loop until the user enters 'q' or retries are exhausted; delegates computation and history to `CalculatorSession`; on 'h' displays current session history; on quit/expiry writes history to HISTORY_FILE
 - **Invariants:**
-  - Unary operations (factorial, square, cube, square_root, cube_root, log, ln) prompt for one operand; factorial uses `require_int=True`.
-  - Binary operations (add, subtract, multiply, divide, power) prompt for two operands.
-  - Successful calculations are appended to `history` as `format_history_entry(name, (a[, b]), result)` entries.
-  - 'h' input during the session displays the history list; "No history yet." if empty.
+  - `main()` creates a `CalculatorSession` to handle all operation dispatch and history recording; does not interact with `Calculator` directly.
+  - `format_history_entry` delegates to `CalculatorSession.format_entry`; it remains a module-level function so existing test imports are stable.
   - `save_history` is called on every exit path (normal quit, max-invalid-ops, `_SessionExpired`).
   - `save_history` reads `HISTORY_FILE` at call time (not as a default arg default) so tests can patch it.
-  - Invalid operation selections print the list of available operations and allow retry; after MAX_ATTEMPTS total invalid selections the session ends; each invalid selection logs via `log_error("interactive", ...)`.
-  - Invalid operand inputs trigger up to MAX_ATTEMPTS retries per prompt; on exhaustion `_SessionExpired` is raised and the session ends; each failed input attempt logs via `log_error`.
-  - `ValueError`, `TypeError`, and `ZeroDivisionError` from calculator operations (not from input parsing) are caught, logged via `log_error("interactive", f"calculation error in {name}: ...")`, and printed as "Error: <msg>"; the session continues.
-  - `_SessionExpired` (internal exception, not re-exported) propagates out of operand reading and is caught in `main()` to break the session loop.
-- **Last updated:** cycle 9 (issue-253)
+  - All other invariants from cycle 9 remain unchanged (retry logic, error logging, session termination).
+- **Last updated:** cycle 11 (issue-271)
 
 ---
 
@@ -88,9 +83,11 @@ Per-file summaries: purpose, public API surface, key invariants.
 ## `main.py`
 - **Purpose:** Bash-accessible command-line entry point for the Calculator. Accepts `<operation> [operand1] [operand2]` as positional CLI arguments, computes the result, and prints it to stdout. Not interactive — one invocation, one result.
 - **Public API:**
-  - `main(argv: list[str] | None = None) -> int` — parses args, runs the operation, prints result; returns exit code (0 success, 1 error)
+  - `main(argv: list[str] | None = None) -> int` — parses args, runs the operation via `CalculatorSession`, prints result; returns exit code (0 success, 1 error)
   - `_parse_operand(value: str, require_int: bool = False)` — converts a string CLI arg to int or float
-  - `_BINARY_OPS`, `_UNARY_OPS`, `_ALL_OPS` — sets defining which operations take two vs one operand
+- **Imports:**
+  - `BINARY_OPS`, `ALL_OPS` from `src.session` (operation arity metadata; no longer duplicated here)
+  - `CalculatorSession` from `src.session` for operation dispatch
 - **Invariants:**
   - Binary ops (add, subtract, multiply, divide, power) require exactly 2 operands.
   - Unary ops (factorial, square, cube, square_root, cube_root, log, ln) require exactly 1 operand.
@@ -98,7 +95,7 @@ Per-file summaries: purpose, public API surface, key invariants.
   - All errors (wrong arg count, unknown op, non-numeric operand, computation error) print to stderr, call `log_error("cli", ...)`, and return exit code 1.
   - Result is printed to stdout with `print(result)`.
   - `if __name__ == "__main__": sys.exit(main())` wires exit code to the shell.
-- **Last updated:** cycle 9 (issue-253)
+- **Last updated:** cycle 11 (issue-271)
 
 ---
 
@@ -117,10 +114,39 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ---
 
+## `src/session.py`
+- **Purpose:** Centralises operation dispatch, session history management, and operation arity metadata. Introduced in cycle 11 to separate computation from interface concerns.
+- **Exports:** `CalculatorSession`, `BINARY_OPS`, `UNARY_OPS`, `ALL_OPS`
+- **Public API:**
+  - `BINARY_OPS: frozenset[str]` — `{"add", "subtract", "multiply", "divide", "power"}`
+  - `UNARY_OPS: frozenset[str]` — `{"factorial", "square", "cube", "square_root", "cube_root", "log", "ln"}`
+  - `ALL_OPS: frozenset[str]` — union of `BINARY_OPS` and `UNARY_OPS`; 12 operations total
+  - `CalculatorSession.__init__()` — creates a private `Calculator` instance and empty history list
+  - `CalculatorSession.execute(name, *args)` — dispatches `getattr(calc, name)(*args)`, appends formatted entry to history, returns result; propagates `ValueError`/`TypeError`/`ZeroDivisionError` without recording failed calls
+  - `CalculatorSession.format_entry(name, args, result) -> str` — static method; returns `"name(arg1, arg2) = result"`
+  - `CalculatorSession.history() -> list[str]` — returns a copy of the history list
+  - `CalculatorSession.save(path: str) -> None` — writes history to file, overwriting previous content
+- **Key invariants:**
+  - Failed `execute()` calls (any exception) do not append to history.
+  - `history()` returns a defensive copy; mutations of the returned list do not affect the session.
+  - `BINARY_OPS` and `UNARY_OPS` are disjoint; `ALL_OPS` is their union.
+- **Last updated:** cycle 11 (issue-271)
+
+---
+
 ## `tests/conftest.py`
 - **Purpose:** Shared pytest fixtures for the test suite. Provides an autouse `isolate_error_log` fixture that redirects `src.error_logger.ERROR_LOG_FILE` to a temp file for every test, preventing error-path tests from writing to the real `error.log`.
 - **Exports:** `isolate_error_log` (pytest fixture, autouse=True, yields tmp log path)
 - **Last updated:** cycle 9 (issue-253)
+
+---
+
+## `tests/test_session.py`
+- **Purpose:** Unit tests for `src/session.py`.
+- **Current state:** 37 tests covering: `BINARY_OPS`/`UNARY_OPS`/`ALL_OPS` set contents and disjointness, `format_entry` static method (binary/unary/float), `execute` for all 12 operations (normal inputs + error paths), history lifecycle (empty on init, accumulates on success, not updated on error, defensive copy), `save` (writes entries, empty session, overwrites).
+- **Test strategy:** `session` fixture creates a fresh `CalculatorSession` for each test; `tmp_path` for file I/O tests. Uses `isolate_error_log` autouse fixture from conftest.
+- **Exports:** None
+- **Last updated:** cycle 11 (issue-271)
 
 ---
 
