@@ -1,3 +1,26 @@
+## Run: issue-275 — Modularization — Expert/generic
+
+- **Branch:** exp3/issue-275-modularization
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/operations/__init__.py` (new) — package init; re-exports `BasicOperations` and `ScientificOperations`
+  - `src/operations/basic.py` (new) — `BasicOperations` mixin: add, subtract, multiply, divide
+  - `src/operations/scientific.py` (new) — `ScientificOperations` mixin: factorial, square, cube, square_root, cube_root, power, log, ln
+  - `src/calculator.py` — replaced monolithic implementation with `Calculator(BasicOperations, ScientificOperations)`; no methods defined directly on `Calculator`
+- **Purpose:** Establish a clear structural boundary between standard arithmetic and scientific operations in the module layout. Future scientific-mode work has an obvious home (`src/operations/scientific.py`) without requiring any changes to session dispatch, CLIs, or existing tests.
+- **Risks:** Minimal — all 12 Calculator methods are still available under the same names via inheritance. MRO is straightforward (`Calculator → BasicOperations → ScientificOperations → object`). No callers needed updating.
+- **Tests passed:** 209/209 (all pass, no tests added or modified)
+- **Branch/worktree:** exp3/issue-275-modularization
+- **Intended merge target:** exp3/expert-generic
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/patterns.md`, `rag/evolution_log.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update
 
 - **Branch:** exp3/issue-271-logic-separation
