@@ -8,7 +8,7 @@
 - **Risks:** Purely additive changes; no logic altered. All 149 tests pass.
 - **Tests passed:** 149/149
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 214.7s | Cost: $0.720011 USD | Turns: 42
 
 ## Run: Diagram Update (2026-04-15)
 
