@@ -1,3 +1,10 @@
+"""Core calculator module.
+
+Provides the Calculator class and operation-classification constants.
+All operation implementations live in the src.operations sub-package;
+this module owns the cross-cutting concerns: history recording, error
+logging, and operand type coercion.
+"""
 import logging
 
 from .operations import arithmetic, advanced
@@ -20,7 +27,20 @@ def _to_int_if_needed(op: str, value: float) -> "float | int":
 
 
 class Calculator:
+    """A calculator with per-instance operation history.
+
+    Supports 12 operations across two arity groups:
+    - Binary (two operands): add, subtract, multiply, divide, power
+    - Unary (one operand): factorial, square, cube, square_root, cube_root,
+      log (base-10), ln (natural log)
+
+    Use :meth:`execute` to dispatch operations by name, which also records
+    each successful call in the instance history.  Individual methods can
+    be called directly but do not record history themselves.
+    """
+
     def __init__(self):
+        """Initialise the Calculator with an empty operation history."""
         self.history: list[dict] = []
 
     def get_history(self) -> list[dict]:
@@ -28,15 +48,19 @@ class Calculator:
         return list(self.history)
 
     def add(self, a, b):
+        """Return the sum of a and b."""
         return arithmetic.add(a, b)
 
     def subtract(self, a, b):
+        """Return a minus b."""
         return arithmetic.subtract(a, b)
 
     def multiply(self, a, b):
+        """Return the product of a and b."""
         return arithmetic.multiply(a, b)
 
     def divide(self, a, b):
+        """Return a divided by b. Raises ZeroDivisionError if b is zero."""
         try:
             return arithmetic.divide(a, b)
         except ZeroDivisionError:
@@ -44,6 +68,7 @@ class Calculator:
             raise
 
     def factorial(self, n):
+        """Return n factorial (n!). Raises ValueError for negative n."""
         try:
             return advanced.factorial(n)
         except ValueError as exc:
@@ -51,12 +76,15 @@ class Calculator:
             raise
 
     def square(self, n):
+        """Return n squared (n ** 2)."""
         return advanced.square(n)
 
     def cube(self, n):
+        """Return n cubed (n ** 3)."""
         return advanced.cube(n)
 
     def square_root(self, n):
+        """Return the square root of n. Raises ValueError for negative n."""
         try:
             return advanced.square_root(n)
         except ValueError as exc:
@@ -64,12 +92,15 @@ class Calculator:
             raise
 
     def cube_root(self, n):
+        """Return the cube root of n. Handles negative inputs (requires Python 3.11+)."""
         return advanced.cube_root(n)
 
     def power(self, base, exp):
+        """Return base raised to the power exp."""
         return advanced.power(base, exp)
 
     def log(self, n):
+        """Return the base-10 logarithm of n. Raises ValueError for n <= 0."""
         try:
             return advanced.log(n)
         except ValueError as exc:
@@ -77,6 +108,7 @@ class Calculator:
             raise
 
     def ln(self, n):
+        """Return the natural logarithm of n. Raises ValueError for n <= 0."""
         try:
             return advanced.ln(n)
         except ValueError as exc:

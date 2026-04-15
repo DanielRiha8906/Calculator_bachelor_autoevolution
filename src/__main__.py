@@ -1,3 +1,22 @@
+"""Entry point for the Calculator application.
+
+Supports two usage modes:
+
+CLI mode (non-interactive)::
+
+    python -m src <operation> [operands...]
+
+    Examples:
+        python -m src add 3 4          # prints 7
+        python -m src factorial 5      # prints 120
+
+Interactive REPL mode (no arguments)::
+
+    python -m src
+
+    A menu is displayed; the user selects an operation by number, enters
+    operands when prompted, and can view history ('h') or quit ('q').
+"""
 import logging
 import sys
 
@@ -142,6 +161,11 @@ def cli_main(args: list) -> int:
 
 
 def main() -> None:
+    """Configure logging and dispatch to CLI or interactive REPL mode.
+
+    If command-line arguments are present, delegates to :func:`cli_main` and
+    exits with its return code.  Otherwise starts the interactive REPL loop.
+    """
     logging.basicConfig(
         level=logging.ERROR,
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
