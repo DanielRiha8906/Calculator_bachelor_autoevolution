@@ -1,6 +1,7 @@
 """Calculator entry point.
 
-Dispatches between interactive menu-driven mode and non-interactive CLI mode.
+Dispatches between interactive menu-driven mode, non-interactive CLI mode,
+and the optional graphical interface (``--gui`` flag).
 All implementation lives in the interface sub-package; this module owns only
 the top-level :func:`main` function and the ``__main__`` guard.
 
@@ -29,17 +30,22 @@ from .interface.interactive import (
     run_operation,
 )
 from .interface.cli import cli_mode
+from .interface.gui import launch_gui
 
 
 def main(args: list[str] | None = None) -> None:
-    """Run the calculator in CLI or interactive mode.
+    """Run the calculator in CLI, interactive, or GUI mode.
 
-    If *args* is provided (or ``sys.argv[1:]`` is non-empty when *args* is
-    ``None``), execute a single operation via :func:`cli_mode` and exit.
-    Otherwise start the interactive menu-driven loop.
+    * ``--gui``: launch the tkinter graphical interface (blocks until closed).
+    * Non-empty *args* without ``--gui``: execute a single operation via
+      :func:`cli_mode` and exit.
+    * No args: start the interactive menu-driven loop.
     """
     if args is None:
         args = sys.argv[1:]
+    if args and args[0] == "--gui":
+        launch_gui()
+        return
     if args:
         sys.exit(cli_mode(args))
 
