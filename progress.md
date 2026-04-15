@@ -1,3 +1,23 @@
+## Run: issue-303 — GUI Look — Expert/generic
+
+- **Branch:** exp3/issue-303-gui-redesign
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/gui.py` (modified) — redesigned layout with ttk sections, `_OperandSection` helper class, unary/binary badge, Clear button, prominent result area
+  - `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md` — updated for cycle 16
+  - `progress.md` — this entry
+- **Purpose:** Redesign the tkinter Calculator GUI (issue-303). All calculator behaviour preserved; presentation layer restructured into six clearly labelled LabelFrame sections; `_OperandSection` class extracts operand-field visibility logic from the main controller; ttk used throughout for a consistent native look.
+- **Risks:** GUI change is purely visual; no behaviour changed. `_OperandSection` is a private class and not directly testable without a display — its contract is exercised via the existing integration of `CalculatorGUI`. No new dependencies added.
+- **Tests passed:** 278 / 278
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-284 — GUI — Expert/generic
 
 - **Branch:** exp3/issue-284-tkinter-gui
