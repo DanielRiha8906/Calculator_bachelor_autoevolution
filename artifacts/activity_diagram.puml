@@ -6,6 +6,7 @@ skinparam ArrowFontSize 12
 title Calculator — Execution Flows
 
 |Interactive CLI (src/__main__.py)|
+|CalculatorSession (src/session.py)|
 |Bash CLI (main.py)|
 |Calculator Computation|
 
@@ -15,29 +16,31 @@ title Calculator — Execution Flows
 
 start
 
-:Instantiate Calculator;
+:Instantiate CalculatorSession;
+note right: session wraps a private Calculator\ninstance and an empty history list
 :display_menu() — print all 12 operations + "h. history" + "q. quit";
-note right: invalid_op_attempts = 0\nhistory = []
+note right: invalid_op_attempts = 0
 
 repeat
 
   :Read user choice from stdin;
 
   if (choice.lower() == 'q'?) then (yes)
-    :save_history(history) — write to HISTORY_FILE;
+    :save_history(session.history()) — write to HISTORY_FILE;
     :Print "Goodbye!";
     stop
   elseif (choice.lower() == 'h'?) then (yes)
-    if (history is empty?) then (yes)
+    if (session.history() is empty?) then (yes)
       :Print "No history yet.";
     else (no)
       :Print "Session history:"\nthen each entry;
     endif
   elseif (choice not in OPERATIONS?) then (yes)
     :Increment invalid_op_attempts;
+    :log_error("interactive", "unknown operation '...'");
     :Print unknown operation warning\nwith list of available operations;
     if (invalid_op_attempts >= MAX_ATTEMPTS?) then (yes)
-      :save_history(history) — write to HISTORY_FILE;
+      :save_history(session.history()) — write to HISTORY_FILE;
       :Print "Maximum attempts reached. Ending session.";
       stop
     endif
@@ -50,16 +53,20 @@ repeat
       else (no)
         :get_number_with_retry()\nup to MAX_ATTEMPTS attempts\nbefore raising _SessionExpired;
       endif
-      |Calculator Computation|
-      :Call calc.<name>(a);
+
+      |CalculatorSession (src/session.py)|
+      :session.execute(name, a)\n  → getattr(_calc, name)(a);
+
     else (no — arity == 2)
       |Interactive CLI (src/__main__.py)|
       :get_number_with_retry() → a\nup to MAX_ATTEMPTS attempts;
       :get_number_with_retry() → b\nup to MAX_ATTEMPTS attempts;
-      |Calculator Computation|
-      :Call calc.<name>(a, b);
+
+      |CalculatorSession (src/session.py)|
+      :session.execute(name, a, b)\n  → getattr(_calc, name)(a, b);
     endif
 
+    |Calculator Computation|
     if (Operation is add?) then (yes)
       :Compute a + b;
     elseif (Operation is subtract?) then (yes)
@@ -112,14 +119,22 @@ repeat
       endif
     endif
 
+    |CalculatorSession (src/session.py)|
+    if (exception raised?) then (yes)
+      :Propagate exception to caller;
+    else (no)
+      :Append format_entry(name, args, result)\nto _history list;
+      :Return result;
+    endif
+
     |Interactive CLI (src/__main__.py)|
     if (_SessionExpired raised by operand input?) then (yes)
-      :save_history(history) — write to HISTORY_FILE;
+      :save_history(session.history()) — write to HISTORY_FILE;
       stop
     elseif (operation raised ValueError/TypeError/ZeroDivisionError?) then (yes)
+      :log_error("interactive", "calculation error in <name>: ...");
       :Print "Error: <message>";
     else (no)
-      :Append format_history_entry(name, args, result)\nto history list;
       :Print "Result: <value>";
     endif
 
@@ -136,6 +151,7 @@ start
 :Receive argv (sys.argv[1:]);
 
 if (argv is empty?) then (yes)
+  :log_error("cli", "no arguments provided");
   :Print usage to stderr;
   :Exit code 1;
   stop
@@ -143,27 +159,34 @@ endif
 
 :operation = argv[0];
 
-if (operation not in _ALL_OPS?) then (yes)
+if (operation not in ALL_OPS?) then (yes)
+  :log_error("cli", "unknown operation '...'");
   :Print "Error: unknown operation" to stderr;
   :Exit code 1;
   stop
 endif
 
-if (operation in _BINARY_OPS?) then (yes)
+:Instantiate CalculatorSession;
+
+if (operation in BINARY_OPS?) then (yes)
   if (len(argv) != 3?) then (yes)
+    :log_error("cli", "requires two operands, got N");
     :Print "requires exactly two operands" to stderr;
     :Exit code 1;
     stop
   else (no — correct arg count)
     :_parse_operand(argv[1]) → a;
     :_parse_operand(argv[2]) → b;
+
+    |CalculatorSession (src/session.py)|
+    :session.execute(operation, a, b)\n  → getattr(_calc, operation)(a, b);
     |Calculator Computation|
-    :Call calc.<operation>(a, b);
     :Compute result (see operation branches above);
   endif
 else (unary op)
   |Bash CLI (main.py)|
   if (len(argv) != 2?) then (yes)
+    :log_error("cli", "requires one operand, got N");
     :Print "requires exactly one operand" to stderr;
     :Exit code 1;
     stop
@@ -173,14 +196,24 @@ else (unary op)
     else (no)
       :_parse_operand(argv[1]) → a;
     endif
+
+    |CalculatorSession (src/session.py)|
+    :session.execute(operation, a)\n  → getattr(_calc, operation)(a);
     |Calculator Computation|
-    :Call calc.<operation>(a);
     :Compute result (see operation branches above);
   endif
 endif
 
+|CalculatorSession (src/session.py)|
+if (exception raised?) then (yes)
+  :Propagate exception to caller;
+else (no)
+  :Append to history; return result;
+endif
+
 |Bash CLI (main.py)|
 if (operation raised exception?) then (yes)
+  :log_error("cli", "error in '<op>': ...");
   :Print "Error: <message>" to stderr;
   :Exit code 1;
   stop

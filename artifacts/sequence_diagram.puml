@@ -8,6 +8,7 @@ title Calculator Component Interactions
 actor User
 participant "__main__\n(entry point)" as Main
 participant "OPERATIONS\nmap" as Ops
+participant "CalculatorSession" as Session
 participant "Calculator" as Calc
 participant "Python Runtime\n/ math module" as Runtime
 
@@ -16,10 +17,14 @@ participant "Python Runtime\n/ math module" as Runtime
 User -> Main : python -m src
 activate Main
 
-Main -> Calc : Calculator()
+Main -> Session : CalculatorSession()
+activate Session
+Session -> Calc : Calculator()
 activate Calc
-Calc --> Main : calc instance
+Calc --> Session : _calc instance
 deactivate Calc
+Session --> Main : session instance
+deactivate Session
 
 Main -> Main : display_menu()
 Main --> User : prints 12 operations + "h. history" + "q. quit"
@@ -35,14 +40,18 @@ Main --> User : "Enter second number: "
 User -> Main : "5"
 Main -> Main : get_number("Enter second number:")
 
-Main -> Calc : calc.add(10, 5)
+Main -> Session : session.execute("add", 10, 5)
+activate Session
+Session -> Calc : _calc.add(10, 5)
 activate Calc
 Calc -> Runtime : 10 + 5
 Runtime --> Calc : 15
-Calc --> Main : 15
+Calc --> Session : 15
 deactivate Calc
+Session -> Session : _history.append("add(10, 5) = 15")
+Session --> Main : 15
+deactivate Session
 
-Main -> Main : history.append("add(10, 5) = 15")
 Main --> User : "Result: 15"
 
 == Interactive Session — Normal Unary Operation ==
@@ -55,21 +64,28 @@ Main --> User : "Enter integer: "
 User -> Main : "5"
 Main -> Main : get_number("Enter integer:", require_int=True)
 
-Main -> Calc : calc.factorial(5)
+Main -> Session : session.execute("factorial", 5)
+activate Session
+Session -> Calc : _calc.factorial(5)
 activate Calc
 Calc -> Calc : validate type (not bool, is int)
 Calc -> Calc : validate value (n >= 0)
 Calc -> Calc : iterate: 1*2*3*4*5
-Calc --> Main : 120
+Calc --> Session : 120
 deactivate Calc
+Session -> Session : _history.append("factorial(5) = 120")
+Session --> Main : 120
+deactivate Session
 
-Main -> Main : history.append("factorial(5) = 120")
 Main --> User : "Result: 120"
 
 == Interactive Session — History Display ==
 
 User -> Main : enter choice "h"
-Main -> Main : check history list
+Main -> Session : session.history()
+activate Session
+Session --> Main : ["add(10, 5) = 15", "factorial(5) = 120"]
+deactivate Session
 alt history is not empty
     Main --> User : "Session history:"\n  "add(10, 5) = 15"\n  "factorial(5) = 120"
 else history is empty
@@ -85,12 +101,17 @@ Ops --> Main : ("divide", arity=2)
 Main -> Main : get_number() → a=1
 Main -> Main : get_number() → b=0
 
-Main -> Calc : calc.divide(1, 0)
+Main -> Session : session.execute("divide", 1, 0)
+activate Session
+Session -> Calc : _calc.divide(1, 0)
 activate Calc
 Calc -> Runtime : 1 / 0
 Runtime --> Calc : raise ZeroDivisionError
-Calc --> Main : ZeroDivisionError propagated
+Calc --> Session : ZeroDivisionError propagated
 deactivate Calc
+Session --> Main : ZeroDivisionError propagated
+note right: failed execute() does NOT append to history
+deactivate Session
 
 Main --> User : "Error: division by zero"
 note right: session continues — error is caught\nby except (ValueError, TypeError, ZeroDivisionError)
@@ -107,8 +128,12 @@ Main --> User : "Unknown operation '99'. Available operations: 1. add, ..."
 
 User -> Main : enter choice "99" (×5 total)
 note right: invalid_op_attempts increments each time\nafter 5th: >= MAX_ATTEMPTS condition met
+Main -> Session : session.history()
+activate Session
+Session --> Main : (history list)
+deactivate Session
+Main -> Main : save_history(history) → writes history.txt
 Main --> User : "Maximum attempts reached. Ending session."
-note right: session loop breaks — no _SessionExpired\njust a normal break from the while loop
 
 == Interactive Session — Retry on Invalid Operand Input ==
 
@@ -136,6 +161,10 @@ note right: caught by except _SessionExpired: break in main()
 == Interactive Session — Quit ==
 
 User -> Main : enter choice "q"
+Main -> Session : session.history()
+activate Session
+Session --> Main : (history list)
+deactivate Session
 Main -> Main : save_history(history) → writes history.txt
 Main --> User : "Goodbye!"
 deactivate Main
@@ -152,12 +181,25 @@ CLI -> CLI : operation = "add"\nis_binary = True\nlen(argv) == 3 ✓
 CLI -> CLI : _parse_operand("5") → 5
 CLI -> CLI : _parse_operand("7") → 7
 
-CLI -> Calc : Calculator().add(5, 7)
+CLI -> Session : CalculatorSession()
+activate Session
+Session -> Calc : Calculator()
+activate Calc
+Calc --> Session : _calc instance
+deactivate Calc
+Session --> CLI : session instance
+deactivate Session
+
+CLI -> Session : session.execute("add", 5, 7)
+activate Session
+Session -> Calc : _calc.add(5, 7)
 activate Calc
 Calc -> Runtime : 5 + 7
 Runtime --> Calc : 12
-Calc --> CLI : 12
+Calc --> Session : 12
 deactivate Calc
+Session --> CLI : 12
+deactivate Session
 
 CLI --> Shell : stdout: "12"\nexit code: 0
 deactivate CLI
@@ -170,12 +212,21 @@ activate CLI
 CLI -> CLI : operation = "factorial"\nis_binary = False\nlen(argv) == 2 ✓
 CLI -> CLI : _parse_operand("5", require_int=True) → 5
 
-CLI -> Calc : Calculator().factorial(5)
+CLI -> Session : CalculatorSession()
+activate Session
+Session --> CLI : session instance
+deactivate Session
+
+CLI -> Session : session.execute("factorial", 5)
+activate Session
+Session -> Calc : _calc.factorial(5)
 activate Calc
 Calc -> Calc : validate type & value
 Calc -> Calc : iterate: 1*2*3*4*5
-Calc --> CLI : 120
+Calc --> Session : 120
 deactivate Calc
+Session --> CLI : 120
+deactivate Session
 
 CLI --> Shell : stdout: "120"\nexit code: 0
 deactivate CLI
@@ -184,7 +235,7 @@ deactivate CLI
 
 Shell -> CLI : python main.py modulo 10 3
 activate CLI
-CLI -> CLI : "modulo" not in _ALL_OPS
+CLI -> CLI : "modulo" not in ALL_OPS
 CLI --> Shell : stderr: "Error: unknown operation 'modulo'."\nexit code: 1
 deactivate CLI
 
@@ -192,7 +243,7 @@ deactivate CLI
 
 Shell -> CLI : python main.py add 5
 activate CLI
-CLI -> CLI : "add" in _BINARY_OPS\nlen(argv) == 2 ≠ 3
+CLI -> CLI : "add" in BINARY_OPS\nlen(argv) == 2 ≠ 3
 CLI --> Shell : stderr: "Error: 'add' requires exactly two operands."\nexit code: 1
 deactivate CLI
 
@@ -203,11 +254,20 @@ activate CLI
 CLI -> CLI : operation = "square_root"\nlen(argv) == 2 ✓
 CLI -> CLI : _parse_operand("-4") → -4
 
-CLI -> Calc : Calculator().square_root(-4)
+CLI -> Session : CalculatorSession()
+activate Session
+Session --> CLI : session instance
+deactivate Session
+
+CLI -> Session : session.execute("square_root", -4)
+activate Session
+Session -> Calc : _calc.square_root(-4)
 activate Calc
 Calc -> Calc : guard: x < 0 → raise ValueError
-Calc --> CLI : raise ValueError
+Calc --> Session : raise ValueError
 deactivate Calc
+Session --> CLI : raise ValueError
+deactivate Session
 
 CLI --> Shell : stderr: "Error: square root is not defined for negative numbers"\nexit code: 1
 deactivate CLI
@@ -260,22 +320,6 @@ Runtime --> Calc : 2.0
 Calc --> Tests : 2.0
 deactivate Calc
 
-Tests -> Calc : calc.ln(1)
-activate Calc
-Calc -> Calc : guard: x > 0
-Calc -> Runtime : math.log(1)
-Runtime --> Calc : 0.0
-Calc --> Tests : 0.0
-deactivate Calc
-
-Tests -> Calc : calc.log(0)
-activate Calc
-Calc -> Calc : guard: x <= 0 → raise ValueError
-Calc --> Tests : raise ValueError
-deactivate Calc
-
-Tests -> Tests : assert raises(ValueError) ✓
-
 Tests -> Calc : calc.power(2, 10)
 activate Calc
 Calc -> Runtime : 2 ** 10
@@ -285,8 +329,53 @@ deactivate Calc
 
 Tests -> Tests : assert power(2, 10) == 1024 ✓
 
+== Unit Tests — CalculatorSession (test_session.py) ==
+note over Tests: 37 tests total
+
+participant "session\nfixture" as SessFixture
+
+Tests -> SessFixture : CalculatorSession()
+activate SessFixture
+SessFixture --> Tests : session instance
+deactivate SessFixture
+
+Tests -> Session : session.execute("add", 2, 3)
+activate Session
+Session -> Calc : _calc.add(2, 3)
+activate Calc
+Calc --> Session : 5
+deactivate Calc
+Session -> Session : _history.append("add(2, 3) = 5")
+Session --> Tests : 5
+deactivate Session
+
+Tests -> Tests : assert result == 5 ✓
+
+Tests -> Session : session.history()
+activate Session
+Session --> Tests : ["add(2, 3) = 5"]
+deactivate Session
+
+Tests -> Tests : assert history == ["add(2, 3) = 5"] ✓
+
+Tests -> Session : session.execute("divide", 1, 0)
+activate Session
+Session -> Calc : _calc.divide(1, 0)
+activate Calc
+Calc --> Session : raise ZeroDivisionError
+deactivate Calc
+Session --> Tests : raise ZeroDivisionError
+deactivate Session
+
+Tests -> Session : session.history()
+activate Session
+Session --> Tests : ["add(2, 3) = 5"]  ' failed call not appended
+deactivate Session
+
+Tests -> Tests : assert len(history) == 1 ✓
+
 == Unit Tests — Interactive CLI (test_main.py) ==
-note over Tests: 52 tests total
+note over Tests: 56 tests total
 
 participant "mock\nstdin/stdout" as MockIO
 
@@ -299,10 +388,14 @@ Main -> MockIO : input() → "8" (square_root)
 Main -> Ops : lookup "8"
 Ops --> Main : ("square_root", arity=1)
 Main -> MockIO : input("Enter number: ") → "9"
-Main -> Calc : calc.square_root(9)
+Main -> Session : session.execute("square_root", 9)
+activate Session
+Session -> Calc : _calc.square_root(9)
 activate Calc
-Calc --> Main : 3.0
+Calc --> Session : 3.0
 deactivate Calc
+Session --> Main : 3.0
+deactivate Session
 Main -> MockIO : print("Result: 3.0")
 Main -> MockIO : input() → "q"
 Main -> MockIO : print("Goodbye!")
@@ -310,54 +403,25 @@ deactivate Main
 
 Tests -> MockIO : assert "Result: 3.0" in captured output ✓
 
-Tests -> Main : main() [retry exhaustion test]
-activate Main
-note right: inputs: ["1", "abc"×5, "q"]\nMAX_ATTEMPTS=5 invalid operand inputs
-Main -> MockIO : input() → "1" (add)
-Main -> MockIO : input("Enter first number:") → "abc" ×5
-Main -> Main : get_number_with_retry exhausted → _SessionExpired
-Main --> MockIO : print("Maximum attempts reached. Ending session.")
-deactivate Main
-Tests -> MockIO : assert session-terminated message in output ✓
-
-Tests -> Main : main() [max invalid op selections test]
-activate Main
-note right: inputs: ["99"×5]\nMAX_ATTEMPTS=5 unknown operation keys
-Main -> Main : invalid_op_attempts reaches MAX_ATTEMPTS
-Main -> Main : save_history([]) → writes empty history.txt
-Main --> MockIO : print("Maximum attempts reached. Ending session.")
-deactivate Main
-Tests -> MockIO : assert session-terminated message in output ✓
-
-Tests -> Main : main() [history display test]
-activate Main
-note right: inputs: ["1", "10", "5", "h", "q"]\nadd(10,5)=15 then display history
-Main -> MockIO : input() → "1" (add)
-Main -> MockIO : input("Enter first number: ") → "10"
-Main -> MockIO : input("Enter second number: ") → "5"
-Main -> Calc : calc.add(10, 5)
-activate Calc
-Calc --> Main : 15
-deactivate Calc
-Main -> Main : history.append("add(10, 5) = 15")
-Main -> MockIO : input() → "h"
-Main --> MockIO : print("Session history:")\nprint("  add(10, 5) = 15")
-Main -> MockIO : input() → "q"
-Main -> Main : save_history(["add(10, 5) = 15"]) → writes history.txt
-Main --> MockIO : print("Goodbye!")
-deactivate Main
-Tests -> MockIO : assert "add(10, 5) = 15" in captured output ✓
-
 == Unit Tests — Bash CLI (test_cli.py) ==
+note over Tests: 34 tests total
 
 participant "pytest\ncapsys" as Capsys
 
 Tests -> CLI : main(["add", "5", "7"])
 activate CLI
-CLI -> Calc : Calculator().add(5, 7)
+CLI -> Session : CalculatorSession()
+activate Session
+Session --> CLI : session
+deactivate Session
+CLI -> Session : session.execute("add", 5, 7)
+activate Session
+Session -> Calc : _calc.add(5, 7)
 activate Calc
-Calc --> CLI : 12
+Calc --> Session : 12
 deactivate Calc
+Session --> CLI : 12
+deactivate Session
 CLI --> Tests : exit code 0
 deactivate CLI
 
@@ -365,21 +429,21 @@ Tests -> Capsys : assert stdout == "12\n" ✓
 
 Tests -> CLI : main(["square_root", "-4"])
 activate CLI
-CLI -> Calc : Calculator().square_root(-4)
+CLI -> Session : CalculatorSession()
+activate Session
+Session --> CLI : session
+deactivate Session
+CLI -> Session : session.execute("square_root", -4)
+activate Session
+Session -> Calc : _calc.square_root(-4)
 activate Calc
-Calc --> CLI : raise ValueError
+Calc --> Session : raise ValueError
 deactivate Calc
+Session --> CLI : raise ValueError
+deactivate Session
 CLI --> Tests : exit code 1
 deactivate CLI
 
 Tests -> Capsys : assert stderr contains "square root" ✓
-
-Tests -> CLI : main(["add", "5"])
-activate CLI
-CLI -> CLI : "add" in _BINARY_OPS, len(argv) != 3
-CLI --> Tests : exit code 1
-deactivate CLI
-
-Tests -> Capsys : assert stderr contains "two operands" ✓
 
 @enduml

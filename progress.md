@@ -1,3 +1,25 @@
+## Run: update-diagrams — PlantUML diagram update
+
+- **Branch:** exp3/issue-271-logic-separation
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `CalculatorSession` class with full API; added `error_logger` module; added `test_session` and `test_error_logger` test modules; removed stale `_BINARY_OPS/_UNARY_OPS/_ALL_OPS` from CLI module; updated relationships: CLIs → CalculatorSession → Calculator
+  - `artifacts/activity_diagram.puml` — added `CalculatorSession` swimlane; updated both CLI flows to go through `session.execute()` instead of direct `Calculator` calls; updated instantiation steps
+  - `artifacts/sequence_diagram.puml` — added `CalculatorSession` participant; updated all flows so CLIs route through `session.execute()` → `_calc.method()`; added test_session scenario
+- **Purpose:** Reflect cycle 11 architecture: `CalculatorSession` introduced as the dispatch and history layer between the two CLI interfaces and `Calculator`. Diagrams were stale — they showed CLIs calling `Calculator` directly.
+- **Risks:** None — diagram-only change, no source code modified.
+- **Tests passed:** N/A (diagrams only)
+- **Branch/worktree:** exp3/issue-271-logic-separation
+- **Intended merge target:** exp3/expert-generic
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-271 — Logic separation — Expert/generic
 
 - **Branch:** exp3/issue-271-logic-separation
