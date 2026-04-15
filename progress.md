@@ -1,3 +1,22 @@
+## Run: update-diagrams — PlantUML diagram verification (post-issue-278)
+
+- **Branch:** exp3/issue-278-add-documentation
+- **PR target:** N/A (diagram-only run)
+- **Files changed:**
+  - No diagram changes required — all three diagrams already accurately reflect the current `src/` state
+  - `progress.md` — appended this run summary
+- **Purpose:** Verify PlantUML diagrams are consistent with the current source after issue-278 (documentation-only change, `README.md` added). No source code was modified since the last diagram update (post-issue-275 modularization), so all three diagrams remain accurate: class diagram covers `BasicOperations`/`ScientificOperations`/`Calculator`/`CalculatorSession`/`__main__`/`error_logger`/`main.py`/all test modules with correct relationships; activity and sequence diagrams cover both CLI modes and all 12 operations.
+- **Risks:** None — no source or test code modified.
+- **Tests passed:** N/A (diagram-only run)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-278 — Documentation — Expert/generic
 
 - **Branch:** exp3/issue-278-add-documentation
