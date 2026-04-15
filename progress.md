@@ -17,7 +17,7 @@
 - **RAG entries consulted:** codebase_map.md (interactive.py, __main__.py, history.py), evolution_log.md (cycle 13)
 - **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 721.1s | Cost: $2.426260 USD | Turns: 51
 
 ---
 
