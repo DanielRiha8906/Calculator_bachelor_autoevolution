@@ -32,6 +32,12 @@ When a class has multiple operations that share cross-cutting concerns (history 
 ### Operations sub-package for separation of pure math from calculator logic
 When the Calculator class grows to hold many operations, extract the operation implementations into a dedicated `src/operations/` sub-package with separate modules by category (arithmetic, advanced, scientific). Operation functions in the sub-modules are pure (no logging, no state). The Calculator class retains ownership of cross-cutting concerns (history recording, error logging, type coercion) and delegates computation to the sub-modules. This prepares for a future scientific mode by providing a named stub module (`scientific.py`) that can be filled incrementally without touching other files.
 
+### Inject fake tkinter into sys.modules for headless GUI tests
+When the CI environment has no display (and possibly no tkinter), GUI tests must mock tkinter before ``src.gui`` is imported. Use ``monkeypatch.setitem(sys.modules, "tkinter", fake_tk)`` and ``monkeypatch.delitem(sys.modules, "src.gui", raising=False)`` before the import so the module-level ``import tkinter as tk`` picks up the mock. Use ``StringVar.side_effect = FakeStringVar`` (a small in-memory substitute) to make display values readable in assertions. Use ``Frame.side_effect = lambda *a, **kw: MagicMock()`` to give each widget a unique mock so they can be asserted independently.
+
+### Lazy GUI import in entry-point to avoid tkinter cost for CLI/REPL
+When a module has both a GUI path and non-GUI paths (CLI, REPL), do the GUI import lazily inside the dispatch branch (``from .gui import launch_gui``) rather than at the module top level. This prevents tkinter from being imported when the user runs the CLI or REPL, and keeps the non-GUI code paths decoupled from the GUI framework.
+
 ## Anti-Patterns
 
 ### Infinite retry loops without limit

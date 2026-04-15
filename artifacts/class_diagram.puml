@@ -52,6 +52,33 @@ package "src" {
         +cli_main(args: list) : int
         +main() : void
     }
+
+    class CalculatorGUI {
+        {static} logger : Logger
+        +root : tk.Tk
+        +calc : Calculator
+        +mode : str
+        +expression_var : StringVar
+        +display_var : StringVar
+        +sci_frame : Frame
+        -_pending_op : str | None
+        -_first_operand : float | None
+        -_current_input : str
+        +__init__(root: tk.Tk)
+        -_build_ui() : void
+        +press_digit(digit: str) : void
+        +clear() : void
+        +set_binary_op(op: str) : void
+        +equals() : void
+        +execute_unary(op: str) : void
+        +toggle_mode() : void
+        +show_history() : void
+        +{static} _format(value: int | float) : str
+    }
+
+    class "gui" as GUIMod <<module>> {
+        +launch_gui() : void
+    }
 }
 
 package "src.operations" {
@@ -88,9 +115,13 @@ package "src.operations" {
 }
 
 Main ..> Calculator : instantiates / dispatches via calc.execute(op, ...)
+Main ..> GUIMod : lazy import when sys.argv[1] == "--gui"
+GUIMod ..> CalculatorGUI : instantiates in launch_gui()
+CalculatorGUI *-- Calculator : owns (self.calc = Calculator())
 Calculator ..> arithmetic : delegates add/subtract/multiply/divide
 Calculator ..> advanced : delegates factorial/square/cube/\nsquare_root/cube_root/power/log/ln
 Calculator ..> scientific : delegates sin/cos/tan/asin/acos/\natan/sinh/cosh/tanh/exp
+CalculatorGUI ..> Calculator : all ops via calc.execute()
 
 note right of Calculator::logger
   logging.getLogger(__name__).
@@ -205,6 +236,16 @@ note left of Main::logger
   (level=ERROR) before any dispatch.
 end note
 
+note left of Main::main
+  Checks sys.argv[1] == "--gui" first.
+  If matched: lazy-imports src.gui.launch_gui
+  and calls it (GUI mode), then returns.
+  Other argv: delegates to cli_main, then sys.exit.
+  No argv: starts interactive REPL loop.
+  REPL tracks mode ("normal"|"scientific");
+  'h' shows history, 'm' toggles mode, 'q' quits.
+end note
+
 note left of Main::MENU_MAP
   Maps "1"–"12" to operation names.
   "h" shows history; "m" switches mode; "q" quits.
@@ -256,6 +297,74 @@ note left of Main::_show_history
   Prints numbered entries:
   op(operands) = result
   or "No history yet." if empty
+end note
+
+note right of CalculatorGUI::__init__
+  Attaches to tk.Tk root window.
+  Creates owned Calculator instance (self.calc).
+  Initialises: mode="normal", _pending_op=None,
+  _first_operand=None, _current_input="".
+  Calls _build_ui() to construct all widgets.
+end note
+
+note right of CalculatorGUI::_build_ui
+  Lays out the full widget grid:
+  row 0: display (expression_var + display_var labels)
+  rows 1-4: digit buttons (0-9, .) + binary op buttons
+  row 5: C, x², √, n! (clear + common unary ops)
+  row 6: x³, ∛, log, ln (more unary ops)
+  row 7: xʸ (power), Sci (toggle), Hist (history)
+  row 8: sci_frame — 10 scientific op buttons
+    (sin/cos/tan/asin/acos/atan/sinh/cosh/tanh/exp)
+    hidden by default; shown when mode=="scientific"
+end note
+
+note right of CalculatorGUI::set_binary_op
+  Stores float(_current_input) as _first_operand.
+  Sets _pending_op to op name.
+  Updates expression_var to show "operand op".
+  Clears _current_input so user can type second operand.
+  No-op if _current_input is empty.
+end note
+
+note right of CalculatorGUI::equals
+  Executes calc.execute(_pending_op, _first_operand, b).
+  On success: result becomes new _current_input;
+    _pending_op and _first_operand reset to None.
+  On ValueError/ZeroDivisionError: display shows
+    "Error", expression shows exc message,
+    _current_input cleared.
+  No-op if _pending_op is None or input empty.
+end note
+
+note right of CalculatorGUI::execute_unary
+  Executes calc.execute(op, float(_current_input)).
+  Used for both normal unary ops (square, sqrt, etc.)
+  and all 10 scientific ops (sin, cos, ..., exp).
+  On success: result becomes new _current_input.
+  On error: display shows "Error"; input cleared.
+  No-op if _current_input is empty.
+end note
+
+note right of CalculatorGUI::toggle_mode
+  Switches self.mode between "normal" and "scientific".
+  "normal" → "scientific": sci_frame.grid() — panel shown.
+  "scientific" → "normal": sci_frame.grid_remove() — hidden.
+end note
+
+note right of CalculatorGUI::show_history
+  Calls calc.get_history().
+  If empty: messagebox.showinfo "No history yet."
+  Otherwise: numbered list of
+    "op(operands) = result" via messagebox.showinfo.
+end note
+
+note right of GUIMod::launch_gui
+  Module-level function in src/gui.py.
+  Creates tk.Tk() root window.
+  Instantiates CalculatorGUI(root).
+  Calls root.mainloop() — blocks until window closed.
+  Called by main() when sys.argv[1] == "--gui".
 end note
 
 note bottom of arithmetic

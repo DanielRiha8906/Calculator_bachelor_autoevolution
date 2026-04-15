@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 14 — Issue #282: GUI (2026-04-15)
+- **Task:** Add a tkinter GUI for the calculator app while keeping existing CLI/REPL functionality
+- **Branch:** exp3/issue-282-gui-tkinter
+- **Files changed:** src/gui.py (new), src/__main__.py, tests/test_gui.py (new)
+- **Outcome:** Created `src/gui.py` with `CalculatorGUI` class: a tkinter window with digit buttons, basic binary ops (+−×÷), common unary ops (x², √, n!, x³, ∛, log, ln, xʸ), a toggleable scientific panel (sin–exp), and a history dialog. All computation goes through `Calculator.execute()`. Added `--gui` flag to `main()` in `__main__.py` via lazy import of `launch_gui`. Added 46 tests in `tests/test_gui.py` that mock tkinter via sys.modules injection (no display needed). 234 tests collected, 234 passed.
+- **Key decisions:** tkinter not installed in CI — must inject fake tkinter into sys.modules before importing src.gui. Used `side_effect=_FakeStringVar` for StringVar mocks to get testable in-memory storage. Used `Frame.side_effect = lambda: MagicMock()` to give display_frame and sci_frame independent mocks (so toggle_mode grid call counts can be asserted independently). `--gui` flag uses a lazy `from .gui import launch_gui` inside main() so CLI/REPL paths never incur the tkinter import cost.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 13 — Issue #279: Scientific Mode (2026-04-15)
 - **Task:** Add scientific mode to the calculator with interactive mode switching
 - **Branch:** exp3/issue-279-scientific-mode

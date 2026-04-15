@@ -1,9 +1,10 @@
 @startuml sequence_diagram
 
-title Calculator — CLI and Interactive REPL Sequence
+title Calculator — GUI, CLI, and Interactive REPL Sequence
 
 actor User
 participant "__main__\n(main)" as Main
+participant "CalculatorGUI" as GUI
 participant "cli_main" as CLI
 participant "parse_number" as Parser
 participant "Calculator\n(execute)" as Calc
@@ -16,7 +17,168 @@ participant "logger" as Log
 User -> Main : run module (python -m src [args])
 Main -> Main : logging.basicConfig(level=ERROR)
 
-alt sys.argv has arguments — CLI mode
+alt sys.argv[1] == "--gui" — GUI mode
+
+  note right of Main
+    Lazy import: from .gui import launch_gui
+    Avoids importing tkinter unless needed.
+  end note
+
+  Main -> GUI ** : launch_gui() →\n  root = tk.Tk()\n  CalculatorGUI(root)
+  note right of GUI
+    __init__:
+      self.calc = Calculator()
+      self.mode = "normal"
+      self._pending_op = None
+      self._first_operand = None
+      self._current_input = ""
+      self._build_ui()
+    _build_ui builds all widget rows and
+    hides sci_frame by default.
+  end note
+  GUI -> Calc ** : Calculator()
+
+  Main -> GUI : root.mainloop()
+
+  loop event loop — repeats until window closed
+
+    alt User presses digit or "."
+      User -> GUI : press_digit(digit)
+      GUI -> GUI : append to _current_input
+      GUI -> GUI : display_var.set(_current_input)
+
+    else User presses binary op (+−×÷xʸ)
+      User -> GUI : set_binary_op(op)
+      GUI -> GUI : _first_operand = float(_current_input)
+      GUI -> GUI : _pending_op = op
+      GUI -> GUI : expression_var.set("a op")
+      GUI -> GUI : _current_input = ""
+
+    else User presses "="
+      User -> GUI : equals()
+      alt _pending_op set AND input non-empty
+        GUI -> Calc : calc.execute(_pending_op, _first_operand, b)
+
+        alt op in BINARY_OPS (add/subtract/multiply/divide)
+          Calc -> Arith : arithmetic.<op>(a, b)
+          alt divide and b == 0
+            Arith --> Calc : raises ZeroDivisionError
+            Calc -> Log : logger.error("divide error: ...")
+            Calc --> GUI : re-raises ZeroDivisionError
+            GUI -> Log : logger.error("GUI equals failed ...")
+            GUI -> GUI : display_var = "Error"
+            GUI -> GUI : expression_var = exc message
+            GUI -> GUI : _current_input = ""
+          else success
+            Arith --> Calc : result
+            Calc -> Calc : history.append({op, operands, result})
+            Calc --> GUI : result
+            GUI -> GUI : display_var = _format(result)
+            GUI -> GUI : _current_input = _format(result)
+            GUI -> GUI : _pending_op = None
+          end
+        else power (delegates to advanced)
+          Calc -> Adv : advanced.power(a, b)
+          Adv --> Calc : result
+          Calc -> Calc : history.append({op, operands, result})
+          Calc --> GUI : result
+          GUI -> GUI : display = result; input = result
+        end
+
+      else no pending op or empty input
+        GUI -> GUI : no-op
+      end
+
+    else User presses unary op (x² √ n! x³ ∛ log ln)
+      User -> GUI : execute_unary(op)
+      alt input non-empty
+        GUI -> Calc : calc.execute(op, float(_current_input))
+        note right of Calc
+          For INTEGER_OPS (factorial):
+          _to_int_if_needed checks whole number.
+          Delegates to advanced module.
+        end note
+        Calc -> Adv : advanced.<op>(a)
+        alt valid domain
+          Adv -> Math : math.<op>(a)
+          Math --> Adv : result
+          Adv --> Calc : result
+          Calc -> Calc : history.append({op, operands, result})
+          Calc --> GUI : result
+          GUI -> GUI : display = result; input = result
+        else invalid domain (factorial n<0, sqrt n<0, log n<=0, ln n<=0)
+          Math --> Adv : raises ValueError
+          Adv --> Calc : re-raises ValueError
+          Calc -> Log : logger.error("<op> error: ...")
+          Calc --> GUI : re-raises ValueError
+          GUI -> Log : logger.error("GUI execute_unary failed ...")
+          GUI -> GUI : display_var = "Error"
+        end
+      else empty input
+        GUI -> GUI : no-op
+      end
+
+    else User presses scientific op (sin cos tan asin acos atan sinh cosh tanh exp)
+      User -> GUI : execute_unary(op)
+      note right of GUI
+        Scientific ops use the same execute_unary()
+        path as standard unary ops — routed through
+        calc.execute() to SCIENTIFIC_UNARY_OPS branch.
+        No integer coercion applied.
+      end note
+      alt input non-empty
+        GUI -> Calc : calc.execute(op, float(_current_input))
+        Calc -> Sci : scientific.<op>(x)
+        Sci -> Math : math.<op>(x)
+        alt valid domain (asin/acos: |x|<=1; others: unrestricted)
+          Math --> Sci : result
+          Sci --> Calc : result
+          Calc -> Calc : history.append({op, operands, result})
+          Calc --> GUI : result
+          GUI -> GUI : display = result; input = result
+        else invalid domain (asin/acos with |x|>1)
+          Math --> Sci : raises ValueError
+          Sci --> Calc : re-raises ValueError
+          Calc -> Log : logger.error("<op> error: ...")
+          Calc --> GUI : re-raises ValueError
+          GUI -> Log : logger.error("GUI execute_unary failed ...")
+          GUI -> GUI : display_var = "Error"
+        end
+      else empty input
+        GUI -> GUI : no-op
+      end
+
+    else User presses "C"
+      User -> GUI : clear()
+      GUI -> GUI : _current_input = ""; _pending_op = None
+      GUI -> GUI : _first_operand = None
+      GUI -> GUI : display_var = "0"; expression_var = ""
+
+    else User presses "Sci"
+      User -> GUI : toggle_mode()
+      alt mode == "normal"
+        GUI -> GUI : mode = "scientific"
+        GUI -> GUI : sci_frame.grid() — show panel
+      else mode == "scientific"
+        GUI -> GUI : mode = "normal"
+        GUI -> GUI : sci_frame.grid_remove() — hide panel
+      end
+
+    else User presses "Hist"
+      User -> GUI : show_history()
+      GUI -> Calc : calc.get_history()
+      Calc --> GUI : list[dict] (copy)
+      alt history empty
+        GUI --> User : messagebox "No history yet."
+      else history non-empty
+        GUI --> User : messagebox numbered history entries
+      end
+
+    end
+
+  end
+
+else sys.argv has other arguments — CLI mode
 
   Main -> CLI : cli_main(sys.argv[1:])
   note right of CLI
