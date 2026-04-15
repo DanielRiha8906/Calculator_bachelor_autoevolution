@@ -2,6 +2,26 @@
 
 ## Run: Diagram Update (2026-04-15)
 
+- **Branch:** exp3/issue-276-documentation
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Verified and confirmed all three PlantUML diagrams are accurate and up-to-date with cycle 12 state. Cycle 12 (documentation) added only docstrings — no structural changes — so diagrams required no modifications. Diagrams reflect: full Calculator class API (12 operations + execute + get_history), module-level constants (UNARY_OPS, BINARY_OPS, INTEGER_OPS, _to_int_if_needed), src.operations sub-package (arithmetic, advanced, scientific modules), __main__ interface layer (cli_main, REPL, parse_number, run_operation, _format_result, _show_history, MENU_MAP), and all delegation/error-logging flows.
+- **Risks:** None — diagram-only verification run; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md
+Duration: 86.0s | Cost: $0.316179 USD | Turns: 19
+
+## Run: Issue #276 — Documentation (2026-04-15)
+
+- **Branch:** exp3/issue-276-documentation → PR targeting exp3/naive-generic
+- **Files changed:** src/__init__.py, src/calculator.py, src/__main__.py, README.md, rag/index.md, rag/codebase_map.md, rag/evolution_log.md
+- **Purpose:** Add documentation for the calculator application. Added module-level docstrings to src/__init__.py, src/calculator.py, and src/__main__.py. Added class docstring and __init__ docstring to Calculator. Added individual method docstrings to all 12 Calculator operation methods. Added main() docstring. Expanded README.md from a placeholder title to a full user guide.
+- **Risks:** Purely additive changes; no logic altered. All 149 tests pass.
+- **Tests passed:** 149/149
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: 214.7s | Cost: $0.720011 USD | Turns: 42
+
+## Run: Diagram Update (2026-04-15)
+
 - **Branch:** exp3/issue-273-modularization
 - **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
 - **Purpose:** Updated all three PlantUML diagrams to reflect cycle 11 (modularization) changes: added `src.operations` package to class diagram with `arithmetic`, `advanced`, and `scientific` modules and their exported functions; added delegation relationships from Calculator to arithmetic (add/subtract/multiply/divide) and advanced (factorial/square/cube/square_root/cube_root/power/log/ln); updated notes on divide, factorial, sqrt, log, ln to mention delegation; added module-level notes for arithmetic, advanced, and scientific; updated activity diagram notes to describe delegation to operations sub-package; added `arithmetic` and `advanced` participants to sequence diagram, replacing direct Calculator→Math delegation with Calculator→arithmetic/advanced→Math chains for relevant ops; distinguished between ops using math stdlib and those using `**` operator.

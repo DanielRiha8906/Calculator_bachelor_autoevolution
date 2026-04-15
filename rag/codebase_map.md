@@ -1,35 +1,36 @@
 # Codebase Map
 
 ## src/__init__.py
-- **Purpose:** Package initializer for the `src` module.
+- **Purpose:** Package initializer for the `src` module; re-exports Calculator.
 - **Exports:** `Calculator`
-- **Key invariants:** Re-exports Calculator from `src.calculator` via `__all__`.
-- **Last updated:** cycle 0
+- **Key invariants:** Re-exports Calculator from `src.calculator` via `__all__`. Has a module-level docstring describing the package purpose.
+- **Last updated:** cycle 12
 
 ## src/calculator.py
 - **Purpose:** Core calculator facade: per-instance history, error logging, and operation dispatch; delegates operation implementations to the `src.operations` sub-package.
 - **Imports:** `from .operations import arithmetic, advanced`
+- **Module-level docstring:** Present — describes module role and cross-cutting concerns.
 - **Module-level constants:** `UNARY_OPS`, `BINARY_OPS`, `INTEGER_OPS` — sets classifying all 12 operations by arity and type requirements.
 - **Module-level helpers:** `_to_int_if_needed(op, value)` — coerces value to int for INTEGER_OPS, raises ValueError for non-whole numbers.
 - **Module-level:** `logger = logging.getLogger(__name__)` — logs errors at ERROR level before re-raising.
 - **Public API:**
-  - `Calculator.__init__()` → initialises `self.history: list[dict]` to `[]`
+  - `Calculator.__init__()` → initialises `self.history: list[dict]` to `[]`; has docstring
   - `Calculator.get_history()` → returns a shallow copy of `self.history`
-  - `Calculator.add(a, b)` → delegates to `arithmetic.add`
-  - `Calculator.subtract(a, b)` → delegates to `arithmetic.subtract`
-  - `Calculator.multiply(a, b)` → delegates to `arithmetic.multiply`
-  - `Calculator.divide(a, b)` → delegates to `arithmetic.divide` (logs and raises `ZeroDivisionError` if `b == 0`)
-  - `Calculator.factorial(n)` → delegates to `advanced.factorial` (logs and raises `ValueError` for negative `n`)
-  - `Calculator.square(n)` → delegates to `advanced.square`
-  - `Calculator.cube(n)` → delegates to `advanced.cube`
-  - `Calculator.square_root(n)` → delegates to `advanced.square_root` (logs and raises `ValueError` for negative `n`)
-  - `Calculator.cube_root(n)` → delegates to `advanced.cube_root` (handles negative inputs; requires Python 3.11+)
-  - `Calculator.power(base, exp)` → delegates to `advanced.power`
-  - `Calculator.log(n)` → delegates to `advanced.log` (logs and raises `ValueError` for `n <= 0`)
-  - `Calculator.ln(n)` → delegates to `advanced.ln` (logs and raises `ValueError` for `n <= 0`)
+  - `Calculator.add(a, b)` → delegates to `arithmetic.add`; has docstring
+  - `Calculator.subtract(a, b)` → delegates to `arithmetic.subtract`; has docstring
+  - `Calculator.multiply(a, b)` → delegates to `arithmetic.multiply`; has docstring
+  - `Calculator.divide(a, b)` → delegates to `arithmetic.divide` (logs and raises `ZeroDivisionError` if `b == 0`); has docstring
+  - `Calculator.factorial(n)` → delegates to `advanced.factorial` (logs and raises `ValueError` for negative `n`); has docstring
+  - `Calculator.square(n)` → delegates to `advanced.square`; has docstring
+  - `Calculator.cube(n)` → delegates to `advanced.cube`; has docstring
+  - `Calculator.square_root(n)` → delegates to `advanced.square_root` (logs and raises `ValueError` for negative `n`); has docstring
+  - `Calculator.cube_root(n)` → delegates to `advanced.cube_root` (handles negative inputs; requires Python 3.11+); has docstring
+  - `Calculator.power(base, exp)` → delegates to `advanced.power`; has docstring
+  - `Calculator.log(n)` → delegates to `advanced.log` (logs and raises `ValueError` for `n <= 0`); has docstring
+  - `Calculator.ln(n)` → delegates to `advanced.ln` (logs and raises `ValueError` for `n <= 0`); has docstring
   - `Calculator.execute(op, *operands)` → dispatches by op name, applies _to_int_if_needed for INTEGER_OPS, records history on success, propagates exceptions unchanged; raises ValueError for unknown ops.
 - **Key invariants:** History is recorded by `execute()`, not by individual Calculator methods. Each history entry is `{"op": str, "operands": tuple, "result": float|int}`. Failed operations are not recorded. `get_history()` returns a copy — callers cannot mutate internal state. Each Calculator instance has its own independent history. Error-logging methods log before re-raising — exceptions still propagate unchanged. Operation functions in sub-modules are pure (no logging/history side effects).
-- **Last updated:** cycle 11
+- **Last updated:** cycle 12
 
 ## src/operations/__init__.py
 - **Purpose:** Operations sub-package initializer; re-exports all arithmetic and advanced operation functions for convenience.
@@ -68,12 +69,13 @@
 
 ## src/__main__.py
 - **Purpose:** Pure interface layer for the Calculator: bash argv mode and interactive REPL, with error logging. Operation classification and dispatch logic now live in calculator.py.
+- **Module-level docstring:** Present — documents both CLI and REPL usage modes with examples.
 - **Imports from calculator:** `Calculator`, `BINARY_OPS`, `UNARY_OPS`
 - **Exports:** `parse_number(prompt, max_attempts)`, `run_operation(calc, op)`, `_format_result(value)`, `_show_history(calc)`, `cli_main(args)`, `main()`
 - **Module-level constants:** `MAX_INPUT_ATTEMPTS`, `MENU`, `MENU_MAP`
 - **Module-level:** `logger = logging.getLogger(__name__)` — logs caught errors at ERROR level.
 - **Key invariants:**
-  - `main()` calls `logging.basicConfig(level=ERROR, format=...)` before dispatch so errors surface at runtime.
+  - `main()` calls `logging.basicConfig(level=ERROR, format=...)` before dispatch so errors surface at runtime. Has docstring.
   - `main()` checks `sys.argv`: if `len(sys.argv) > 1`, calls `cli_main(sys.argv[1:])` and `sys.exit(rc)`; otherwise starts the interactive REPL.
   - `cli_main(args)` parses `[operation, *operands]`, validates arg count, calls `calc.execute(op, ...)`, prints `_format_result(result)`, returns 0 on success / 1 on error. Logs errors via `logger.error` before printing.
   - `_format_result(value)` converts whole floats to integer strings (7.0 → "7"); fractional floats and ints pass through as-is.
@@ -84,7 +86,7 @@
   - `run_operation` calls `calc.execute(op, ...)` (which handles type coercion and history recording); catches `ValueError` and `ZeroDivisionError`, logs them via `logger.error`, and prints "Error: …" without crashing the REPL loop.
   - `_show_history(calc)` prints numbered history entries in `op(operands) = result` format, or "No history yet." if empty.
   - Unknown REPL choice message mentions 'h' and 'q' as valid non-numeric choices.
-- **Last updated:** cycle 10
+- **Last updated:** cycle 12
 
 ## tests/test_main.py
 - **Purpose:** Test suite for src/__main__.py (both interactive REPL and bash CLI mode).
