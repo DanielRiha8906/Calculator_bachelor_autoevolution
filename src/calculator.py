@@ -7,7 +7,7 @@ logging, and operand type coercion.
 """
 import logging
 
-from .operations import arithmetic, advanced
+from .operations import arithmetic, advanced, scientific
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +15,8 @@ UNARY_OPS = {"factorial", "square", "cube", "square_root", "cube_root", "log", "
 BINARY_OPS = {"add", "subtract", "multiply", "divide", "power"}
 # Operations that require integer operands
 INTEGER_OPS = {"factorial"}
+# Scientific mode unary operations (angles in radians)
+SCIENTIFIC_UNARY_OPS = {"sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh", "exp"}
 
 
 def _to_int_if_needed(op: str, value: float) -> "float | int":
@@ -115,6 +117,54 @@ class Calculator:
             logger.error("ln error: %s (n=%s)", exc, n)
             raise
 
+    def sin(self, x):
+        """Return the sine of x (x in radians)."""
+        return scientific.sin(x)
+
+    def cos(self, x):
+        """Return the cosine of x (x in radians)."""
+        return scientific.cos(x)
+
+    def tan(self, x):
+        """Return the tangent of x (x in radians)."""
+        return scientific.tan(x)
+
+    def asin(self, x):
+        """Return the arcsine of x in radians. Raises ValueError for |x| > 1."""
+        try:
+            return scientific.asin(x)
+        except ValueError as exc:
+            logger.error("asin error: %s (x=%s)", exc, x)
+            raise
+
+    def acos(self, x):
+        """Return the arccosine of x in radians. Raises ValueError for |x| > 1."""
+        try:
+            return scientific.acos(x)
+        except ValueError as exc:
+            logger.error("acos error: %s (x=%s)", exc, x)
+            raise
+
+    def atan(self, x):
+        """Return the arctangent of x in radians."""
+        return scientific.atan(x)
+
+    def sinh(self, x):
+        """Return the hyperbolic sine of x."""
+        return scientific.sinh(x)
+
+    def cosh(self, x):
+        """Return the hyperbolic cosine of x."""
+        return scientific.cosh(x)
+
+    def tanh(self, x):
+        """Return the hyperbolic tangent of x."""
+        return scientific.tanh(x)
+
+    def exp(self, x):
+        """Return e raised to the power x."""
+        return scientific.exp(x)
+
     def execute(self, op: str, *operands: "float | int") -> "float | int":
         """Dispatch an operation by name, record it in history on success, and return the result.
 
@@ -127,6 +177,10 @@ class Calculator:
             self.history.append({"op": op, "operands": (a, b), "result": result})
         elif op in UNARY_OPS:
             a = _to_int_if_needed(op, operands[0])
+            result = getattr(self, op)(a)
+            self.history.append({"op": op, "operands": (a,), "result": result})
+        elif op in SCIENTIFIC_UNARY_OPS:
+            a = operands[0]
             result = getattr(self, op)(a)
             self.history.append({"op": op, "operands": (a,), "result": result})
         else:

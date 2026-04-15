@@ -20,7 +20,7 @@ Interactive REPL mode (no arguments)::
 import logging
 import sys
 
-from .calculator import Calculator, BINARY_OPS, UNARY_OPS
+from .calculator import Calculator, BINARY_OPS, UNARY_OPS, SCIENTIFIC_UNARY_OPS
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +43,39 @@ Operations:
  11. log (base-10)
  12. ln (natural log)
   h. history
+  m. switch to scientific mode
   q. quit
 """
+
+SCIENTIFIC_MENU = """
+Scientific Operations (angles in radians):
+  1. sin
+  2. cos
+  3. tan
+  4. asin
+  5. acos
+  6. atan
+  7. sinh
+  8. cosh
+  9. tanh
+ 10. exp (e^x)
+  h. history
+  m. switch to normal mode
+  q. quit
+"""
+
+SCIENTIFIC_MENU_MAP = {
+    "1": "sin",
+    "2": "cos",
+    "3": "tan",
+    "4": "asin",
+    "5": "acos",
+    "6": "atan",
+    "7": "sinh",
+    "8": "cosh",
+    "9": "tanh",
+    "10": "exp",
+}
 
 MENU_MAP = {
     "1": "add",
@@ -123,7 +154,7 @@ def cli_main(args: list) -> int:
 
     Returns 0 on success, 1 on error (message printed to stdout).
     """
-    all_ops = UNARY_OPS | BINARY_OPS
+    all_ops = UNARY_OPS | BINARY_OPS | SCIENTIFIC_UNARY_OPS
     if not args:
         print("Usage: python -m src <operation> [operands...]")
         print(f"Operations: {', '.join(sorted(all_ops))}")
@@ -174,9 +205,10 @@ def main() -> None:
         sys.exit(cli_main(sys.argv[1:]))
 
     calc = Calculator()
+    mode = "normal"
     print("Welcome to the Calculator!")
     while True:
-        print(MENU)
+        print(MENU if mode == "normal" else SCIENTIFIC_MENU)
         choice = input("Choose an operation: ").strip().lower()
         if choice == "q":
             print("Goodbye!")
@@ -184,10 +216,20 @@ def main() -> None:
         if choice == "h":
             _show_history(calc)
             continue
-        op = MENU_MAP.get(choice)
-        if op is None:
-            print(f"  Unknown choice: {choice!r}. Please enter a number from 1-12, 'h', or 'q'.")
+        if choice == "m":
+            mode = "scientific" if mode == "normal" else "normal"
+            print(f"  Switched to {mode} mode.")
             continue
+        if mode == "normal":
+            op = MENU_MAP.get(choice)
+            if op is None:
+                print(f"  Unknown choice: {choice!r}. Please enter a number from 1-12, 'h', 'm', or 'q'.")
+                continue
+        else:
+            op = SCIENTIFIC_MENU_MAP.get(choice)
+            if op is None:
+                print(f"  Unknown choice: {choice!r}. Please enter a number from 1-10, 'h', 'm', or 'q'.")
+                continue
         run_operation(calc, op)
 
 

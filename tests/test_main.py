@@ -1,9 +1,13 @@
 """Tests for the interactive CLI in src/__main__.py."""
 
 import logging
+import math
 import pytest
 from unittest.mock import patch
-from src.__main__ import parse_number, run_operation, main, MENU_MAP, cli_main, _format_result, _show_history, MAX_INPUT_ATTEMPTS
+from src.__main__ import (
+    parse_number, run_operation, main, MENU_MAP, SCIENTIFIC_MENU_MAP,
+    cli_main, _format_result, _show_history, MAX_INPUT_ATTEMPTS,
+)
 from src.calculator import Calculator
 
 
@@ -527,3 +531,113 @@ def test_cli_main_factorial_negative_logs_error(capsys, caplog):
         rc = cli_main(["factorial", "-1"])
     assert rc == 1
     assert any("cli_main factorial failed" in r.message for r in caplog.records)
+
+
+# --- scientific mode: SCIENTIFIC_MENU_MAP ---
+
+def test_scientific_menu_map_covers_all_10_ops():
+    expected_ops = {"sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh", "exp"}
+    assert set(SCIENTIFIC_MENU_MAP.values()) == expected_ops
+
+
+def test_scientific_menu_map_keys_are_1_to_10():
+    assert set(SCIENTIFIC_MENU_MAP.keys()) == {str(i) for i in range(1, 11)}
+
+
+# --- scientific mode: REPL mode switching ---
+
+def test_main_switch_to_scientific_mode_and_back(capsys):
+    # 'm' switches to scientific, 'm' again switches back, then 'q' quits
+    with patch("sys.argv", ["prog"]), patch("builtins.input", side_effect=["m", "m", "q"]):
+        main()
+    out = capsys.readouterr().out
+    assert "scientific mode" in out
+    assert "normal mode" in out
+
+
+def test_main_scientific_mode_perform_sin(capsys):
+    # Switch to scientific (m), choose sin (1), enter 0, then quit
+    with patch("sys.argv", ["prog"]), patch("builtins.input", side_effect=["m", "1", "0", "q"]):
+        main()
+    out = capsys.readouterr().out
+    assert "0" in out
+
+
+def test_main_scientific_mode_unknown_choice(capsys):
+    # In scientific mode an out-of-range choice prints "Unknown choice"
+    with patch("sys.argv", ["prog"]), patch("builtins.input", side_effect=["m", "99", "q"]):
+        main()
+    out = capsys.readouterr().out
+    assert "Unknown choice" in out
+
+
+def test_main_scientific_mode_history_shared(capsys):
+    # Operations done in scientific mode appear in the shared history
+    with patch("sys.argv", ["prog"]), patch("builtins.input", side_effect=["m", "1", "0", "h", "q"]):
+        main()
+    out = capsys.readouterr().out
+    assert "sin(0) = 0" in out
+
+
+# --- scientific mode: run_operation ---
+
+def test_run_operation_sin(capsys):
+    calc = Calculator()
+    with patch("builtins.input", return_value="0"):
+        run_operation(calc, "sin")
+    out = capsys.readouterr().out
+    assert "0" in out
+
+
+def test_run_operation_cos(capsys):
+    calc = Calculator()
+    with patch("builtins.input", return_value="0"):
+        run_operation(calc, "cos")
+    out = capsys.readouterr().out
+    assert "1" in out
+
+
+def test_run_operation_asin_out_of_range_prints_error(capsys):
+    calc = Calculator()
+    with patch("builtins.input", return_value="2"):
+        run_operation(calc, "asin")
+    out = capsys.readouterr().out
+    assert "Error" in out
+
+
+def test_run_operation_exp(capsys):
+    calc = Calculator()
+    with patch("builtins.input", return_value="0"):
+        run_operation(calc, "exp")
+    out = capsys.readouterr().out
+    assert "1" in out
+
+
+# --- scientific mode: cli_main ---
+
+def test_cli_main_sin(capsys):
+    rc = cli_main(["sin", "0"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "0" in out
+
+
+def test_cli_main_cos(capsys):
+    rc = cli_main(["cos", "0"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "1" in out
+
+
+def test_cli_main_exp(capsys):
+    rc = cli_main(["exp", "0"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "1" in out
+
+
+def test_cli_main_asin_out_of_range_error(capsys):
+    rc = cli_main(["asin", "2"])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "Error" in out
