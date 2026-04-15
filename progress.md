@@ -1,3 +1,23 @@
+## Run: issue-278 — Documentation — Expert/generic
+
+- **Branch:** exp3/issue-278-add-documentation
+- **PR target:** exp3/expert-generic
+- **PR:** https://github.com/DanielRiha8906/Calculator_bachelor_autoevolution/pull/291
+- **Files changed:**
+  - `README.md` — replaced single-line placeholder with comprehensive documentation (221 lines added)
+- **Purpose:** Add written documentation covering setup, interactive mode, bash CLI mode, all 12 operations, session file behavior (history.txt, error.log), code structure, and test instructions. Documentation aligned with the post-modularization implementation (cycles 11–12).
+- **Risks:** None — documentation-only change; no source files modified.
+- **All tests passed:** Yes (209/209)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`
+- **RAG updated:** Yes — cycle 13 entry added to `evolution_log.md`; `README.md` entry added to `index.md` and `codebase_map.md`; RAG committed separately.
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-issue-275)
 
 - **Branch:** exp3/issue-275-modularization
