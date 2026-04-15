@@ -8,7 +8,7 @@
 - **Risks:** Minimal. Public Calculator API is unchanged; all 149 tests pass without modification. The only structural change is that operation implementations moved from inline methods to external pure functions — behaviour is identical.
 - **Tests passed:** 149/149
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 208.0s | Cost: $0.788847 USD | Turns: 38
 
 ## Run: Diagram Update (2026-04-15)
 
