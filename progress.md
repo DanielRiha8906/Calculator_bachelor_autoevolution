@@ -10,7 +10,7 @@
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
 - **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 171.3s | Cost: $0.479542 USD | Turns: 20
 
 ## Run: Issue #279 Scientific Mode (2026-04-15)
 
