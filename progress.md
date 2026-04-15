@@ -8,7 +8,7 @@
 - **Risks:** None — diagram-only update; no source or test changes.
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 228.1s | Cost: $0.696870 USD | Turns: 21
 
 ## Run: Issue #282 — GUI (2026-04-15)
 
