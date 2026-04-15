@@ -1,5 +1,15 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-15)
+
+- **Branch:** exp3/issue-301-stylish-gui-look
+- **Files changed:** artifacts/class_diagram.puml
+- **Purpose:** Updated class diagram `_build_ui` note to reflect cycle 15 dark iOS-inspired theme (colour palette, `_btn()` helper, font sizes, `minsize`/`columnconfigure`). Activity and sequence diagrams required no changes — the cycle 15 styling update introduced no logic or flow changes.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md (src/gui.py entry)
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Issue #301 — GUI styling (2026-04-15)
 
 - **Branch:** exp3/issue-301-stylish-gui-look

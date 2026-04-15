@@ -308,13 +308,21 @@ note right of CalculatorGUI::__init__
 end note
 
 note right of CalculatorGUI::_build_ui
-  Lays out the full widget grid:
+  Visual design: modern dark iOS-inspired theme.
+  Colour palette: D_BG=#000000 (display), BG=#1c1c1e (window),
+    C_OP=#ff9f0a (operators, orange), C_DIGIT=#333333 (digits),
+    C_UNARY=#2c2c2e (unary, dark-gray), C_CLR=#a5a5a5 (clear, light-gray),
+    C_CTL_SCI=#30d158 (sci toggle, green), C_CTL_HIST=#0a84ff (hist, blue).
+  Local _btn() helper: relief="flat", borderwidth=0, cursor="hand2".
+  Fonts: F_DISP=Arial 36 bold, F_BTN=Arial 20 bold, F_BTN_SM=Arial 14.
+  columnconfigure(weight=1, minsize=78); root.minsize(320, 560).
+  Widget grid:
   row 0: display (expression_var + display_var labels)
   rows 1-4: digit buttons (0-9, .) + binary op buttons
   row 5: C, x², √, n! (clear + common unary ops)
   row 6: x³, ∛, log, ln (more unary ops)
   row 7: xʸ (power), Sci (toggle), Hist (history)
-  row 8: sci_frame — 10 scientific op buttons
+  row 8: sci_frame — 10 scientific op buttons in 2x5 grid
     (sin/cos/tan/asin/acos/atan/sinh/cosh/tanh/exp)
     hidden by default; shown when mode=="scientific"
 end note
