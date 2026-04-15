@@ -6,7 +6,10 @@ Master index of summarized files. Updated each evolution cycle.
 |------|---------|----------------------|
 | `src/__init__.py` | Package init; exports `Calculator` and `CalculatorSession` | 11 |
 | `src/__main__.py` | Interactive CLI: menu-driven session loop with retry logic, MAX_ATTEMPTS=5, per-session history, and error logging | 11 |
-| `src/calculator.py` | Core `Calculator` class with add/subtract/multiply/divide/factorial/square/cube/square_root/cube_root/power/log/ln | 4 |
+| `src/calculator.py` | `Calculator(BasicOperations, ScientificOperations)` — unified class inheriting all 12 ops from the operations package | 12 |
+| `src/operations/__init__.py` | Operations package init; re-exports `BasicOperations` and `ScientificOperations` | 12 |
+| `src/operations/basic.py` | `BasicOperations` mixin: add, subtract, multiply, divide | 12 |
+| `src/operations/scientific.py` | `ScientificOperations` mixin: factorial, square, cube, square_root, cube_root, power, log, ln | 12 |
 | `src/error_logger.py` | Append-mode error logger: log_error(source, message) writes timestamped entries to ERROR_LOG_FILE (error.log) | 9 |
 | `src/session.py` | CalculatorSession: operation dispatch + history management; BINARY_OPS/UNARY_OPS/ALL_OPS shared metadata | 11 |
 | `tests/conftest.py` | Pytest autouse fixture isolating error log writes to tmp_path for all tests | 9 |

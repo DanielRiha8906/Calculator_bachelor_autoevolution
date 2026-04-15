@@ -167,6 +167,39 @@ Before issue-271: `main.py` defined `_BINARY_OPS`, `_UNARY_OPS`, `_ALL_OPS`
 independently from `__main__.py`'s `OPERATIONS` dict. These could drift.
 After: both import from `src.session`.
 
+## Pattern: multiple inheritance for composable operation mixins
+
+When an application needs a unified class that combines disjoint groups
+of methods (e.g., basic vs. scientific operations), define each group as
+a standalone mixin class and combine them via multiple inheritance:
+
+```python
+# src/operations/basic.py
+class BasicOperations:
+    def add(self, a, b): ...
+    def divide(self, a, b): ...
+
+# src/operations/scientific.py
+class ScientificOperations:
+    def factorial(self, n): ...
+    def log(self, x): ...
+
+# src/calculator.py
+class Calculator(BasicOperations, ScientificOperations):
+    """Thin class: inherits all ops, adds nothing."""
+```
+
+Benefits:
+- Each mixin is independently testable and importable.
+- The module names (`basic.py`, `scientific.py`) make the structural
+  boundary visible in the file tree without adding a class hierarchy.
+- The unified `Calculator` type remains the single public name for all
+  callers; no downstream code requires modification.
+
+Applied in `src/operations/` (issue-275).  The `BINARY_OPS`/`UNARY_OPS`
+arity metadata is kept separate in `session.py` because arity is a
+session-dispatch concern, not an operation-implementation concern.
+
 ## Pattern: autouse conftest fixture for cross-cutting side effects
 
 When a feature produces side effects (file writes, network calls) on every error path,
