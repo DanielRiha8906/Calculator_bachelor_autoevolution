@@ -1,17 +1,19 @@
 """Scientific / advanced operations for the Calculator.
 
 Contains operations beyond basic arithmetic: exponentiation, roots,
-powers, factorial, and logarithms.  These are the operations typically
-found in the scientific mode of a calculator, and are collected here so
-the structural boundary between normal and scientific functionality is
-clear even before a full scientific mode is implemented.
+powers, factorial, logarithms, and trigonometric functions.  These are
+the operations typically found in the scientific mode of a calculator,
+and are collected here so the structural boundary between normal and
+scientific functionality is clear.
+
+All trigonometric functions accept and return values in degrees.
 """
 
 import math
 
 
 class ScientificOperations:
-    """Advanced mathematical operations: powers, roots, logs, factorial.
+    """Advanced mathematical operations: powers, roots, logs, factorial, trig.
 
     Intended to be combined with :class:`BasicOperations` via multiple
     inheritance to build the full :class:`~src.calculator.Calculator`.
@@ -85,3 +87,53 @@ class ScientificOperations:
         if x <= 0:
             raise ValueError("ln is not defined for non-positive numbers")
         return math.log(x)
+
+    def sin(self, x) -> float:
+        """Return the sine of x, where x is in degrees."""
+        return math.sin(math.radians(x))
+
+    def cos(self, x) -> float:
+        """Return the cosine of x, where x is in degrees."""
+        return math.cos(math.radians(x))
+
+    def tan(self, x) -> float:
+        """Return the tangent of x, where x is in degrees.
+
+        Raises:
+            ValueError: if x is an odd multiple of 90 degrees (cos x = 0).
+        """
+        cos_val = math.cos(math.radians(x))
+        if abs(cos_val) < 1e-10:
+            raise ValueError("tan is not defined where cos(x) = 0")
+        return math.tan(math.radians(x))
+
+    def cot(self, x) -> float:
+        """Return the cotangent of x, where x is in degrees.
+
+        Raises:
+            ValueError: if x is a multiple of 180 degrees (sin x = 0).
+        """
+        sin_val = math.sin(math.radians(x))
+        if abs(sin_val) < 1e-10:
+            raise ValueError("cot is not defined where sin(x) = 0")
+        return math.cos(math.radians(x)) / sin_val
+
+    def asin(self, x) -> float:
+        """Return the arcsine of x in degrees.
+
+        Raises:
+            ValueError: if x is not in the range [-1, 1].
+        """
+        if x < -1 or x > 1:
+            raise ValueError("asin is not defined for values outside [-1, 1]")
+        return math.degrees(math.asin(x))
+
+    def acos(self, x) -> float:
+        """Return the arccosine of x in degrees.
+
+        Raises:
+            ValueError: if x is not in the range [-1, 1].
+        """
+        if x < -1 or x > 1:
+            raise ValueError("acos is not defined for values outside [-1, 1]")
+        return math.degrees(math.acos(x))

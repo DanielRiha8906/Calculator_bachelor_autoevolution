@@ -1,21 +1,36 @@
 from .session import CalculatorSession
 from .error_logger import log_error
 
-# Maps menu keys to (operation_name, arity) pairs.
-# arity=1 means one operand; arity=2 means two operands.
-OPERATIONS = {
+# Normal mode: standard arithmetic plus square and square root.
+NORMAL_OPERATIONS: dict[str, tuple[str, int]] = {
+    "1": ("add",         2),
+    "2": ("subtract",    2),
+    "3": ("multiply",    2),
+    "4": ("divide",      2),
+    "5": ("square",      1),
+    "6": ("square_root", 1),
+}
+
+# Scientific mode: all normal operations plus advanced functions.
+SCIENTIFIC_OPERATIONS: dict[str, tuple[str, int]] = {
     "1":  ("add",         2),
     "2":  ("subtract",    2),
     "3":  ("multiply",    2),
     "4":  ("divide",      2),
-    "5":  ("factorial",   1),
-    "6":  ("square",      1),
-    "7":  ("cube",        1),
-    "8":  ("square_root", 1),
+    "5":  ("square",      1),
+    "6":  ("square_root", 1),
+    "7":  ("factorial",   1),
+    "8":  ("cube",        1),
     "9":  ("cube_root",   1),
     "10": ("power",       2),
     "11": ("log",         1),
     "12": ("ln",          1),
+    "13": ("sin",         1),
+    "14": ("cos",         1),
+    "15": ("tan",         1),
+    "16": ("cot",         1),
+    "17": ("asin",        1),
+    "18": ("acos",        1),
 }
 
 # Maximum number of failed input attempts before the session is terminated.
@@ -29,11 +44,24 @@ class _SessionExpired(Exception):
     """Raised internally when the user exhausts all retry attempts for an input."""
 
 
-def display_menu() -> None:
-    """Print the operation menu to stdout."""
+def display_menu(
+    operations: dict | None = None,
+    mode_name: str = "Normal",
+) -> None:
+    """Print the operation menu for the active mode to stdout.
+
+    Args:
+        operations: Mapping of menu key to (operation_name, arity).
+                    Defaults to NORMAL_OPERATIONS when not supplied.
+        mode_name:  Human-readable name of the current mode (e.g. "Normal").
+    """
+    if operations is None:
+        operations = NORMAL_OPERATIONS
+    print(f"Mode: {mode_name}")
     print("Available operations:")
-    for key, (name, _) in OPERATIONS.items():
+    for key, (name, _) in operations.items():
         print(f"  {key}. {name}")
+    print("  m. switch mode")
     print("  h. history")
     print("  q. quit")
 
@@ -119,28 +147,29 @@ def get_number_with_retry(prompt: str, require_int: bool = False):
 
 
 def main() -> None:
-    """Run an interactive calculator session.
+    """Run an interactive calculator session with Normal and Scientific modes.
 
-    Displays a menu of operations, reads the user's selection and the
-    required operands, and delegates computation to :class:`CalculatorSession`.
+    The session starts in Normal mode and can be switched to Scientific mode
+    at any time by entering 'm'.  Normal mode exposes the standard arithmetic
+    operations plus square and square root.  Scientific mode adds advanced
+    functions: cube, cube root, factorial, power, log, ln, and trigonometric
+    operations (sin, cos, tan, cot, asin, acos — all in degrees).
+
     The loop continues until the user enters 'q' or the maximum number of
     failed input attempts is reached.
 
     Successful calculations are recorded in the session history (via
     CalculatorSession) and can be displayed at any time by entering 'h'.
     When the session ends the full history is written to HISTORY_FILE.
-
-    Invalid operation selections show an error with the list of available
-    operations and allow the user to retry; the session ends after
-    MAX_ATTEMPTS total invalid selections. Invalid operand inputs also
-    allow retries up to MAX_ATTEMPTS per prompt before ending the session.
     """
     session = CalculatorSession()
-    display_menu()
+    current_mode = "Normal"
+    current_ops = NORMAL_OPERATIONS
+    display_menu(current_ops, current_mode)
     invalid_op_attempts = 0
 
     while True:
-        choice = input("\nEnter operation number (or 'q' to quit): ").strip()
+        choice = input("\nEnter operation number (or 'm' to switch mode, 'h' for history, 'q' to quit): ").strip()
 
         if choice.lower() == "q":
             save_history(session.history())
@@ -157,12 +186,28 @@ def main() -> None:
                 print("No history yet.")
             continue
 
-        if choice not in OPERATIONS:
+        if choice.lower() == "m":
+            print("Select mode:")
+            print("  1. Normal")
+            print("  2. Scientific")
+            mode_choice = input("Enter mode number: ").strip()
+            if mode_choice == "1":
+                current_mode = "Normal"
+                current_ops = NORMAL_OPERATIONS
+            elif mode_choice == "2":
+                current_mode = "Scientific"
+                current_ops = SCIENTIFIC_OPERATIONS
+            else:
+                print(f"Unknown mode '{mode_choice}'. Keeping {current_mode} mode.")
+            display_menu(current_ops, current_mode)
+            continue
+
+        if choice not in current_ops:
             invalid_op_attempts += 1
             log_error("interactive", f"unknown operation '{choice}'")
             available = ", ".join(
                 f"{k}. {v[0]}"
-                for k, v in sorted(OPERATIONS.items(), key=lambda item: int(item[0]))
+                for k, v in sorted(current_ops.items(), key=lambda item: int(item[0]))
             )
             print(
                 f"Unknown operation '{choice}'. Available operations: {available}"
@@ -173,7 +218,7 @@ def main() -> None:
                 break
             continue
 
-        name, arity = OPERATIONS[choice]
+        name, arity = current_ops[choice]
 
         try:
             if arity == 1:

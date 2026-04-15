@@ -12,7 +12,8 @@ BINARY_OPS: frozenset[str] = frozenset(
     {"add", "subtract", "multiply", "divide", "power"}
 )
 UNARY_OPS: frozenset[str] = frozenset(
-    {"factorial", "square", "cube", "square_root", "cube_root", "log", "ln"}
+    {"factorial", "square", "cube", "square_root", "cube_root", "log", "ln",
+     "sin", "cos", "tan", "cot", "asin", "acos"}
 )
 ALL_OPS: frozenset[str] = BINARY_OPS | UNARY_OPS
 
