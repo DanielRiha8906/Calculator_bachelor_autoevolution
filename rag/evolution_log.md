@@ -4,6 +4,20 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 15 — Issue #303: GUI Look — Expert/generic
+
+- **Task:** Redesign (create from scratch) a tkinter calculator GUI that presents the existing calculator functionality through a clean, structured, visually coherent interface. Organize into six labelled sections: mode selection, operation selection (binary/unary clearly separated), operand entry, result display, action controls, session history. Use OO responsibility boundaries so each section is its own class.
+- **Files changed:**
+  - `src/gui.py` (new): `CalculatorGUI` main class + `ModeSelector`, `OperationSelector`, `OperandSection`, `ResultDisplay`, `HistoryPanel` section classes; `_parse_number` helper; `main()` entry function.
+  - `gui_main.py` (new): root-level entry point — `python gui_main.py` launches the GUI.
+  - `tests/test_gui.py` (new): 43-test suite for all section classes and `CalculatorGUI` integration; whole module skipped via `pytest.importorskip("tkinter")` when tkinter is absent.
+- **Test result:** 237 passed, 1 skipped (test_gui.py module skipped — tkinter not installed in CI)
+- **Key decisions:** Separated Binary/Unary operation types with radio buttons and a single combobox so the arity choice is always explicit. `OperandSection.set_binary_mode()` uses `grid_remove()`/`grid()` to show/hide Operand B without destroying the widget. `factorial` detected by name in `get_operands()` to enforce `int()` parsing. Calculation errors go to `ResultDisplay.show_error()` and are also sent to `log_error("gui", ...)`. GUI test module uses `pytest.importorskip` so collection succeeds in environments without tkinter rather than crashing with `ModuleNotFoundError`.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 14 — Issue #281: Scientific Mode — Expert/generic
 
 - **Task:** Add Normal and Scientific calculator modes to the interactive CLI. Normal mode exposes add, subtract, multiply, divide, square, square_root. Scientific mode extends Normal with cube, cube_root, factorial, power, log, ln, sin, cos, tan, cot, asin, acos (all trig in degrees). Users switch modes with 'm' without restarting the session.

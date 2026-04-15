@@ -203,3 +203,41 @@ Per-file summaries: purpose, public API surface, key invariants.
 - **Test strategy:** Call `main(args)` directly with a list of strings; use pytest `capsys` to capture stdout/stderr. Helper `run_cli` returns `(exit_code, stdout, stderr)`. Error log path redirected by autouse `isolate_error_log` fixture from `tests/conftest.py`.
 - **Exports:** None
 - **Last updated:** cycle 9 (issue-253)
+
+---
+
+## `src/gui.py`
+- **Purpose:** Tkinter-based graphical user interface for the Calculator. Presents all 18 operations through six labelled sections: mode selection, operation selection (binary/unary split), operand entry, result display, action controls, session history.
+- **Public API:**
+  - `CalculatorGUI(root: tk.Tk)` — main application class; instantiate and call `root.mainloop()`.
+  - `ModeSelector(parent, mode_var, on_change)` — Normal/Scientific radio-button row; exposes `.frame`.
+  - `OperationSelector(parent, mode_var, op_type_var, op_name_var, on_arity_change)` — Binary/Unary type radios + operation combobox; exposes `.frame` and `.refresh_for_mode()`.
+  - `OperandSection(parent, operand_a_var, operand_b_var)` — two entry widgets; `set_binary_mode(is_binary, op_name)` shows/hides Operand B and updates the label; `get_operands(op_name)` returns a 1- or 2-tuple.
+  - `ResultDisplay(parent)` — large-font result label; `show_result(value)`, `show_error(message)`, `clear()`.
+  - `HistoryPanel(parent)` — scrollable text area; `refresh(entries)`, `clear()`.
+  - `_parse_number(raw: str) -> int | float` — module-level helper; tries int first, then float.
+  - `main()` — creates `tk.Tk()` root, instantiates `CalculatorGUI`, calls `mainloop()`.
+- **Key invariants:**
+  - Operand B is hidden for unary operations and shown for binary ones.
+  - Mode switching rebuilds the operation combobox to the correct op list for the new mode.
+  - `factorial` enforces integer input via `int(raw_a)` in `get_operands`.
+  - Calculation errors (ValueError, TypeError, ZeroDivisionError) are displayed in the result area; they do not append to session history (CalculatorSession behaviour).
+  - `log_error("gui", ...)` is called on every calculation error.
+- **Last updated:** cycle 15 (issue-303)
+
+---
+
+## `gui_main.py`
+- **Purpose:** Root-level entry point for the GUI application; mirrors the role of `main.py` for the bash CLI.
+- **Public API:** `if __name__ == "__main__": main()` where `main` is imported from `src.gui`.
+- **Key invariants:** No logic of its own; delegates entirely to `src.gui.main()`.
+- **Last updated:** cycle 15 (issue-303)
+
+---
+
+## `tests/test_gui.py`
+- **Purpose:** Test suite for the tkinter GUI in `src/gui.py`. The entire module is skipped if tkinter is not installed (`pytest.importorskip`); individual tests are skipped when no Tk display is available (pytestmark).
+- **Current state:** Tests for `_parse_number` (int, float, negative, invalid), each section class in isolation (ModeSelector, OperationSelector, OperandSection, ResultDisplay, HistoryPanel), and `CalculatorGUI` integration tests covering calculate (binary, unary, float), error display (divide-by-zero, invalid operand, no op selected), history accumulation, clear, mode switch, and factorial.
+- **Test strategy:** `root` fixture creates a hidden `tk.Tk()` (`.withdraw()`); `app` fixture builds a full `CalculatorGUI`. All assertions operate directly on tkinter variable values and widget `.cget("text")` calls — no display rendering required.
+- **Exports:** None
+- **Last updated:** cycle 15 (issue-303)

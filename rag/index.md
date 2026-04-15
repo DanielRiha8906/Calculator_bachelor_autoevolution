@@ -20,3 +20,6 @@ Master index of summarized files. Updated each evolution cycle.
 | `tests/test_session.py` | 49-test suite for CalculatorSession: op metadata sets (18 ops), format_entry, execute (all 18 ops + error paths), history tracking, save() | 14 |
 | `main.py` | Bash-accessible CLI entry point: `python main.py <op> [a] [b]`; imports op sets from src.session, uses CalculatorSession, exits 0/1, logs errors | 11 |
 | `tests/test_cli.py` | 34-test suite for main.py CLI: all 12 ops, arg-count validation, error paths, non-numeric operands, error logging | 9 |
+| `src/gui.py` | Tkinter GUI: CalculatorGUI + ModeSelector, OperationSelector, OperandSection, ResultDisplay, HistoryPanel; Normal/Scientific modes; auto-hides Operand B for unary ops | 15 |
+| `gui_main.py` | Root-level GUI entry point: `python gui_main.py`; delegates to `src.gui.main()` | 15 |
+| `tests/test_gui.py` | GUI test suite (skipped if tkinter absent): _parse_number, each section class, CalculatorGUI integration (calculate, clear, history, mode switch, error display) | 15 |

@@ -224,6 +224,61 @@ Benefits:
 
 Applied in `src/__main__.py` (issue-281).
 
+## Pattern: pytest.importorskip for optional GUI/display dependencies
+
+When a test module depends on an optional package (e.g. `tkinter`, `PyQt5`),
+use `pytest.importorskip` at module level so collection succeeds silently in
+environments that lack the package rather than raising `ModuleNotFoundError`:
+
+```python
+tk = pytest.importorskip(
+    "tkinter",
+    reason="tkinter is not installed; skipping all GUI tests",
+)
+```
+
+For secondary display availability (the package is present but no display is
+configured), add a `pytestmark` with `skipif`:
+
+```python
+def _tk_available() -> bool:
+    try:
+        root = tk.Tk()
+        root.withdraw()
+        root.destroy()
+        return True
+    except Exception:
+        return False
+
+pytestmark = pytest.mark.skipif(
+    not _tk_available(),
+    reason="No Tk display available (headless environment)",
+)
+```
+
+Applied in `tests/test_gui.py`.
+
+## Pattern: grid_remove / grid for dynamic widget visibility in tkinter
+
+To show and hide widgets without destroying them (preserving state and
+avoiding re-creation overhead), use `.grid_remove()` to unmap and `.grid()`
+to re-map. The widget retains its previously configured grid options so
+`.grid()` without arguments restores it to its original position:
+
+```python
+# hide
+self._b_label.grid_remove()
+self._b_entry.grid_remove()
+
+# show
+self._b_label.grid()
+self._b_entry.grid()
+```
+
+This is preferable to `.grid_forget()` which discards the grid configuration,
+or `.pack_forget()` / recreating the widget each time.
+Applied in `OperandSection.set_binary_mode()` (`src/gui.py`).
+
 ## Pattern: autouse conftest fixture for cross-cutting side effects
 
 When a feature produces side effects (file writes, network calls) on every error path,
