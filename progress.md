@@ -2,6 +2,32 @@
 
 ---
 
+## Run: Issue #274 — Modularization (2026-04-15)
+
+- **Branch:** exp3/issue-274-modularization
+- **PR target:** exp3/structured-generic
+- **Files changed:**
+  - `src/operations/__init__.py` — new file; operations sub-package init
+  - `src/operations/basic.py` — new file; pure functions: add, subtract, multiply, divide
+  - `src/operations/scientific.py` — new file; pure functions: factorial, square, cube, square_root, cube_root, power, log, ln
+  - `src/interface/__init__.py` — new file; interface sub-package init
+  - `src/interface/history.py` — new file; HISTORY_FILE/ERROR_LOG_FILE constants + clear_history, append_to_history, show_history, append_to_error_log
+  - `src/interface/interactive.py` — new file; TooManyAttemptsError, MAX_ATTEMPTS, OPERATIONS, arity sets, _OP_PROMPTS, show_menu, parse_number, parse_int, run_operation
+  - `src/interface/cli.py` — new file; cli_mode function
+  - `src/calculator.py` — refactored: Calculator methods now delegate to operations sub-modules
+  - `src/__main__.py` — refactored: thin entry point with main() + re-exports for backward compatibility
+  - `tests/test_main.py` — updated: added `import src.interface.history as _history_mod`; all monkeypatch.setattr calls for HISTORY_FILE/ERROR_LOG_FILE changed from `_main_mod` to `_history_mod`
+- **Purpose:** Modularize the codebase so operation implementations, core logic, and interface handling are cleanly separated. Organize operations into basic/scientific sub-modules so future scientific functionality can be added in `src/operations/scientific.py` (or a new sub-module) without touching interface code.
+- **Risks:** Low. Public API of Calculator class is unchanged. Re-exports in `src/__main__.py` preserve backward-compatible imports. The only breaking change for direct consumers is monkeypatching: tests must patch `src.interface.history.HISTORY_FILE` instead of `src.__main__.HISTORY_FILE`.
+- **All tests passed:** Yes — 152/152 (68 calculator + 84 CLI/interactive)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: 530.3s | Cost: 1.6180881999999999 USD | Turns: 41
+
+
+---
+
 ## Run: Diagram update (2026-04-15)
 
 - **Branch:** exp3/issue-270-logic-separation
@@ -312,3 +338,20 @@ Duration: 108.0s | Cost: $0.330687 USD | Turns: 21
 - **Tests passed:** N/A (no source changes)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 Duration: 216.1s | Cost: $0.502483 USD | Turns: 19
+
+---
+
+## Run: Diagram update (2026-04-15)
+
+- **Branch:** exp3/issue-274-modularization
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — rewritten to reflect cycle 11 modular structure: replaced monolithic `__main__` class with proper `package "src.operations"` (basic, scientific modules), `package "src.interface"` (history, interactive, cli modules), standalone `Calculator` class, and `__main__` entry-point module; added all delegation/dependency arrows between modules; retained and updated all notes for invariants and error conditions.
+  - `artifacts/activity_diagram.puml` — added module-structure note at diagram start identifying which cycle-11 module owns each function (main, cli_mode, run_operation, parse_*, show_menu, file helpers); all flow content unchanged.
+  - `artifacts/sequence_diagram.puml` — updated `Main` participant label to `__main__ / interface.*` with an embedded note listing the cycle-11 module breakdown; all sequence logic unchanged.
+- **Purpose:** Reflect cycle 11 (issue #274) modularization in all three PlantUML diagrams. The class diagram was the primary target as it now shows the `src.operations` and `src.interface` sub-packages explicitly. Activity and sequence diagrams received lightweight annotations only since the observable flow is unchanged.
+- **Risks:** None — diagram-only change; no source code modified.
+- **All tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: 211.1s | Cost: $0.649531 USD | Turns: 27

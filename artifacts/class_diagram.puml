@@ -6,6 +6,61 @@ skinparam class {
     BorderColor Black
     ArrowColor Black
 }
+skinparam package {
+    BackgroundColor WhiteSmoke
+    BorderColor DarkGray
+}
+
+' ── src.operations sub-package ──────────────────────────────────────────────
+
+package "src.operations" {
+
+    class "basic" as BasicOps << (M,orchid) module >> {
+        +add(a, b) : number
+        +subtract(a, b) : number
+        +multiply(a, b) : number
+        +divide(a, b) : number
+    }
+    note right of BasicOps::divide
+      Raises ValueError("Division by zero\nis not allowed") when b == 0.
+      All functions are pure and stateless.
+    end note
+
+    class "scientific" as ScientificOps << (M,orchid) module >> {
+        +factorial(n: int) : int
+        +square(a) : number
+        +cube(a) : number
+        +square_root(a) : float
+        +cube_root(a) : float
+        +power(a, b) : number
+        +log(a, base) : float
+        +ln(a) : float
+    }
+    note right of ScientificOps::factorial
+      Raises ValueError for non-integer n
+      or n < 0. Delegates to math.factorial(n).
+    end note
+    note right of ScientificOps::square_root
+      Raises ValueError if a < 0.
+      Delegates to math.sqrt(a).
+    end note
+    note right of ScientificOps::cube_root
+      Supports negative input via
+      sign-preserving idiom: -((-a)**(1/3)).
+    end note
+    note right of ScientificOps::log
+      Raises ValueError if a <= 0,
+      base <= 0, or base == 1.
+      Delegates to math.log(a, base).
+    end note
+    note right of ScientificOps::ln
+      Raises ValueError if a <= 0.
+      Delegates to math.log(a).
+    end note
+
+}
+
+' ── Calculator class ─────────────────────────────────────────────────────────
 
 class Calculator {
     +add(a, b) : number
@@ -22,199 +77,172 @@ class Calculator {
     +ln(a) : float
     +execute(operation: str, *args) : any
 }
-
 note right of Calculator::execute
   Dispatches to the named Calculator method
   via getattr(self, operation).
   Raises ValueError for unrecognised or
   non-callable operation names.
   Entry point for all operation dispatch
-  from the CLI layer (run_operation, cli_mode).
+  from the interface layer (run_operation,
+  cli_mode).
+end note
+note right of Calculator
+  No state — all methods are pure delegates.
+  Imports from src.operations.basic and
+  src.operations.scientific.
 end note
 
-note right of Calculator::divide
-  Raises ValueError if b == 0
-end note
+Calculator ..> BasicOps : delegates add / subtract /\nmultiply / divide
+Calculator ..> ScientificOps : delegates factorial / square / cube /\nsquare_root / cube_root / power /\nlog / ln
 
-note right of Calculator::factorial
-  Raises ValueError if n < 0
-  or n is not an integer.
-  Delegates to math.factorial(n).
-end note
+' ── src.interface sub-package ────────────────────────────────────────────────
 
-note right of Calculator::square_root
-  Raises ValueError if a < 0
-end note
+package "src.interface" {
 
-note right of Calculator::log
-  Raises ValueError if a <= 0,
-  base <= 0, or base == 1
-end note
+    class "history" as History << (M,orchid) module >> {
+        +HISTORY_FILE : str = "history.txt"
+        +ERROR_LOG_FILE : str = "error.log"
+        +clear_history(filepath: str|None) : None
+        +append_to_history(entry: str, filepath: str|None) : None
+        +show_history(filepath: str|None) : None
+        +append_to_error_log(message: str, filepath: str|None) : None
+    }
+    note right of History::HISTORY_FILE
+      Default path for per-session history.
+      Cleared at the start of every interactive
+      session; NOT written in CLI mode.
+      Uses None-sentinel pattern — tests patch
+      src.interface.history.HISTORY_FILE.
+    end note
+    note right of History::ERROR_LOG_FILE
+      Append-only error log; never cleared
+      across sessions. Stores timestamped
+      failure and invalid-input records.
+      Uses None-sentinel pattern — tests patch
+      src.interface.history.ERROR_LOG_FILE.
+    end note
+    note right of History::append_to_error_log
+      Appends "[YYYY-MM-DD HH:MM:SS] <message>"
+      to ERROR_LOG_FILE. Called on:
+      — invalid number / integer input
+      — invalid menu choice
+      — unknown operation in run_operation
+      — calculation ValueError in run_operation
+      — wrong arg count / non-numeric / calc
+        error in cli_mode.
+    end note
 
-note right of Calculator::ln
-  Raises ValueError if a <= 0.
-  Delegates to math.log(a).
-end note
+    class TooManyAttemptsError << (E,red) exception >> {
+    }
+    note right of TooManyAttemptsError
+      Raised by parse_number / parse_int
+      after MAX_ATTEMPTS consecutive invalid
+      inputs. Propagates out of run_operation
+      and is caught in main().
+    end note
 
-class TooManyAttemptsError {
-  «exception»
+    class "interactive" as Interactive << (M,orchid) module >> {
+        +MAX_ATTEMPTS : int = 3
+        +OPERATIONS : dict[str, str]
+        +_ONE_ARG_OPS : set
+        +_INT_ARG_OPS : set
+        +_TWO_ARG_OPS : set
+        +_ALL_OPS : set
+        +_OP_PROMPTS : dict[str, tuple[str, ...]]
+        +show_menu() : None
+        +parse_number(prompt: str, max_attempts: int) : float
+        +parse_int(prompt: str, max_attempts: int) : int
+        +run_operation(calc: Calculator, operation: str) : str|None
+    }
+    note right of Interactive::OPERATIONS
+      Maps menu keys "1"–"12" to operation
+      names: add, subtract, multiply, divide,
+      factorial, square, cube, square_root,
+      cube_root, power, log, ln.
+    end note
+    note right of Interactive::_ONE_ARG_OPS
+      {square, cube, square_root, cube_root, ln}
+      — one float argument.
+    end note
+    note right of Interactive::_INT_ARG_OPS
+      {factorial} — one integer argument.
+    end note
+    note right of Interactive::_TWO_ARG_OPS
+      {add, subtract, multiply, divide,
+      power, log} — two float arguments.
+    end note
+    note right of Interactive::_OP_PROMPTS
+      Maps each operation name to a tuple of
+      prompt strings (one per required arg).
+      Kept in the UI layer so Calculator
+      remains free of display concerns.
+    end note
+    note right of Interactive::parse_number
+      Retries up to max_attempts times on
+      invalid float input; each failed attempt
+      calls append_to_error_log; raises
+      TooManyAttemptsError on exhaustion.
+    end note
+    note right of Interactive::parse_int
+      Retries up to max_attempts times on
+      non-integer input; each failed attempt
+      calls append_to_error_log; raises
+      TooManyAttemptsError on exhaustion.
+    end note
+    note right of Interactive::run_operation
+      Returns "op(args) = result" on success;
+      returns None on error or unknown op.
+      Catches ValueError from Calculator (logs
+      to error log). TooManyAttemptsError is
+      NOT caught — it propagates to main().
+    end note
+
+    class "cli" as CLI << (M,orchid) module >> {
+        +cli_mode(args: list[str]) : int
+    }
+    note right of CLI::cli_mode
+      Parses args via argparse.
+      Validates arg count and numeric/integer
+      format; all errors written to error log
+      and printed to stderr.
+      Prints result to stdout.
+      Returns 0 on success, 1 on error.
+      History is NOT written in CLI mode.
+    end note
+
+    Interactive ..> History : calls append_to_error_log
+    Interactive ..> TooManyAttemptsError : raises
+    CLI ..> History : calls append_to_error_log
+    CLI ..> Interactive : imports _ONE_ARG_OPS,\n_INT_ARG_OPS, _TWO_ARG_OPS, _ALL_OPS
+    CLI ..> Calculator : instantiates + calls execute()
+    Interactive ..> Calculator : calls execute() via run_operation
+
 }
 
-note right of TooManyAttemptsError
-  Raised by parse_number / parse_int
-  after max_attempts consecutive
-  invalid inputs; propagates out of
-  run_operation and is caught in main().
-end note
+' ── src.__main__ entry point ─────────────────────────────────────────────────
 
-class "__main__" as Main {
-    +MAX_ATTEMPTS : int = 3
-    +HISTORY_FILE : str = "history.txt"
-    +ERROR_LOG_FILE : str = "error.log"
-    +OPERATIONS : dict
-    +_ONE_ARG_OPS : set
-    +_INT_ARG_OPS : set
-    +_TWO_ARG_OPS : set
-    +_ALL_OPS : set
-    +_OP_PROMPTS : dict
-    +clear_history(filepath: str | None) : None
-    +append_to_history(entry: str, filepath: str | None) : None
-    +show_history(filepath: str | None) : None
-    +append_to_error_log(message: str, filepath: str | None) : None
-    +show_menu() : None
-    +parse_number(prompt: str, max_attempts: int) : float
-    +parse_int(prompt: str, max_attempts: int) : int
-    +run_operation(calc: Calculator, operation: str) : str | None
-    +cli_mode(args: list[str]) : int
-    +main(args: list[str] | None = None) : None
+class "__main__" as Main << (M,orchid) module >> {
+    +main(args: list[str]|None = None) : None
 }
-
-note right of Main::MAX_ATTEMPTS
-  Maximum consecutive invalid inputs
-  before session ends; default = 3
+note right of Main
+  Top-level entry point. Dispatches to
+  cli_mode(args) when args are present,
+  otherwise starts the interactive menu loop.
+  Re-exports all public names from interface
+  sub-modules for backward compatibility
+  (HISTORY_FILE, ERROR_LOG_FILE, MAX_ATTEMPTS,
+  OPERATIONS, TooManyAttemptsError, show_menu,
+  parse_number, parse_int, run_operation,
+  cli_mode, clear_history, append_to_history,
+  show_history, append_to_error_log).
+  Monkeypatching must target
+  src.interface.history, not src.__main__.
 end note
 
-note right of Main::HISTORY_FILE
-  Default path for session history file.
-  Patchable via monkeypatch in tests.
-  History is NOT kept between sessions.
-end note
-
-note right of Main::ERROR_LOG_FILE
-  Default path for error log file.
-  Patchable via monkeypatch in tests.
-  Append-only; never cleared across sessions.
-  Stores timestamped failure/invalid-input records.
-end note
-
-note right of Main::OPERATIONS
-  Maps keys "1"-"12" to operation names:
-  add, subtract, multiply, divide,
-  factorial, square, cube, square_root,
-  cube_root, power, log, ln
-end note
-
-note right of Main::_ONE_ARG_OPS
-  {square, cube, square_root, cube_root, ln}
-  — one float argument
-end note
-
-note right of Main::_INT_ARG_OPS
-  {factorial} — one integer argument
-end note
-
-note right of Main::_TWO_ARG_OPS
-  {add, subtract, multiply, divide, power, log}
-  — two float arguments
-end note
-
-note right of Main::_OP_PROMPTS
-  Maps each operation name to a tuple of
-  interactive prompt strings (one per arg).
-  Kept in the UI layer so Calculator stays
-  free of display concerns. Used by
-  run_operation to collect user input.
-end note
-
-note right of Main::clear_history
-  Truncates or creates HISTORY_FILE,
-  removing any previous session data.
-  Called once at interactive session start.
-end note
-
-note right of Main::append_to_history
-  Appends one formatted entry line to
-  HISTORY_FILE after each successful
-  operation in interactive mode.
-end note
-
-note right of Main::show_history
-  Reads and prints all entries from
-  HISTORY_FILE to stdout.
-  Triggered by the "h" menu option.
-end note
-
-note right of Main::append_to_error_log
-  Appends "[YYYY-MM-DD HH:MM:SS] <message>"
-  to ERROR_LOG_FILE. Called on:
-  — invalid number input (parse_number)
-  — invalid integer input (parse_int)
-  — invalid menu choice (main loop)
-  — unknown operation (run_operation)
-  — calculation ValueError (run_operation)
-  — wrong arg count / non-numeric / calc
-    error (cli_mode).
-  Uses None-sentinel default like history helpers.
-end note
-
-note right of Main::parse_number
-  Retries up to max_attempts times on
-  invalid float input; each failed attempt
-  calls append_to_error_log; raises
-  TooManyAttemptsError on exhaustion
-end note
-
-note right of Main::parse_int
-  Retries up to max_attempts times on
-  non-integer input; each failed attempt
-  calls append_to_error_log; raises
-  TooManyAttemptsError on exhaustion
-end note
-
-note right of Main::run_operation
-  Returns "op(args) = result" string on
-  success; returns None on error or unknown
-  operation. Catches ValueError from
-  Calculator (logs to error log).
-  TooManyAttemptsError is NOT
-  caught here — it propagates to main().
-end note
-
-note right of Main::cli_mode
-  Parses args via argparse.
-  Validates arg count and numeric/integer
-  format per field; all validation and
-  calculation errors written to error log
-  and printed to stderr.
-  Prints result to stdout.
-  Returns 0 on success, 1 on error.
-  History is NOT written in CLI mode.
-end note
-
-note right of Main::main
-  If args non-empty: delegates to
-  cli_mode(args) and exits.
-  Interactive loop: clears history at start,
-  handles "h" (show history), tracks
-  invalid_op_count; invalid menu choices
-  logged to error log; session ends when
-  count reaches MAX_ATTEMPTS or
-  TooManyAttemptsError is raised.
-  Appends successful entries to history.
-end note
-
-Main ..> Calculator : instantiates
-Main ..> Calculator : delegates operations to
-Main ..> TooManyAttemptsError : raises / catches
+Main ..> Calculator : instantiates (interactive mode)
+Main ..> Interactive : calls show_menu, run_operation
+Main ..> CLI : calls cli_mode
+Main ..> History : calls clear_history,\nappend_to_history, show_history,\nappend_to_error_log
+Main ..> TooManyAttemptsError : catches in interactive loop
 
 @enduml

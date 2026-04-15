@@ -1,273 +1,32 @@
+"""Calculator entry point.
+
+Dispatches between interactive menu-driven mode and non-interactive CLI mode.
+All implementation lives in the interface sub-package; this module owns only
+the top-level :func:`main` function and the ``__main__`` guard.
+
+Re-exports from sub-modules are provided for backward compatibility.
+"""
 import sys
-import argparse
-from datetime import datetime
 
 from .calculator import Calculator
-
-MAX_ATTEMPTS = 3
-HISTORY_FILE = "history.txt"
-ERROR_LOG_FILE = "error.log"
-
-
-class TooManyAttemptsError(Exception):
-    """Raised when the user exceeds the maximum number of invalid input attempts."""
-
-
-OPERATIONS = {
-    "1": "add",
-    "2": "subtract",
-    "3": "multiply",
-    "4": "divide",
-    "5": "factorial",
-    "6": "square",
-    "7": "cube",
-    "8": "square_root",
-    "9": "cube_root",
-    "10": "power",
-    "11": "log",
-    "12": "ln",
-}
-
-# Operations grouped by arity and argument type for CLI mode and input dispatch.
-_ONE_ARG_OPS = {"square", "cube", "square_root", "cube_root", "ln"}
-_INT_ARG_OPS = {"factorial"}
-_TWO_ARG_OPS = {"add", "subtract", "multiply", "divide", "power", "log"}
-_ALL_OPS = _ONE_ARG_OPS | _INT_ARG_OPS | _TWO_ARG_OPS
-
-# Prompt strings for interactive mode, keyed by operation name.
-# Each tuple holds one prompt per required argument, in argument order.
-# Keeping prompts here (UI layer) keeps Calculator free of display concerns.
-_OP_PROMPTS: dict[str, tuple[str, ...]] = {
-    "add":         ("  Enter first number: ",           "  Enter second number: "),
-    "subtract":    ("  Enter first number: ",           "  Enter second number: "),
-    "multiply":    ("  Enter first number: ",           "  Enter second number: "),
-    "divide":      ("  Enter dividend: ",               "  Enter divisor: "),
-    "factorial":   ("  Enter non-negative integer: ",),
-    "square":      ("  Enter number: ",),
-    "cube":        ("  Enter number: ",),
-    "square_root": ("  Enter number: ",),
-    "cube_root":   ("  Enter number: ",),
-    "power":       ("  Enter base: ",                   "  Enter exponent: "),
-    "log":         ("  Enter number: ",                 "  Enter base: "),
-    "ln":          ("  Enter number: ",),
-}
-
-
-def clear_history(filepath: "str | None" = None) -> None:
-    """Clear (or create) the history file, removing any previous session data.
-
-    Uses *HISTORY_FILE* when *filepath* is ``None`` so that monkeypatching the
-    module attribute in tests affects the default without needing to re-bind the
-    function's default argument.
-    """
-    if filepath is None:
-        filepath = HISTORY_FILE
-    with open(filepath, "w", encoding="utf-8") as fh:
-        fh.write("")
-
-
-def append_to_history(entry: str, filepath: "str | None" = None) -> None:
-    """Append a single history entry (one line) to the history file."""
-    if filepath is None:
-        filepath = HISTORY_FILE
-    with open(filepath, "a", encoding="utf-8") as fh:
-        fh.write(entry + "\n")
-
-
-def show_history(filepath: "str | None" = None) -> None:
-    """Print all history entries from the current session to stdout."""
-    if filepath is None:
-        filepath = HISTORY_FILE
-    try:
-        with open(filepath, "r", encoding="utf-8") as fh:
-            lines = fh.read().splitlines()
-    except FileNotFoundError:
-        lines = []
-    if not lines:
-        print("  No history yet.")
-    else:
-        print("\n--- History ---")
-        for i, line in enumerate(lines, start=1):
-            print(f"  {i}. {line}")
-
-
-def append_to_error_log(message: str, filepath: "str | None" = None) -> None:
-    """Append a timestamped error entry to the error log file.
-
-    Uses *ERROR_LOG_FILE* when *filepath* is ``None`` so that monkeypatching the
-    module attribute in tests affects the default without needing to re-bind the
-    function's default argument.
-    """
-    if filepath is None:
-        filepath = ERROR_LOG_FILE
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(filepath, "a", encoding="utf-8") as fh:
-        fh.write(f"[{timestamp}] {message}\n")
-
-
-def show_menu() -> None:
-    """Print the operation menu to stdout."""
-    print("\n--- Calculator ---")
-    for key, name in OPERATIONS.items():
-        print(f"  {key}. {name}")
-    print("  h. show history")
-    print("  q. quit")
-
-
-def parse_number(prompt: str, max_attempts: int = MAX_ATTEMPTS) -> float:
-    """Prompt the user until a valid number is entered and return it as float.
-
-    Raises TooManyAttemptsError after *max_attempts* consecutive invalid inputs.
-    """
-    for attempt in range(1, max_attempts + 1):
-        raw = input(prompt).strip()
-        try:
-            return float(raw)
-        except ValueError:
-            append_to_error_log(f"invalid_input: '{raw}' is not a valid number")
-            remaining = max_attempts - attempt
-            if remaining > 0:
-                print(f"  Invalid number: '{raw}'. Please try again ({remaining} attempt(s) left).")
-            else:
-                print(f"  Invalid number: '{raw}'. No attempts remaining.")
-    raise TooManyAttemptsError("Too many invalid number inputs. Ending session.")
-
-
-def parse_int(prompt: str, max_attempts: int = MAX_ATTEMPTS) -> int:
-    """Prompt the user until a valid integer is entered and return it.
-
-    Raises TooManyAttemptsError after *max_attempts* consecutive invalid inputs.
-    """
-    for attempt in range(1, max_attempts + 1):
-        raw = input(prompt).strip()
-        try:
-            return int(raw)
-        except ValueError:
-            append_to_error_log(f"invalid_input: '{raw}' is not a valid integer")
-            remaining = max_attempts - attempt
-            if remaining > 0:
-                print(f"  Invalid integer: '{raw}'. Please try again ({remaining} attempt(s) left).")
-            else:
-                print(f"  Invalid integer: '{raw}'. No attempts remaining.")
-    raise TooManyAttemptsError("Too many invalid integer inputs. Ending session.")
-
-
-def run_operation(calc: Calculator, operation: str) -> "str | None":
-    """Collect inputs for *operation*, execute it, and print the result.
-
-    User interaction (prompting) is separated from calculation: prompts are
-    looked up in *_OP_PROMPTS* (UI layer); the actual computation is
-    delegated to *Calculator.execute* (logic layer).
-
-    Returns a history entry string (e.g. ``"add(3.0, 4.0) = 7.0"``) on
-    success, or ``None`` when the operation fails or is not recognised.
-    """
-    if operation not in _OP_PROMPTS:
-        append_to_error_log(f"unsupported_operation: '{operation}'")
-        print(f"  Unknown operation: {operation}")
-        return None
-
-    try:
-        prompts = _OP_PROMPTS[operation]
-        if operation in _INT_ARG_OPS:
-            n = parse_int(prompts[0])
-            result = calc.execute(operation, n)
-            entry = f"{operation}({n}) = {result}"
-        elif operation in _ONE_ARG_OPS:
-            a = parse_number(prompts[0])
-            result = calc.execute(operation, a)
-            entry = f"{operation}({a}) = {result}"
-        else:  # _TWO_ARG_OPS
-            a = parse_number(prompts[0])
-            b = parse_number(prompts[1])
-            result = calc.execute(operation, a, b)
-            entry = f"{operation}({a}, {b}) = {result}"
-        print(f"  Result: {result}")
-        return entry
-    except ValueError as exc:
-        append_to_error_log(f"calculation_error: {exc}")
-        print(f"  Error: {exc}")
-        return None
-
-
-def cli_mode(args: list[str]) -> int:
-    """Execute a single operation from command-line arguments.
-
-    Parses *args* (e.g. ``["add", "3", "4"]``), runs the requested
-    Calculator operation, and prints the result to stdout.
-
-    Returns 0 on success, 1 on error.  Errors are written to stderr so that
-    the numeric result is always the only line on stdout.
-    """
-    parser = argparse.ArgumentParser(
-        prog="python -m src",
-        description="Calculator — execute a single operation and print the result.",
-    )
-    parser.add_argument(
-        "operation",
-        choices=sorted(_ALL_OPS),
-        help="Operation to perform.",
-    )
-    parser.add_argument(
-        "values",
-        nargs="+",
-        metavar="VALUE",
-        help="Numeric argument(s) required by the operation.",
-    )
-    namespace = parser.parse_args(args)
-    op = namespace.operation
-    raw = namespace.values
-
-    calc = Calculator()
-    try:
-        if op in _INT_ARG_OPS:
-            if len(raw) != 1:
-                msg = f"'{op}' requires exactly 1 integer argument"
-                append_to_error_log(f"invalid_input: {msg}")
-                print(f"Error: {msg}.", file=sys.stderr)
-                return 1
-            try:
-                n = int(raw[0])
-            except ValueError:
-                append_to_error_log(f"invalid_input: '{raw[0]}' is not a valid integer")
-                print(f"Error: '{raw[0]}' is not a valid integer.", file=sys.stderr)
-                return 1
-            result = calc.execute(op, n)
-        elif op in _ONE_ARG_OPS:
-            if len(raw) != 1:
-                msg = f"'{op}' requires exactly 1 argument"
-                append_to_error_log(f"invalid_input: {msg}")
-                print(f"Error: {msg}.", file=sys.stderr)
-                return 1
-            try:
-                a = float(raw[0])
-            except ValueError:
-                append_to_error_log(f"invalid_input: '{raw[0]}' is not a valid number")
-                print(f"Error: '{raw[0]}' is not a valid number.", file=sys.stderr)
-                return 1
-            result = calc.execute(op, a)
-        else:  # two-argument operations
-            if len(raw) != 2:
-                msg = f"'{op}' requires exactly 2 arguments"
-                append_to_error_log(f"invalid_input: {msg}")
-                print(f"Error: {msg}.", file=sys.stderr)
-                return 1
-            parsed: list[float] = []
-            for v in raw[:2]:
-                try:
-                    parsed.append(float(v))
-                except ValueError:
-                    append_to_error_log(f"invalid_input: '{v}' is not a valid number")
-                    print(f"Error: '{v}' is not a valid number.", file=sys.stderr)
-                    return 1
-            result = calc.execute(op, *parsed)
-    except ValueError as exc:
-        append_to_error_log(f"calculation_error: {exc}")
-        print(f"Error: {exc}", file=sys.stderr)
-        return 1
-
-    print(result)
-    return 0
+from .interface.history import (
+    HISTORY_FILE,
+    ERROR_LOG_FILE,
+    clear_history,
+    append_to_history,
+    show_history,
+    append_to_error_log,
+)
+from .interface.interactive import (
+    MAX_ATTEMPTS,
+    OPERATIONS,
+    TooManyAttemptsError,
+    show_menu,
+    parse_number,
+    parse_int,
+    run_operation,
+)
+from .interface.cli import cli_mode
 
 
 def main(args: list[str] | None = None) -> None:

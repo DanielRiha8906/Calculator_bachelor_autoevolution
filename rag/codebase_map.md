@@ -12,68 +12,121 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## src/calculator.py
-- **Purpose:** Defines the `Calculator` class — the core computation unit.
-- **Last updated:** cycle 10
+- **Purpose:** Defines the `Calculator` class — the core computation unit. Delegates to `src.operations.basic` and `src.operations.scientific` for all computation logic.
+- **Last updated:** cycle 11
 - **Public API:**
-  - `Calculator.add(a, b)` → `a + b`
-  - `Calculator.subtract(a, b)` → `a - b`
-  - `Calculator.multiply(a, b)` → `a * b`
-  - `Calculator.divide(a, b)` → `a / b`; raises `ValueError("Division by zero is not allowed")` when `b == 0`
-  - `Calculator.factorial(n: int) -> int` → `n!`; raises `ValueError` for negative `n` or non-integer `n`
-  - `Calculator.square(a)` → `a ** 2`
-  - `Calculator.cube(a)` → `a ** 3`
-  - `Calculator.square_root(a)` → `math.sqrt(a)`; raises `ValueError` for `a < 0`
-  - `Calculator.cube_root(a)` → real cube root; supports negative input via sign-preserving `(-abs(a))**(1/3)` trick
-  - `Calculator.power(a, b)` → `a ** b`
-  - `Calculator.log(a, base)` → `math.log(a, base)`; raises `ValueError` for `a <= 0` or `base <= 0` or `base == 1`
-  - `Calculator.ln(a)` → `math.log(a)`; raises `ValueError` for `a <= 0`
-  - `Calculator.execute(operation: str, *args)` → dispatches to the named method by `getattr`; raises `ValueError` for unknown or non-callable names. This is the logic-layer entry point for all operation dispatch.
-- **Invariants:** No state — all methods are pure functions of their arguments. Imports `math` at module level.
+  - `Calculator.add(a, b)` → delegates to `operations.basic.add`
+  - `Calculator.subtract(a, b)` → delegates to `operations.basic.subtract`
+  - `Calculator.multiply(a, b)` → delegates to `operations.basic.multiply`
+  - `Calculator.divide(a, b)` → delegates to `operations.basic.divide`; raises `ValueError("Division by zero is not allowed")` when `b == 0`
+  - `Calculator.factorial(n: int) -> int` → delegates to `operations.scientific.factorial`; raises `ValueError` for negative `n` or non-integer `n`
+  - `Calculator.square(a)` → delegates to `operations.scientific.square`
+  - `Calculator.cube(a)` → delegates to `operations.scientific.cube`
+  - `Calculator.square_root(a)` → delegates to `operations.scientific.square_root`; raises `ValueError` for `a < 0`
+  - `Calculator.cube_root(a)` → delegates to `operations.scientific.cube_root`; supports negative input
+  - `Calculator.power(a, b)` → delegates to `operations.scientific.power`
+  - `Calculator.log(a, base)` → delegates to `operations.scientific.log`; raises `ValueError` for `a <= 0` or `base <= 0` or `base == 1`
+  - `Calculator.ln(a)` → delegates to `operations.scientific.ln`; raises `ValueError` for `a <= 0`
+  - `Calculator.execute(operation: str, *args)` → dispatches to the named method by `getattr`; raises `ValueError` for unknown or non-callable names.
+- **Invariants:** No state — all methods are pure delegates. Imports from `src.operations.basic` and `src.operations.scientific`.
+
+---
+
+## src/operations/__init__.py
+- **Purpose:** Package init for the operations sub-package.
+- **Last updated:** cycle 11
+- **Exports:** Nothing (docstring only, modules are imported directly).
+
+---
+
+## src/operations/basic.py
+- **Purpose:** Pure arithmetic operation functions: add, subtract, multiply, divide.
+- **Last updated:** cycle 11
+- **Public API:**
+  - `add(a, b)` → `a + b`
+  - `subtract(a, b)` → `a - b`
+  - `multiply(a, b)` → `a * b`
+  - `divide(a, b)` → `a / b`; raises `ValueError("Division by zero is not allowed")` when `b == 0`
+- **Invariants:** No state, no imports except built-ins. All functions are pure.
+
+---
+
+## src/operations/scientific.py
+- **Purpose:** Pure scientific operation functions: factorial, square, cube, square_root, cube_root, power, log, ln.
+- **Last updated:** cycle 11
+- **Public API:**
+  - `factorial(n: int) -> int` → `n!`; raises `ValueError` for non-integer `n` or negative `n`
+  - `square(a)` → `a ** 2`
+  - `cube(a)` → `a ** 3`
+  - `square_root(a)` → `math.sqrt(a)`; raises `ValueError` for `a < 0`
+  - `cube_root(a)` → real cube root; supports negative input via sign-preserving idiom
+  - `power(a, b)` → `a ** b`
+  - `log(a, base)` → `math.log(a, base)`; raises `ValueError` for `a <= 0` or `base <= 0` or `base == 1`
+  - `ln(a)` → `math.log(a)`; raises `ValueError` for `a <= 0`
+- **Invariants:** Imports `math` at module level. All functions are pure and stateless.
+
+---
+
+## src/interface/__init__.py
+- **Purpose:** Package init for the interface sub-package.
+- **Last updated:** cycle 11
+- **Exports:** Nothing (docstring only).
+
+---
+
+## src/interface/history.py
+- **Purpose:** Session history and error-log file helpers. Owns all file-I/O for history and error logging.
+- **Last updated:** cycle 11
+- **Public API:**
+  - `HISTORY_FILE = "history.txt"` — default history path (patchable in tests via None-sentinel pattern)
+  - `ERROR_LOG_FILE = "error.log"` — default error log path (patchable in tests)
+  - `clear_history(filepath=None)` — truncate/create history file
+  - `append_to_history(entry, filepath=None)` — append one line to history
+  - `show_history(filepath=None)` — print all history entries to stdout
+  - `append_to_error_log(message, filepath=None)` — append timestamped line to error log
+- **Invariants:** All functions use the None-sentinel pattern for the `filepath` parameter so tests can monkeypatch `HISTORY_FILE` and `ERROR_LOG_FILE`. Tests must patch `src.interface.history.HISTORY_FILE` and `src.interface.history.ERROR_LOG_FILE` (not `src.__main__`).
+
+---
+
+## src/interface/interactive.py
+- **Purpose:** Interactive menu-driven mode components. Owns all user-facing input and output for the interactive loop.
+- **Last updated:** cycle 11
+- **Public API / Exports:**
+  - `TooManyAttemptsError` — custom exception raised after MAX_ATTEMPTS invalid inputs
+  - `MAX_ATTEMPTS = 3`
+  - `OPERATIONS` — dict mapping menu keys `"1"`–`"12"` to operation names
+  - `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS`, `_ALL_OPS` — arity grouping sets
+  - `_OP_PROMPTS` — dict mapping operation name → tuple of prompt strings
+  - `show_menu()` — print the numbered operation menu
+  - `parse_number(prompt, max_attempts)` — prompt for float with retry; raises `TooManyAttemptsError`
+  - `parse_int(prompt, max_attempts)` — prompt for int with retry; raises `TooManyAttemptsError`
+  - `run_operation(calc, operation)` — collect inputs, delegate to `calc.execute`, return history entry or None
+- **Invariants:** Imports `append_to_error_log` from `.history` (not from `__main__`). `parse_number`/`parse_int` log invalid inputs via `append_to_error_log`.
+
+---
+
+## src/interface/cli.py
+- **Purpose:** Non-interactive CLI mode. Parses command-line arguments and executes a single operation.
+- **Last updated:** cycle 11
+- **Public API:**
+  - `cli_mode(args: list[str]) -> int` — parses args, validates arity/types, calls `Calculator.execute`, prints result; returns 0 on success, 1 on error
+- **Invariants:** Uses arity sets from `src.interface.interactive`. Errors go to stderr; result goes to stdout. Imports `append_to_error_log` from `.history`.
 
 ---
 
 ## src/__main__.py
-- **Purpose:** CLI entry point — supports both interactive menu-driven mode and non-interactive single-operation mode (via command-line arguments). Calculation is delegated to `Calculator.execute`; this module owns all user interaction and display logic.
-- **Last updated:** cycle 10
-- **Exports:** `main(args=None)`, `cli_mode(args)`, `show_menu()`, `parse_number(prompt, max_attempts)`, `parse_int(prompt, max_attempts)`, `run_operation(calc, operation)`, `clear_history(filepath=None)`, `append_to_history(entry, filepath=None)`, `show_history(filepath=None)`, `append_to_error_log(message, filepath=None)`, `OPERATIONS` dict, `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS`, `_ALL_OPS`, `_OP_PROMPTS`, `MAX_ATTEMPTS`, `HISTORY_FILE`, `ERROR_LOG_FILE`, `TooManyAttemptsError`.
-- **Key constants:**
-  - `MAX_ATTEMPTS = 3` — maximum consecutive invalid inputs before session ends.
-  - `HISTORY_FILE = "history.txt"` — default path for session history (patchable in tests).
-  - `ERROR_LOG_FILE = "error.log"` — default path for error log (patchable in tests).
-  - `OPERATIONS` maps menu keys `"1"`–`"12"` to operation names.
-  - `_ONE_ARG_OPS` — `{square, cube, square_root, cube_root, ln}` (one float arg).
-  - `_INT_ARG_OPS` — `{factorial}` (one int arg).
-  - `_TWO_ARG_OPS` — `{add, subtract, multiply, divide, power, log}` (two float args).
-  - `_OP_PROMPTS` — dict mapping operation name → tuple of interactive prompt strings; centralises all display text for input collection.
-- **`TooManyAttemptsError`:** Custom exception raised by `parse_number`/`parse_int` after `max_attempts` consecutive invalid inputs.
-- **History functions:** `clear_history` truncates/creates the file (called at session start); `append_to_history` appends one line per successful operation; `show_history` reads and prints all entries. All three use `None` sentinel defaults so that monkeypatching `HISTORY_FILE` on the module takes effect at call time.
-- **Error logging:** `append_to_error_log(message, filepath=None)` appends a timestamped line to `ERROR_LOG_FILE`. Called on: invalid number input (parse_number), invalid integer input (parse_int), invalid menu choice (main loop), unknown operation (run_operation), calculation ValueError (run_operation), wrong arg count / non-numeric / calculation errors (cli_mode). Uses the same `None`-sentinel pattern as history helpers. Error log is append-only and never cleared — it persists across sessions.
-- **`run_operation`:** Separated from calculation logic. Looks up prompts in `_OP_PROMPTS` (unknown ops return None immediately), collects user input via `parse_number`/`parse_int` based on arity group, then delegates computation to `calc.execute(operation, *args)`. Returns history-entry string like `"add(3.0, 4.0) = 7.0"` on success, `None` on failure.
-- **`cli_mode`:** Validates arity and numeric format, then calls `calc.execute(op, *args)` for all operations — no direct calls to individual Calculator methods.
-- **CLI mode usage:** `python -m src <operation> <value> [<value2>]` — parses via `argparse`, prints result to stdout, returns 0 on success / 1 on error (errors go to stderr and to error.log). Non-numeric values produce per-field error messages. Never retries. History is NOT written in CLI mode.
-- **Interactive mode:** `python -m src` (no args) — clears history, presents a numbered menu with `h` (show history) and `q` (quit) options, loops until user enters `"q"` or session ends.
-- **Dispatch:** `main(args=None)` — if `args` is `None`, uses `sys.argv[1:]`; if non-empty, delegates to `cli_mode(args)` and exits. Passing `args=[]` forces interactive mode (used by tests).
-- **Invariants:** `cli_mode` validates argument count and numeric format per operation; catches `ValueError` from Calculator. `run_operation` lets `TooManyAttemptsError` propagate (caught in `main`); catches `ValueError` for user-facing error display. Interactive loop resets `invalid_op_count` on each valid menu choice.
-
----
-
-## tests/test_main.py
-- **Purpose:** Unit tests for the interactive CLI and cli_mode in `src/__main__.py` using mocked `input()` and `capsys`.
-- **Last updated:** cycle 9
-- **Tests (84 total):**
-  - **show_menu (2):** verifies all operation names and "q" appear in output; verifies "h" appears.
-  - **parse_number (5):** valid int, valid float, negative, retry-on-invalid-then-accept, raises-after-max-attempts.
-  - **parse_int (3):** valid int, retry-on-float-string-then-accept, raises-after-max-attempts.
-  - **history helpers (8):** clear_history creates empty file, clear_history overwrites, append_to_history adds entry, append multiple, show_history on empty, show_history on missing file, show_history with entries.
-  - **error log helpers (3):** append_to_error_log adds timestamped entry (regex checks format), multiple entries on separate lines, module-constant sentinel works via monkeypatch.
-  - **error log — parse functions (2):** parse_number logs invalid input; parse_int logs invalid input.
-  - **error log — run_operation (3):** logs calculation error (divide-by-zero), logs unknown operation, successful operation does not create log file.
-  - **error log — main interactive (2):** invalid menu choice logged; error log is separate from history (failed operation appears in log, not in history).
-  - **error log — cli_mode (4):** logs calculation error, logs invalid number input, logs wrong arg count, successful cli_mode call does not create log file.
-  - **run_operation (19):** one test per operation; error tests for divide-by-zero, factorial-negative, square_root-negative, and unknown-operation; return-value tests for success (returns history entry) and failure (returns None).
-  - **main interactive (12):** quit immediately, invalid-choice-then-quit, add-then-quit, two-operations-then-quit, error-then-continue, too-many-invalid-choices-ends-session, too-many-invalid-operands-ends-session, show-history-option, history-recorded-after-operation, error-not-recorded, history-cleared-on-new-session, show-history-with-previous-operations.
-  - **cli_mode (23):** happy-path test for all 12 operations; error tests for divide-by-zero, factorial-negative, square_root-negative; wrong-arg-count tests for two-arg and one-arg ops; non-numeric tests for two-arg op, one-arg op, and factorial; unknown-operation SystemExit; main() dispatch integration test.
-- **Invariants:** Interactive tests call `main([])` to bypass sys.argv; cli_mode tests call `cli_mode([...])` directly. Errors in cli_mode go to stderr; result goes to stdout. `autouse` fixture (`isolate_files`) redirects both `HISTORY_FILE` and `ERROR_LOG_FILE` to a `tmp_path` for every test.
+- **Purpose:** CLI entry point — `main()` function + re-exports from sub-modules for backward compatibility.
+- **Last updated:** cycle 11
+- **Exports (re-exported from sub-modules):**
+  - `HISTORY_FILE`, `ERROR_LOG_FILE` from `src.interface.history`
+  - `clear_history`, `append_to_history`, `show_history`, `append_to_error_log` from `src.interface.history`
+  - `MAX_ATTEMPTS`, `OPERATIONS`, `TooManyAttemptsError` from `src.interface.interactive`
+  - `show_menu`, `parse_number`, `parse_int`, `run_operation` from `src.interface.interactive`
+  - `cli_mode` from `src.interface.cli`
+- **Defined here:** `main(args=None)` — dispatches to CLI mode or starts the interactive loop.
+- **Invariants:** Re-exports allow old `from src.__main__ import X` statements to continue working. However, monkeypatching `HISTORY_FILE`/`ERROR_LOG_FILE` must target `src.interface.history`, not `src.__main__`.
+- **CLI mode usage:** `python -m src <operation> <value> [<value2>]`
+- **Interactive mode:** `python -m src` (no args)
 
 ---
 
@@ -95,3 +148,12 @@ Per-file summaries: purpose, public API surface, key invariants.
   - **ln (5):** ln(e)==1, ln(1)==0, ln(e³)==3, zero raises `ValueError`, negative raises `ValueError`
   - **execute (5):** two-arg dispatch, one-arg dispatch, int-arg dispatch, ValueError propagation, unknown-op raises ValueError
 - **Invariants:** Must import from `src.calculator`, not from the package root; uses `math.isclose` for float comparisons.
+
+---
+
+## tests/test_main.py
+- **Purpose:** Unit tests for the interactive CLI and cli_mode — 84 tests with mocked input.
+- **Last updated:** cycle 11
+- **Key change from cycle 10:** `autouse` fixture `isolate_files` now monkeypatches `src.interface.history.HISTORY_FILE` and `src.interface.history.ERROR_LOG_FILE` (not `src.__main__`). All inline monkeypatching in individual tests also targets `src.interface.history`.
+- **Tests (84 total):** Same test count and coverage as cycle 10. No tests added or removed.
+- **Invariants:** Tests import `src.interface.history as _history_mod` for monkeypatching. All other imports remain via `src.__main__` re-exports. Interactive tests call `main([])` to bypass sys.argv; cli_mode tests call `cli_mode([...])` directly.
