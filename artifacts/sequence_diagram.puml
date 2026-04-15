@@ -327,17 +327,16 @@ deactivate Session
 CLI --> Shell : stderr: "Error: square root is not defined for negative numbers"\nexit code: 1
 deactivate CLI
 
-== GUI — Startup ==
+== GUI — Startup and Mode Switch (cycles 15-16) ==
 
-actor "GUI User" as GUIUser
-participant "gui_main.py\n(GUI entry)" as GUIEntry
+actor GUIUser as "User (GUI)"
 participant "CalculatorGUI\n(src/gui.py)" as GUI
-participant "Section Widgets\n(Mode/Op/Operand/Result/History)" as Widgets
+participant "CalculatorMode\n(SimpleMode / ScientificMode)" as Mode
+participant "_OperandSection" as OSection
 
-GUIUser -> GUIEntry : python gui_main.py
-activate GUIEntry
-GUIEntry -> GUI : src.gui.main() → CalculatorGUI(root)
+GUIUser -> GUI : python gui.py
 activate GUI
+
 GUI -> Session : CalculatorSession()
 activate Session
 Session -> Calc : Calculator()
@@ -346,26 +345,47 @@ Calc --> Session : _calc instance
 deactivate Calc
 Session --> GUI : session instance
 deactivate Session
-GUI -> Widgets : build 6 sections:\nModeSelector, OperationSelector, OperandSection,\nResultDisplay (+ buttons), HistoryPanel
-Widgets --> GUI : section instances
-GUI -> GUI : _on_arity_change() — set initial Operand B visibility
-GUI --> GUIEntry : CalculatorGUI ready
-deactivate GUI
-GUIEntry -> GUIEntry : root.mainloop()
-GUIEntry --> GUIUser : Calculator window opens\n(Normal mode, Binary type, "add" selected)
-deactivate GUIEntry
 
-== GUI — Calculate (Binary Operation) ==
+GUI -> GUI : _modes = [SimpleMode(), ScientificMode()]\n_current_mode = SimpleMode
+GUI -> Mode : SimpleMode().operations
+Mode --> GUI : {"Add": ("add",2), "Subtract": ("subtract",2), ..., "Square Root": ("square_root",1)}
+GUI -> GUI : populate combobox with 6 labels\nset first label "Add"; apply arity=2
+GUI -> OSection : set_arity(2)
+OSection --> GUI : second operand row shown
+GUI --> GUIUser : window ready — Mode: Simple, Operation: Add, Operands: two fields
 
-GUIUser -> GUI : select "add" (Binary), enter a=10, b=5
-GUIUser -> GUI : click Calculate (or press Enter)
+GUIUser -> GUI : click "Scientific" radio button
 activate GUI
-GUI -> GUI : _on_calculate(): op_name="add"
-GUI -> Widgets : operand_section.get_operands("add")
-activate Widgets
-Widgets -> Widgets : _parse_number("10") → 10\n_parse_number("5") → 5\nop in BINARY_OPS → return (10, 5)
-Widgets --> GUI : (10, 5)
-deactivate Widgets
+GUI -> GUI : _on_mode_change()\n_current_mode = ScientificMode
+GUI -> Mode : ScientificMode().operations
+Mode --> GUI : 18-op dict {"Add"…"Arccos"}
+GUI -> GUI : repopulate combobox with 18 labels\nset first label "Add"; apply arity=2
+GUI --> GUIUser : window updated — 18 operations in combobox
+note right of GUI
+  Session history persists across mode switches.
+end note
+deactivate GUI
+
+== GUI — Calculate Binary Operation ==
+
+GUIUser -> GUI : select "Add" from combobox
+activate GUI
+GUI -> GUI : _on_op_selected()\n_apply_operation("Add")
+GUI -> Mode : ops["Add"] → ("add", 2)
+Mode --> GUI : arity = 2
+GUI -> OSection : set_arity(2)  [idempotent — already 2]
+GUI -> OSection : focus_a()
+deactivate GUI
+
+GUIUser -> GUI : type "10" in first operand field
+GUIUser -> GUI : type "5" in second operand field
+GUIUser -> GUI : click "Calculate"
+activate GUI
+
+GUI -> OSection : read_a() → "10"
+GUI -> OSection : read_b() → "5"
+GUI -> GUI : parse_number("10") → 10\nparse_number("5") → 5
+
 GUI -> Session : session.execute("add", 10, 5)
 activate Session
 Session -> Calc : _calc.add(10, 5)
@@ -377,68 +397,58 @@ deactivate Calc
 Session -> Session : _history.append("add(10, 5) = 15")
 Session --> GUI : 15
 deactivate Session
-GUI -> Widgets : result_section.show_result(15)
-GUI -> Widgets : history_section.refresh(["add(10, 5) = 15"])
-Widgets --> GUIUser : result label: "15"\nhistory panel: "add(10, 5) = 15"
+
+GUI -> GUI : _result_var.set("15")
+GUI -> GUI : _refresh_history_display()
+GUI -> Session : session.history()
+activate Session
+Session --> GUI : ["add(10, 5) = 15"]
+deactivate Session
+GUI -> GUI : overwrite history ScrolledText
+GUI --> GUIUser : result label shows "15"; history box shows "add(10, 5) = 15"
 deactivate GUI
 
-== GUI — Mode Switch (Normal → Scientific) ==
+== GUI — Calculate Unary Operation (factorial) ==
 
-GUIUser -> GUI : select "Scientific" radio button
+GUIUser -> GUI : select "Factorial" from combobox (Scientific mode)
 activate GUI
-GUI -> GUI : _on_mode_change()
-GUI -> Widgets : op_section.refresh_for_mode()
-activate Widgets
-Widgets -> Widgets : _refresh(): mode="Scientific", op_type="Binary"\nsets combobox values = _SCIENTIFIC_BINARY\n["add","subtract","multiply","divide","power"]
-Widgets -> GUI : on_arity_change() callback
-deactivate Widgets
-GUI -> GUI : _on_arity_change(): "add" in BINARY_OPS → is_binary=True
-GUI -> Widgets : operand_section.set_binary_mode(True, "add")
-Widgets --> GUIUser : Operand B remains visible\ncombobox updated for Scientific mode
+GUI -> GUI : _on_op_selected()\n_apply_operation("Factorial")
+GUI -> Mode : ops["Factorial"] → ("factorial", 1)
+Mode --> GUI : arity = 1
+GUI -> OSection : set_arity(1)
+OSection --> GUI : second operand row hidden
+GUI -> OSection : focus_a()
 deactivate GUI
 
-== GUI — Unary Op (factorial): Operand B Hidden ==
-
-GUIUser -> GUI : select "Unary" type, choose "factorial"
+GUIUser -> GUI : type "5" in first operand field
+GUIUser -> GUI : click "Calculate"
 activate GUI
-GUI -> GUI : _on_arity_change(): "factorial" not in BINARY_OPS → is_binary=False
-GUI -> Widgets : operand_section.set_binary_mode(False, "factorial")
-activate Widgets
-Widgets -> Widgets : grid_remove() Operand B label + entry\nset Operand A label to "Operand A (integer):"
-Widgets --> GUIUser : Operand B hidden; A label shows "(integer)" hint
-deactivate Widgets
-deactivate GUI
 
-GUIUser -> GUI : enter a=5, click Calculate
-activate GUI
-GUI -> Widgets : operand_section.get_operands("factorial")
-activate Widgets
-Widgets -> Widgets : int("5") → 5\nop not in BINARY_OPS → return (5,)
-Widgets --> GUI : (5,)
-deactivate Widgets
+GUI -> OSection : read_a() → "5"
+GUI -> GUI : op_name == "factorial" → int("5") = 5
+
 GUI -> Session : session.execute("factorial", 5)
 activate Session
 Session -> Calc : _calc.factorial(5)
 activate Calc
-Calc -> Calc : validate type & value; iterate
+Calc -> Calc : validate type & value
+Calc -> Calc : iterate: 1*2*3*4*5
 Calc --> Session : 120
 deactivate Calc
+Session -> Session : _history.append("factorial(5) = 120")
 Session --> GUI : 120
 deactivate Session
-GUI -> Widgets : result_section.show_result(120)
-GUI -> Widgets : history_section.refresh([..., "factorial(5) = 120"])
-Widgets --> GUIUser : result: "120"; history updated
+
+GUI -> GUI : _result_var.set("120")
+GUI -> GUI : _refresh_history_display()
+GUI --> GUIUser : result label shows "120"
 deactivate GUI
 
-== GUI — Error Path (Computation Failure) ==
+== GUI — Error Path (ZeroDivisionError) ==
 
-participant "error_logger" as ErrLog
-
-GUIUser -> GUI : select "divide" (Binary), enter a=1, b=0
-GUIUser -> GUI : click Calculate
+GUIUser -> GUI : select "Divide"; enter a=1, b=0; click Calculate
 activate GUI
-GUI -> Widgets : operand_section.get_operands("divide") → (1, 0)
-Widgets --> GUI : (1, 0)
+
 GUI -> Session : session.execute("divide", 1, 0)
 activate Session
 Session -> Calc : _calc.divide(1, 0)
@@ -447,25 +457,22 @@ Calc -> Runtime : 1 / 0
 Runtime --> Calc : raise ZeroDivisionError
 Calc --> Session : ZeroDivisionError propagated
 deactivate Calc
-Session --> GUI : ZeroDivisionError (history NOT appended)
+Session --> GUI : ZeroDivisionError propagated
+note right: failed execute() does NOT append to history
 deactivate Session
-GUI -> ErrLog : log_error("gui", "calculation error in divide: ...")
-GUI -> Widgets : result_section.show_error("division by zero")
-Widgets --> GUIUser : result label (red): "Error: division by zero"
+
+GUI -> GUI : log_error("gui", "division by zero in divide")
+GUI -> GUI : _result_var.set("Error: division by zero")
+GUI --> GUIUser : result label shows "Error: division by zero"
 deactivate GUI
 
-== GUI — Clear ==
+== GUI — Clear Button ==
 
-GUIUser -> GUI : click Clear
+GUIUser -> GUI : click "Clear"
 activate GUI
-GUI -> GUI : _on_clear()
-GUI -> GUI : operand_a_var.set(""), operand_b_var.set("")
-GUI -> Widgets : result_section.clear()
-activate Widgets
-Widgets -> Widgets : label.configure(text="—", fg=blue)
-Widgets --> GUIUser : operand fields empty; result resets to "—"
-deactivate Widgets
-note right of GUI: session history is NOT cleared\nby _on_clear() — only UI state resets
+GUI -> OSection : clear()  — deletes entry_a and entry_b text
+GUI -> GUI : _result_var.set("—")
+GUI --> GUIUser : operand fields emptied; result label shows "—"
 deactivate GUI
 
 == Unit Tests — Calculator Direct (test_calculator.py) ==
@@ -658,40 +665,41 @@ deactivate CLI
 
 Tests -> Capsys : assert stderr contains "square root" ✓
 
-== Unit Tests — GUI (test_gui.py) ==
-note over Tests: 43 tests (skipped if tkinter absent)
+== Unit Tests — GUI Modes (test_gui.py) ==
+note over Tests: 42 tests total — no display required
 
-Tests -> GUI : CalculatorGUI(root)  ' via app fixture
-activate GUI
-GUI -> Session : CalculatorSession()
-activate Session
-Session --> GUI : session
-deactivate Session
-GUI --> Tests : app instance
-deactivate GUI
+participant "SimpleMode /\nScientificMode" as Modes
 
-Tests -> GUI : app._op_name_var.set("add")\napp._operand_a_var.set("3")\napp._operand_b_var.set("4")\napp._on_calculate()
-activate GUI
-GUI -> Session : session.execute("add", 3, 4)
-activate Session
-Session -> Calc : _calc.add(3, 4)
-activate Calc
-Calc --> Session : 7
-deactivate Calc
-Session --> GUI : 7
-deactivate Session
-GUI -> Widgets : result_section.show_result(7)
-GUI --> Tests : (result displayed)
-deactivate GUI
+Tests -> Modes : SimpleMode()
+activate Modes
+Modes --> Tests : instance
+deactivate Modes
 
-Tests -> Tests : assert result label text == "7" ✓
+Tests -> Modes : mode.name
+activate Modes
+Modes --> Tests : "Simple"
+deactivate Modes
 
-Tests -> GUI : app._on_clear()
-activate GUI
-GUI -> GUI : operand vars cleared; result_section.clear()
-GUI --> Tests : (UI reset)
-deactivate GUI
+Tests -> Tests : assert name == "Simple" ✓
 
-Tests -> Tests : assert result label text == "—" ✓
+Tests -> Modes : mode.operations
+activate Modes
+Modes --> Tests : 6-entry dict
+deactivate Modes
+
+Tests -> Tests : assert len(ops) == 6 ✓
+Tests -> Tests : assert all op names in BINARY_OPS | UNARY_OPS ✓
+
+Tests -> Modes : ScientificMode().operations
+activate Modes
+Modes --> Tests : 18-entry dict
+deactivate Modes
+
+Tests -> Tests : assert len(ops) == 18 ✓
+Tests -> Tests : assert SimpleMode ops ⊆ ScientificMode ops ✓
+
+Tests -> Tests : parse_number("3") == 3  (int) ✓
+Tests -> Tests : parse_number("3.14") == 3.14  (float) ✓
+Tests -> Tests : parse_number("abc") raises ValueError ✓
 
 @enduml

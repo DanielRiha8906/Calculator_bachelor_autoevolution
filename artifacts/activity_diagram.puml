@@ -8,7 +8,6 @@ title Calculator — Execution Flows
 |Interactive CLI (src/__main__.py)|
 |CalculatorSession (src/session.py)|
 |Bash CLI (main.py)|
-|GUI (src/gui.py)|
 |Calculator Computation|
 
 == Interactive Mode (python -m src) ==
@@ -280,90 +279,99 @@ else (no)
   stop
 endif
 
-== GUI Mode (python gui_main.py) ==
+== GUI Mode (python gui.py) ==
+
+|GUI (src/gui.py)|
+|CalculatorSession (src/session.py)|
+|Calculator Computation|
 
 |GUI (src/gui.py)|
 
 start
 
-:python gui_main.py → src.gui.main()\ncreate tk.Tk() root, CalculatorGUI(root), root.mainloop();
+:Create Tk root window;
+:Instantiate CalculatorGUI(root);
 note right
-  CalculatorGUI.__init__:
-    - creates CalculatorSession (private _session)
-    - builds 6 labelled sections:
-        1. Mode (Normal/Scientific radio buttons)
-        2. Operation (Binary/Unary radios + combobox)
-        3. Operands (A always; B shown for binary only)
-        4. Buttons (Calculate, Clear)
-        5. Result (large-font label)
-        6. Session History (scrollable text area)
-    - initial state: Normal mode, Binary type, "add" selected
-    - binds <Return> key → _on_calculate()
-    - calls _on_arity_change() to set initial Operand B visibility
+  _setup_ui() builds six LabelFrame sections:
+    Mode (Simple / Scientific radio buttons)
+    Operation (combobox + arity badge)
+    Operands (_OperandSection)
+    Actions (Calculate + Clear buttons)
+    Result (large centred label, initial "—")
+    Session History (scrollable text box)
+  _current_mode = SimpleMode (default)
+  _refresh_operations() populates combobox with
+    SimpleMode display labels; sets arity for first op.
 end note
+:root.mainloop() — enter tkinter event loop;
 
 repeat
 
-  if (User selects Normal/Scientific mode radio?) then (yes)
-    :_on_mode_change()\n→ op_section.refresh_for_mode()\n→ rebuild combobox values for new mode\n→ _on_arity_change() to update Operand B;
-    note right
-      Normal Binary:   [add, subtract, multiply, divide]
-      Normal Unary:    [square, square_root]
-      Scientific Binary: [add, subtract, multiply, divide, power]
-      Scientific Unary:  [square, square_root, factorial, cube,
-                           cube_root, log, ln, sin, cos, tan,
-                           cot, asin, acos]
-      Mode switch does NOT reset session history.
-    end note
-  elseif (User changes op type (Binary/Unary) or op name?) then (yes)
-    :_on_arity_change()\n→ operand_section.set_binary_mode(is_binary, op_name)\n→ show Operand B if binary; hide if unary;
-    note right
-      factorial: Operand A label shows "(integer)" hint.
-      Other unary: plain "Operand A:" label.
-    end note
-  elseif (User clicks Calculate or presses Enter?) then (yes)
-    :_on_calculate(): read op_name from _op_name_var;
+  if (User selects mode radio button?) then (yes)
+    :_on_mode_change()\n  find matching CalculatorMode by name\n  _current_mode = new mode;
+    :_refresh_operations()\n  repopulate combobox from new mode.operations\n  set first operation as default;
+    note right: Session history preserved\nacross mode switches
+  elseif (User changes operation combobox?) then (yes)
+    :_on_op_selected()\n  _apply_operation(display_name);
+    :Read arity from current_mode.operations[display_name]\n  Update arity badge ("Unary" or "Binary")\n  _operand_section.set_arity(arity)\n    → show/hide second operand row\n  Focus first operand entry;
+  elseif (User clicks Clear button?) then (yes)
+    :_on_clear()\n  _operand_section.clear()\n  _result_var.set("—");
+  elseif (User clicks Calculate button?) then (yes)
+    :_on_calculate()\n  Read display_name from _op_var;
 
-    if (op_name is empty?) then (yes)
-      :result_section.show_error("No operation selected.");
+    if (no operation selected?) then (yes)
+      :_result_var.set("Please select an operation.");
     else (no)
-      :operand_section.get_operands(op_name)\n  int(raw_a) for factorial\n  _parse_number(raw_a) for all other ops\n  adds b = _parse_number(raw_b) if op_name in BINARY_OPS;
+      :op_name, arity = current_mode.operations[display_name]\n  a_raw = _operand_section.read_a();
 
-      if (ValueError from operand parsing?) then (yes)
-        :log_error("gui", f"calculation error in {op_name}: {exc}");
-        :result_section.show_error(str(exc));
+      if (a_raw is empty?) then (yes)
+        :_result_var.set("Please enter a value.");
       else (no)
-        |CalculatorSession (src/session.py)|
-        :session.execute(op_name, *operands)\n  → getattr(_calc, op_name)(*operands);
+        if (op_name == "factorial"?) then (yes)
+          :a = int(a_raw)  — strict integer;
+        else (no)
+          :a = parse_number(a_raw)  — int or float;
+        endif
 
-        |Calculator Computation|
-        :Compute result\n(same 18-operation branches as Interactive/Bash CLI sections);
+        if (arity == 2?) then (yes)
+          :b_raw = _operand_section.read_b();
+          if (b_raw is empty?) then (yes)
+            :_result_var.set("Please enter the second operand.");
+          else (no)
+            :b = parse_number(b_raw);
+            |CalculatorSession (src/session.py)|
+            :session.execute(op_name, a, b);
+            |Calculator Computation|
+            :Compute result (same op branches as above);
+          endif
+        else (arity == 1)
+          |CalculatorSession (src/session.py)|
+          :session.execute(op_name, a);
+          |Calculator Computation|
+          :Compute result (same op branches as above);
+        endif
 
         |CalculatorSession (src/session.py)|
         if (exception raised?) then (yes)
-          :Propagate exception to CalculatorGUI;
+          :Propagate to CalculatorGUI;
         else (no)
-          :Append format_entry to _history; return result;
+          :Append to history; return result;
         endif
 
         |GUI (src/gui.py)|
-        if (ValueError / TypeError / ZeroDivisionError?) then (yes)
-          :log_error("gui", f"calculation error in {op_name}: {exc}");
-          :result_section.show_error(str(exc));
-          note right: error shown in red; history NOT updated
-        else (no)
-          :result_section.show_result(result);
-          :history_section.refresh(session.history());
+        if (ValueError or TypeError raised?) then (yes)
+          :log_error("gui", str(exc))\n  _result_var.set("Error: <message>");
+        elseif (ZeroDivisionError raised?) then (yes)
+          :log_error("gui", "division by zero in <op>")\n  _result_var.set("Error: division by zero");
+        else (no — success)
+          :_result_var.set(str(result))\n  _refresh_history_display()\n    → overwrite history box from session.history();
         endif
       endif
     endif
-  elseif (User clicks Clear?) then (yes)
-    :_on_clear():\n  operand_a_var.set("")\n  operand_b_var.set("")\n  result_section.clear();
-    note right: session history is NOT cleared by Clear
-  else (User closes window)
-    stop
   endif
 
 repeat while (window open)
+
+stop
 
 @enduml

@@ -77,82 +77,81 @@ package "src" {
         __all__ : list
     }
 
-    package "gui.py" {
-        class _SectionFrame <<ttk.LabelFrame>> {
-            +__init__(parent: tk.Widget, title: str)
+    ' ---------------------------------------------------------------
+    ' GUI layer (cycles 15-16)
+    ' ---------------------------------------------------------------
+
+    package "gui_modes" {
+        abstract class CalculatorMode <<ABC>> {
+            {abstract} +name : str <<property>>
+            {abstract} +operations : dict[str, tuple[str, int]] <<property>>
         }
 
-        class ModeSelector {
-            -{field} _var : tk.StringVar
-            -{field} _frame : _SectionFrame
-            +frame : _SectionFrame
-            +__init__(parent, mode_var, on_change) : None
+        class SimpleMode {
+            +name : str <<property>>
+            +operations : dict[str, tuple[str, int]] <<property>>
+            ' 6 ops: add, subtract, multiply, divide,
+            '        square, square_root
         }
 
-        class OperationSelector {
-            -{field} _mode_var : tk.StringVar
-            -{field} _op_type_var : tk.StringVar
-            -{field} _op_name_var : tk.StringVar
-            -{field} _frame : _SectionFrame
-            -{field} _combo : ttk.Combobox
-            +frame : _SectionFrame
-            +__init__(parent, mode_var, op_type_var, op_name_var, on_arity_change) : None
-            +refresh_for_mode() : None
+        class ScientificMode {
+            +name : str <<property>>
+            +operations : dict[str, tuple[str, int]] <<property>>
+            ' 18 ops: all SimpleMode ops plus
+            '   factorial, cube, cube_root, power, log, ln,
+            '   sin, cos, tan, cot, asin, acos
         }
 
-        class OperandSection {
-            -{field} _a_var : tk.StringVar
-            -{field} _b_var : tk.StringVar
-            -{field} _frame : _SectionFrame
-            +frame : _SectionFrame
-            +__init__(parent, operand_a_var, operand_b_var) : None
-            +set_binary_mode(is_binary, op_name) : None
-            +get_operands(op_name) : tuple
+        class "parse_number" as ParseNumber <<function>> {
+            +parse_number(raw: str) : int|float
         }
+    }
 
-        class ResultDisplay {
-            -{field} _frame : _SectionFrame
-            -{field} _label : tk.Label
-            +frame : _SectionFrame
-            +__init__(parent) : None
-            +show_result(value) : None
-            +show_error(message: str) : None
-            +clear() : None
-        }
+    class _OperandSection {
+        -{field} _entry_a : ttk.Entry
+        -{field} _entry_b : ttk.Entry
+        -{field} _label_b : ttk.Label
+        -{field} _arity : int
+        -{field} _frame : ttk.LabelFrame
+        +__init__(parent: tk.Widget) : None
+        +set_arity(arity: int) : None
+        +clear() : None
+        +read_a() : str
+        +read_b() : str
+        +focus_a() : None
+    }
 
-        class HistoryPanel {
-            -{field} _frame : _SectionFrame
-            -{field} _text : tk.Text
-            +frame : _SectionFrame
-            +__init__(parent) : None
-            +refresh(entries: list[str]) : None
-            +clear() : None
-        }
+    class CalculatorGUI {
+        -{field} _root : tk.Tk
+        -{field} _session : CalculatorSession
+        -{field} _modes : list[CalculatorMode]
+        -{field} _current_mode : CalculatorMode
+        -{field} _operand_section : _OperandSection
+        -{field} _mode_var : tk.StringVar
+        -{field} _op_var : tk.StringVar
+        -{field} _op_combo : ttk.Combobox
+        -{field} _arity_label_var : tk.StringVar
+        -{field} _result_var : tk.StringVar
+        -{field} _history_box : scrolledtext.ScrolledText
+        +__init__(root: tk.Tk) : None
+        -_setup_ui() : None
+        -_build_mode_section() : None
+        -_build_operation_section() : None
+        -_build_action_section() : None
+        -_build_result_section() : None
+        -_build_history_section() : None
+        -_refresh_operations() : None
+        -_apply_operation(display_name: str) : None
+        -_refresh_history_display() : None
+        -_on_mode_change() : None
+        -_on_op_selected(_event) : None
+        -_on_clear() : None
+        -_on_calculate() : None
+    }
 
-        class CalculatorGUI {
-            -{field} _root : tk.Tk
-            -{field} _session : CalculatorSession
-            -{field} _mode_var : tk.StringVar
-            -{field} _op_type_var : tk.StringVar
-            -{field} _op_name_var : tk.StringVar
-            -{field} _operand_a_var : tk.StringVar
-            -{field} _operand_b_var : tk.StringVar
-            -{field} _mode_section : ModeSelector
-            -{field} _op_section : OperationSelector
-            -{field} _operand_section : OperandSection
-            -{field} _result_section : ResultDisplay
-            -{field} _history_section : HistoryPanel
-            +__init__(root: tk.Tk) : None
-            -_on_mode_change() : None
-            -_on_arity_change() : None
-            -_on_calculate() : None
-            -_on_clear() : None
-        }
-
-        class "gui" as Gui <<module>> {
-            +_parse_number(raw: str) : int|float
-            +main() : None
-        }
+    class "gui" as GUIModule <<module>> {
+        +main() : None
+        ' Re-exports: CalculatorMode, SimpleMode, ScientificMode
     }
 }
 
@@ -161,9 +160,8 @@ class "main" as CLI <<module>> {
     +main(argv: list[str] | None) : int
 }
 
-class "gui_main" as GUIMain <<module>> {
-    ' Entry point: python gui_main.py
-    ' No logic; delegates entirely to src.gui.main()
+class "gui" as GUILauncher <<module>> {
+    ' Thin root-level launcher: calls src.gui.main()
 }
 
 package "tests" {
@@ -234,21 +232,12 @@ package "tests" {
     }
 
     class "test_gui" as TestGUI <<module>> {
-        +root() : tk.Tk <<fixture>>
-        +app() : CalculatorGUI <<fixture>>
-        ' 43 tests (module skipped if tkinter absent via pytest.importorskip)
+        ' 42 tests covering gui_modes (no display required)
+        +test_mode_abc_*()
+        +test_simple_mode_*()
+        +test_scientific_mode_*()
         +test_parse_number_*()
-        +test_mode_selector_*()
-        +test_operation_selector_*()
-        +test_operand_section_*()
-        +test_result_display_*()
-        +test_history_panel_*()
-        +test_calculate_*()
-        +test_error_*()
-        +test_history_*()
-        +test_clear_*()
-        +test_mode_switch_*()
-        +test_factorial_*()
+        +test_mode_contract_*()
     }
 
     class "conftest" as Conftest <<module>> {
@@ -259,6 +248,10 @@ package "tests" {
 ' Inheritance (cycle-12 modularization)
 Calculator --|> BasicOperations : inherits (MRO 1)
 Calculator --|> ScientificOperations : inherits (MRO 2)
+
+' GUI mode hierarchy (cycle-15)
+SimpleMode --|> CalculatorMode : extends
+ScientificMode --|> CalculatorMode : extends
 
 ' Package re-exports
 OpsInit ..> BasicOperations : re-exports
@@ -273,20 +266,16 @@ CLI --> ErrLog : calls log_error
 Init ..> Calculator : re-exports
 Init ..> CalculatorSession : re-exports
 
-' GUI relationships (cycle-15)
-CalculatorGUI --> CalculatorSession : owns & delegates
-CalculatorGUI *-- ModeSelector : owns
-CalculatorGUI *-- OperationSelector : owns
-CalculatorGUI *-- OperandSection : owns
-CalculatorGUI *-- ResultDisplay : owns
-CalculatorGUI *-- HistoryPanel : owns
-CalculatorGUI --> ErrLog : calls log_error on errors
-ModeSelector *-- _SectionFrame : owns
-OperationSelector *-- _SectionFrame : owns
-OperandSection *-- _SectionFrame : owns
-ResultDisplay *-- _SectionFrame : owns
-HistoryPanel *-- _SectionFrame : owns
-GUIMain ..> Gui : delegates to main()
+' GUI runtime relationships (cycles 15-16)
+CalculatorGUI --> CalculatorSession : holds & delegates
+CalculatorGUI --> CalculatorMode : uses (polymorphic)
+CalculatorGUI --> _OperandSection : owns
+CalculatorGUI --> ErrLog : calls log_error("gui", ...)
+GUIModule ..> CalculatorGUI : instantiates & calls mainloop
+GUIModule ..> CalculatorMode : re-exports
+GUIModule ..> SimpleMode : re-exports
+GUIModule ..> ScientificMode : re-exports
+GUILauncher ..> GUIModule : delegates to src.gui.main()
 
 ' Test relationships
 TestCalc --> Calculator : tests via fixture
@@ -294,7 +283,8 @@ TestSession --> CalculatorSession : tests via fixture
 TestMain --> Main : tests via mocked stdin/stdout
 TestCLI --> CLI : tests via capsys
 TestErrLog --> ErrLog : tests via fixture
-TestGUI --> CalculatorGUI : tests via fixture
+TestGUI --> CalculatorMode : tests directly
+TestGUI ..> ParseNumber : tests parse_number
 Conftest ..> ErrLog : patches ERROR_LOG_FILE
 
 note right of Calculator
@@ -383,32 +373,29 @@ note right of CLI
 end note
 
 note right of CalculatorGUI
-  Cycle-15 GUI (issue-303): tkinter-based; six labelled sections.
-  Sections: Mode (Normal/Scientific radio buttons),
-    Operation (Binary/Unary type radios + combobox),
-    Operands (A always shown; B shown for binary ops, hidden for unary),
-    Buttons (Calculate, Clear),
-    Result (large-font label, blue for result, red for error),
-    Session History (scrollable monospaced text area).
-  Operand B shown/hidden dynamically by set_binary_mode().
-  factorial enforces integer input via int() in get_operands().
-  _on_calculate(): reads op_name, gets operands, calls
-    session.execute(), shows result or error; calls log_error on error.
-  _on_clear(): clears operand fields + result area only;
-    does NOT reset session history.
-  Enter key bound to _on_calculate().
-  Mode catalogues (module-level constants):
-    _NORMAL_BINARY:   [add, subtract, multiply, divide]
-    _NORMAL_UNARY:    [square, square_root]
-    _SCIENTIFIC_BINARY: [add, subtract, multiply, divide, power]
-    _SCIENTIFIC_UNARY:  [square, square_root, factorial, cube, cube_root,
-                         log, ln, sin, cos, tan, cot, asin, acos]
+  Cycle-16 (issue-303): ttk-based redesign.
+  Six sections (top→bottom): Mode, Operation, Operands,
+  Actions (Calculate + Clear), Result, Session History.
+  Mode radio buttons: Simple (6 ops) / Scientific (18 ops).
+  Operation combobox: display labels from CalculatorMode.operations.
+  Arity badge: "Unary" or "Binary" next to combobox.
+  _OperandSection: shows/hides second operand row via set_arity().
+  Factorial input uses int() to preserve factorial's integer contract.
+  Errors displayed in result label; forwarded to log_error("gui", ...).
+  Session history persists across mode switches.
+  Requires tkinter display — not importable in headless CI.
 end note
 
-note right of GUIMain
-  Root-level GUI entry point (cycle-15, issue-303).
-  No logic; delegates entirely to src.gui.main().
-  Usage: python gui_main.py
+note right of CalculatorMode
+  Cycle-15 (issue-284): mode abstraction layer.
+  SimpleMode.name = "Simple"; 6 operations.
+  ScientificMode.name = "Scientific"; 18 operations.
+  ScientificMode.operations ⊃ SimpleMode.operations (strict superset).
+  All op names are members of BINARY_OPS | UNARY_OPS.
+  operations property returns a fresh dict each call
+  (no shared mutable state between callers).
+  parse_number: int first, then float; ValueError for invalid input.
+  No tkinter import — fully testable without a display.
 end note
 
 @enduml

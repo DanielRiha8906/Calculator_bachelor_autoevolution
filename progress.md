@@ -1,21 +1,20 @@
-## Run: update-diagrams — PlantUML diagram update (post-issue-303 GUI)
+## Run: update-diagrams — PlantUML diagram update
 
 - **Branch:** exp3/issue-303-gui-redesign
-- **PR target:** N/A (diagram-only run)
 - **Files changed:**
-  - `artifacts/class_diagram.puml` — added cycle-15 GUI classes: `_SectionFrame`, `ModeSelector`, `OperationSelector`, `OperandSection`, `ResultDisplay`, `HistoryPanel`, `CalculatorGUI`, `gui` module; added `gui_main` root module; added `test_gui` test module; added all GUI relationships and notes including operation catalogues, section ownership, error logging, and CalculatorGUI behaviour invariants
-  - `artifacts/activity_diagram.puml` — added `|GUI (src/gui.py)|` swimlane; added `== GUI Mode ==` section covering startup, mode switch, op type/name change, Calculate (success and error paths), and Clear flows
-  - `artifacts/sequence_diagram.puml` — added `== GUI — Startup ==`, `== GUI — Calculate (Binary Operation) ==`, `== GUI — Mode Switch ==`, `== GUI — Unary Op (factorial) ==`, `== GUI — Error Path ==`, `== GUI — Clear ==`, `== Unit Tests — GUI ==` sections
-  - `progress.md` — appended this run summary
-- **Purpose:** Reflect cycle-15 tkinter GUI (`src/gui.py`, `gui_main.py`, `tests/test_gui.py`) in all three PlantUML diagrams.
-- **Risks:** None — diagram-only change; no source code modified.
+  - `artifacts/class_diagram.puml` — added GUI layer: `CalculatorMode` ABC, `SimpleMode`, `ScientificMode`, `parse_number`, `_OperandSection`, `CalculatorGUI`, root `gui.py` launcher, `tests/test_gui.py`; added all relationships and notes for cycles 15-16
+  - `artifacts/activity_diagram.puml` — added GUI execution flow swimlane (startup, mode switch, calculate binary/unary, error path, clear button)
+  - `artifacts/sequence_diagram.puml` — added GUI interaction sequences (startup, mode switch, binary calculate, unary calculate, error, clear) and GUI unit test section (test_gui.py, 42 tests)
+  - `progress.md` — this entry
+- **Purpose:** Bring all three PlantUML diagrams up to date with cycles 15-16 (GUI addition and redesign). Previous diagrams covered only CLI flows and had no GUI components.
+- **Risks:** Diagram-only change; no source code modified.
 - **Tests passed:** N/A (no code changes)
-- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md` (gui.py, gui_main.py, test_gui.py entries)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 - **Tokens used:** PENDING
 - **Cost:** PENDING
 - **Turns:** PENDING
 
-Duration: 604.0s | Cost: $1.699679 USD | Turns: 33
+Duration: PENDING | Cost: PENDING | Turns: PENDING
 
 ---
 
