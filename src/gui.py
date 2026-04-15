@@ -5,10 +5,19 @@ for all computation and history management.  Mode-specific operation sets
 are encapsulated in CalculatorMode subclasses (see gui_modes.py) so the
 GUI loop itself is mode-agnostic.
 
+The window is divided into clearly labelled sections:
+  - Mode selection (Simple / Scientific)
+  - Operation selection with unary/binary indicator
+  - Operand entry (one or two fields depending on operation arity)
+  - Result display (prominent output area)
+  - Action controls (Calculate, Clear)
+  - Session history (scrollable log)
+
 Usage:
     python gui.py
 """
 import tkinter as tk
+from tkinter import font as tkfont
 from tkinter import ttk, scrolledtext
 
 from .gui_modes import CalculatorMode, SimpleMode, ScientificMode, parse_number
@@ -24,14 +33,88 @@ __all__ = [
     "main",
 ]
 
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+_PAD_OUTER = 12   # outer frame padding (pixels)
+_PAD_INNER = 8    # inner section padding
+_PAD_WIDGET = 4   # between adjacent widgets
+
+
+class _OperandSection:
+    """Manages the operand entry fields for a single operation.
+
+    Responsible for:
+      - Creating and owning the label and entry widgets.
+      - Showing/hiding the second operand field when arity changes.
+      - Reading and validating the raw text from the entries.
+      - Clearing the entries on demand.
+
+    Args:
+        parent: The parent tkinter widget that owns this section.
+    """
+
+    def __init__(self, parent: tk.Widget) -> None:
+        frame = ttk.LabelFrame(parent, text="Operands", padding=_PAD_INNER)
+        frame.pack(fill=tk.X, padx=_PAD_OUTER, pady=(_PAD_WIDGET, 0))
+        frame.columnconfigure(1, weight=1)
+
+        # First operand row
+        ttk.Label(frame, text="First operand:").grid(
+            row=0, column=0, sticky="w", pady=_PAD_WIDGET
+        )
+        self._entry_a = ttk.Entry(frame)
+        self._entry_a.grid(row=0, column=1, sticky="ew", padx=(_PAD_WIDGET, 0))
+
+        # Second operand row (shown for binary operations only)
+        self._label_b = ttk.Label(frame, text="Second operand:")
+        self._entry_b = ttk.Entry(frame)
+
+        self._arity: int = 1
+        self._frame = frame
+
+    def set_arity(self, arity: int) -> None:
+        """Show or hide the second operand row based on arity."""
+        if arity == self._arity:
+            return
+        self._arity = arity
+        if arity == 2:
+            self._label_b.grid(
+                row=1, column=0, sticky="w", pady=_PAD_WIDGET
+            )
+            self._entry_b.grid(
+                row=1, column=1, sticky="ew", padx=(_PAD_WIDGET, 0)
+            )
+        else:
+            self._label_b.grid_remove()
+            self._entry_b.grid_remove()
+
+    def clear(self) -> None:
+        """Clear all entry fields."""
+        self._entry_a.delete(0, tk.END)
+        self._entry_b.delete(0, tk.END)
+
+    def read_a(self) -> str:
+        """Return the raw text from the first entry field."""
+        return self._entry_a.get().strip()
+
+    def read_b(self) -> str:
+        """Return the raw text from the second entry field."""
+        return self._entry_b.get().strip()
+
+    def focus_a(self) -> None:
+        """Move keyboard focus to the first entry field."""
+        self._entry_a.focus_set()
+
 
 class CalculatorGUI:
     """Tkinter GUI controller for the Calculator application.
 
     All computation is delegated to a CalculatorSession instance so that
     the GUI layer contains no arithmetic logic.  Mode switching updates the
-    operation selector; the session and its history persist across mode
-    changes within the same window lifetime.
+    operation selector and operand section; the session and its history
+    persist across mode changes within the same window lifetime.
 
     Args:
         root: The Tk root window (or any Toplevel container).
@@ -52,84 +135,101 @@ class CalculatorGUI:
         """Build and layout all widgets."""
         self._root.title("Calculator")
         self._root.resizable(True, True)
+        self._root.minsize(380, 520)
 
-        self._build_mode_frame()
-        self._build_operation_frame()
-        self._build_input_frame()
-        self._build_calculate_button()
-        self._build_result_frame()
-        self._build_history_frame()
+        # Configure a uniform style via ttk for consistency.
+        style = ttk.Style(self._root)
+        style.configure("Result.TLabel", font=("TkDefaultFont", 20, "bold"))
+        style.configure("Arity.TLabel", font=("TkDefaultFont", 9))
+
+        self._build_mode_section()
+        self._build_operation_section()
+        self._operand_section = _OperandSection(self._root)
+        self._build_action_section()
+        self._build_result_section()
+        self._build_history_section()
 
         # Populate the operation selector for the initial mode.
         self._refresh_operations()
 
-    def _build_mode_frame(self) -> None:
-        frame = tk.Frame(self._root, pady=4)
-        frame.pack(fill=tk.X, padx=10)
-
-        tk.Label(frame, text="Mode:", width=9, anchor="w").pack(side=tk.LEFT)
+    def _build_mode_section(self) -> None:
+        frame = ttk.LabelFrame(self._root, text="Mode", padding=_PAD_INNER)
+        frame.pack(fill=tk.X, padx=_PAD_OUTER, pady=(_PAD_OUTER, _PAD_WIDGET))
 
         self._mode_var = tk.StringVar(value=self._current_mode.name)
         for mode in self._modes:
-            tk.Radiobutton(
+            ttk.Radiobutton(
                 frame,
                 text=mode.name,
                 variable=self._mode_var,
                 value=mode.name,
                 command=self._on_mode_change,
-            ).pack(side=tk.LEFT, padx=4)
+            ).pack(side=tk.LEFT, padx=(_PAD_WIDGET, _PAD_WIDGET * 2))
 
-    def _build_operation_frame(self) -> None:
-        frame = tk.Frame(self._root, pady=4)
-        frame.pack(fill=tk.X, padx=10)
+    def _build_operation_section(self) -> None:
+        frame = ttk.LabelFrame(self._root, text="Operation", padding=_PAD_INNER)
+        frame.pack(fill=tk.X, padx=_PAD_OUTER, pady=_PAD_WIDGET)
+        frame.columnconfigure(0, weight=1)
 
-        tk.Label(frame, text="Operation:", width=9, anchor="w").pack(side=tk.LEFT)
+        inner = ttk.Frame(frame)
+        inner.pack(fill=tk.X)
+        inner.columnconfigure(0, weight=1)
 
         self._op_var = tk.StringVar()
         self._op_combo = ttk.Combobox(
-            frame,
+            inner,
             textvariable=self._op_var,
             state="readonly",
-            width=18,
         )
-        self._op_combo.pack(side=tk.LEFT, padx=4)
+        self._op_combo.grid(row=0, column=0, sticky="ew")
         self._op_combo.bind("<<ComboboxSelected>>", self._on_op_selected)
 
-    def _build_input_frame(self) -> None:
-        self._input_frame = tk.Frame(self._root, pady=4)
-        self._input_frame.pack(fill=tk.X, padx=10)
+        self._arity_label_var = tk.StringVar()
+        ttk.Label(
+            inner,
+            textvariable=self._arity_label_var,
+            style="Arity.TLabel",
+            foreground="gray",
+        ).grid(row=0, column=1, padx=(_PAD_WIDGET, 0))
 
-        self._label_a = tk.Label(self._input_frame, text="Value A:", width=9, anchor="w")
-        self._entry_a = tk.Entry(self._input_frame, width=14)
+    def _build_action_section(self) -> None:
+        frame = ttk.Frame(self._root)
+        frame.pack(pady=_PAD_INNER)
 
-        self._label_b = tk.Label(self._input_frame, text="Value B:", width=9, anchor="w")
-        self._entry_b = tk.Entry(self._input_frame, width=14)
-
-    def _build_calculate_button(self) -> None:
-        tk.Button(
-            self._root,
+        ttk.Button(
+            frame,
             text="Calculate",
             command=self._on_calculate,
             width=12,
-        ).pack(pady=6)
+        ).pack(side=tk.LEFT, padx=(_PAD_WIDGET, _PAD_WIDGET * 2))
 
-    def _build_result_frame(self) -> None:
-        frame = tk.Frame(self._root, pady=4)
-        frame.pack(fill=tk.X, padx=10)
+        ttk.Button(
+            frame,
+            text="Clear",
+            command=self._on_clear,
+            width=8,
+        ).pack(side=tk.LEFT, padx=_PAD_WIDGET)
 
-        tk.Label(frame, text="Result:", width=9, anchor="w").pack(side=tk.LEFT)
-        self._result_var = tk.StringVar()
-        tk.Label(
+    def _build_result_section(self) -> None:
+        frame = ttk.LabelFrame(self._root, text="Result", padding=_PAD_INNER)
+        frame.pack(fill=tk.X, padx=_PAD_OUTER, pady=_PAD_WIDGET)
+
+        self._result_var = tk.StringVar(value="—")
+        ttk.Label(
             frame,
             textvariable=self._result_var,
-            fg="blue",
-            anchor="w",
-            width=30,
-        ).pack(side=tk.LEFT, padx=4)
+            style="Result.TLabel",
+            anchor="center",
+        ).pack(fill=tk.X, pady=_PAD_WIDGET)
 
-    def _build_history_frame(self) -> None:
-        frame = tk.LabelFrame(self._root, text="Session History", pady=4)
-        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(4, 10))
+    def _build_history_section(self) -> None:
+        frame = ttk.LabelFrame(
+            self._root, text="Session History", padding=_PAD_INNER
+        )
+        frame.pack(
+            fill=tk.BOTH, expand=True,
+            padx=_PAD_OUTER, pady=(_PAD_WIDGET, _PAD_OUTER)
+        )
 
         self._history_box = scrolledtext.ScrolledText(
             frame,
@@ -137,7 +237,7 @@ class CalculatorGUI:
             state=tk.DISABLED,
             wrap=tk.WORD,
         )
-        self._history_box.pack(fill=tk.BOTH, expand=True, padx=4, pady=4)
+        self._history_box.pack(fill=tk.BOTH, expand=True)
 
     # ------------------------------------------------------------------
     # State management helpers
@@ -149,24 +249,17 @@ class CalculatorGUI:
         self._op_combo["values"] = labels
         if labels:
             self._op_combo.set(labels[0])
-            self._show_inputs_for(labels[0])
+            self._apply_operation(labels[0])
 
-    def _show_inputs_for(self, display_name: str) -> None:
-        """Show the correct number of input fields for the selected operation."""
-        if not display_name or display_name not in self._current_mode.operations:
+    def _apply_operation(self, display_name: str) -> None:
+        """Update arity label and operand section for the selected operation."""
+        ops = self._current_mode.operations
+        if not display_name or display_name not in ops:
             return
-        _, arity = self._current_mode.operations[display_name]
-
-        # Remove all children from the input frame then re-add as needed.
-        for widget in self._input_frame.winfo_children():
-            widget.pack_forget()
-
-        self._label_a.pack(side=tk.LEFT)
-        self._entry_a.pack(side=tk.LEFT, padx=4)
-
-        if arity == 2:
-            self._label_b.pack(side=tk.LEFT)
-            self._entry_b.pack(side=tk.LEFT, padx=4)
+        _, arity = ops[display_name]
+        self._arity_label_var.set("Binary" if arity == 2 else "Unary")
+        self._operand_section.set_arity(arity)
+        self._operand_section.focus_a()
 
     def _refresh_history_display(self) -> None:
         """Overwrite the history widget content with the current session history."""
@@ -193,7 +286,12 @@ class CalculatorGUI:
 
     def _on_op_selected(self, _event=None) -> None:
         """Handle combobox selection change."""
-        self._show_inputs_for(self._op_var.get())
+        self._apply_operation(self._op_var.get())
+
+    def _on_clear(self) -> None:
+        """Clear all input fields and the result display."""
+        self._operand_section.clear()
+        self._result_var.set("—")
 
     def _on_calculate(self) -> None:
         """Read inputs, delegate to the session, display the result."""
@@ -203,7 +301,7 @@ class CalculatorGUI:
             return
 
         op_name, arity = self._current_mode.operations[display_name]
-        a_raw = self._entry_a.get().strip()
+        a_raw = self._operand_section.read_a()
         if not a_raw:
             self._result_var.set("Please enter a value.")
             return
@@ -213,9 +311,9 @@ class CalculatorGUI:
             a = int(a_raw) if require_int else parse_number(a_raw)
 
             if arity == 2:
-                b_raw = self._entry_b.get().strip()
+                b_raw = self._operand_section.read_b()
                 if not b_raw:
-                    self._result_var.set("Please enter Value B.")
+                    self._result_var.set("Please enter the second operand.")
                     return
                 b = parse_number(b_raw)
                 result = self._session.execute(op_name, a, b)
