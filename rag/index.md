@@ -4,6 +4,7 @@ Master index of summarized files. Updated each evolution cycle.
 
 | File | Purpose | Last Updated (cycle) |
 |------|---------|----------------------|
+| `README.md` | User and developer documentation: setup, interactive mode, bash CLI, all 12 ops, session files, code structure, test instructions | 13 |
 | `src/__init__.py` | Package init; exports `Calculator` and `CalculatorSession` | 11 |
 | `src/__main__.py` | Interactive CLI: menu-driven session loop with retry logic, MAX_ATTEMPTS=5, per-session history, and error logging | 11 |
 | `src/calculator.py` | `Calculator(BasicOperations, ScientificOperations)` — unified class inheriting all 12 ops from the operations package | 12 |

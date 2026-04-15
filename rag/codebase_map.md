@@ -86,6 +86,14 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ---
 
+## `README.md`
+- **Purpose:** User and developer documentation for the calculator application. Covers setup, interactive mode usage, bash CLI usage, all 12 operations, session file behavior (history.txt, error.log), code structure overview, and how to run the test suite.
+- **Exports:** N/A (documentation file)
+- **Key invariants:** Reflects the actual implementation as of cycle 13 (post-modularization). Does not describe planned future behavior.
+- **Last updated:** cycle 13 (issue-278)
+
+---
+
 ## `tests/test_calculator.py`
 - **Purpose:** Comprehensive unit test suite for `Calculator`.
 - **Current state:** 76 tests covering all twelve operations. Includes normal inputs, edge cases (zero operands, negative values, large numbers), floating-point precision via `pytest.approx`, `ZeroDivisionError` for divide, factorial boundary/rejection, `ValueError` for square_root (negative), log/ln (non-positive), and cube_root negative-input correctness. Uses a `calc` pytest fixture.

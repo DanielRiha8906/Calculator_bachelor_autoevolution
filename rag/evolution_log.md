@@ -4,6 +4,18 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 13 — Issue #278: Documentation — Expert/generic
+
+- **Task:** Add written documentation for the calculator application so users and developers can understand how to run, use, and maintain the current version. Document available operations, interactive mode, bash CLI mode, session history and error logging behavior, and the current code structure after the modularization refactor.
+- **Files changed:**
+  - `README.md`: replaced placeholder (single line) with comprehensive documentation covering setup, both usage modes with examples, full 12-operation reference table, session file behavior, code structure with per-module descriptions, and test instructions.
+- **Test result:** 209 passed (unchanged; documentation-only change)
+- **Key decisions:** Documentation reflects the post-modularization code structure (cycles 11–12). No source files changed. Kept documentation strictly aligned with actual implementation — no mention of planned future features or idealized behavior. Used markdown tables for operation reference to maximize scannability.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 12 — Issue #275: Modularization — Expert/generic
 
 - **Task:** Refactor the calculator into multiple modules so core logic, interface handling, session-related behavior, and supporting concerns are organized more cleanly. Introduce a clearer operations structure with an obvious boundary between normal and scientific functionality.
