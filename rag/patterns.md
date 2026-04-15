@@ -298,3 +298,34 @@ def test_something_is_logged(isolate_error_log, capsys):
 
 Tests that do not care about logging work unchanged because the autouse patch is invisible.
 Applied in `tests/conftest.py` / `tests/test_error_logger.py`, `tests/test_cli.py`, `tests/test_main.py`.
+
+## Pattern: helper class for arity-driven widget visibility in tkinter
+
+When a tkinter form has fields that must appear or disappear based on a
+data property (e.g. showing one vs two operands based on operation arity),
+extract a dedicated helper class that owns those widgets and exposes a
+single `set_arity(n)` method.  The main controller calls `set_arity`
+whenever the property changes; the helper manages grid show/hide internally.
+Make `set_arity` idempotent (no-op when arity is unchanged) to avoid
+unnecessary re-layout.
+
+```python
+class _OperandSection:
+    def __init__(self, parent):
+        self._entry_b = ttk.Entry(...)
+        self._label_b = ttk.Label(...)
+        self._arity = 1
+
+    def set_arity(self, arity: int) -> None:
+        if arity == self._arity:
+            return
+        self._arity = arity
+        if arity == 2:
+            self._label_b.grid(row=1, column=0, ...)
+            self._entry_b.grid(row=1, column=1, ...)
+        else:
+            self._label_b.grid_remove()
+            self._entry_b.grid_remove()
+```
+
+Applied in `src/gui.py` (issue-303).

@@ -208,15 +208,18 @@ Per-file summaries: purpose, public API surface, key invariants.
 - **Purpose:** Tkinter GUI controller for the Calculator. Delegates all computation to `CalculatorSession`; contains no arithmetic logic.
 - **Exports:** `CalculatorGUI`, `main`, re-exports `CalculatorMode`, `SimpleMode`, `ScientificMode`
 - **Public API:**
-  - `CalculatorGUI(root: tk.Tk)` — builds the full widget tree; holds a `CalculatorSession` and a list of `CalculatorMode` instances; mode switching swaps `_current_mode`.
+  - `_OperandSection(parent)` — inner helper class; owns first/second operand entry widgets, manages `set_arity(arity)` to show/hide the second operand row, exposes `read_a()`/`read_b()`/`clear()`/`focus_a()`.
+  - `CalculatorGUI(root: tk.Tk)` — builds the full widget tree using ttk-based LabelFrame sections; holds a `CalculatorSession` and a list of `CalculatorMode` instances; mode switching swaps `_current_mode`.
   - `main() -> None` — creates a `Tk` root, instantiates `CalculatorGUI`, and calls `mainloop()`.
+- **Layout sections (top-to-bottom):** Mode (radio buttons), Operation (combobox + unary/binary badge), Operands (_OperandSection), Actions (Calculate + Clear buttons), Result (large centred label), Session History (scrolled text).
 - **Key invariants:**
   - All computation goes through `CalculatorSession.execute()`; no direct `Calculator` interaction.
   - Factorial input is parsed with `int()` to preserve Calculator.factorial's integer contract.
   - Errors (`ValueError`, `TypeError`, `ZeroDivisionError`) are shown in the result label and forwarded to `log_error("gui", ...)`.
   - Session history persists across mode switches within the same window lifetime.
+  - `_OperandSection.set_arity` is idempotent — no re-layout when arity is unchanged.
   - Requires a display/tkinter; not importable in headless CI — use `src.gui_modes` for testable logic.
-- **Last updated:** cycle 15 (issue-284)
+- **Last updated:** cycle 16 (issue-303)
 
 ---
 

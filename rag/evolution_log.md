@@ -4,6 +4,18 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 16 — Issue #303: GUI Look — Expert/generic
+
+- **Task:** Redesign the existing tkinter Calculator GUI to present a clean, structured, visually coherent interface. Preserve all behaviour; improve presentation layer only.
+- **Files changed:**
+  - `src/gui.py` (modified): introduced `_OperandSection` helper class to own operand-field management; replaced raw `tk` widgets with `ttk` throughout; organized window into six ttk `LabelFrame` sections (Mode, Operation, Operands, Actions, Result, Session History); added unary/binary badge label next to operation combobox; added Clear button; result area uses large centred font; consistent `_PAD_*` constants.
+- **Test result:** 278 passed
+- **Key decisions:** Extracted `_OperandSection` to separate operand-visibility logic from the main controller. Used ttk for a native consistent look without adding new dependencies. `set_arity` is idempotent to avoid unnecessary re-layout. No changes to `gui_modes.py`, `session.py`, or test files — GUI design is purely a presentation-layer change.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 15 — Issue #284: GUI — Expert/generic
 
 - **Task:** Add a tkinter-based graphical interface that reuses existing application logic (CalculatorSession) without duplicating it. Use an OOP mode design with a shared CalculatorMode ABC so Simple and Scientific modes share structure while keeping their operation sets separate.

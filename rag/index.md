@@ -21,6 +21,6 @@ Master index of summarized files. Updated each evolution cycle.
 | `main.py` | Bash-accessible CLI entry point: `python main.py <op> [a] [b]`; imports op sets from src.session, uses CalculatorSession, exits 0/1, logs errors | 11 |
 | `tests/test_cli.py` | 34-test suite for main.py CLI: all 12 ops, arg-count validation, error paths, non-numeric operands, error logging | 9 |
 | `src/gui_modes.py` | `CalculatorMode` ABC; `SimpleMode` (6 ops); `ScientificMode` (18 ops); `parse_number` helper — no tkinter dependency | 15 |
-| `src/gui.py` | `CalculatorGUI` tkinter controller; delegates computation to `CalculatorSession`; `main()` launcher | 15 |
+| `src/gui.py` | `CalculatorGUI` tkinter controller with `_OperandSection` helper; ttk-based structured sections; delegates computation to `CalculatorSession`; `main()` launcher | 16 |
 | `gui.py` | Root-level GUI launcher (`python gui.py`); thin wrapper calling `src.gui.main()` | 15 |
 | `tests/test_gui.py` | 42-test suite for gui_modes: mode ABC, SimpleMode/ScientificMode op sets and arity, parse_number; no display needed | 15 |
