@@ -4,6 +4,21 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 12 — Issue #275: Modularization — Expert/generic
+
+- **Task:** Refactor the calculator into multiple modules so core logic, interface handling, session-related behavior, and supporting concerns are organized more cleanly. Introduce a clearer operations structure with an obvious boundary between normal and scientific functionality.
+- **Files changed:**
+  - `src/operations/__init__.py` (new): package init; re-exports `BasicOperations` and `ScientificOperations`.
+  - `src/operations/basic.py` (new): `BasicOperations` mixin with add, subtract, multiply, divide.
+  - `src/operations/scientific.py` (new): `ScientificOperations` mixin with factorial, square, cube, square_root, cube_root, power, log, ln.
+  - `src/calculator.py`: replaced monolithic implementation with `Calculator(BasicOperations, ScientificOperations)` using multiple inheritance; no methods defined directly.
+- **Test result:** 209 passed (unchanged; no tests added or modified)
+- **Key decisions:** Used a `src/operations/` package so the file names themselves communicate the structural boundary. `Calculator` is a thin class that inherits both mixins, giving it the same public API as before. No session, CLI, or test files required modification. Multiple inheritance chosen over composition because the mixin approach keeps each class independently usable without coupling through a container. `ScientificOperations` is not yet a "mode" — it is the structural home for future scientific-mode work.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 11 — Issue #271: Logic separation — Expert/generic
 
 - **Task:** Refactor the calculator so core calculation logic is separated from interface concerns (guided interactive input, bash CLI handling, output formatting, session control). Improve OO responsibility boundaries so calculator operations can be reused independently of the user interface.

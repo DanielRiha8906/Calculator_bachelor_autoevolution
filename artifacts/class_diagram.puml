@@ -4,19 +4,35 @@ skinparam classAttributeIconSize 0
 skinparam classFontStyle Bold
 
 package "src" {
+
+    package "operations" {
+        class BasicOperations {
+            +add(a, b) : float|int
+            +subtract(a, b) : float|int
+            +multiply(a, b) : float|int
+            +divide(a, b) : float|int
+        }
+
+        class ScientificOperations {
+            +factorial(n: int) : int
+            +square(x) : float
+            +cube(x) : float
+            +square_root(x) : float
+            +cube_root(x) : float
+            +power(base, exp) : float
+            +log(x) : float
+            +ln(x) : float
+        }
+
+        class "operations/__init__" as OpsInit <<module>> {
+            __all__ : list
+        }
+    }
+
     class Calculator {
-        +add(a, b) : float|int
-        +subtract(a, b) : float|int
-        +multiply(a, b) : float|int
-        +divide(a, b) : float|int
-        +factorial(n: int) : int
-        +square(x) : float
-        +cube(x) : float
-        +square_root(x) : float
-        +cube_root(x) : float
-        +power(base, exp) : float
-        +log(x) : float
-        +ln(x) : float
+        ' No methods defined directly on Calculator.
+        ' All 12 ops are inherited via MRO:
+        ' Calculator → BasicOperations → ScientificOperations → object
     }
 
     class CalculatorSession {
@@ -130,6 +146,15 @@ package "tests" {
     }
 }
 
+' Inheritance (cycle-12 modularization)
+Calculator --|> BasicOperations : inherits (MRO 1)
+Calculator --|> ScientificOperations : inherits (MRO 2)
+
+' Package re-exports
+OpsInit ..> BasicOperations : re-exports
+OpsInit ..> ScientificOperations : re-exports
+
+' Runtime relationships
 CalculatorSession --> Calculator : holds & delegates
 Main --> CalculatorSession : instantiates & delegates
 Main --> ErrLog : calls log_error
@@ -137,6 +162,8 @@ CLI --> CalculatorSession : instantiates & delegates
 CLI --> ErrLog : calls log_error
 Init ..> Calculator : re-exports
 Init ..> CalculatorSession : re-exports
+
+' Test relationships
 TestCalc --> Calculator : tests via fixture
 TestSession --> CalculatorSession : tests via fixture
 TestMain --> Main : tests via mocked stdin/stdout
@@ -145,16 +172,29 @@ TestErrLog --> ErrLog : tests via fixture
 Conftest ..> ErrLog : patches ERROR_LOG_FILE
 
 note right of Calculator
-  Division: delegates to Python "/" operator.
-  ZeroDivisionError raised by runtime when b == 0.
-  factorial: iterative; rejects bool/float/non-int
-  (TypeError) and negatives (ValueError).
+  Cycle-12 modularization: Calculator adds no methods.
+  MRO: Calculator → BasicOperations → ScientificOperations → object.
+  All 12 operations come from the two mixin classes.
+  Public API is identical to the pre-modularization class;
+  no callers (session, CLIs, tests) required updating.
+end note
+
+note right of BasicOperations
+  Four standard arithmetic operations.
+  No math import; uses Python built-in operators only.
+  divide: ZeroDivisionError comes from Python "/" runtime —
+  no explicit zero guard in the method body.
+end note
+
+note right of ScientificOperations
+  Eight advanced operations.  Imports math.
+  factorial: guards bool before int (bool is int subclass);
+    raises TypeError for non-int/bool, ValueError for negatives.
   square_root: raises ValueError for x < 0.
   cube_root: handles negatives via -(abs(x)^(1/3)).
   log: base-10 via math.log10; raises ValueError for x <= 0.
   ln: natural log via math.log; raises ValueError for x <= 0.
-  power: returns base ** exp (no domain restriction).
-  Imports: math
+  power: base ** exp (no domain restriction).
 end note
 
 note left of Main

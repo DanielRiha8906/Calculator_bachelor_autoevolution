@@ -1,3 +1,46 @@
+## Run: update-diagrams — PlantUML diagram update (post-issue-275)
+
+- **Branch:** exp3/issue-275-modularization
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `src/operations/` package with `BasicOperations` (add/subtract/multiply/divide) and `ScientificOperations` (factorial/square/cube/square_root/cube_root/power/log/ln) classes; updated `Calculator` to show it defines no own methods and inherits via MRO; added inheritance arrows `Calculator --|> BasicOperations` and `Calculator --|> ScientificOperations`; added `OpsInit` re-export dashed links; updated Calculator note to explain cycle-12 modularization; added separate notes for each mixin
+  - `artifacts/activity_diagram.puml` — added explanatory note in "Calculator Computation" swimlane listing which operations come from `BasicOperations` vs `ScientificOperations`; all logic branches unchanged
+  - `artifacts/sequence_diagram.puml` — added top-of-diagram note explaining the MRO composition of `Calculator`; updated participant label to `Calculator\n(BasicOps + SciOps)`; added `note right: dispatch via BasicOperations.xxx (MRO)` and `note right: dispatch via ScientificOperations.xxx (MRO)` annotations on key dispatch calls throughout all sections
+- **Purpose:** Sync PlantUML diagrams with cycle-12 changes (issue-275): `Calculator` was modularized into `BasicOperations` and `ScientificOperations` mixins in `src/operations/`. Diagrams were stale — they showed `Calculator` with all 12 methods defined directly on it, with no representation of the new `src/operations/` package structure or inheritance hierarchy.
+- **Risks:** None — diagram-only change, no source code modified.
+- **Tests passed:** N/A (diagrams only)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: 219.0s | Cost: $0.602668 USD | Turns: 25
+
+---
+
+## Run: issue-275 — Modularization — Expert/generic
+
+- **Branch:** exp3/issue-275-modularization
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/operations/__init__.py` (new) — package init; re-exports `BasicOperations` and `ScientificOperations`
+  - `src/operations/basic.py` (new) — `BasicOperations` mixin: add, subtract, multiply, divide
+  - `src/operations/scientific.py` (new) — `ScientificOperations` mixin: factorial, square, cube, square_root, cube_root, power, log, ln
+  - `src/calculator.py` — replaced monolithic implementation with `Calculator(BasicOperations, ScientificOperations)`; no methods defined directly on `Calculator`
+- **Purpose:** Establish a clear structural boundary between standard arithmetic and scientific operations in the module layout. Future scientific-mode work has an obvious home (`src/operations/scientific.py`) without requiring any changes to session dispatch, CLIs, or existing tests.
+- **Risks:** Minimal — all 12 Calculator methods are still available under the same names via inheritance. MRO is straightforward (`Calculator → BasicOperations → ScientificOperations → object`). No callers needed updating.
+- **Tests passed:** 209/209 (all pass, no tests added or modified)
+- **Branch/worktree:** exp3/issue-275-modularization
+- **Intended merge target:** exp3/expert-generic
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/patterns.md`, `rag/evolution_log.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: 298.4s | Cost: $1.091514 USD | Turns: 49
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update
 
 - **Branch:** exp3/issue-271-logic-separation

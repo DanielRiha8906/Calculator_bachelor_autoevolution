@@ -36,30 +36,53 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## `src/calculator.py`
-- **Purpose:** Core arithmetic calculator implementation.
-- **Public API:**
-  - `Calculator.add(a, b) -> float/int` — returns `a + b`
-  - `Calculator.subtract(a, b) -> float/int` — returns `a - b`
-  - `Calculator.multiply(a, b) -> float/int` — returns `a * b`
-  - `Calculator.divide(a, b) -> float/int` — returns `a / b`; raises `ZeroDivisionError` naturally when `b == 0`
-  - `Calculator.factorial(n: int) -> int` — returns `n!`; raises `TypeError` for non-integers (including bool/float), raises `ValueError` for negative integers
-  - `Calculator.square(x) -> float` — returns `x * x`
-  - `Calculator.cube(x) -> float` — returns `x * x * x`
-  - `Calculator.square_root(x) -> float` — returns `math.sqrt(x)`; raises `ValueError` for `x < 0`
-  - `Calculator.cube_root(x) -> float` — returns real cube root (negative for negative x); uses `-(abs(x)**(1/3))` for negatives
-  - `Calculator.power(base, exp) -> float` — returns `base ** exp`
-  - `Calculator.log(x) -> float` — returns `math.log10(x)`; raises `ValueError` for `x <= 0`
-  - `Calculator.ln(x) -> float` — returns `math.log(x)`; raises `ValueError` for `x <= 0`
+- **Purpose:** Unified `Calculator` class combining basic and scientific operations via multiple inheritance.
+- **Public API:** All 12 operations inherited from `BasicOperations` and `ScientificOperations` — see those modules for per-method contracts.
 - **Key invariants:**
-  - Division delegates directly to Python `/` operator; no explicit zero-check.
-  - `ZeroDivisionError` is raised by Python runtime when dividing by zero.
-  - Factorial validates input type explicitly: booleans are rejected (`isinstance(n, bool)` checked before `isinstance(n, int)` since `bool` is a subclass of `int`).
-  - Factorial is computed iteratively; `factorial(0)` and `factorial(1)` both return 1.
-  - `square_root` raises `ValueError` for negative inputs (not `math.sqrt`'s `ValueError`; explicit guard for clear messaging).
-  - `cube_root` handles negative inputs by computing `-(abs(x)**(1/3))` to stay in real domain.
-  - `log` and `ln` raise `ValueError` for `x <= 0` with explicit guard before delegating to `math`.
-  - Module imports `math` at the top.
-- **Last updated:** cycle 4 (issue-219)
+  - `Calculator` adds no methods of its own; it exists to provide a single named type for the rest of the application.
+  - MRO: `Calculator → BasicOperations → ScientificOperations → object`.
+  - Public API is identical to the pre-modularization `Calculator`; no callers required updating.
+- **Last updated:** cycle 12 (issue-275)
+
+---
+
+## `src/operations/__init__.py`
+- **Purpose:** Package init for `src/operations/`; re-exports `BasicOperations` and `ScientificOperations`.
+- **Exports:** `BasicOperations`, `ScientificOperations`
+- **Last updated:** cycle 12 (issue-275)
+
+---
+
+## `src/operations/basic.py`
+- **Purpose:** `BasicOperations` mixin class; the four standard arithmetic operations that form the foundation shared by all calculator modes.
+- **Public API:**
+  - `BasicOperations.add(a, b)` — `a + b`
+  - `BasicOperations.subtract(a, b)` — `a - b`
+  - `BasicOperations.multiply(a, b)` — `a * b`
+  - `BasicOperations.divide(a, b)` — `a / b`; raises `ZeroDivisionError` when `b == 0` via Python's `/` operator.
+- **Key invariants:**
+  - No `math` import; only Python built-in operators used.
+  - Division has no explicit zero guard — ZeroDivisionError comes from the runtime.
+- **Last updated:** cycle 12 (issue-275)
+
+---
+
+## `src/operations/scientific.py`
+- **Purpose:** `ScientificOperations` mixin class; advanced operations beyond basic arithmetic.  Collected here to establish the structural boundary between normal and scientific functionality.
+- **Public API:**
+  - `ScientificOperations.factorial(n: int) -> int` — `n!`; raises `TypeError` for non-int/bool, `ValueError` for negative.
+  - `ScientificOperations.square(x) -> float` — `x * x`
+  - `ScientificOperations.cube(x) -> float` — `x * x * x`
+  - `ScientificOperations.square_root(x) -> float` — `math.sqrt(x)`; raises `ValueError` for `x < 0`.
+  - `ScientificOperations.cube_root(x) -> float` — real cube root; negative input returns negative result via `-(abs(x)**(1/3))`.
+  - `ScientificOperations.power(base, exp) -> float` — `base ** exp`
+  - `ScientificOperations.log(x) -> float` — `math.log10(x)`; raises `ValueError` for `x <= 0`.
+  - `ScientificOperations.ln(x) -> float` — `math.log(x)`; raises `ValueError` for `x <= 0`.
+- **Key invariants:**
+  - Imports `math` at the top.
+  - All domain guards are explicit (before delegating to `math`) for clear error messages.
+  - Factorial guards bool before int (since `bool` is a subclass of `int` in Python).
+- **Last updated:** cycle 12 (issue-275)
 
 ---
 

@@ -9,8 +9,15 @@ actor User
 participant "__main__\n(entry point)" as Main
 participant "OPERATIONS\nmap" as Ops
 participant "CalculatorSession" as Session
-participant "Calculator" as Calc
+participant "Calculator\n(BasicOps + SciOps)" as Calc
 participant "Python Runtime\n/ math module" as Runtime
+
+note over Calc
+  Cycle-12: Calculator inherits all 12 ops from two mixins.
+  MRO: Calculator → BasicOperations → ScientificOperations → object.
+  add/subtract/multiply/divide  ← BasicOperations (src/operations/basic.py)
+  factorial/square/cube/sqrt/cbrt/power/log/ln ← ScientificOperations (src/operations/scientific.py)
+end note
 
 == Interactive Session — Normal Binary Operation ==
 
@@ -43,6 +50,7 @@ Main -> Main : get_number("Enter second number:")
 Main -> Session : session.execute("add", 10, 5)
 activate Session
 Session -> Calc : _calc.add(10, 5)
+note right: dispatch via BasicOperations.add (MRO)
 activate Calc
 Calc -> Runtime : 10 + 5
 Runtime --> Calc : 15
@@ -67,6 +75,7 @@ Main -> Main : get_number("Enter integer:", require_int=True)
 Main -> Session : session.execute("factorial", 5)
 activate Session
 Session -> Calc : _calc.factorial(5)
+note right: dispatch via ScientificOperations.factorial (MRO)
 activate Calc
 Calc -> Calc : validate type (not bool, is int)
 Calc -> Calc : validate value (n >= 0)
@@ -104,6 +113,7 @@ Main -> Main : get_number() → b=0
 Main -> Session : session.execute("divide", 1, 0)
 activate Session
 Session -> Calc : _calc.divide(1, 0)
+note right: dispatch via BasicOperations.divide (MRO)
 activate Calc
 Calc -> Runtime : 1 / 0
 Runtime --> Calc : raise ZeroDivisionError
@@ -193,6 +203,7 @@ deactivate Session
 CLI -> Session : session.execute("add", 5, 7)
 activate Session
 Session -> Calc : _calc.add(5, 7)
+note right: dispatch via BasicOperations.add (MRO)
 activate Calc
 Calc -> Runtime : 5 + 7
 Runtime --> Calc : 12
@@ -220,6 +231,7 @@ deactivate Session
 CLI -> Session : session.execute("factorial", 5)
 activate Session
 Session -> Calc : _calc.factorial(5)
+note right: dispatch via ScientificOperations.factorial (MRO)
 activate Calc
 Calc -> Calc : validate type & value
 Calc -> Calc : iterate: 1*2*3*4*5
@@ -262,6 +274,7 @@ deactivate Session
 CLI -> Session : session.execute("square_root", -4)
 activate Session
 Session -> Calc : _calc.square_root(-4)
+note right: dispatch via ScientificOperations.square_root (MRO)
 activate Calc
 Calc -> Calc : guard: x < 0 → raise ValueError
 Calc --> Session : raise ValueError
@@ -283,6 +296,7 @@ deactivate Calc
 
 Tests -> Calc : calc.subtract(10, 5)
 activate Calc
+note right: BasicOperations.subtract via MRO
 Calc -> Runtime : 10 - 5
 Runtime --> Calc : 5
 Calc --> Tests : 5
@@ -290,6 +304,7 @@ deactivate Calc
 
 Tests -> Calc : calc.square_root(9)
 activate Calc
+note right: ScientificOperations.square_root via MRO
 Calc -> Calc : guard: x >= 0
 Calc -> Runtime : math.sqrt(9)
 Runtime --> Calc : 3.0
@@ -322,6 +337,7 @@ deactivate Calc
 
 Tests -> Calc : calc.power(2, 10)
 activate Calc
+note right: ScientificOperations.power via MRO
 Calc -> Runtime : 2 ** 10
 Runtime --> Calc : 1024
 Calc --> Tests : 1024
