@@ -16,7 +16,7 @@
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
 - **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 431.3s | Cost: $1.587501 USD | Turns: 47
 
 ---
 
