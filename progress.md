@@ -1,3 +1,27 @@
+## Run: issue-271 — Logic separation — Expert/generic
+
+- **Branch:** exp3/issue-271-logic-separation
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/session.py` (new) — `CalculatorSession` class (`execute`, `format_entry`, `history`, `save`) and shared `BINARY_OPS`/`UNARY_OPS`/`ALL_OPS` frozensets
+  - `src/__init__.py` — added `CalculatorSession` to exports
+  - `src/__main__.py` — imports and uses `CalculatorSession` for dispatch and history; `format_history_entry` delegates to `CalculatorSession.format_entry`; `save_history` kept for HISTORY_FILE defaulting
+  - `main.py` — removed own `_BINARY_OPS`/`_UNARY_OPS`/`_ALL_OPS`; imports `BINARY_OPS`, `ALL_OPS`, `CalculatorSession` from `src.session`
+  - `tests/test_session.py` (new) — 37 tests for `CalculatorSession` and operation metadata
+- **Purpose:** Implement Issue #271 — separate core calculation dispatch and history management from UI concerns (interactive menu input, CLI argument parsing, output formatting). `CalculatorSession` is the new abstraction layer between interfaces and `Calculator`.
+- **Risks:** Low — all existing tests pass unchanged; `format_history_entry` and `save_history` preserved as wrappers for backward compatibility.
+- **Tests passed:** 209/209
+- **Branch/worktree:** exp3/issue-271-logic-separation
+- **Intended merge target:** exp3/expert-generic
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/patterns.md`, `rag/evolution_log.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-253 — Error logging for invalid usage and calculation failures
 
 - **Branch:** exp3/issue-253-add-error-logging
