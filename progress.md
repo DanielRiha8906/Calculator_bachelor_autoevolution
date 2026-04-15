@@ -356,4 +356,4 @@ Duration: 216.1s | Cost: $0.502483 USD | Turns: 19
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 - **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
 
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 211.1s | Cost: $0.649531 USD | Turns: 27
