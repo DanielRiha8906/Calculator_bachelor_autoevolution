@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 13 — Issue #279: Scientific Mode (2026-04-15)
+- **Task:** Add scientific mode to the calculator with interactive mode switching
+- **Branch:** exp3/issue-279-scientific-mode
+- **Files changed:** src/operations/scientific.py, src/operations/__init__.py, src/calculator.py, src/__main__.py, tests/test_calculator.py, tests/test_main.py
+- **Outcome:** Implemented 10 scientific operations (sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, exp; all in radians) in scientific.py. Added SCIENTIFIC_UNARY_OPS constant and Calculator methods with error logging for domain-violating ops (asin, acos). Added SCIENTIFIC_MENU/SCIENTIFIC_MENU_MAP and 'm' mode toggle to the interactive REPL. CLI mode accepts scientific ops without mode switching. 188 tests collected, 188 passed.
+- **Key decisions:** SCIENTIFIC_UNARY_OPS is a separate constant from UNARY_OPS to avoid breaking existing tests that assert exact set membership. Scientific ops are all unary so they fall through run_operation's unary path without changes to that function. History is shared between modes within a REPL session.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 12 — Issue #276: Documentation (2026-04-15)
 - **Task:** Add documentation for the calculator application
 - **Branch:** exp3/issue-276-documentation
