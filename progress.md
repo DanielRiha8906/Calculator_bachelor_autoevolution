@@ -2,6 +2,26 @@
 
 ---
 
+## Run: Issue #277 — Documentation (2026-04-15)
+
+- **Branch:** exp3/issue-277-add-documentation
+- **PR target:** exp3/structured-generic
+- **Files changed:**
+  - `README.md` — expanded from one placeholder line to full reference documentation covering project structure, interactive and CLI usage, operations table, input validation, history, error logging, and test instructions
+  - `src/__init__.py` — added module docstring
+  - `src/calculator.py` — added class-level docstring to Calculator
+- **Purpose:** Add written documentation so the calculator's features, usage, and project structure are easier to understand; no behaviour changes.
+- **Risks:** None — documentation-only changes; no logic modified.
+- **Tests passed:** Yes — 152/152 (68 calculator + 84 CLI/interactive)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #274 — Modularization (2026-04-15)
 
 - **Branch:** exp3/issue-274-modularization

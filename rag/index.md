@@ -4,8 +4,8 @@ Master index of summarized files. `last-updated` is the cycle number when the su
 
 | File | One-line purpose | Last-updated |
 |------|-----------------|--------------|
-| src/__init__.py | Package init — exports Calculator class | 0 |
-| src/calculator.py | Calculator class delegating to operations sub-modules + execute dispatch | 11 |
+| src/__init__.py | Package init — exports Calculator class | 12 |
+| src/calculator.py | Calculator class delegating to operations sub-modules + execute dispatch | 12 |
 | src/operations/__init__.py | Operations sub-package init | 11 |
 | src/operations/basic.py | Pure functions: add, subtract, multiply, divide | 11 |
 | src/operations/scientific.py | Pure functions: factorial, square, cube, square_root, cube_root, power, log, ln | 11 |

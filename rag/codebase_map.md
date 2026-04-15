@@ -5,7 +5,8 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## src/__init__.py
-- **Purpose:** Python package initializer for `src/`.
+- **Purpose:** Python package initializer for `src/`. Has module docstring describing the package and CLI usage.
+- **Last updated:** cycle 12
 - **Exports:** `Calculator` (re-exported from `src.calculator`)
 - **Invariants:** Must always export `Calculator` so external imports work.
 
@@ -13,7 +14,7 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## src/calculator.py
 - **Purpose:** Defines the `Calculator` class — the core computation unit. Delegates to `src.operations.basic` and `src.operations.scientific` for all computation logic.
-- **Last updated:** cycle 11
+- **Last updated:** cycle 12
 - **Public API:**
   - `Calculator.add(a, b)` → delegates to `operations.basic.add`
   - `Calculator.subtract(a, b)` → delegates to `operations.basic.subtract`
