@@ -1,7 +1,7 @@
 import logging
 import pytest
 import math
-from src.calculator import Calculator, BINARY_OPS, UNARY_OPS, INTEGER_OPS, _to_int_if_needed
+from src.calculator import Calculator, BINARY_OPS, UNARY_OPS, INTEGER_OPS, SCIENTIFIC_UNARY_OPS, _to_int_if_needed
 
 
 # --- add ---
@@ -487,3 +487,144 @@ def test_to_int_if_needed_integer_op_whole_number():
 def test_to_int_if_needed_integer_op_non_whole_raises():
     with pytest.raises(ValueError):
         _to_int_if_needed("factorial", 3.5)
+
+
+def test_scientific_unary_ops_set():
+    assert SCIENTIFIC_UNARY_OPS == {"sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "tanh", "exp"}
+
+
+# --- scientific mode operations ---
+
+def test_sin_zero():
+    calc = Calculator()
+    assert calc.sin(0) == pytest.approx(0.0)
+
+
+def test_sin_pi_over_2():
+    calc = Calculator()
+    assert calc.sin(math.pi / 2) == pytest.approx(1.0)
+
+
+def test_cos_zero():
+    calc = Calculator()
+    assert calc.cos(0) == pytest.approx(1.0)
+
+
+def test_cos_pi():
+    calc = Calculator()
+    assert calc.cos(math.pi) == pytest.approx(-1.0)
+
+
+def test_tan_zero():
+    calc = Calculator()
+    assert calc.tan(0) == pytest.approx(0.0)
+
+
+def test_tan_pi_over_4():
+    calc = Calculator()
+    assert calc.tan(math.pi / 4) == pytest.approx(1.0)
+
+
+def test_asin_zero():
+    calc = Calculator()
+    assert calc.asin(0) == pytest.approx(0.0)
+
+
+def test_asin_one():
+    calc = Calculator()
+    assert calc.asin(1) == pytest.approx(math.pi / 2)
+
+
+def test_asin_out_of_range_raises():
+    calc = Calculator()
+    with pytest.raises(ValueError):
+        calc.asin(2.0)
+
+
+def test_asin_out_of_range_logs_error(caplog):
+    calc = Calculator()
+    with caplog.at_level(logging.ERROR, logger="src.calculator"):
+        with pytest.raises(ValueError):
+            calc.asin(1.5)
+    assert any("asin error" in r.message for r in caplog.records)
+
+
+def test_acos_zero():
+    calc = Calculator()
+    assert calc.acos(1) == pytest.approx(0.0)
+
+
+def test_acos_minus_one():
+    calc = Calculator()
+    assert calc.acos(-1) == pytest.approx(math.pi)
+
+
+def test_acos_out_of_range_raises():
+    calc = Calculator()
+    with pytest.raises(ValueError):
+        calc.acos(2.0)
+
+
+def test_acos_out_of_range_logs_error(caplog):
+    calc = Calculator()
+    with caplog.at_level(logging.ERROR, logger="src.calculator"):
+        with pytest.raises(ValueError):
+            calc.acos(-1.5)
+    assert any("acos error" in r.message for r in caplog.records)
+
+
+def test_atan_zero():
+    calc = Calculator()
+    assert calc.atan(0) == pytest.approx(0.0)
+
+
+def test_atan_one():
+    calc = Calculator()
+    assert calc.atan(1) == pytest.approx(math.pi / 4)
+
+
+def test_sinh_zero():
+    calc = Calculator()
+    assert calc.sinh(0) == pytest.approx(0.0)
+
+
+def test_cosh_zero():
+    calc = Calculator()
+    assert calc.cosh(0) == pytest.approx(1.0)
+
+
+def test_tanh_zero():
+    calc = Calculator()
+    assert calc.tanh(0) == pytest.approx(0.0)
+
+
+def test_exp_zero():
+    calc = Calculator()
+    assert calc.exp(0) == pytest.approx(1.0)
+
+
+def test_exp_one():
+    calc = Calculator()
+    assert calc.exp(1) == pytest.approx(math.e)
+
+
+def test_execute_scientific_op_returns_result():
+    calc = Calculator()
+    assert calc.execute("sin", 0) == pytest.approx(0.0)
+
+
+def test_execute_scientific_op_records_history():
+    calc = Calculator()
+    calc.execute("cos", 0.0)
+    assert len(calc.history) == 1
+    entry = calc.history[0]
+    assert entry["op"] == "cos"
+    assert entry["operands"] == (0.0,)
+    assert entry["result"] == pytest.approx(1.0)
+
+
+def test_execute_scientific_error_not_recorded_in_history():
+    calc = Calculator()
+    with pytest.raises(ValueError):
+        calc.execute("asin", 2.0)
+    assert calc.history == []

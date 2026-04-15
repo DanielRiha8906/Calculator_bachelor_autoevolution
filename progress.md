@@ -2,6 +2,31 @@
 
 ## Run: Diagram Update (2026-04-15)
 
+- **Branch:** exp3/issue-279-scientific-mode
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 13 scientific mode additions. Changes from previous diagrams: (1) class_diagram — added SCIENTIFIC_UNARY_OPS constant, 10 scientific methods (sin/cos/tan/asin/acos/atan/sinh/cosh/tanh/exp) to Calculator, filled in scientific module with actual API, added SCIENTIFIC_MENU/SCIENTIFIC_MENU_MAP to __main__, added delegation arrow to scientific module, updated notes; (2) activity_diagram — added 'm' mode-switching branch in REPL, split normal/scientific menu display, updated CLI all_ops note to include SCIENTIFIC_UNARY_OPS; (3) sequence_diagram — added scientific (operations) participant, added scientific dispatch path in both CLI and REPL, added mode-toggle flow, added shared history note.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: 171.3s | Cost: $0.479542 USD | Turns: 20
+
+## Run: Issue #279 Scientific Mode (2026-04-15)
+
+- **Branch:** exp3/issue-279-scientific-mode
+- **Target PR branch:** exp3/naive-generic
+- **Files changed:** src/operations/scientific.py, src/operations/__init__.py, src/calculator.py, src/__main__.py, tests/test_calculator.py, tests/test_main.py
+- **Purpose:** Implement scientific calculator mode (issue #279). Adds 10 scientific operations (sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, exp) and interactive mode switching via 'm' key in the REPL.
+- **Risks:** None significant. SCIENTIFIC_UNARY_OPS kept separate from UNARY_OPS to preserve existing test assertions on exact set membership.
+- **Tests passed:** 188/188
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md, rag/evolution_log.md
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: 518.2s | Cost: $1.377397 USD | Turns: 51
+
+## Run: Diagram Update (2026-04-15)
+
 - **Branch:** exp3/issue-276-documentation
 - **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
 - **Purpose:** Verified and confirmed all three PlantUML diagrams are accurate and up-to-date with cycle 12 state. Cycle 12 (documentation) added only docstrings — no structural changes — so diagrams required no modifications. Diagrams reflect: full Calculator class API (12 operations + execute + get_history), module-level constants (UNARY_OPS, BINARY_OPS, INTEGER_OPS, _to_int_if_needed), src.operations sub-package (arithmetic, advanced, scientific modules), __main__ interface layer (cli_main, REPL, parse_number, run_operation, _format_result, _show_history, MENU_MAP), and all delegation/error-logging flows.

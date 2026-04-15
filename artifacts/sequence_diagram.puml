@@ -9,6 +9,7 @@ participant "parse_number" as Parser
 participant "Calculator\n(execute)" as Calc
 participant "arithmetic\n(operations)" as Arith
 participant "advanced\n(operations)" as Adv
+participant "scientific\n(operations)" as Sci
 participant "math\n(stdlib)" as Math
 participant "logger" as Log
 
@@ -18,7 +19,12 @@ Main -> Main : logging.basicConfig(level=ERROR)
 alt sys.argv has arguments — CLI mode
 
   Main -> CLI : cli_main(sys.argv[1:])
-  note right of CLI: op = args[0]; validates op and operand count
+  note right of CLI
+    op = args[0]
+    all_ops = UNARY_OPS | BINARY_OPS | SCIENTIFIC_UNARY_OPS
+    Validates op and operand count.
+    Scientific ops available without mode switching.
+  end note
 
   alt unknown operation or wrong operand count
     CLI --> User : "Error: ..." message
@@ -29,7 +35,7 @@ alt sys.argv has arguments — CLI mode
     alt op in BINARY_OPS (add/subtract/multiply/divide/power)
       CLI -> Parser : float(args[1]) → a
       CLI -> Parser : float(args[2]) → b
-    else op in UNARY_OPS
+    else op in UNARY_OPS or SCIENTIFIC_UNARY_OPS
       CLI -> Parser : float(args[1]) → a
     end
 
@@ -41,6 +47,8 @@ alt sys.argv has arguments — CLI mode
       For INTEGER_OPS (factorial): calls
       _to_int_if_needed(op, a) internally;
       raises ValueError for non-whole operands.
+      For SCIENTIFIC_UNARY_OPS: passes operand
+      directly — no int coercion.
       On success: history.append({op, operands, result}).
     end note
 
@@ -77,6 +85,22 @@ alt sys.argv has arguments — CLI mode
       else ops using ** operator (square/cube/power)
         Adv --> Calc : result
       end
+    else op in SCIENTIFIC_UNARY_OPS (delegates to scientific)
+      Calc -> Sci : scientific.<op>(x)
+      Sci -> Math : math.<op>(x)
+      alt valid domain (asin/acos: |x| <= 1; others: unrestricted)
+        Math --> Sci : computed result
+        Sci --> Calc : result
+      else invalid domain (asin/acos with |x| > 1)
+        Math --> Sci : raises ValueError
+        Sci --> Calc : re-raises ValueError
+        Calc -> Log : logger.error("<op> error: ...")
+        Calc --> CLI : re-raises ValueError
+        CLI -> Log : logger.error("cli_main <op> failed: ...")
+        CLI --> User : "Error: <exception message>"
+        CLI --> Main : return 1
+        Main -> User : sys.exit(1)
+      end
     end
 
     alt success
@@ -99,12 +123,18 @@ alt sys.argv has arguments — CLI mode
 else no arguments — Interactive REPL mode
 
   Main -> Calc ** : Calculator()
+  Main -> Main : mode = "normal"
   Main --> User : "Welcome to the Calculator!"
 
   loop REPL — repeats until user quits
 
-    Main --> User : print MENU
-    User -> Main : choice (1–12, "h", or "q")
+    alt mode == "normal"
+      Main --> User : print MENU (12 ops + h + m + q)
+    else mode == "scientific"
+      Main --> User : print SCIENTIFIC_MENU (10 ops + h + m + q)
+    end
+
+    User -> Main : choice
 
     alt choice == "q"
       Main --> User : "Goodbye!"
@@ -112,9 +142,22 @@ else no arguments — Interactive REPL mode
     else choice == "h"
       Main -> Main : _show_history(calc)
       Main --> User : numbered history entries or "No history yet."
-    else choice not in MENU_MAP
-      Main --> User : "Unknown choice: ..." message
-    else choice is valid (1–12)
+    else choice == "m"
+      Main -> Main : toggle mode (normal ↔ scientific)
+      Main --> User : "Switched to <mode> mode."
+    else choice not in active MENU_MAP
+      alt mode == "normal"
+        Main --> User : "Unknown choice: ... (1-12, h, m, q)"
+      else mode == "scientific"
+        Main --> User : "Unknown choice: ... (1-10, h, m, q)"
+      end
+    else choice is valid for active mode
+
+      alt mode == "normal" — op from MENU_MAP
+        note right of Main: op in BINARY_OPS or UNARY_OPS
+      else mode == "scientific" — op from SCIENTIFIC_MENU_MAP
+        note right of Main: op in SCIENTIFIC_UNARY_OPS
+      end
 
       alt op in BINARY_OPS (add/subtract/multiply/divide/power)
         Main -> Parser : parse_number("Enter first number: ")
@@ -147,7 +190,7 @@ else no arguments — Interactive REPL mode
             Main --> User : "Error: No valid number entered"
           end
         end
-      else op in UNARY_OPS
+      else op in UNARY_OPS or SCIENTIFIC_UNARY_OPS
         Main -> Parser : parse_number("Enter number: ")
         loop up to MAX_INPUT_ATTEMPTS (3) retries
           Parser --> User : prompt
@@ -171,7 +214,10 @@ else no arguments — Interactive REPL mode
         For INTEGER_OPS (factorial): calls
         _to_int_if_needed(op, a) internally;
         raises ValueError for non-whole operands.
+        For SCIENTIFIC_UNARY_OPS: passes operand
+        directly — no int coercion.
         On success: history.append({op, operands, result}).
+        History is shared across normal and scientific modes.
       end note
 
       alt op in BINARY_OPS (add/subtract/multiply/divide)
@@ -204,6 +250,21 @@ else no arguments — Interactive REPL mode
           end
         else ops using ** operator (square/cube/power)
           Adv --> Calc : result
+        end
+      else op in SCIENTIFIC_UNARY_OPS (delegates to scientific)
+        Calc -> Sci : scientific.<op>(x)
+        Sci -> Math : math.<op>(x)
+        alt valid domain
+          Math --> Sci : computed result
+          Sci --> Calc : result
+        else invalid domain (asin/acos with |x| > 1)
+          Math --> Sci : raises ValueError
+          Sci --> Calc : re-raises ValueError
+          Calc -> Log : logger.error("<op> error: ...")
+          Calc --> Main : re-raises ValueError
+          Main -> Log : logger.error("run_operation <op> failed: ...")
+          Main --> User : "Error: <exception message>"
+          note right of Main: REPL loop continues
         end
       end
 

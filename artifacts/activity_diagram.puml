@@ -11,8 +11,12 @@ if (sys.argv has arguments?) then (yes — CLI mode)
   :cli_main(sys.argv[1:]);
 
   :op = args[0];
+  note right
+    all_ops = UNARY_OPS | BINARY_OPS | SCIENTIFIC_UNARY_OPS
+    Scientific ops available in CLI without mode switching.
+  end note
 
-  if (op known?) then (no)
+  if (op known in all_ops?) then (no)
     :Print usage / "Unknown operation" error;
     :Return exit code 1;
     stop
@@ -27,7 +31,7 @@ if (sys.argv has arguments?) then (yes — CLI mode)
     else (yes)
       :Parse float a, float b from args;
     endif
-  else (no — UNARY_OPS)
+  else (no — UNARY_OPS or SCIENTIFIC_UNARY_OPS)
     if (exactly 1 operand arg?) then (no)
       :Print "requires exactly 1 operand" error;
       :Return exit code 1;
@@ -42,6 +46,8 @@ if (sys.argv has arguments?) then (yes — CLI mode)
     For INTEGER_OPS (factorial): calls
     _to_int_if_needed internally — raises
     ValueError if operand is not a whole number.
+    For SCIENTIFIC_UNARY_OPS: passes operand
+    directly (no int coercion).
     On success, appends history entry.
 
     Internally Calculator delegates to
@@ -50,6 +56,8 @@ if (sys.argv has arguments?) then (yes — CLI mode)
       (add/subtract/multiply/divide)
     - UNARY_OPS → advanced module
       (factorial/square/cube/sqrt/cbrt/power/log/ln)
+    - SCIENTIFIC_UNARY_OPS → scientific module
+      (sin/cos/tan/asin/acos/atan/sinh/cosh/tanh/exp)
   end note
 
   :calc.execute(op, a [, b]);
@@ -74,11 +82,17 @@ if (sys.argv has arguments?) then (yes — CLI mode)
 else (no — Interactive REPL mode)
 
   :Instantiate Calculator();
+  :mode = "normal";
   :Print "Welcome to the Calculator!";
 
   repeat
 
-    :Print MENU (12 operations + h + quit);
+    if (mode == "normal"?) then (yes)
+      :Print MENU (12 operations + h + m + quit);
+    else (no — scientific)
+      :Print SCIENTIFIC_MENU (10 ops + h + m + quit);
+    endif
+
     :Read user choice via input();
 
     if (choice == "q"?) then (yes)
@@ -91,47 +105,71 @@ else (no — Interactive REPL mode)
       :_show_history(calc)\nprint numbered history entries;
     else (no)
 
-      :Look up op = MENU_MAP.get(choice);
-
-      if (op is None?) then (yes)
-        :Print "Unknown choice" error message;
+      if (choice == "m"?) then (yes)
+        if (mode == "normal"?) then (yes)
+          :mode = "scientific";
+        else (no)
+          :mode = "normal";
+        endif
+        :Print "Switched to <mode> mode.";
       else (no)
 
-        note right
-          parse_number() retries up to
-          MAX_INPUT_ATTEMPTS (3) times;
-          prints remaining-attempts feedback
-          on each invalid entry; raises
-          ValueError after all attempts fail.
-          calc.execute() handles INTEGER_OPS
-          int coercion via _to_int_if_needed.
-
-          Calculator delegates to operations
-          sub-package modules internally:
-          arithmetic.py for binary ops,
-          advanced.py for unary/power ops.
-        end note
-
-        if (op in BINARY_OPS?) then (yes)
-          :parse_number() → a (first operand);
-          :parse_number() → b (second operand);
-        else (no — UNARY_OPS)
-          :parse_number() → a;
+        if (mode == "normal"?) then (yes)
+          :op = MENU_MAP.get(choice);
+          if (op is None?) then (yes)
+            :Print "Unknown choice" (range 1-12, h, m, q);
+          else (no)
+          endif
+        else (no — scientific mode)
+          :op = SCIENTIFIC_MENU_MAP.get(choice);
+          if (op is None?) then (yes)
+            :Print "Unknown choice" (range 1-10, h, m, q);
+          else (no)
+          endif
         endif
 
-        :calc.execute(op, a [, b]);
+        if (op is not None?) then (yes)
 
-        if (ValueError or ZeroDivisionError raised?) then (yes)
           note right
-            Calculator methods (divide, factorial,
-            square_root, log, ln) log at ERROR level
-            before re-raising; run_operation also
-            logs the caught exception via logger.error.
+            parse_number() retries up to
+            MAX_INPUT_ATTEMPTS (3) times;
+            prints remaining-attempts feedback
+            on each invalid entry; raises
+            ValueError after all attempts fail.
+            calc.execute() handles INTEGER_OPS
+            int coercion via _to_int_if_needed.
+            SCIENTIFIC_UNARY_OPS skip int coercion.
+
+            Calculator delegates to operations
+            sub-package modules internally:
+            arithmetic.py for binary ops,
+            advanced.py for unary/power ops,
+            scientific.py for scientific ops.
           end note
-          :logger.error("run_operation <op> failed: ...");
-          :Print "Error: <exception message>";
-        else (no)
-          :Print "Result: <value>";
+
+          if (op in BINARY_OPS?) then (yes)
+            :parse_number() → a (first operand);
+            :parse_number() → b (second operand);
+          else (no — UNARY_OPS or SCIENTIFIC_UNARY_OPS)
+            :parse_number() → a;
+          endif
+
+          :calc.execute(op, a [, b]);
+
+          if (ValueError or ZeroDivisionError raised?) then (yes)
+            note right
+              Calculator methods (divide, factorial,
+              square_root, log, ln, asin, acos) log
+              at ERROR level before re-raising;
+              run_operation also logs the caught
+              exception via logger.error.
+            end note
+            :logger.error("run_operation <op> failed: ...");
+            :Print "Error: <exception message>";
+          else (no)
+            :Print "Result: <value>";
+          endif
+
         endif
 
       endif
