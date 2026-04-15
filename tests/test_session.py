@@ -19,7 +19,8 @@ def test_binary_ops_contains_expected():
 
 def test_unary_ops_contains_expected():
     assert UNARY_OPS == {
-        "factorial", "square", "cube", "square_root", "cube_root", "log", "ln"
+        "factorial", "square", "cube", "square_root", "cube_root", "log", "ln",
+        "sin", "cos", "tan", "cot", "asin", "acos",
     }
 
 
@@ -31,8 +32,8 @@ def test_binary_and_unary_are_disjoint():
     assert BINARY_OPS.isdisjoint(UNARY_OPS)
 
 
-def test_all_ops_contains_twelve_operations():
-    assert len(ALL_OPS) == 12
+def test_all_ops_contains_eighteen_operations():
+    assert len(ALL_OPS) == 18
 
 
 # ---------------------------------------------------------------------------
@@ -144,6 +145,51 @@ def test_execute_ln(session):
 def test_execute_ln_negative_raises(session):
     with pytest.raises(ValueError):
         session.execute("ln", -5)
+
+
+def test_execute_sin(session):
+    import math
+    assert session.execute("sin", 90) == pytest.approx(1.0)
+
+
+def test_execute_cos(session):
+    assert session.execute("cos", 0) == pytest.approx(1.0)
+
+
+def test_execute_tan(session):
+    assert session.execute("tan", 45) == pytest.approx(1.0)
+
+
+def test_execute_tan_undefined_raises(session):
+    with pytest.raises(ValueError):
+        session.execute("tan", 90)
+
+
+def test_execute_cot(session):
+    assert session.execute("cot", 45) == pytest.approx(1.0)
+
+
+def test_execute_cot_undefined_raises(session):
+    with pytest.raises(ValueError):
+        session.execute("cot", 0)
+
+
+def test_execute_asin(session):
+    assert session.execute("asin", 1) == pytest.approx(90.0)
+
+
+def test_execute_asin_out_of_domain_raises(session):
+    with pytest.raises(ValueError):
+        session.execute("asin", 2)
+
+
+def test_execute_acos(session):
+    assert session.execute("acos", 0) == pytest.approx(90.0)
+
+
+def test_execute_acos_out_of_domain_raises(session):
+    with pytest.raises(ValueError):
+        session.execute("acos", -2)
 
 
 # ---------------------------------------------------------------------------

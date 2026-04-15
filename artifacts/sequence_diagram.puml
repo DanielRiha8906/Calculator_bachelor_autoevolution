@@ -7,19 +7,20 @@ title Calculator Component Interactions
 
 actor User
 participant "__main__\n(entry point)" as Main
-participant "OPERATIONS\nmap" as Ops
+participant "current_ops\nmap" as Ops
 participant "CalculatorSession" as Session
 participant "Calculator\n(BasicOps + SciOps)" as Calc
 participant "Python Runtime\n/ math module" as Runtime
 
 note over Calc
-  Cycle-12: Calculator inherits all 12 ops from two mixins.
+  Cycle-12: Calculator inherits all 18 ops from two mixins.
   MRO: Calculator → BasicOperations → ScientificOperations → object.
-  add/subtract/multiply/divide  ← BasicOperations (src/operations/basic.py)
-  factorial/square/cube/sqrt/cbrt/power/log/ln ← ScientificOperations (src/operations/scientific.py)
+  add/subtract/multiply/divide              ← BasicOperations (src/operations/basic.py)
+  factorial/square/cube/sqrt/cbrt/power/log/ln
+    /sin/cos/tan/cot/asin/acos             ← ScientificOperations (src/operations/scientific.py)
 end note
 
-== Interactive Session — Normal Binary Operation ==
+== Interactive Session — Startup (Normal Mode) ==
 
 User -> Main : python -m src
 activate Main
@@ -33,11 +34,27 @@ deactivate Calc
 Session --> Main : session instance
 deactivate Session
 
-Main -> Main : display_menu()
-Main --> User : prints 12 operations + "h. history" + "q. quit"
+Main -> Main : current_mode = "Normal"\ncurrent_ops = NORMAL_OPERATIONS
+Main -> Main : display_menu(NORMAL_OPERATIONS, "Normal")
+Main --> User : "Mode: Normal"\n6 operations (add–square_root) + "m. switch mode" + "h. history" + "q. quit"
+
+== Interactive Session — Mode Switch to Scientific ==
+
+User -> Main : enter choice "m"
+Main --> User : "Select mode:\n  1. Normal\n  2. Scientific"
+User -> Main : "2"
+Main -> Main : current_mode = "Scientific"\ncurrent_ops = SCIENTIFIC_OPERATIONS
+Main -> Main : display_menu(SCIENTIFIC_OPERATIONS, "Scientific")
+Main --> User : "Mode: Scientific"\n18 operations (add–acos) + "m. switch mode" + "h. history" + "q. quit"
+note right of Main
+  Mode switch does NOT reset session history.
+  Unknown mode choice retains current mode with a warning.
+end note
+
+== Interactive Session — Normal Binary Operation ==
 
 User -> Main : enter choice "1" (add)
-Main -> Ops : lookup "1"
+Main -> Ops : lookup "1" in current_ops
 Ops --> Main : ("add", arity=2)
 
 Main --> User : "Enter first number: "
@@ -62,10 +79,10 @@ deactivate Session
 
 Main --> User : "Result: 15"
 
-== Interactive Session — Normal Unary Operation ==
+== Interactive Session — Scientific Unary Operation (factorial) ==
 
-User -> Main : enter choice "5" (factorial)
-Main -> Ops : lookup "5"
+User -> Main : enter choice "7" (factorial, Scientific mode)
+Main -> Ops : lookup "7" in current_ops
 Ops --> Main : ("factorial", arity=1)
 
 Main --> User : "Enter integer: "
@@ -88,15 +105,40 @@ deactivate Session
 
 Main --> User : "Result: 120"
 
+== Interactive Session — Scientific Trig Operation (sin) ==
+
+User -> Main : enter choice "13" (sin, Scientific mode)
+Main -> Ops : lookup "13" in current_ops
+Ops --> Main : ("sin", arity=1)
+
+Main --> User : "Enter number: "
+User -> Main : "90"
+Main -> Main : get_number("Enter number:")
+
+Main -> Session : session.execute("sin", 90)
+activate Session
+Session -> Calc : _calc.sin(90)
+note right: dispatch via ScientificOperations.sin (MRO)
+activate Calc
+Calc -> Runtime : math.sin(math.radians(90))
+Runtime --> Calc : 1.0
+Calc --> Session : 1.0
+deactivate Calc
+Session -> Session : _history.append("sin(90) = 1.0")
+Session --> Main : 1.0
+deactivate Session
+
+Main --> User : "Result: 1.0"
+
 == Interactive Session — History Display ==
 
 User -> Main : enter choice "h"
 Main -> Session : session.history()
 activate Session
-Session --> Main : ["add(10, 5) = 15", "factorial(5) = 120"]
+Session --> Main : ["add(10, 5) = 15", "factorial(5) = 120", "sin(90) = 1.0"]
 deactivate Session
 alt history is not empty
-    Main --> User : "Session history:"\n  "add(10, 5) = 15"\n  "factorial(5) = 120"
+    Main --> User : "Session history:"\n  "add(10, 5) = 15"\n  "factorial(5) = 120"\n  "sin(90) = 1.0"
 else history is empty
     Main --> User : "No history yet."
 end
@@ -345,8 +387,18 @@ deactivate Calc
 
 Tests -> Tests : assert power(2, 10) == 1024 ✓
 
+Tests -> Calc : calc.sin(90)
+activate Calc
+note right: ScientificOperations.sin via MRO
+Calc -> Runtime : math.sin(math.radians(90))
+Runtime --> Calc : 1.0
+Calc --> Tests : 1.0
+deactivate Calc
+
+Tests -> Tests : assert sin(90) == approx(1.0) ✓
+
 == Unit Tests — CalculatorSession (test_session.py) ==
-note over Tests: 37 tests total
+note over Tests: 49 tests total
 
 participant "session\nfixture" as SessFixture
 
@@ -391,7 +443,7 @@ deactivate Session
 Tests -> Tests : assert len(history) == 1 ✓
 
 == Unit Tests — Interactive CLI (test_main.py) ==
-note over Tests: 56 tests total
+note over Tests: 80+ tests total
 
 participant "mock\nstdin/stdout" as MockIO
 
@@ -400,24 +452,27 @@ Tests -> MockIO : patch builtins.print (capture)
 
 Tests -> Main : main()
 activate Main
-Main -> MockIO : input() → "8" (square_root)
-Main -> Ops : lookup "8"
-Ops --> Main : ("square_root", arity=1)
-Main -> MockIO : input("Enter number: ") → "9"
-Main -> Session : session.execute("square_root", 9)
+Main -> MockIO : input() → "m" (mode switch)
+Main -> MockIO : input("Enter mode number: ") → "2"
+Main -> Main : current_mode = "Scientific"\ncurrent_ops = SCIENTIFIC_OPERATIONS
+Main -> MockIO : input() → "13" (sin, Scientific mode)
+Main -> Ops : lookup "13"
+Ops --> Main : ("sin", arity=1)
+Main -> MockIO : input("Enter number: ") → "90"
+Main -> Session : session.execute("sin", 90)
 activate Session
-Session -> Calc : _calc.square_root(9)
+Session -> Calc : _calc.sin(90)
 activate Calc
-Calc --> Session : 3.0
+Calc --> Session : 1.0
 deactivate Calc
-Session --> Main : 3.0
+Session --> Main : 1.0
 deactivate Session
-Main -> MockIO : print("Result: 3.0")
+Main -> MockIO : print("Result: 1.0")
 Main -> MockIO : input() → "q"
 Main -> MockIO : print("Goodbye!")
 deactivate Main
 
-Tests -> MockIO : assert "Result: 3.0" in captured output ✓
+Tests -> MockIO : assert "Result: 1.0" in captured output ✓
 
 == Unit Tests — Bash CLI (test_cli.py) ==
 note over Tests: 34 tests total

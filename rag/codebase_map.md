@@ -13,25 +13,26 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## `src/__main__.py`
-- **Purpose:** Interactive CLI entry point for the Calculator with per-session history and error logging.
-- **Exports:** `main()`, `display_menu()`, `get_number()`, `get_number_with_retry()`, `format_history_entry()`, `save_history()`, `OPERATIONS`, `MAX_ATTEMPTS`, `HISTORY_FILE`
+- **Purpose:** Interactive CLI entry point for the Calculator with Normal/Scientific mode switching, per-session history, and error logging.
+- **Exports:** `main()`, `display_menu()`, `get_number()`, `get_number_with_retry()`, `format_history_entry()`, `save_history()`, `NORMAL_OPERATIONS`, `SCIENTIFIC_OPERATIONS`, `MAX_ATTEMPTS`, `HISTORY_FILE`
 - **Public API:**
-  - `OPERATIONS: dict[str, tuple[str, int]]` — maps menu key to `(operation_name, arity)`; covers all 12 operations
+  - `NORMAL_OPERATIONS: dict[str, tuple[str, int]]` — maps menu key to `(operation_name, arity)` for Normal mode: add(1), subtract(2), multiply(3), divide(4), square(5), square_root(6)
+  - `SCIENTIFIC_OPERATIONS: dict[str, tuple[str, int]]` — full 18-operation set for Scientific mode; keys 1-4 are the same as Normal; adds cube(8), cube_root(9), factorial(7), power(10), log(11), ln(12), sin(13), cos(14), tan(15), cot(16), asin(17), acos(18)
   - `MAX_ATTEMPTS: int` — maximum failed input attempts before session termination (currently 5)
   - `HISTORY_FILE: str` — path where session history is written on session end (default `"history.txt"`)
-  - `display_menu() -> None` — prints the numbered operation menu; includes 'h. history' and 'q. quit' options
+  - `display_menu(operations=None, mode_name="Normal") -> None` — prints mode name and available operations; includes 'm. switch mode', 'h. history', 'q. quit'
   - `get_number(prompt, require_int=False) -> int | float` — reads one number from stdin; raises `ValueError` for non-numeric or (when `require_int=True`) non-integer input
   - `get_number_with_retry(prompt, require_int=False) -> int | float` — wraps `get_number` with retry logic; raises `_SessionExpired` after MAX_ATTEMPTS failures; each failed attempt calls `log_error("interactive", ...)`
-  - `format_history_entry(name, args, result) -> str` — delegates to `CalculatorSession.format_entry`; kept for backward compatibility with existing tests
+  - `format_history_entry(name, args, result) -> str` — delegates to `CalculatorSession.format_entry`
   - `save_history(history, path=None) -> None` — writes history list to `path` (or `HISTORY_FILE` if None); overwrites any previous content so each session starts fresh
-  - `main() -> None` — runs the interactive session loop until the user enters 'q' or retries are exhausted; delegates computation and history to `CalculatorSession`; on 'h' displays current session history; on quit/expiry writes history to HISTORY_FILE
+  - `main() -> None` — runs the interactive session loop; starts in Normal mode; 'm' prompts mode selection (1=Normal, 2=Scientific); 'h' displays history; 'q' or max-attempts exits; delegates computation and history to `CalculatorSession`
 - **Invariants:**
+  - Session starts in Normal mode; mode switch does not reset session history.
+  - Unknown mode choice in the mode-select prompt prints a warning and retains the current mode.
   - `main()` creates a `CalculatorSession` to handle all operation dispatch and history recording; does not interact with `Calculator` directly.
-  - `format_history_entry` delegates to `CalculatorSession.format_entry`; it remains a module-level function so existing test imports are stable.
   - `save_history` is called on every exit path (normal quit, max-invalid-ops, `_SessionExpired`).
   - `save_history` reads `HISTORY_FILE` at call time (not as a default arg default) so tests can patch it.
-  - All other invariants from cycle 9 remain unchanged (retry logic, error logging, session termination).
-- **Last updated:** cycle 11 (issue-271)
+- **Last updated:** cycle 14 (issue-281)
 
 ---
 
@@ -68,7 +69,7 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## `src/operations/scientific.py`
-- **Purpose:** `ScientificOperations` mixin class; advanced operations beyond basic arithmetic.  Collected here to establish the structural boundary between normal and scientific functionality.
+- **Purpose:** `ScientificOperations` mixin class; advanced operations beyond basic arithmetic, including trigonometric functions (all in degrees).
 - **Public API:**
   - `ScientificOperations.factorial(n: int) -> int` — `n!`; raises `TypeError` for non-int/bool, `ValueError` for negative.
   - `ScientificOperations.square(x) -> float` — `x * x`
@@ -78,11 +79,17 @@ Per-file summaries: purpose, public API surface, key invariants.
   - `ScientificOperations.power(base, exp) -> float` — `base ** exp`
   - `ScientificOperations.log(x) -> float` — `math.log10(x)`; raises `ValueError` for `x <= 0`.
   - `ScientificOperations.ln(x) -> float` — `math.log(x)`; raises `ValueError` for `x <= 0`.
+  - `ScientificOperations.sin(x) -> float` — `math.sin(radians(x))`; input in degrees.
+  - `ScientificOperations.cos(x) -> float` — `math.cos(radians(x))`; input in degrees.
+  - `ScientificOperations.tan(x) -> float` — `math.tan(radians(x))`; raises `ValueError` when `cos(x) ≈ 0` (odd multiples of 90°).
+  - `ScientificOperations.cot(x) -> float` — `cos(x)/sin(x)`; raises `ValueError` when `sin(x) ≈ 0` (multiples of 180°).
+  - `ScientificOperations.asin(x) -> float` — `degrees(math.asin(x))`; raises `ValueError` for `|x| > 1`.
+  - `ScientificOperations.acos(x) -> float` — `degrees(math.acos(x))`; raises `ValueError` for `|x| > 1`.
 - **Key invariants:**
-  - Imports `math` at the top.
-  - All domain guards are explicit (before delegating to `math`) for clear error messages.
+  - All trig inputs/outputs are in degrees; `math.radians`/`math.degrees` handle conversion.
+  - Domain guards use `abs(val) < 1e-10` threshold for tan/cot to catch floating-point near-zero.
   - Factorial guards bool before int (since `bool` is a subclass of `int` in Python).
-- **Last updated:** cycle 12 (issue-275)
+- **Last updated:** cycle 14 (issue-281)
 
 ---
 
@@ -104,10 +111,10 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## `tests/test_main.py`
 - **Purpose:** Unit tests for the interactive CLI in `src/__main__.py`.
-- **Current state:** 56 tests covering: OPERATIONS mapping invariants (all 12 ops present, correct arities), `get_number` parsing (int, float, require_int, invalid input), quit behaviour (immediate and case-insensitive), all 12 operations end-to-end through mocked stdin/stdout, error paths (divide-by-zero, sqrt negative, log/ln non-positive, factorial negative/float, non-numeric input), unknown operation key, available-operations listing on invalid op, retry-attempts-remaining message, session termination after MAX_ATTEMPTS invalid operand inputs, session termination after MAX_ATTEMPTS invalid operation selections, session-continues-before-max test, multi-calculation sessions, `format_history_entry` (binary/unary/float), `save_history` (writes/empty/overwrites), session history display ('h' key: empty message, after one/multiple calcs, header), history file written on quit/expiry/empty session, new session starts fresh, display_menu includes 'h' option, error logging for unknown operation/calculation error/invalid operand/clean session.
-- **Test strategy:** `unittest.mock.patch` on `builtins.input` (side_effect list) and `builtins.print` (capture). Helper `run_main_with_inputs` flattens all printed args into a list of strings. `MAX_ATTEMPTS` and `HISTORY_FILE` imported from `src.__main__`. History file tests patch `src.__main__.HISTORY_FILE` and use `tmp_path` fixture to avoid writing real files. Error log path is redirected via autouse `isolate_error_log` fixture from `tests/conftest.py`.
+- **Current state:** 80+ tests covering: NORMAL_OPERATIONS/SCIENTIFIC_OPERATIONS mapping invariants, mode switching (normal→scientific, scientific→normal, unknown mode choice, mode persistence across calculations), all 18 operations end-to-end through mocked stdin/stdout, trig operations (sin, cos, tan, cot, asin, acos), error paths, unknown operation key, retry logic, multi-calculation sessions, format_history_entry, save_history, session history display, history file written on all exit paths, display_menu options (mode/history/switch), error logging.
+- **Test strategy:** `unittest.mock.patch` on `builtins.input` (side_effect list) and `builtins.print` (capture). Helper `run_main_with_inputs` flattens all printed args. Scientific mode tests prefix inputs with `["m", "2", ...]` to switch mode before operation. Keys 1-4 (add/subtract/multiply/divide) are stable across both modes. Key "5"=square, "6"=square_root in both modes; scientific-only ops start at key "7".
 - **Exports:** None
-- **Last updated:** cycle 9 (issue-253)
+- **Last updated:** cycle 14 (issue-281)
 
 ---
 
@@ -150,8 +157,8 @@ Per-file summaries: purpose, public API surface, key invariants.
 - **Exports:** `CalculatorSession`, `BINARY_OPS`, `UNARY_OPS`, `ALL_OPS`
 - **Public API:**
   - `BINARY_OPS: frozenset[str]` — `{"add", "subtract", "multiply", "divide", "power"}`
-  - `UNARY_OPS: frozenset[str]` — `{"factorial", "square", "cube", "square_root", "cube_root", "log", "ln"}`
-  - `ALL_OPS: frozenset[str]` — union of `BINARY_OPS` and `UNARY_OPS`; 12 operations total
+  - `UNARY_OPS: frozenset[str]` — `{"factorial", "square", "cube", "square_root", "cube_root", "log", "ln", "sin", "cos", "tan", "cot", "asin", "acos"}` (18 total with BINARY_OPS)
+  - `ALL_OPS: frozenset[str]` — union of `BINARY_OPS` and `UNARY_OPS`; 18 operations total
   - `CalculatorSession.__init__()` — creates a private `Calculator` instance and empty history list
   - `CalculatorSession.execute(name, *args)` — dispatches `getattr(calc, name)(*args)`, appends formatted entry to history, returns result; propagates `ValueError`/`TypeError`/`ZeroDivisionError` without recording failed calls
   - `CalculatorSession.format_entry(name, args, result) -> str` — static method; returns `"name(arg1, arg2) = result"`
@@ -161,7 +168,7 @@ Per-file summaries: purpose, public API surface, key invariants.
   - Failed `execute()` calls (any exception) do not append to history.
   - `history()` returns a defensive copy; mutations of the returned list do not affect the session.
   - `BINARY_OPS` and `UNARY_OPS` are disjoint; `ALL_OPS` is their union.
-- **Last updated:** cycle 11 (issue-271)
+- **Last updated:** cycle 14 (issue-281)
 
 ---
 
@@ -174,10 +181,10 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## `tests/test_session.py`
 - **Purpose:** Unit tests for `src/session.py`.
-- **Current state:** 37 tests covering: `BINARY_OPS`/`UNARY_OPS`/`ALL_OPS` set contents and disjointness, `format_entry` static method (binary/unary/float), `execute` for all 12 operations (normal inputs + error paths), history lifecycle (empty on init, accumulates on success, not updated on error, defensive copy), `save` (writes entries, empty session, overwrites).
+- **Current state:** 49 tests covering: `BINARY_OPS`/`UNARY_OPS`/`ALL_OPS` set contents (updated to 18 total ops) and disjointness, `format_entry` static method (binary/unary/float), `execute` for all 18 operations including trig (normal inputs + error paths), history lifecycle (empty on init, accumulates on success, not updated on error, defensive copy), `save` (writes entries, empty session, overwrites).
 - **Test strategy:** `session` fixture creates a fresh `CalculatorSession` for each test; `tmp_path` for file I/O tests. Uses `isolate_error_log` autouse fixture from conftest.
 - **Exports:** None
-- **Last updated:** cycle 11 (issue-271)
+- **Last updated:** cycle 14 (issue-281)
 
 ---
 

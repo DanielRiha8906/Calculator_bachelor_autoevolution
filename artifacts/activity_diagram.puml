@@ -18,7 +18,15 @@ start
 
 :Instantiate CalculatorSession;
 note right: session wraps a private Calculator\ninstance and an empty history list
-:display_menu() — print all 12 operations + "h. history" + "q. quit";
+:current_mode = "Normal"\ncurrent_ops = NORMAL_OPERATIONS;
+note right
+  NORMAL_OPERATIONS: keys "1"-"6"
+    add, subtract, multiply, divide, square, square_root
+  SCIENTIFIC_OPERATIONS: keys "1"-"18"
+    all Normal ops plus: factorial, cube, cube_root, power,
+    log, ln, sin, cos, tan, cot, asin, acos
+end note
+:display_menu(current_ops, current_mode) — print mode name + ops + "m. switch mode" + "h. history" + "q. quit";
 note right: invalid_op_attempts = 0
 
 repeat
@@ -35,7 +43,18 @@ repeat
     else (no)
       :Print "Session history:"\nthen each entry;
     endif
-  elseif (choice not in OPERATIONS?) then (yes)
+  elseif (choice.lower() == 'm'?) then (yes)
+    :Print "Select mode: 1. Normal  2. Scientific";
+    :Read mode_choice from stdin;
+    if (mode_choice == "1"?) then (yes)
+      :current_mode = "Normal"\ncurrent_ops = NORMAL_OPERATIONS;
+    elseif (mode_choice == "2"?) then (yes)
+      :current_mode = "Scientific"\ncurrent_ops = SCIENTIFIC_OPERATIONS;
+    else (unknown)
+      :Print "Unknown mode '...'. Keeping <current_mode> mode.";
+    endif
+    :display_menu(current_ops, current_mode);
+  elseif (choice not in current_ops?) then (yes)
     :Increment invalid_op_attempts;
     :log_error("interactive", "unknown operation '...'");
     :Print unknown operation warning\nwith list of available operations;
@@ -45,7 +64,7 @@ repeat
       stop
     endif
   else (no — valid key)
-    :Look up (name, arity) from OPERATIONS;
+    :Look up (name, arity) from current_ops;
 
     if (arity == 1?) then (yes)
       if (name == "factorial"?) then (yes)
@@ -72,7 +91,8 @@ repeat
         add, subtract, multiply, divide
       ScientificOperations (src/operations/scientific.py):
         factorial, square, cube, square_root,
-        cube_root, power, log, ln
+        cube_root, power, log, ln,
+        sin, cos, tan, cot, asin, acos
       Calculator inherits both via MRO.
     end note
     if (Operation is add?) then (yes)
@@ -119,11 +139,39 @@ repeat
       else (no)
         :Compute math.log10(x);
       endif
-    else (ln)
+    elseif (Operation is ln?) then (yes)
       if (x <= 0?) then (yes)
         :Raise ValueError\n(ln undefined for non-positive);
       else (no)
         :Compute math.log(x);
+      endif
+    elseif (Operation is sin?) then (yes)
+      :Compute math.sin(math.radians(x));
+    elseif (Operation is cos?) then (yes)
+      :Compute math.cos(math.radians(x));
+    elseif (Operation is tan?) then (yes)
+      if (abs(cos(x)) < 1e-10?) then (yes)
+        :Raise ValueError\n(tan undefined where cos(x) = 0);
+      else (no)
+        :Compute math.tan(math.radians(x));
+      endif
+    elseif (Operation is cot?) then (yes)
+      if (abs(sin(x)) < 1e-10?) then (yes)
+        :Raise ValueError\n(cot undefined where sin(x) = 0);
+      else (no)
+        :Compute cos(x) / sin(x);
+      endif
+    elseif (Operation is asin?) then (yes)
+      if (|x| > 1?) then (yes)
+        :Raise ValueError\n(asin undefined for |x| > 1);
+      else (no)
+        :Compute math.degrees(math.asin(x));
+      endif
+    else (acos)
+      if (|x| > 1?) then (yes)
+        :Raise ValueError\n(acos undefined for |x| > 1);
+      else (no)
+        :Compute math.degrees(math.acos(x));
       endif
     endif
 
