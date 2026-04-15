@@ -224,6 +224,55 @@ Benefits:
 
 Applied in `src/__main__.py` (issue-281).
 
+## Pattern: separate GUI logic from GUI widgets for testability
+
+When adding a tkinter GUI, extract mode definitions, data structures, and
+utility functions into a widget-free module (e.g. `gui_modes.py`) so they
+can be imported and tested without a display server.  The tkinter-dependent
+module (`gui.py`) imports from the logic module; tests import from the logic
+module directly.
+
+```
+src/gui_modes.py   # no tkinter import — ABC, mode classes, parse_number
+src/gui.py         # imports tkinter AND gui_modes — CalculatorGUI, main()
+tests/test_gui.py  # imports src.gui_modes only — runs in headless CI
+```
+
+Applied in issue-284.
+
+## Pattern: CalculatorMode ABC for extensible mode switching
+
+When a GUI needs to support multiple calculator modes with different
+operation sets, define a shared abstract base class (CalculatorMode) with
+abstract properties `name` and `operations`.  The GUI holds a list of mode
+instances and swaps the active one on user input; no if/else per mode is
+needed in the event handlers.
+
+```python
+class CalculatorMode(ABC):
+    @property
+    @abstractmethod
+    def name(self) -> str: ...
+
+    @property
+    @abstractmethod
+    def operations(self) -> dict[str, tuple[str, int]]: ...
+
+class SimpleMode(CalculatorMode):
+    @property
+    def name(self): return "Simple"
+    @property
+    def operations(self): return {"Add": ("add", 2), ...}
+
+# In CalculatorGUI:
+self._current_mode = self._modes[0]
+# mode switch:
+self._current_mode = chosen_mode
+self._refresh_operations()
+```
+
+Applied in `src/gui_modes.py` and `src/gui.py` (issue-284).
+
 ## Pattern: autouse conftest fixture for cross-cutting side effects
 
 When a feature produces side effects (file writes, network calls) on every error path,
