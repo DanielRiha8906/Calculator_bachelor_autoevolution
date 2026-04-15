@@ -9,7 +9,7 @@
 - **Risks:** Visual appearance depends on font availability; Arial is used as it ships with most desktop environments. Flat relief may look slightly different across OS themes but the colour scheme is explicitly set so the result is consistent.
 - **Tests passed:** Yes — 234/234 (all existing tests unchanged; GUI tests mock tkinter so visual changes are transparent to the test suite).
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md (src/gui.py entry), rag/patterns.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 397.3s | Cost: $1.163722 USD | Turns: 37
 
 ## Run: Diagram Update (2026-04-15)
 
