@@ -4,6 +4,24 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 9 — Issue #253: Error logging for invalid usage and calculation failures
+
+- **Task:** Add error logging to the calculator so that invalid usage and calculation failures are recorded in a dedicated local log file (`error.log`). Cover both interactive mode (`src/__main__.py`) and bash CLI mode (`main.py`). Log: unsupported operations, invalid operand input, incorrect argument counts, runtime calculation errors (ZeroDivisionError, ValueError, TypeError). Keep error logging separate from user-facing session history.
+- **Files changed:**
+  - `src/error_logger.py` (new): `ERROR_LOG_FILE` constant, `log_error(source, message)` function using append-mode file I/O with ISO-8601 timestamps.
+  - `src/__main__.py`: added `from .error_logger import log_error`; added `log_error` calls in `get_number_with_retry` (invalid operand), unknown operation branch, and `(ValueError, TypeError, ZeroDivisionError)` catch block.
+  - `main.py`: added `from src.error_logger import log_error`; added `log_error` calls for no-args, unknown op, wrong arg count (binary/unary), and calculation/operand-parse errors.
+  - `tests/conftest.py` (new): autouse `isolate_error_log` fixture patches `src.error_logger.ERROR_LOG_FILE` to `tmp_path` for every test.
+  - `tests/test_error_logger.py` (new): 7 tests for the logger module.
+  - `tests/test_main.py`: added 4 error-logging tests (unknown op logged, calculation error logged, invalid operand logged, clean session no log entries).
+  - `tests/test_cli.py`: added 6 error-logging tests (unknown op, wrong arg count binary/unary, calculation error, non-numeric operand, clean run).
+- **Test result:** 173 passed (was 156)
+- **Key decisions:** Used direct file append I/O rather than Python's `logging` module to keep the implementation simple, consistent with `save_history`, and easy to patch in tests. Module-level `ERROR_LOG_FILE` constant (looked up at call time) enables `patch("src.error_logger.ERROR_LOG_FILE", ...)` in tests. Autouse conftest fixture isolates log writes without requiring individual tests to be modified. Error logging is strictly additive — no changes to user-facing output or history behaviour.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 8 — Issue #250: Session history for interactive CLI
 
 - **Task:** Add operation history to the calculator so calculations performed during the current session are tracked and can be shown on request. Record entries in function-style format (`name(args) = result`). Write history to `history.txt` on session end; start each new session with a fresh history.

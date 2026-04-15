@@ -197,3 +197,62 @@ def test_non_numeric_operand_exits_1(capsys):
     code, out, err = run_cli(["add", "five", "7"], capsys)
     assert code == 1
     assert "Error" in err
+
+
+# ---------------------------------------------------------------------------
+# Error logging — CLI mode writes to error.log
+# ---------------------------------------------------------------------------
+
+import os
+
+
+def test_unknown_operation_is_logged(isolate_error_log, capsys):
+    run_cli(["unknown_op", "5"], capsys)
+    assert os.path.exists(isolate_error_log)
+    with open(isolate_error_log, encoding="utf-8") as fh:
+        content = fh.read()
+    assert "[cli]" in content
+    assert "unknown operation 'unknown_op'" in content
+
+
+def test_wrong_arg_count_binary_is_logged(isolate_error_log, capsys):
+    run_cli(["add", "5"], capsys)
+    assert os.path.exists(isolate_error_log)
+    with open(isolate_error_log, encoding="utf-8") as fh:
+        content = fh.read()
+    assert "[cli]" in content
+    assert "add" in content
+
+
+def test_wrong_arg_count_unary_is_logged(isolate_error_log, capsys):
+    run_cli(["square"], capsys)
+    assert os.path.exists(isolate_error_log)
+    with open(isolate_error_log, encoding="utf-8") as fh:
+        content = fh.read()
+    assert "[cli]" in content
+    assert "square" in content
+
+
+def test_calculation_error_is_logged(isolate_error_log, capsys):
+    run_cli(["divide", "5", "0"], capsys)
+    assert os.path.exists(isolate_error_log)
+    with open(isolate_error_log, encoding="utf-8") as fh:
+        content = fh.read()
+    assert "[cli]" in content
+    assert "divide" in content
+
+
+def test_non_numeric_operand_is_logged(isolate_error_log, capsys):
+    run_cli(["add", "five", "7"], capsys)
+    assert os.path.exists(isolate_error_log)
+    with open(isolate_error_log, encoding="utf-8") as fh:
+        content = fh.read()
+    assert "[cli]" in content
+
+
+def test_successful_operation_does_not_write_error_log(isolate_error_log, capsys):
+    run_cli(["add", "3", "4"], capsys)
+    if os.path.exists(isolate_error_log):
+        with open(isolate_error_log, encoding="utf-8") as fh:
+            content = fh.read()
+        assert content == ""

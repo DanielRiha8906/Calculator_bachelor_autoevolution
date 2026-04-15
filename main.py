@@ -21,6 +21,7 @@ Exit codes:
 import sys
 
 from src.calculator import Calculator
+from src.error_logger import log_error
 
 # Maps operation name to arity (number of operands required).
 _BINARY_OPS = {"add", "subtract", "multiply", "divide", "power"}
@@ -69,12 +70,14 @@ def main(argv: list[str] | None = None) -> int:
         argv = sys.argv[1:]
 
     if not argv:
+        log_error("cli", "no arguments provided")
         print(_USAGE, file=sys.stderr)
         return 1
 
     operation = argv[0]
 
     if operation not in _ALL_OPS:
+        log_error("cli", f"unknown operation '{operation}'")
         print(f"Error: unknown operation '{operation}'.", file=sys.stderr)
         print(_USAGE, file=sys.stderr)
         return 1
@@ -83,6 +86,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if is_binary:
         if len(argv) != 3:
+            log_error("cli", f"'{operation}' requires two operands, got {len(argv) - 1}")
             print(
                 f"Error: '{operation}' requires exactly two operands.",
                 file=sys.stderr,
@@ -91,6 +95,7 @@ def main(argv: list[str] | None = None) -> int:
             return 1
     else:
         if len(argv) != 2:
+            log_error("cli", f"'{operation}' requires one operand, got {len(argv) - 1}")
             print(
                 f"Error: '{operation}' requires exactly one operand.",
                 file=sys.stderr,
@@ -111,6 +116,7 @@ def main(argv: list[str] | None = None) -> int:
             a = _parse_operand(argv[1], require_int=require_int)
             result = method(a)
     except (ValueError, TypeError, ZeroDivisionError) as exc:
+        log_error("cli", f"error in '{operation}': {exc}")
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 

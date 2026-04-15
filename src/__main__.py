@@ -1,4 +1,5 @@
 from .calculator import Calculator
+from .error_logger import log_error
 
 # Maps menu keys to (operation_name, arity) pairs.
 # arity=1 means one operand; arity=2 means two operands.
@@ -107,6 +108,7 @@ def get_number_with_retry(prompt: str, require_int: bool = False):
             return get_number(prompt, require_int=require_int)
         except ValueError as exc:
             remaining = MAX_ATTEMPTS - attempt
+            log_error("interactive", f"invalid operand input: {exc}")
             print(f"Error: {exc}")
             if remaining > 0:
                 print(f"Please try again ({remaining} attempt(s) remaining).")
@@ -157,6 +159,7 @@ def main() -> None:
 
         if choice not in OPERATIONS:
             invalid_op_attempts += 1
+            log_error("interactive", f"unknown operation '{choice}'")
             available = ", ".join(
                 f"{k}. {v[0]}"
                 for k, v in sorted(OPERATIONS.items(), key=lambda item: int(item[0]))
@@ -191,6 +194,7 @@ def main() -> None:
             save_history(history)
             break
         except (ValueError, TypeError, ZeroDivisionError) as exc:
+            log_error("interactive", f"calculation error in {name}: {exc}")
             print(f"Error: {exc}")
 
 
