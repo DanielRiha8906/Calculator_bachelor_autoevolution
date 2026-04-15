@@ -1,3 +1,26 @@
+## Run: issue-284 — GUI — Expert/generic
+
+- **Branch:** exp3/issue-284-tkinter-gui
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/gui_modes.py` (new) — `CalculatorMode` ABC, `SimpleMode`, `ScientificMode`, `parse_number`; no tkinter dependency
+  - `src/gui.py` (new) — `CalculatorGUI` tkinter controller; delegates all computation to `CalculatorSession`
+  - `gui.py` (new) — root-level launcher (`python gui.py`)
+  - `tests/test_gui.py` (new) — 42 tests for mode classes and `parse_number`; no display required
+  - `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md` — updated for cycle 15
+  - `progress.md` — this entry
+- **Purpose:** Add tkinter GUI (issue-284). Reuses `CalculatorSession` for all computation; OOP mode design via `CalculatorMode` ABC; Simple and Scientific modes kept in separate subclasses; GUI layer contains no arithmetic logic.
+- **Risks:** Tkinter requires a display at runtime; tests avoid this by importing `gui_modes` rather than `gui`. The GUI does not persist session history to disk (no `save()` call on close) — consistent with the existing interactive CLI behaviour during a session.
+- **Tests passed:** 278 / 278
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/patterns.md`, `rag/evolution_log.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-issue-281)
 
 - **Branch:** exp3/issue-281-scientific-mode
