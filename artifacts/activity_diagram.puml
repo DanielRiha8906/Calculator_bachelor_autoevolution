@@ -67,6 +67,14 @@ repeat
     endif
 
     |Calculator Computation|
+    note right
+      BasicOperations (src/operations/basic.py):
+        add, subtract, multiply, divide
+      ScientificOperations (src/operations/scientific.py):
+        factorial, square, cube, square_root,
+        cube_root, power, log, ln
+      Calculator inherits both via MRO.
+    end note
     if (Operation is add?) then (yes)
       :Compute a + b;
     elseif (Operation is subtract?) then (yes)

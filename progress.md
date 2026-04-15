@@ -1,3 +1,23 @@
+## Run: update-diagrams — PlantUML diagram update (post-issue-275)
+
+- **Branch:** exp3/issue-275-modularization
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `src/operations/` package with `BasicOperations` (add/subtract/multiply/divide) and `ScientificOperations` (factorial/square/cube/square_root/cube_root/power/log/ln) classes; updated `Calculator` to show it defines no own methods and inherits via MRO; added inheritance arrows `Calculator --|> BasicOperations` and `Calculator --|> ScientificOperations`; added `OpsInit` re-export dashed links; updated Calculator note to explain cycle-12 modularization; added separate notes for each mixin
+  - `artifacts/activity_diagram.puml` — added explanatory note in "Calculator Computation" swimlane listing which operations come from `BasicOperations` vs `ScientificOperations`; all logic branches unchanged
+  - `artifacts/sequence_diagram.puml` — added top-of-diagram note explaining the MRO composition of `Calculator`; updated participant label to `Calculator\n(BasicOps + SciOps)`; added `note right: dispatch via BasicOperations.xxx (MRO)` and `note right: dispatch via ScientificOperations.xxx (MRO)` annotations on key dispatch calls throughout all sections
+- **Purpose:** Sync PlantUML diagrams with cycle-12 changes (issue-275): `Calculator` was modularized into `BasicOperations` and `ScientificOperations` mixins in `src/operations/`. Diagrams were stale — they showed `Calculator` with all 12 methods defined directly on it, with no representation of the new `src/operations/` package structure or inheritance hierarchy.
+- **Risks:** None — diagram-only change, no source code modified.
+- **Tests passed:** N/A (diagrams only)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: issue-275 — Modularization — Expert/generic
 
 - **Branch:** exp3/issue-275-modularization
