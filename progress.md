@@ -2,6 +2,26 @@
 
 ## Run: Diagram Update (2026-04-15)
 
+- **Branch:** exp3/issue-273-modularization
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 11 (modularization) changes: added `src.operations` package to class diagram with `arithmetic`, `advanced`, and `scientific` modules and their exported functions; added delegation relationships from Calculator to arithmetic (add/subtract/multiply/divide) and advanced (factorial/square/cube/square_root/cube_root/power/log/ln); updated notes on divide, factorial, sqrt, log, ln to mention delegation; added module-level notes for arithmetic, advanced, and scientific; updated activity diagram notes to describe delegation to operations sub-package; added `arithmetic` and `advanced` participants to sequence diagram, replacing direct Calculator→Math delegation with Calculator→arithmetic/advanced→Math chains for relevant ops; distinguished between ops using math stdlib and those using `**` operator.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: 164.3s | Cost: $0.438746 USD | Turns: 22
+
+## Run: Issue #273 — Modularization (2026-04-15)
+
+- **Branch:** exp3/issue-273-modularization → PR targeting exp3/naive-generic
+- **Files changed:** src/calculator.py, src/operations/__init__.py (new), src/operations/arithmetic.py (new), src/operations/advanced.py (new), src/operations/scientific.py (new), rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
+- **Purpose:** Modularize calculator into an `src/operations/` sub-package and prepare structure for a future scientific mode. Pure operation functions extracted to `arithmetic.py` and `advanced.py`; `scientific.py` stub added as entry point for future scientific ops. Calculator methods now delegate to these pure functions while retaining error logging and history recording.
+- **Risks:** Minimal. Public Calculator API is unchanged; all 149 tests pass without modification. The only structural change is that operation implementations moved from inline methods to external pure functions — behaviour is identical.
+- **Tests passed:** 149/149
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
+Duration: 208.0s | Cost: $0.788847 USD | Turns: 38
+
+## Run: Diagram Update (2026-04-15)
+
 - **Branch:** exp3/issue-269-logic-separation
 - **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
 - **Purpose:** Updated all three PlantUML diagrams to reflect cycle 10 changes: moved UNARY_OPS, BINARY_OPS, INTEGER_OPS, and _to_int_if_needed from __main__ to Calculator (as module-level static members of calculator.py); added Calculator.execute() method with dispatch, _to_int_if_needed, and history-append semantics; removed those symbols from __main__ class entry; updated all relationships and notes in class diagram; removed explicit INTEGER_OPS branch from activity diagram (now handled inside execute()); updated sequence diagram to remove _to_int_if_needed calls from __main__/CLI participants and show them as internal to Calculator.execute(); renamed Parser participant to parse_number only.

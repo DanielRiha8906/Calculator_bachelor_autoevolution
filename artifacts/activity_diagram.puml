@@ -43,6 +43,13 @@ if (sys.argv has arguments?) then (yes — CLI mode)
     _to_int_if_needed internally — raises
     ValueError if operand is not a whole number.
     On success, appends history entry.
+
+    Internally Calculator delegates to
+    src/operations sub-package:
+    - BINARY_OPS → arithmetic module
+      (add/subtract/multiply/divide)
+    - UNARY_OPS → advanced module
+      (factorial/square/cube/sqrt/cbrt/power/log/ln)
   end note
 
   :calc.execute(op, a [, b]);
@@ -98,6 +105,11 @@ else (no — Interactive REPL mode)
           ValueError after all attempts fail.
           calc.execute() handles INTEGER_OPS
           int coercion via _to_int_if_needed.
+
+          Calculator delegates to operations
+          sub-package modules internally:
+          arithmetic.py for binary ops,
+          advanced.py for unary/power ops.
         end note
 
         if (op in BINARY_OPS?) then (yes)
