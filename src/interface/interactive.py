@@ -2,18 +2,20 @@
 
 Exports
 -------
-TooManyAttemptsError : exception raised after too many invalid inputs.
-MAX_ATTEMPTS         : maximum consecutive invalid inputs before session ends.
-OPERATIONS           : mapping of menu keys to operation names.
-_ONE_ARG_OPS         : operations that take one float argument.
-_INT_ARG_OPS         : operations that take one integer argument.
-_TWO_ARG_OPS         : operations that take two float arguments.
-_ALL_OPS             : union of all operation sets.
-_OP_PROMPTS          : prompt strings for each operation (UI layer only).
-show_menu            : print the operation menu.
-parse_number         : prompt for and return a float, with retry logic.
-parse_int            : prompt for and return an int, with retry logic.
-run_operation        : collect inputs, run the operation, print the result.
+TooManyAttemptsError       : exception raised after too many invalid inputs.
+MAX_ATTEMPTS               : maximum consecutive invalid inputs before session ends.
+NORMAL_MODE_OPERATIONS     : mapping of menu keys to basic operation names.
+SCIENTIFIC_MODE_OPERATIONS : mapping of menu keys to all operation names.
+OPERATIONS                 : alias for SCIENTIFIC_MODE_OPERATIONS (backward compat).
+_ONE_ARG_OPS               : operations that take one float argument.
+_INT_ARG_OPS               : operations that take one integer argument.
+_TWO_ARG_OPS               : operations that take two float arguments.
+_ALL_OPS                   : union of all operation sets.
+_OP_PROMPTS                : prompt strings for each operation (UI layer only).
+show_menu                  : print the operation menu for the given mode.
+parse_number               : prompt for and return a float, with retry logic.
+parse_int                  : prompt for and return an int, with retry logic.
+run_operation              : collect inputs, run the operation, print the result.
 """
 from ..calculator import Calculator
 from .history import append_to_error_log
@@ -25,7 +27,14 @@ class TooManyAttemptsError(Exception):
     """Raised when the user exceeds the maximum number of invalid input attempts."""
 
 
-OPERATIONS = {
+NORMAL_MODE_OPERATIONS = {
+    "1": "add",
+    "2": "subtract",
+    "3": "multiply",
+    "4": "divide",
+}
+
+SCIENTIFIC_MODE_OPERATIONS = {
     "1": "add",
     "2": "subtract",
     "3": "multiply",
@@ -39,6 +48,9 @@ OPERATIONS = {
     "11": "log",
     "12": "ln",
 }
+
+# Backward-compatible alias — callers that imported OPERATIONS still work.
+OPERATIONS = SCIENTIFIC_MODE_OPERATIONS
 
 # Operations grouped by arity and argument type.
 _ONE_ARG_OPS = {"square", "cube", "square_root", "cube_root", "ln"}
@@ -65,12 +77,31 @@ _OP_PROMPTS: dict[str, tuple[str, ...]] = {
 }
 
 
-def show_menu() -> None:
-    """Print the operation menu to stdout."""
-    print("\n--- Calculator ---")
-    for key, name in OPERATIONS.items():
+def show_menu(
+    operations: "dict | None" = None,
+    mode: str = "normal",
+) -> None:
+    """Print the operation menu to stdout.
+
+    Parameters
+    ----------
+    operations:
+        Mapping of menu keys to operation names to display.  Defaults to
+        ``NORMAL_MODE_OPERATIONS`` when ``None``.
+    mode:
+        Current mode label shown in the header.  Either ``"normal"`` or
+        ``"scientific"``.  Controls the mode-switch prompt at the bottom.
+    """
+    if operations is None:
+        operations = NORMAL_MODE_OPERATIONS
+    print(f"\n--- Calculator ({mode.title()} Mode) ---")
+    for key, name in operations.items():
         print(f"  {key}. {name}")
     print("  h. show history")
+    if mode == "normal":
+        print("  s. switch to scientific mode")
+    else:
+        print("  s. switch to normal mode")
     print("  q. quit")
 
 

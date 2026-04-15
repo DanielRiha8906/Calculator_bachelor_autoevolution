@@ -19,6 +19,8 @@ from .interface.history import (
 )
 from .interface.interactive import (
     MAX_ATTEMPTS,
+    NORMAL_MODE_OPERATIONS,
+    SCIENTIFIC_MODE_OPERATIONS,
     OPERATIONS,
     TooManyAttemptsError,
     show_menu,
@@ -44,9 +46,11 @@ def main(args: list[str] | None = None) -> None:
     # Interactive loop
     calc = Calculator()
     clear_history()
+    mode = "normal"
+    current_ops = NORMAL_MODE_OPERATIONS
     invalid_op_count = 0
     while True:
-        show_menu()
+        show_menu(current_ops, mode)
         choice = input("Select operation: ").strip().lower()
         if choice == "q":
             print("Goodbye!")
@@ -54,7 +58,17 @@ def main(args: list[str] | None = None) -> None:
         if choice == "h":
             show_history()
             continue
-        if choice not in OPERATIONS:
+        if choice == "s":
+            if mode == "normal":
+                mode = "scientific"
+                current_ops = SCIENTIFIC_MODE_OPERATIONS
+                print("  Switched to scientific mode.")
+            else:
+                mode = "normal"
+                current_ops = NORMAL_MODE_OPERATIONS
+                print("  Switched to normal mode.")
+            continue
+        if choice not in current_ops:
             append_to_error_log(f"invalid_input: '{choice}' is not a valid menu choice")
             invalid_op_count += 1
             remaining = MAX_ATTEMPTS - invalid_op_count
@@ -65,7 +79,7 @@ def main(args: list[str] | None = None) -> None:
             continue
         invalid_op_count = 0
         try:
-            entry = run_operation(calc, OPERATIONS[choice])
+            entry = run_operation(calc, current_ops[choice])
             if entry is not None:
                 append_to_history(entry)
         except TooManyAttemptsError as exc:
