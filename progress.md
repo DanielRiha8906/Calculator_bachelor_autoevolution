@@ -1,5 +1,15 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-15)
+
+- **Branch:** exp3/issue-282-gui-tkinter
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 14 GUI additions. Changes: (1) class_diagram — added CalculatorGUI class with full attribute/method list, added gui <<module>> with launch_gui(), added composition link CalculatorGUI *-- Calculator, added delegation arrow CalculatorGUI ..> Calculator, added lazy-import note on Main, added notes for all new CalculatorGUI methods; (2) activity_diagram — added --gui branch at top (before CLI path) showing launch_gui(), CalculatorGUI init, mainloop, and the full GUI event loop with all button types; (3) sequence_diagram — added CalculatorGUI participant and --gui alt branch covering binary op, unary op, scientific op, clear, toggle_mode, and show_history flows.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Issue #282 — GUI (2026-04-15)
 
 - **Branch:** exp3/issue-282-gui-tkinter

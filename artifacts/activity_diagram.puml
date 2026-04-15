@@ -1,82 +1,225 @@
 @startuml activity_diagram
 
-title Calculator — Execution Flow (CLI + Interactive REPL)
+title Calculator — Execution Flow (GUI, CLI, and Interactive REPL)
 
 start
 
 :logging.basicConfig(level=ERROR);
 
-if (sys.argv has arguments?) then (yes — CLI mode)
+if (sys.argv has arguments?) then (yes)
 
-  :cli_main(sys.argv[1:]);
+  if (sys.argv[1] == "--gui"?) then (yes)
 
-  :op = args[0];
-  note right
-    all_ops = UNARY_OPS | BINARY_OPS | SCIENTIFIC_UNARY_OPS
-    Scientific ops available in CLI without mode switching.
-  end note
-
-  if (op known in all_ops?) then (no)
-    :Print usage / "Unknown operation" error;
-    :Return exit code 1;
-    stop
-  else (yes)
-  endif
-
-  if (op in BINARY_OPS?) then (yes)
-    if (exactly 2 operand args?) then (no)
-      :Print "requires exactly 2 operands" error;
-      :Return exit code 1;
-      stop
-    else (yes)
-      :Parse float a, float b from args;
-    endif
-  else (no — UNARY_OPS or SCIENTIFIC_UNARY_OPS)
-    if (exactly 1 operand arg?) then (no)
-      :Print "requires exactly 1 operand" error;
-      :Return exit code 1;
-      stop
-    else (yes)
-      :Parse float a from args;
-    endif
-  endif
-
-  note right
-    calc.execute() dispatches by op name.
-    For INTEGER_OPS (factorial): calls
-    _to_int_if_needed internally — raises
-    ValueError if operand is not a whole number.
-    For SCIENTIFIC_UNARY_OPS: passes operand
-    directly (no int coercion).
-    On success, appends history entry.
-
-    Internally Calculator delegates to
-    src/operations sub-package:
-    - BINARY_OPS → arithmetic module
-      (add/subtract/multiply/divide)
-    - UNARY_OPS → advanced module
-      (factorial/square/cube/sqrt/cbrt/power/log/ln)
-    - SCIENTIFIC_UNARY_OPS → scientific module
-      (sin/cos/tan/asin/acos/atan/sinh/cosh/tanh/exp)
-  end note
-
-  :calc.execute(op, a [, b]);
-
-  if (ValueError or ZeroDivisionError raised?) then (yes)
     note right
-      Calculator logs at ERROR level
-      before re-raising; cli_main also
-      logs the caught exception via
-      logger.error before printing.
+      Lazy import: from .gui import launch_gui
+      avoids importing tkinter unless GUI is requested.
     end note
-    :logger.error("cli_main <op> failed: ...");
-    :Print "Error: <exception message>";
-    :Return exit code 1;
+
+    :launch_gui();
+
+    fork
+      :tk.Tk() — create root window;
+    fork again
+      :CalculatorGUI(root) — build widgets;
+      note right
+        __init__ creates owned Calculator(),
+        sets mode="normal", _pending_op=None,
+        _first_operand=None, _current_input="".
+        _build_ui() lays out all widget rows:
+          row 0: display labels (expression + result)
+          rows 1-4: digit + binary-op buttons
+          row 5-6: unary op buttons (square, sqrt, etc.)
+          row 7: power, Sci toggle, Hist
+          row 8: sci_frame (10 scientific buttons, hidden)
+      end note
+    end fork
+
+    :root.mainloop() — enter Tk event loop;
+
+    repeat
+
+      :User interaction (button press);
+
+      if (digit or "." pressed?) then (yes)
+        :press_digit(digit);
+        note right
+          Appends to _current_input.
+          Guards against double decimals.
+          Suppresses leading zeros.
+          Updates display_var.
+        end note
+
+      elseif (binary op pressed? (+−×÷xʸ)) then (yes)
+        :set_binary_op(op);
+        note right
+          Stores float(_current_input) as _first_operand.
+          Sets _pending_op.
+          Updates expression_var.
+          Clears _current_input.
+          No-op if input empty.
+        end note
+
+      elseif ("=" pressed?) then (yes)
+        if (_pending_op set AND input non-empty?) then (yes)
+          :b = float(_current_input);
+          :calc.execute(_pending_op, _first_operand, b);
+          if (ValueError or ZeroDivisionError raised?) then (yes)
+            :logger.error("GUI equals failed ...");
+            :display_var = "Error";
+            :expression_var = exc message;
+            :_current_input = "";
+          else (no)
+            :display_var = _format(result);
+            :expression_var = "a op b =";
+            :_current_input = _format(result);
+            :_pending_op = None; _first_operand = None;
+          endif
+        else (no — nothing to do)
+        endif
+
+      elseif (unary op pressed? (x² √ n! x³ ∛ log ln)) then (yes)
+        :execute_unary(op);
+        if (input non-empty?) then (yes)
+          :a = float(_current_input);
+          :calc.execute(op, a);
+          if (ValueError or ZeroDivisionError raised?) then (yes)
+            :logger.error("GUI execute_unary failed ...");
+            :display_var = "Error";
+            :expression_var = exc message;
+            :_current_input = "";
+          else (no)
+            :display_var = _format(result);
+            :expression_var = "op(a) =";
+            :_current_input = _format(result);
+          endif
+        else (no — nothing to do)
+        endif
+
+      elseif (scientific op pressed? (sin cos … exp)) then (yes)
+        note right
+          Scientific ops call execute_unary(op)
+          same as standard unary ops — all dispatch
+          through calc.execute() which routes
+          SCIENTIFIC_UNARY_OPS to scientific module.
+        end note
+        :execute_unary(op);
+        if (input non-empty?) then (yes)
+          :calc.execute(op, float(_current_input));
+          if (error?) then (yes)
+            :display = "Error"; input cleared;
+          else (no)
+            :display = result; input = result;
+          endif
+        endif
+
+      elseif ("C" pressed?) then (yes)
+        :clear();
+        note right
+          Resets _current_input = "".
+          _pending_op = None; _first_operand = None.
+          display_var = "0"; expression_var = "".
+        end note
+
+      elseif ("Sci" button pressed?) then (yes)
+        :toggle_mode();
+        note right
+          "normal" → "scientific": sci_frame.grid() shown.
+          "scientific" → "normal": sci_frame.grid_remove() hidden.
+        end note
+
+      elseif ("Hist" button pressed?) then (yes)
+        :show_history();
+        note right
+          Calls calc.get_history().
+          If empty: messagebox "No history yet."
+          Otherwise: numbered list in messagebox.
+        end note
+
+      else
+        :other event (ignored);
+      endif
+
+    repeat while (window open)
+
     stop
-  else (no)
-    :Print _format_result(result);
-    :Return exit code 0;
-    stop
+
+  else (no — CLI or REPL mode)
+
+    if (sys.argv[1] != "--gui" → other args?) then (yes — CLI mode)
+
+      :cli_main(sys.argv[1:]);
+
+      :op = args[0];
+      note right
+        all_ops = UNARY_OPS | BINARY_OPS | SCIENTIFIC_UNARY_OPS
+        Scientific ops available in CLI without mode switching.
+      end note
+
+      if (op known in all_ops?) then (no)
+        :Print usage / "Unknown operation" error;
+        :Return exit code 1;
+        stop
+      else (yes)
+      endif
+
+      if (op in BINARY_OPS?) then (yes)
+        if (exactly 2 operand args?) then (no)
+          :Print "requires exactly 2 operands" error;
+          :Return exit code 1;
+          stop
+        else (yes)
+          :Parse float a, float b from args;
+        endif
+      else (no — UNARY_OPS or SCIENTIFIC_UNARY_OPS)
+        if (exactly 1 operand arg?) then (no)
+          :Print "requires exactly 1 operand" error;
+          :Return exit code 1;
+          stop
+        else (yes)
+          :Parse float a from args;
+        endif
+      endif
+
+      note right
+        calc.execute() dispatches by op name.
+        For INTEGER_OPS (factorial): calls
+        _to_int_if_needed internally — raises
+        ValueError if operand is not a whole number.
+        For SCIENTIFIC_UNARY_OPS: passes operand
+        directly (no int coercion).
+        On success, appends history entry.
+
+        Internally Calculator delegates to
+        src/operations sub-package:
+        - BINARY_OPS → arithmetic module
+          (add/subtract/multiply/divide)
+        - UNARY_OPS → advanced module
+          (factorial/square/cube/sqrt/cbrt/power/log/ln)
+        - SCIENTIFIC_UNARY_OPS → scientific module
+          (sin/cos/tan/asin/acos/atan/sinh/cosh/tanh/exp)
+      end note
+
+      :calc.execute(op, a [, b]);
+
+      if (ValueError or ZeroDivisionError raised?) then (yes)
+        note right
+          Calculator logs at ERROR level
+          before re-raising; cli_main also
+          logs the caught exception via
+          logger.error before printing.
+        end note
+        :logger.error("cli_main <op> failed: ...");
+        :Print "Error: <exception message>";
+        :Return exit code 1;
+        stop
+      else (no)
+        :Print _format_result(result);
+        :Return exit code 0;
+        stop
+      endif
+
+    endif
+
   endif
 
 else (no — Interactive REPL mode)
