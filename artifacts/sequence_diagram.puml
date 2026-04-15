@@ -37,8 +37,9 @@ alt CLI mode (args non-empty)
                 Main -> ErrorLog : append_to_error_log("invalid_input: ...")
                 Main -> User : stderr: "Error: not a valid integer"\nexit(1)
             else valid
-                Main -> Calc : factorial(n)
+                Main -> Calc : execute("factorial", n)
                 activate Calc
+                note right of Calc : execute dispatches to\nfactorial(n) via getattr
                 alt n is not int or n < 0
                     Calc --> Main : raise ValueError(...)
                     Main -> ErrorLog : append_to_error_log("calculation_error: ...")
@@ -64,8 +65,9 @@ alt CLI mode (args non-empty)
                 Main -> ErrorLog : append_to_error_log("invalid_input: ...")
                 Main -> User : stderr: "Error: not a valid number"\nexit(1)
             else valid
-                Main -> Calc : <operation>(float(values[0]))
+                Main -> Calc : execute(op, float(values[0]))
                 activate Calc
+                note right of Calc : execute dispatches to\n<op>(a) via getattr
                 alt ValueError raised (e.g. sqrt of negative, ln of non-positive)
                     Calc --> Main : raise ValueError(...)
                     Main -> ErrorLog : append_to_error_log("calculation_error: ...")
@@ -89,8 +91,9 @@ alt CLI mode (args non-empty)
                 Main -> ErrorLog : append_to_error_log("invalid_input: ...")
                 Main -> User : stderr: "Error: not a valid number"\nexit(1)
             else all valid
-                Main -> Calc : <operation>(float(values[0]), float(values[1]))
+                Main -> Calc : execute(op, float(values[0]), float(values[1]))
                 activate Calc
+                note right of Calc : execute dispatches to\n<op>(a, b) via getattr
                 alt ValueError raised (e.g. divide-by-zero, invalid log base)
                     Calc --> Main : raise ValueError(...)
                     Main -> ErrorLog : append_to_error_log("calculation_error: ...")
@@ -152,84 +155,51 @@ else interactive mode (no args)
 
             else inputs collected successfully
 
-                group run_operation — two-argument operations (add/subtract/multiply/divide/power/log)
-                    Main -> Calc : add(a, b) / subtract(a, b) / multiply(a, b)
-                    Calc --> Main : a+b / a-b / a*b
+                group run_operation — dispatch via Calculator.execute
+                    note right of Main : run_operation looks up prompts in\n_OP_PROMPTS (UI layer), then calls\ncalc.execute(operation, *args) (logic layer)
 
-                    Main -> Calc : divide(a, b)
-                    activate Calc
-                    alt b == 0
-                        Calc --> Main : raise ValueError("Division by zero is not allowed")
-                        Main -> ErrorLog : append_to_error_log("calculation_error: ...")
-                    else b != 0
-                        Calc --> Main : a / b
+                    alt two-argument operations (add/subtract/multiply/divide/power/log)
+                        Main -> Calc : execute(operation, a, b)
+                        activate Calc
+                        note right of Calc : dispatches to named method\nvia getattr(self, operation)
+                        alt ValueError raised\n(e.g. divide-by-zero b==0,\nlog invalid a or base)
+                            Calc --> Main : raise ValueError(...)
+                            Main -> ErrorLog : append_to_error_log("calculation_error: ...")
+                        else success (add/subtract/multiply/power return directly;\nlog/divide route through math)
+                            Calc -> Math : log(a, base) or factorial(n) [if needed]
+                            Math --> Calc : result
+                            Calc --> Main : result
+                        end
+                        deactivate Calc
+
+                    else one-argument operations (square/cube/square_root/cube_root/ln)
+                        Main -> Calc : execute(operation, a)
+                        activate Calc
+                        note right of Calc : dispatches to named method\nvia getattr(self, operation)
+                        alt ValueError raised\n(e.g. square_root a<0,\nln a<=0)
+                            Calc --> Main : raise ValueError(...)
+                            Main -> ErrorLog : append_to_error_log("calculation_error: ...")
+                        else success (square/cube/cube_root return directly;\nsquare_root/ln route through math)
+                            Calc -> Math : sqrt(a) or log(a) [if needed]
+                            Math --> Calc : result
+                            Calc --> Main : result
+                        end
+                        deactivate Calc
+
+                    else factorial (int-argument operation)
+                        Main -> Calc : execute("factorial", n)
+                        activate Calc
+                        note right of Calc : dispatches to factorial(n)\nvia getattr(self, "factorial")
+                        alt n is not int or n < 0
+                            Calc --> Main : raise ValueError(...)
+                            Main -> ErrorLog : append_to_error_log("calculation_error: ...")
+                        else valid n
+                            Calc -> Math : factorial(n)
+                            Math --> Calc : n!
+                            Calc --> Main : n!
+                        end
+                        deactivate Calc
                     end
-                    deactivate Calc
-
-                    Main -> Calc : power(a, b)
-                    Calc --> Main : a ** b
-
-                    Main -> Calc : log(a, base)
-                    activate Calc
-                    alt a <= 0 or base <= 0 or base == 1
-                        Calc --> Main : raise ValueError(...)
-                        Main -> ErrorLog : append_to_error_log("calculation_error: ...")
-                    else valid inputs
-                        Calc -> Math : log(a, base)
-                        Math --> Calc : result
-                        Calc --> Main : result
-                    end
-                    deactivate Calc
-                end
-
-                group run_operation — one-argument operations (square/cube/square_root/cube_root/ln)
-                    Main -> Calc : square(a)
-                    Calc --> Main : a ** 2
-
-                    Main -> Calc : cube(a)
-                    Calc --> Main : a ** 3
-
-                    Main -> Calc : square_root(a)
-                    activate Calc
-                    alt a < 0
-                        Calc --> Main : raise ValueError("Square root not defined for negative numbers")
-                        Main -> ErrorLog : append_to_error_log("calculation_error: ...")
-                    else a >= 0
-                        Calc -> Math : sqrt(a)
-                        Math --> Calc : result
-                        Calc --> Main : result
-                    end
-                    deactivate Calc
-
-                    Main -> Calc : cube_root(a)
-                    note right: sign-preserving:\n-((-a)**(1/3)) if a < 0
-                    Calc --> Main : result
-
-                    Main -> Calc : ln(a)
-                    activate Calc
-                    alt a <= 0
-                        Calc --> Main : raise ValueError("Natural logarithm not defined for non-positive numbers")
-                        Main -> ErrorLog : append_to_error_log("calculation_error: ...")
-                    else a > 0
-                        Calc -> Math : log(a)
-                        Math --> Calc : result
-                        Calc --> Main : result
-                    end
-                    deactivate Calc
-                end
-
-                group run_operation — factorial
-                    Main -> Calc : factorial(n)
-                    activate Calc
-                    alt n is not int or n < 0
-                        Calc --> Main : raise ValueError(...)
-                        Main -> ErrorLog : append_to_error_log("calculation_error: ...")
-                    else valid n
-                        Calc -> Math : factorial(n)
-                        Math --> Calc : n!
-                        Calc --> Main : n!
-                    end
-                    deactivate Calc
                 end
 
                 alt ValueError raised

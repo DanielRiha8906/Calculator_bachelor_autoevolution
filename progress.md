@@ -2,6 +2,23 @@
 
 ---
 
+## Run: Diagram update (2026-04-15)
+
+- **Branch:** exp3/issue-270-logic-separation
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `execute(operation: str, *args) : any` to `Calculator` class with note describing getattr dispatch; added `_OP_PROMPTS : dict` constant to `__main__` class with note explaining its role as the UI-layer prompt registry.
+  - `artifacts/activity_diagram.puml` — updated `cli_mode` partition: `calc.factorial(n)`, `calc.<operation>(a)`, and `calc.<operation>(a, b)` calls replaced with `calc.execute(op, n)`, `calc.execute(op, a)`, `calc.execute(op, a, b)`; updated `run_operation` partition: "Call Calculator method with parsed input(s)" replaced with `calc.execute(operation, *args) → dispatches to named Calculator method via getattr`.
+  - `artifacts/sequence_diagram.puml` — updated CLI mode alt branches: direct method calls replaced with `execute("factorial", n)`, `execute(op, float(values[0]))`, `execute(op, float(values[0]), float(values[1]))`; replaced the three separate `run_operation` groups (two-arg / one-arg / factorial) with a single unified `run_operation — dispatch via Calculator.execute` group showing `execute(operation, *args)` with internal getattr note; preserved all alt paths and error log calls.
+- **Purpose:** Reflect cycle 10 (issue #270) changes — logic separation via `Calculator.execute` and `_OP_PROMPTS` — in all three PlantUML diagrams.
+- **Risks:** None — diagram-only change; no source code modified.
+- **All tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #270 — Logic Separation (2026-04-15)
 
 - **Branch:** exp3/issue-270-logic-separation

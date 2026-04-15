@@ -20,7 +20,17 @@ class Calculator {
     +power(a, b) : number
     +log(a, base) : float
     +ln(a) : float
+    +execute(operation: str, *args) : any
 }
+
+note right of Calculator::execute
+  Dispatches to the named Calculator method
+  via getattr(self, operation).
+  Raises ValueError for unrecognised or
+  non-callable operation names.
+  Entry point for all operation dispatch
+  from the CLI layer (run_operation, cli_mode).
+end note
 
 note right of Calculator::divide
   Raises ValueError if b == 0
@@ -66,6 +76,7 @@ class "__main__" as Main {
     +_INT_ARG_OPS : set
     +_TWO_ARG_OPS : set
     +_ALL_OPS : set
+    +_OP_PROMPTS : dict
     +clear_history(filepath: str | None) : None
     +append_to_history(entry: str, filepath: str | None) : None
     +show_history(filepath: str | None) : None
@@ -115,6 +126,14 @@ end note
 note right of Main::_TWO_ARG_OPS
   {add, subtract, multiply, divide, power, log}
   — two float arguments
+end note
+
+note right of Main::_OP_PROMPTS
+  Maps each operation name to a tuple of
+  interactive prompt strings (one per arg).
+  Kept in the UI layer so Calculator stays
+  free of display concerns. Used by
+  run_operation to collect user input.
 end note
 
 note right of Main::clear_history
