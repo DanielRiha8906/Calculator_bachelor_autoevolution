@@ -27,7 +27,7 @@ if (args non-empty?) then (yes)
                     stop
                 else (no)
                     :n = int(values[0]);
-                    :result = calc.factorial(n);
+                    :result = calc.execute(op, n);
                 endif
             endif
         elseif (operation in _ONE_ARG_OPS\n{square, cube, square_root, cube_root, ln}?) then (yes)
@@ -40,7 +40,7 @@ if (args non-empty?) then (yes)
                     stop
                 else (no)
                     :a = float(values[0]);
-                    :result = calc.<operation>(a);
+                    :result = calc.execute(op, a);
                 endif
             endif
         else (two-arg op\nadd / subtract / multiply\ndivide / power / log)
@@ -53,7 +53,7 @@ if (args non-empty?) then (yes)
                     stop
                 else (no)
                     :a = float(values[0])\nb = float(values[1]);
-                    :result = calc.<operation>(a, b);
+                    :result = calc.execute(op, a, b);
                 endif
             endif
         endif
@@ -102,7 +102,7 @@ else (no — interactive mode)
                     :parse_number("Enter number:")\nnote: each invalid try → append_to_error_log;\n      up to MAX_ATTEMPTS=3 tries;\nraises TooManyAttemptsError on exhaustion;
                 endif
 
-                :Call Calculator method with parsed input(s);
+                :calc.execute(operation, *args)\n→ dispatches to named Calculator method via getattr;
 
                 if (ValueError raised?\ne.g. divide-by-zero, negative sqrt,\nnegative factorial, invalid log base) then (yes)
                     :append_to_error_log("calculation_error: ...")\nPrint "Error: <message>"\nreturn None;

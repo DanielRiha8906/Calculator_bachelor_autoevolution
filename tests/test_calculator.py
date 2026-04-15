@@ -320,3 +320,34 @@ def test_ln_non_positive_raises(calc):
 def test_ln_negative_raises(calc):
     with pytest.raises(ValueError, match="Natural logarithm is not defined for non-positive numbers"):
         calc.ln(-1)
+
+
+# ---------------------------------------------------------------------------
+# execute (unified dispatch)
+# ---------------------------------------------------------------------------
+
+def test_execute_two_arg_op(calc):
+    """execute routes two-argument operations correctly."""
+    assert calc.execute("add", 3, 4) == 7
+
+
+def test_execute_one_arg_op(calc):
+    """execute routes single-argument operations correctly."""
+    assert calc.execute("square", 5) == 25
+
+
+def test_execute_int_arg_op(calc):
+    """execute routes integer-argument operations correctly."""
+    assert calc.execute("factorial", 5) == 120
+
+
+def test_execute_preserves_value_error(calc):
+    """execute lets ValueError from the underlying method propagate."""
+    with pytest.raises(ValueError, match="Division by zero is not allowed"):
+        calc.execute("divide", 10, 0)
+
+
+def test_execute_unknown_operation_raises(calc):
+    """execute raises ValueError for an unrecognised operation name."""
+    with pytest.raises(ValueError, match="Unknown operation"):
+        calc.execute("nonexistent")

@@ -62,3 +62,18 @@ class Calculator:
             raise ValueError("Natural logarithm is not defined for non-positive numbers")
         return math.log(a)
 
+    def execute(self, operation: str, *args):
+        """Dispatch to the named Calculator method with the given arguments.
+
+        Separates calculation logic from caller code — callers supply an
+        operation name and already-validated arguments; this method routes to
+        the correct Calculator method without the caller needing to know the
+        method directly.
+
+        Raises ValueError for unrecognised or non-callable operation names.
+        """
+        method = getattr(self, operation, None)
+        if method is None or not callable(method):
+            raise ValueError(f"Unknown operation: '{operation}'")
+        return method(*args)
+

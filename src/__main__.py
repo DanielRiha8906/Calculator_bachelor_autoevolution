@@ -28,11 +28,29 @@ OPERATIONS = {
     "12": "ln",
 }
 
-# Operations grouped by arity and argument type for CLI mode.
+# Operations grouped by arity and argument type for CLI mode and input dispatch.
 _ONE_ARG_OPS = {"square", "cube", "square_root", "cube_root", "ln"}
 _INT_ARG_OPS = {"factorial"}
 _TWO_ARG_OPS = {"add", "subtract", "multiply", "divide", "power", "log"}
 _ALL_OPS = _ONE_ARG_OPS | _INT_ARG_OPS | _TWO_ARG_OPS
+
+# Prompt strings for interactive mode, keyed by operation name.
+# Each tuple holds one prompt per required argument, in argument order.
+# Keeping prompts here (UI layer) keeps Calculator free of display concerns.
+_OP_PROMPTS: dict[str, tuple[str, ...]] = {
+    "add":         ("  Enter first number: ",           "  Enter second number: "),
+    "subtract":    ("  Enter first number: ",           "  Enter second number: "),
+    "multiply":    ("  Enter first number: ",           "  Enter second number: "),
+    "divide":      ("  Enter dividend: ",               "  Enter divisor: "),
+    "factorial":   ("  Enter non-negative integer: ",),
+    "square":      ("  Enter number: ",),
+    "cube":        ("  Enter number: ",),
+    "square_root": ("  Enter number: ",),
+    "cube_root":   ("  Enter number: ",),
+    "power":       ("  Enter base: ",                   "  Enter exponent: "),
+    "log":         ("  Enter number: ",                 "  Enter base: "),
+    "ln":          ("  Enter number: ",),
+}
 
 
 def clear_history(filepath: "str | None" = None) -> None:
@@ -137,68 +155,33 @@ def parse_int(prompt: str, max_attempts: int = MAX_ATTEMPTS) -> int:
 def run_operation(calc: Calculator, operation: str) -> "str | None":
     """Collect inputs for *operation*, execute it, and print the result.
 
+    User interaction (prompting) is separated from calculation: prompts are
+    looked up in *_OP_PROMPTS* (UI layer); the actual computation is
+    delegated to *Calculator.execute* (logic layer).
+
     Returns a history entry string (e.g. ``"add(3.0, 4.0) = 7.0"``) on
     success, or ``None`` when the operation fails or is not recognised.
     """
+    if operation not in _OP_PROMPTS:
+        append_to_error_log(f"unsupported_operation: '{operation}'")
+        print(f"  Unknown operation: {operation}")
+        return None
+
     try:
-        if operation == "add":
-            a = parse_number("  Enter first number: ")
-            b = parse_number("  Enter second number: ")
-            result = calc.add(a, b)
-            entry = f"add({a}, {b}) = {result}"
-        elif operation == "subtract":
-            a = parse_number("  Enter first number: ")
-            b = parse_number("  Enter second number: ")
-            result = calc.subtract(a, b)
-            entry = f"subtract({a}, {b}) = {result}"
-        elif operation == "multiply":
-            a = parse_number("  Enter first number: ")
-            b = parse_number("  Enter second number: ")
-            result = calc.multiply(a, b)
-            entry = f"multiply({a}, {b}) = {result}"
-        elif operation == "divide":
-            a = parse_number("  Enter dividend: ")
-            b = parse_number("  Enter divisor: ")
-            result = calc.divide(a, b)
-            entry = f"divide({a}, {b}) = {result}"
-        elif operation == "factorial":
-            n = parse_int("  Enter non-negative integer: ")
-            result = calc.factorial(n)
-            entry = f"factorial({n}) = {result}"
-        elif operation == "square":
-            a = parse_number("  Enter number: ")
-            result = calc.square(a)
-            entry = f"square({a}) = {result}"
-        elif operation == "cube":
-            a = parse_number("  Enter number: ")
-            result = calc.cube(a)
-            entry = f"cube({a}) = {result}"
-        elif operation == "square_root":
-            a = parse_number("  Enter number: ")
-            result = calc.square_root(a)
-            entry = f"square_root({a}) = {result}"
-        elif operation == "cube_root":
-            a = parse_number("  Enter number: ")
-            result = calc.cube_root(a)
-            entry = f"cube_root({a}) = {result}"
-        elif operation == "power":
-            a = parse_number("  Enter base: ")
-            b = parse_number("  Enter exponent: ")
-            result = calc.power(a, b)
-            entry = f"power({a}, {b}) = {result}"
-        elif operation == "log":
-            a = parse_number("  Enter number: ")
-            base = parse_number("  Enter base: ")
-            result = calc.log(a, base)
-            entry = f"log({a}, {base}) = {result}"
-        elif operation == "ln":
-            a = parse_number("  Enter number: ")
-            result = calc.ln(a)
-            entry = f"ln({a}) = {result}"
-        else:
-            append_to_error_log(f"unsupported_operation: '{operation}'")
-            print(f"  Unknown operation: {operation}")
-            return None
+        prompts = _OP_PROMPTS[operation]
+        if operation in _INT_ARG_OPS:
+            n = parse_int(prompts[0])
+            result = calc.execute(operation, n)
+            entry = f"{operation}({n}) = {result}"
+        elif operation in _ONE_ARG_OPS:
+            a = parse_number(prompts[0])
+            result = calc.execute(operation, a)
+            entry = f"{operation}({a}) = {result}"
+        else:  # _TWO_ARG_OPS
+            a = parse_number(prompts[0])
+            b = parse_number(prompts[1])
+            result = calc.execute(operation, a, b)
+            entry = f"{operation}({a}, {b}) = {result}"
         print(f"  Result: {result}")
         return entry
     except ValueError as exc:
@@ -249,7 +232,7 @@ def cli_mode(args: list[str]) -> int:
                 append_to_error_log(f"invalid_input: '{raw[0]}' is not a valid integer")
                 print(f"Error: '{raw[0]}' is not a valid integer.", file=sys.stderr)
                 return 1
-            result = calc.factorial(n)
+            result = calc.execute(op, n)
         elif op in _ONE_ARG_OPS:
             if len(raw) != 1:
                 msg = f"'{op}' requires exactly 1 argument"
@@ -262,7 +245,7 @@ def cli_mode(args: list[str]) -> int:
                 append_to_error_log(f"invalid_input: '{raw[0]}' is not a valid number")
                 print(f"Error: '{raw[0]}' is not a valid number.", file=sys.stderr)
                 return 1
-            result = getattr(calc, op)(a)
+            result = calc.execute(op, a)
         else:  # two-argument operations
             if len(raw) != 2:
                 msg = f"'{op}' requires exactly 2 arguments"
@@ -277,7 +260,7 @@ def cli_mode(args: list[str]) -> int:
                     append_to_error_log(f"invalid_input: '{v}' is not a valid number")
                     print(f"Error: '{v}' is not a valid number.", file=sys.stderr)
                     return 1
-            result = getattr(calc, op)(*parsed)
+            result = calc.execute(op, *parsed)
     except ValueError as exc:
         append_to_error_log(f"calculation_error: {exc}")
         print(f"Error: {exc}", file=sys.stderr)
