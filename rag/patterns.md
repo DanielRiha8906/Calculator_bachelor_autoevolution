@@ -200,6 +200,30 @@ Applied in `src/operations/` (issue-275).  The `BINARY_OPS`/`UNARY_OPS`
 arity metadata is kept separate in `session.py` because arity is a
 session-dispatch concern, not an operation-implementation concern.
 
+## Pattern: mode-keyed operation dicts for multi-mode interactive CLIs
+
+When an interactive CLI needs to support multiple modes with different
+operation sets, define separate dicts for each mode and store the active
+dict in a variable. The loop dispatches against the active dict, and a
+mode-switch command swaps the variable.
+
+```python
+NORMAL_OPERATIONS  = {"1": ("add", 2), "5": ("square", 1), ...}
+SCIENTIFIC_OPERATIONS = {**NORMAL_OPERATIONS, "7": ("factorial", 1), ...}
+
+current_ops = NORMAL_OPERATIONS
+if user_input == "m":
+    current_ops = SCIENTIFIC_OPERATIONS   # or back to NORMAL
+```
+
+Benefits:
+- The loop body is identical for all modes; no if/else per mode.
+- `display_menu(current_ops, mode_name)` always shows exactly the right ops.
+- Tests for basic ops work without mode-switch input (same keys in both modes).
+- Tests for advanced ops prefix inputs with `["m", "2", ...]`.
+
+Applied in `src/__main__.py` (issue-281).
+
 ## Pattern: autouse conftest fixture for cross-cutting side effects
 
 When a feature produces side effects (file writes, network calls) on every error path,

@@ -4,6 +4,22 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 14 — Issue #281: Scientific Mode — Expert/generic
+
+- **Task:** Add Normal and Scientific calculator modes to the interactive CLI. Normal mode exposes add, subtract, multiply, divide, square, square_root. Scientific mode extends Normal with cube, cube_root, factorial, power, log, ln, sin, cos, tan, cot, asin, acos (all trig in degrees). Users switch modes with 'm' without restarting the session.
+- **Files changed:**
+  - `src/operations/scientific.py`: added six trig methods — `sin`, `cos`, `tan`, `cot`, `asin`, `acos` — all in degrees; `tan`/`cot` raise `ValueError` at their undefined points; `asin`/`acos` raise `ValueError` outside `[-1, 1]`.
+  - `src/session.py`: added trig ops to `UNARY_OPS`; `ALL_OPS` grows from 12 to 18.
+  - `src/__main__.py`: replaced single `OPERATIONS` dict with `NORMAL_OPERATIONS` (6 ops, keys 1-6) and `SCIENTIFIC_OPERATIONS` (18 ops, keys 1-18); `display_menu` gains `operations` and `mode_name` params with defaults; `main()` starts in Normal mode, handles 'm' input for mode selection.
+  - `tests/test_main.py`: replaced 56 tests with 80+ tests reflecting mode-based structure; updated all key references; added mode-switching and trig tests.
+  - `tests/test_session.py`: updated `UNARY_OPS`/`ALL_OPS` assertions; added 12 trig-operation tests; total now ~49.
+- **Test result:** 237 passed
+- **Key decisions:** Keys 1-4 (basic arithmetic) and 5-6 (square/sqrt) are identical in both modes so basic-op tests needed no mode-switch prefix. Scientific-only ops start at key 7. Trig functions use degrees (not radians) for user-friendliness. `tan(90°)` and `cot(0°)` raise `ValueError` using a `1e-10` near-zero guard on the co-function value. `OPERATIONS` alias was removed; callers now import `NORMAL_OPERATIONS` or `SCIENTIFIC_OPERATIONS` explicitly.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 13 — Issue #278: Documentation — Expert/generic
 
 - **Task:** Add written documentation for the calculator application so users and developers can understand how to run, use, and maintain the current version. Document available operations, interactive mode, bash CLI mode, session history and error logging behavior, and the current code structure after the modularization refactor.
