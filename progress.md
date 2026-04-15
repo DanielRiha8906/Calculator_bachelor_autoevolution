@@ -2,6 +2,25 @@
 
 ---
 
+## Run: Issue #302 — GUI layout improvement (2026-04-15)
+
+- **Branch:** exp3/issue-302-improve-gui-layout
+- **PR target:** exp3/structured-generic
+- **Files changed:**
+  - `src/interface/gui.py` — visual layout overhaul: outer padded container, window title, scrollbar on operation listbox, consistent label widths (12), larger centred result font (14pt), inline Session History panel (Listbox + scrollbar), renamed "Show History" → "Show Full History"
+  - `tests/test_gui.py` — added `_history_listbox = MagicMock()` to app fixture; added `test_on_calculate_inserts_entry_into_history_listbox`
+- **Purpose:** Improve GUI readability and usability by clearly separating mode selection, operation list, inputs, result, and session history into distinct visual sections while preserving all existing calculator behaviour.
+- **Risks:** Layout changes affect only widget construction in `_build_ui`; `_compute` and all event handlers are functionally unchanged except `_on_calculate` now also updates `_history_listbox`.
+- **All tests passed:** Yes — 198 tests (68 calculator + 92 main/CLI + 38 GUI)
+- **Current branch:** exp3/issue-302-improve-gui-layout
+- **Intended PR target:** exp3/structured-generic
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md (gui.py, test_gui.py)
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update after issue #283 add GUI (2026-04-15)
 
 - **Branch:** exp3/issue-283-add-gui

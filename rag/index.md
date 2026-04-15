@@ -14,7 +14,7 @@ Master index of summarized files. `last-updated` is the cycle number when the su
 | src/interface/interactive.py | Interactive menu mode: TooManyAttemptsError, NORMAL_MODE_OPERATIONS, SCIENTIFIC_MODE_OPERATIONS, OPERATIONS, arity sets, show_menu(operations, mode), parse_number, parse_int, run_operation | 13 |
 | src/interface/cli.py | Non-interactive CLI mode: cli_mode function | 11 |
 | src/__main__.py | Thin entry point: main() with normal/scientific/GUI mode toggle + re-exports from interface sub-package | 14 |
-| src/interface/gui.py | tkinter GUI: CalculatorApp (normal/scientific mode, calculate, history viewer) + launch_gui() entry-point | 14 |
+| src/interface/gui.py | tkinter GUI: CalculatorApp (normal/scientific mode, calculate, inline history panel, full history viewer) + launch_gui() entry-point | 15 |
 | tests/test_calculator.py | Full unit test suite for Calculator — 68 tests covering all operations including execute | 10 |
 | tests/test_main.py | Unit tests for interactive CLI and cli_mode — 92 tests with mocked input; monkeypatches target src.interface.history | 14 |
-| tests/test_gui.py | Headless GUI tests — 40 tests using dependency-injected MagicMock tkinter; covers mode switching, _compute, history | 14 |
+| tests/test_gui.py | Headless GUI tests — 38 tests using dependency-injected MagicMock tkinter; covers mode switching, _compute, history | 15 |

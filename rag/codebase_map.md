@@ -139,17 +139,23 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## src/interface/gui.py
 - **Purpose:** Optional tkinter graphical user interface for the calculator.
-- **Last updated:** cycle 14
+- **Last updated:** cycle 15
 - **Public API:**
   - `CalculatorApp(root, _tk, _ttk, _messagebox)` — builds and manages all GUI widgets; accepts tkinter modules as constructor parameters for testability (dependency injection).
     - `_mode`: `"normal"` or `"scientific"` — tracks current mode.
     - `_history`: list of history entry strings for the current session.
+    - `_history_listbox`: inline Listbox widget showing session history entries in real time.
     - `_operations`: list of operation names for the current mode listbox.
     - `_compute(operation, value_a, value_b) -> (result, entry)` — pure-logic helper; parses strings and delegates to `Calculator.execute`. Raises `ValueError` on bad input or calculation errors.
     - `_on_mode_change()` — switches mode, clears entries, refreshes listbox.
-    - `_on_calculate()` — reads widget state, calls `_compute`, updates result display and history.
-    - `_on_show_history()` — opens a `Toplevel` history viewer.
+    - `_on_calculate()` — reads widget state, calls `_compute`, updates result display, inserts entry into `_history_listbox`, and saves history.
+    - `_on_show_history()` — opens a `Toplevel` full-history viewer.
   - `launch_gui()` — imports tkinter, creates root window, instantiates `CalculatorApp`, enters `mainloop()`.
+- **Layout (cycle 15 improvement):** Outer `ttk.Frame` with uniform padding wraps four sections:
+  1. **Mode** (full-width LabelFrame, top) — Normal / Scientific radio buttons.
+  2. **Operation** (left-column LabelFrame) — Listbox with scrollbar.
+  3. **Right column** (stacked LabelFrames): Inputs (labels width=12, Calculate button full-width), Result (font 14, centered), Session History (inline Listbox height=4 with scrollbar).
+  4. **Buttons** (full-width Frame, bottom) — "Show Full History" left, "Quit" right.
 - **Design note:** tkinter is NOT imported at module level. `launch_gui()` performs a lazy import and passes the modules to `CalculatorApp` via `_tk`, `_ttk`, `_messagebox` parameters. This allows the module to be imported without tkinter installed and tests to inject MagicMocks directly.
 - **Invariants:** Clears history file at session start (same as interactive mode). All file I/O uses `history.py` helpers. `_compute` is pure (no tkinter calls); all widget interactions are in `_on_*` methods.
 
@@ -186,14 +192,14 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## tests/test_gui.py
-- **Purpose:** Headless tests for the tkinter GUI — 40 tests using dependency-injected MagicMock tkinter objects.
-- **Last updated:** cycle 14
-- **Tests (40 total):**
+- **Purpose:** Headless tests for the tkinter GUI — 38 tests using dependency-injected MagicMock tkinter objects.
+- **Last updated:** cycle 15
+- **Tests (38 total):**
   - `launch_gui` source code inspection (2)
   - Initialisation: normal mode, empty history, 4 operations (3)
   - Mode switching: scientific/normal toggle, result/entry reset (6)
   - `_compute`: all 12 operations + error paths (15)
-  - `_on_calculate`: success, history list, history file, error paths, no-selection (7)
+  - `_on_calculate`: success, history list, history file, error paths, no-selection, history_listbox insert (8)
   - History accumulation: multiple calcs, failed calc not appended (2)
   - `autouse` `isolate_files` fixture redirects history/error-log to tmp_path (1)
-- **Invariants:** No real tkinter in tests — `CalculatorApp` receives MagicMock `_tk`, `_ttk`, `_messagebox`. Widget instance vars are replaced with fresh mocks after `__init__`. `_compute` tests need no tkinter at all.
+- **Invariants:** No real tkinter in tests — `CalculatorApp` receives MagicMock `_tk`, `_ttk`, `_messagebox`. Widget instance vars (including `_history_listbox`) are replaced with fresh mocks after `__init__`. `_compute` tests need no tkinter at all.

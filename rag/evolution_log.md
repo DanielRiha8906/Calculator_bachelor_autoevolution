@@ -4,6 +4,25 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 15 — Issue #302: GUI layout improvement (2026-04-15)
+
+- **Task:** Refine the existing tkinter calculator GUI for visual organisation, readability, and usability without changing calculator behaviour.
+- **Files changed:** `src/interface/gui.py`, `tests/test_gui.py`
+- **Outcome:** 198 tests pass (68 calculator + 92 main/CLI + 38 GUI). All prior tests continue to pass; 1 new GUI test added (`test_on_calculate_inserts_entry_into_history_listbox`).
+- **Key decisions:**
+  - Wrapped all widgets in a padded outer `ttk.Frame` (`padding="10 10 10 10"`) so the window has consistent margins.
+  - Set window title to "Calculator" via `self._root.title(...)`.
+  - Added a `ttk.Scrollbar` beside the operation `Listbox` — visible in scientific mode (12 items) and harmless in normal mode (4 items).
+  - Consistent label widths (`width=12, anchor="w"`) in Inputs frame so the entry fields align across all operation types.
+  - Enlarged result font from 12 to 14pt and added `anchor="center"` so the number is centred within the Result LabelFrame.
+  - Added an inline **Session History** `LabelFrame` (4-row `Listbox` + scrollbar) in the right column below the Result frame; `_on_calculate` now calls `self._history_listbox.insert("end", entry)` and `.see("end")` so new entries scroll into view automatically.
+  - Renamed "Show History" button to "Show Full History" to distinguish it from the inline panel; the `Toplevel` popup behaviour is otherwise unchanged.
+  - Updated test fixture: added `a._history_listbox = MagicMock()` so `_on_calculate` tests that replace widget vars do not raise `AttributeError`.
+- **Lessons learned:** When adding a new widget attribute that is used in existing event handlers (`_on_calculate`), the test fixture must be updated in the same cycle to replace it with a `MagicMock`, otherwise every `_on_calculate` test fails.
+- **Cost:** PENDING | **Turns:** PENDING
+
+---
+
 ## Cycle 14 — Issue #283: GUI (2026-04-15)
 
 - **Task:** Add a tkinter graphical user interface providing access to all calculator functionality (normal and scientific mode), operation inputs, result display, and session history viewer, while keeping existing CLI and interactive modes working.
