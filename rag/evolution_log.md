@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 12 — Issue #276: Documentation (2026-04-15)
+- **Task:** Add documentation for the calculator application
+- **Branch:** exp3/issue-276-documentation
+- **Files changed:** src/__init__.py, src/calculator.py, src/__main__.py, README.md
+- **Outcome:** Added module-level docstrings to src/__init__.py, src/calculator.py, and src/__main__.py. Added class docstring and __init__ docstring to Calculator. Added method docstrings to all 12 Calculator operation methods that lacked them. Added main() docstring. Expanded README.md from a placeholder title to a full user guide (installation, CLI/REPL usage examples, operations table, project structure, test instructions). 149 tests collected, 149 passed.
+- **Key decisions:** Docstrings follow the existing short-sentence style already used in arithmetic.py and advanced.py. README documents both usage modes (CLI and interactive REPL) with concrete examples. No logic was changed — purely additive documentation.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 11 — Issue #273: Modularization (2026-04-15)
 - **Task:** Refactor the calculator into more modules and prepare the structure for a future scientific mode
 - **Branch:** exp3/issue-273-modularization
