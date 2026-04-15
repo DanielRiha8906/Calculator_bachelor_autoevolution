@@ -1,6 +1,10 @@
 """Entry point for the Calculator application.
 
-Supports two usage modes:
+Supports three usage modes:
+
+GUI mode (graphical interface)::
+
+    python -m src --gui
 
 CLI mode (non-interactive)::
 
@@ -192,16 +196,22 @@ def cli_main(args: list) -> int:
 
 
 def main() -> None:
-    """Configure logging and dispatch to CLI or interactive REPL mode.
+    """Configure logging and dispatch to GUI, CLI, or interactive REPL mode.
 
-    If command-line arguments are present, delegates to :func:`cli_main` and
-    exits with its return code.  Otherwise starts the interactive REPL loop.
+    * ``--gui``: launches the tkinter graphical interface.
+    * Other arguments: delegates to :func:`cli_main` and exits with its return
+      code.
+    * No arguments: starts the interactive REPL loop.
     """
     logging.basicConfig(
         level=logging.ERROR,
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
     )
     if len(sys.argv) > 1:
+        if sys.argv[1] == "--gui":
+            from .gui import launch_gui
+            launch_gui()
+            return
         sys.exit(cli_main(sys.argv[1:]))
 
     calc = Calculator()
