@@ -4,6 +4,22 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 11 — Issue #271: Logic separation — Expert/generic
+
+- **Task:** Refactor the calculator so core calculation logic is separated from interface concerns (guided interactive input, bash CLI handling, output formatting, session control). Improve OO responsibility boundaries so calculator operations can be reused independently of the user interface.
+- **Files changed:**
+  - `src/session.py` (new): `CalculatorSession` class with `execute()`, `format_entry()`, `history()`, `save()`; and `BINARY_OPS`/`UNARY_OPS`/`ALL_OPS` frozensets as the single authoritative source of operation arity metadata.
+  - `src/__init__.py`: added `CalculatorSession` to exports.
+  - `src/__main__.py`: now imports and uses `CalculatorSession` for operation dispatch and history management; `format_history_entry` delegates to `CalculatorSession.format_entry` (preserved for test backward compatibility); `main()` no longer manages the history list directly.
+  - `main.py`: removed own `_BINARY_OPS`/`_UNARY_OPS`/`_ALL_OPS` definitions; imports `BINARY_OPS`, `ALL_OPS`, `CalculatorSession` from `src.session`; uses `CalculatorSession.execute()` for dispatch.
+  - `tests/test_session.py` (new): 37 tests for `CalculatorSession` and operation metadata.
+- **Test result:** 209 passed (was 173)
+- **Key decisions:** `CalculatorSession` is the abstraction boundary: it knows which Calculator method to call and owns history tracking; interfaces (interactive menu, CLI args) only handle I/O. `format_history_entry` kept as a module-level wrapper in `__main__.py` so 56 existing tests import without change. `save_history` also kept in `__main__.py` since it handles the `HISTORY_FILE` default — that's interface config, not session logic. Operation metadata (`BINARY_OPS`/`UNARY_OPS`) moved to `session.py` eliminating the duplication that existed between `__main__.py` and `main.py`. No test deletions; all 173 prior tests continue to pass.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 9 — Issue #253: Error logging for invalid usage and calculation failures
 
 - **Task:** Add error logging to the calculator so that invalid usage and calculation failures are recorded in a dedicated local log file (`error.log`). Cover both interactive mode (`src/__main__.py`) and bash CLI mode (`main.py`). Log: unsupported operations, invalid operand input, incorrect argument counts, runtime calculation errors (ZeroDivisionError, ValueError, TypeError). Keep error logging separate from user-facing session history.

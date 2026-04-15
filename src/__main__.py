@@ -1,4 +1,4 @@
-from .calculator import Calculator
+from .session import CalculatorSession
 from .error_logger import log_error
 
 # Maps menu keys to (operation_name, arity) pairs.
@@ -41,13 +41,14 @@ def display_menu() -> None:
 def format_history_entry(name: str, args: tuple, result) -> str:
     """Format a completed calculation as a function-style history entry.
 
+    Delegates to :meth:`CalculatorSession.format_entry`.
+
     Examples:
         add(2, 3) = 5
         factorial(5) = 120
         square_root(9) = 3.0
     """
-    args_str = ", ".join(str(a) for a in args)
-    return f"{name}({args_str}) = {result}"
+    return CalculatorSession.format_entry(name, args, result)
 
 
 def save_history(history: list[str], path: str | None = None) -> None:
@@ -121,22 +122,20 @@ def main() -> None:
     """Run an interactive calculator session.
 
     Displays a menu of operations, reads the user's selection and the
-    required operands, computes the result, and prints it. The loop
-    continues until the user enters 'q' or the maximum number of failed
-    input attempts is reached.
+    required operands, and delegates computation to :class:`CalculatorSession`.
+    The loop continues until the user enters 'q' or the maximum number of
+    failed input attempts is reached.
 
-    Successful calculations are recorded in a session history that can be
-    displayed at any time by entering 'h'. When the session ends the full
-    history is written to HISTORY_FILE so it can be reviewed later. Each
-    new session starts with a fresh (empty) history.
+    Successful calculations are recorded in the session history (via
+    CalculatorSession) and can be displayed at any time by entering 'h'.
+    When the session ends the full history is written to HISTORY_FILE.
 
     Invalid operation selections show an error with the list of available
     operations and allow the user to retry; the session ends after
     MAX_ATTEMPTS total invalid selections. Invalid operand inputs also
     allow retries up to MAX_ATTEMPTS per prompt before ending the session.
     """
-    calc = Calculator()
-    history: list[str] = []
+    session = CalculatorSession()
     display_menu()
     invalid_op_attempts = 0
 
@@ -144,14 +143,15 @@ def main() -> None:
         choice = input("\nEnter operation number (or 'q' to quit): ").strip()
 
         if choice.lower() == "q":
-            save_history(history)
+            save_history(session.history())
             print("Goodbye!")
             break
 
         if choice.lower() == "h":
-            if history:
+            hist = session.history()
+            if hist:
                 print("Session history:")
-                for entry in history:
+                for entry in hist:
                     print(f"  {entry}")
             else:
                 print("No history yet.")
@@ -168,30 +168,27 @@ def main() -> None:
                 f"Unknown operation '{choice}'. Available operations: {available}"
             )
             if invalid_op_attempts >= MAX_ATTEMPTS:
-                save_history(history)
+                save_history(session.history())
                 print("Maximum attempts reached. Ending session.")
                 break
             continue
 
         name, arity = OPERATIONS[choice]
-        method = getattr(calc, name)
 
         try:
             if arity == 1:
                 require_int = name == "factorial"
                 prompt = "Enter integer: " if require_int else "Enter number: "
                 a = get_number_with_retry(prompt, require_int=require_int)
-                result = method(a)
-                history.append(format_history_entry(name, (a,), result))
+                result = session.execute(name, a)
                 print(f"Result: {result}")
             else:
                 a = get_number_with_retry("Enter first number: ")
                 b = get_number_with_retry("Enter second number: ")
-                result = method(a, b)
-                history.append(format_history_entry(name, (a, b), result))
+                result = session.execute(name, a, b)
                 print(f"Result: {result}")
         except _SessionExpired:
-            save_history(history)
+            save_history(session.history())
             break
         except (ValueError, TypeError, ZeroDivisionError) as exc:
             log_error("interactive", f"calculation error in {name}: {exc}")

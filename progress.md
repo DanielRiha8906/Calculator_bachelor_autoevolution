@@ -1,3 +1,49 @@
+## Run: update-diagrams — PlantUML diagram update
+
+- **Branch:** exp3/issue-271-logic-separation
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `CalculatorSession` class with full API; added `error_logger` module; added `test_session` and `test_error_logger` test modules; removed stale `_BINARY_OPS/_UNARY_OPS/_ALL_OPS` from CLI module; updated relationships: CLIs → CalculatorSession → Calculator
+  - `artifacts/activity_diagram.puml` — added `CalculatorSession` swimlane; updated both CLI flows to go through `session.execute()` instead of direct `Calculator` calls; updated instantiation steps
+  - `artifacts/sequence_diagram.puml` — added `CalculatorSession` participant; updated all flows so CLIs route through `session.execute()` → `_calc.method()`; added test_session scenario
+- **Purpose:** Reflect cycle 11 architecture: `CalculatorSession` introduced as the dispatch and history layer between the two CLI interfaces and `Calculator`. Diagrams were stale — they showed CLIs calling `Calculator` directly.
+- **Risks:** None — diagram-only change, no source code modified.
+- **Tests passed:** N/A (diagrams only)
+- **Branch/worktree:** exp3/issue-271-logic-separation
+- **Intended merge target:** exp3/expert-generic
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: 228.9s | Cost: $0.586947 USD | Turns: 21
+
+---
+
+## Run: issue-271 — Logic separation — Expert/generic
+
+- **Branch:** exp3/issue-271-logic-separation
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/session.py` (new) — `CalculatorSession` class (`execute`, `format_entry`, `history`, `save`) and shared `BINARY_OPS`/`UNARY_OPS`/`ALL_OPS` frozensets
+  - `src/__init__.py` — added `CalculatorSession` to exports
+  - `src/__main__.py` — imports and uses `CalculatorSession` for dispatch and history; `format_history_entry` delegates to `CalculatorSession.format_entry`; `save_history` kept for HISTORY_FILE defaulting
+  - `main.py` — removed own `_BINARY_OPS`/`_UNARY_OPS`/`_ALL_OPS`; imports `BINARY_OPS`, `ALL_OPS`, `CalculatorSession` from `src.session`
+  - `tests/test_session.py` (new) — 37 tests for `CalculatorSession` and operation metadata
+- **Purpose:** Implement Issue #271 — separate core calculation dispatch and history management from UI concerns (interactive menu input, CLI argument parsing, output formatting). `CalculatorSession` is the new abstraction layer between interfaces and `Calculator`.
+- **Risks:** Low — all existing tests pass unchanged; `format_history_entry` and `save_history` preserved as wrappers for backward compatibility.
+- **Tests passed:** 209/209
+- **Branch/worktree:** exp3/issue-271-logic-separation
+- **Intended merge target:** exp3/expert-generic
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/patterns.md`, `rag/evolution_log.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: 470.0s | Cost: $1.693522 USD | Turns: 54
+
+---
+
 ## Run: issue-253 — Error logging for invalid usage and calculation failures
 
 - **Branch:** exp3/issue-253-add-error-logging

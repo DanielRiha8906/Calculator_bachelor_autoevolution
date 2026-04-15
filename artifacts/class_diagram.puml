@@ -19,6 +19,19 @@ package "src" {
         +ln(x) : float
     }
 
+    class CalculatorSession {
+        -{field} _calc : Calculator
+        -{field} _history : list[str]
+        +BINARY_OPS : frozenset[str]  <<module constant>>
+        +UNARY_OPS : frozenset[str]   <<module constant>>
+        +ALL_OPS : frozenset[str]     <<module constant>>
+        +__init__() : None
+        +execute(name: str, *args) : float|int
+        +{static} format_entry(name, args, result) : str
+        +history() : list[str]
+        +save(path: str) : None
+    }
+
     class "__main__" as Main <<module>> {
         +OPERATIONS : dict[str, tuple[str, int]]
         +MAX_ATTEMPTS : int
@@ -32,15 +45,17 @@ package "src" {
         -{static} _SessionExpired <<exception>>
     }
 
+    class "error_logger" as ErrLog <<module>> {
+        +ERROR_LOG_FILE : str
+        +log_error(source: str, message: str) : None
+    }
+
     class "__init__" as Init <<module>> {
         __all__ : list
     }
 }
 
 class "main" as CLI <<module>> {
-    -{static} _BINARY_OPS : set[str]
-    -{static} _UNARY_OPS : set[str]
-    -{static} _ALL_OPS : set[str]
     +_parse_operand(value: str, require_int=False) : int|float
     +main(argv: list[str] | None) : int
 }
@@ -63,9 +78,19 @@ package "tests" {
         +test_ln_*()
     }
 
+    class "test_session" as TestSession <<module>> {
+        +session() : CalculatorSession  <<fixture>>
+        ' 37 tests covering CalculatorSession
+        +test_op_sets_*()
+        +test_format_entry_*()
+        +test_execute_*()
+        +test_history_*()
+        +test_save_*()
+    }
+
     class "test_main" as TestMain <<module>> {
         +run_main_with_inputs(inputs) : list[str]  <<helper>>
-        ' 52 tests covering interactive CLI
+        ' 56 tests covering interactive CLI
         +test_operations_map_*()
         +test_get_number_*()
         +test_quit_*()
@@ -81,7 +106,7 @@ package "tests" {
 
     class "test_cli" as TestCLI <<module>> {
         +run_cli(args) : tuple[int, str, str]  <<helper>>
-        ' 28 tests covering bash CLI
+        ' 34 tests covering bash CLI
         +test_no_args()
         +test_unknown_op()
         +test_arg_count_binary_*()
@@ -90,14 +115,34 @@ package "tests" {
         +test_error_paths_*()
         +test_non_numeric_operand()
     }
+
+    class "test_error_logger" as TestErrLog <<module>> {
+        ' 7 tests covering error_logger
+        +test_file_created()
+        +test_source_and_message()
+        +test_timestamp_format()
+        +test_append_behavior()
+        +test_one_entry_per_line()
+    }
+
+    class "conftest" as Conftest <<module>> {
+        +isolate_error_log() <<autouse fixture>>
+    }
 }
 
-Main --> Calculator : instantiates & delegates
+CalculatorSession --> Calculator : holds & delegates
+Main --> CalculatorSession : instantiates & delegates
+Main --> ErrLog : calls log_error
+CLI --> CalculatorSession : instantiates & delegates
+CLI --> ErrLog : calls log_error
 Init ..> Calculator : re-exports
-CLI --> Calculator : instantiates & delegates
+Init ..> CalculatorSession : re-exports
 TestCalc --> Calculator : tests via fixture
+TestSession --> CalculatorSession : tests via fixture
 TestMain --> Main : tests via mocked stdin/stdout
 TestCLI --> CLI : tests via capsys
+TestErrLog --> ErrLog : tests via fixture
+Conftest ..> ErrLog : patches ERROR_LOG_FILE
 
 note right of Calculator
   Division: delegates to Python "/" operator.
@@ -125,22 +170,36 @@ note left of Main
   get_number_with_retry: wraps get_number; prints
   remaining-attempts message on each failure; raises
   _SessionExpired after MAX_ATTEMPTS failures.
-  format_history_entry: returns "name(arg1, arg2) = result".
+  format_history_entry: delegates to CalculatorSession.format_entry;
+  kept for backward-compatible test imports.
   save_history: overwrites HISTORY_FILE with history list;
   called on all exit paths (quit, expiry, max-attempts).
-  main: session loop; 'h' displays history in memory;
-  successful calculations appended to history list;
+  main: creates CalculatorSession; 'h' displays history;
+  computation dispatched via session.execute();
   catches ValueError/TypeError/ZeroDivisionError per
-  iteration and prints error; tracks invalid op selections
+  iteration; tracks invalid op selections
   (terminate after MAX_ATTEMPTS); catches _SessionExpired.
+end note
+
+note right of CalculatorSession
+  BINARY_OPS: {add, subtract, multiply, divide, power}.
+  UNARY_OPS: {factorial, square, cube, square_root,
+              cube_root, log, ln}.
+  ALL_OPS: BINARY_OPS | UNARY_OPS (12 operations total).
+  Both CLIs import BINARY_OPS/ALL_OPS from here —
+  single source of truth for operation arity metadata.
+  execute(): dispatches via getattr(_calc, name)(*args);
+  failed calls (any exception) do NOT append to history.
+  format_entry(): static; "name(arg1, arg2) = result".
+  history(): returns a defensive copy.
+  save(): writes history to file (overwrites).
 end note
 
 note right of CLI
   Non-interactive bash CLI: one invocation, one result.
   Exit code 0 on success, 1 on any error.
-  _BINARY_OPS: add, subtract, multiply, divide, power.
-  _UNARY_OPS: factorial, square, cube, square_root,
-              cube_root, log, ln.
+  Imports BINARY_OPS, ALL_OPS from src.session
+  (no local copies — single source of truth).
   _parse_operand: int first, then float;
   require_int=True for factorial.
   Errors go to stderr; result goes to stdout.
