@@ -2,6 +2,23 @@
 
 ---
 
+## Run: Diagram update after issue #302 GUI layout improvement (2026-04-15)
+
+- **Branch:** exp3/issue-302-improve-gui-layout
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `_history_listbox` field to `CalculatorApp`; expanded `CalculatorApp` note to describe cycle 15 layout (four sections, inline history panel); added `_on_operation_select` note explaining dynamic label/field-hiding behaviour
+  - `artifacts/activity_diagram.puml` — updated module note to cycle 15; expanded the GUI branch from a single step into a full event loop: mode change (`_on_mode_change`/`_refresh_operations`), operation select (`_on_operation_select`), calculate (all three arity paths + `_history_listbox.insert` + error path), show full history, quit
+  - `artifacts/sequence_diagram.puml` — updated note to cycle 15; added `_on_operation_select` event (label/field adjustment) to GUI loop; added `_history_listbox.insert("end", entry)` + `_history_listbox.see("end")` steps in all three Calculate success paths; added `result_var.set("Error")` self-call in error paths
+- **Purpose:** Bring PlantUML diagrams in sync with cycle 15 GUI layout improvements (`src/interface/gui.py` — `_history_listbox`, `_on_operation_select`, four-section layout).
+- **Risks:** Diagram-only change; no source code modified.
+- **All tests passed:** N/A (no code changed)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md (gui.py, interactive.py, calculator.py, history.py)
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #302 — GUI layout improvement (2026-04-15)
 
 - **Branch:** exp3/issue-302-improve-gui-layout

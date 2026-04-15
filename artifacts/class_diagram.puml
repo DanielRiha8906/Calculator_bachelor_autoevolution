@@ -235,6 +235,7 @@ package "src.interface" {
     class CalculatorApp {
         -_mode : str
         -_history : list[str]
+        -_history_listbox : Listbox
         -_operations : list[str]
         -_calc : Calculator
         +__init__(root, _tk, _ttk, _messagebox)
@@ -253,6 +254,12 @@ package "src.interface" {
       Clears history file at session start.
       Supports normal mode (4 ops) and
       scientific mode (12 ops).
+      Layout (cycle 15): outer ttk.Frame with
+      four sections — Mode (top), Operation
+      listbox (left), stacked Inputs/Result/
+      Session History (right), Buttons (bottom).
+      _history_listbox is an inline Listbox
+      showing session entries in real time.
     end note
     note right of CalculatorApp::_compute
       Pure-logic helper — no tkinter calls.
@@ -265,10 +272,19 @@ package "src.interface" {
       Switches _mode, clears entry fields,
       resets result display, refreshes listbox.
     end note
+    note right of CalculatorApp::_on_operation_select
+      Adjusts label text (e.g. "Dividend:" /
+      "Divisor:" for divide) and shows/hides the
+      second input row based on arity.
+      One-arg and int-arg ops hide _label_b
+      and _entry_b via grid_remove().
+    end note
     note right of CalculatorApp::_on_calculate
       Reads widget state, calls _compute,
-      updates result display and in-memory
-      _history list, appends to history file.
+      updates result display, inserts entry
+      into _history_listbox (inline panel),
+      appends to in-memory _history list,
+      and writes to history file.
       Shows error dialog on ValueError.
     end note
     note right of CalculatorApp::_on_show_history

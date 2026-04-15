@@ -9,7 +9,7 @@ skinparam activity {
 }
 
 note
-  Module structure (cycle 14):
+  Module structure (cycle 15):
   main() lives in src.__main__
   cli_mode() lives in src.interface.cli
   run_operation / parse_number / parse_int /
@@ -19,6 +19,11 @@ note
     and src.operations.scientific
   GUI (CalculatorApp / launch_gui) lives in
     src.interface.gui
+  CalculatorApp layout (cycle 15):
+    Mode (top), Operation listbox (left),
+    Inputs/Result/Session History (right),
+    Buttons (bottom); _history_listbox shows
+    session entries inline in real time.
 end note
 
 start
@@ -28,7 +33,56 @@ start
 if (args non-empty?) then (yes)
 
     if (args[0] == "--gui"?) then (yes)
-        :launch_gui()\nCreate root Tk window, instantiate CalculatorApp,\nenter mainloop (blocks until window closed);
+
+        partition "GUI mode (CalculatorApp)" {
+            :launch_gui()\nCreate root Tk window;\nInstantiate CalculatorApp(root, tk, ttk, messagebox)\n  → Calculator(), clear_history(), _build_ui()\n  → _refresh_operations() selects first op;
+
+            repeat
+
+                :User interacts with window;
+
+                if (User changes mode radio button?) then (yes)
+                    :_on_mode_change()\nmode = mode_var.get()\nClear entry fields, reset result display\n_refresh_operations()\n  → repopulate op listbox for new mode\n  → select first op;
+
+                elseif (User selects operation in listbox?) then (yes)
+                    :_on_operation_select(event)\nAdjust _label_a text (e.g. "Dividend:", "Integer:", "Base:")\nHide _label_b / _entry_b for one-arg or int-arg ops\nShow _label_b / _entry_b for two-arg ops;
+
+                elseif (User clicks Calculate?) then (yes)
+
+                    if (No operation selected?) then (yes)
+                        :messagebox.showwarning("No Operation", ...);
+                    else (operation selected)
+                        :_compute(operation, entry_a.get(), entry_b.get());
+
+                        if (operation in _INT_ARG_OPS (factorial)?) then (yes)
+                            :n = int(value_a);
+                            :calc.execute("factorial", n);
+                        elseif (operation in _ONE_ARG_OPS?) then (yes)
+                            :a = float(value_a);
+                            :calc.execute(operation, a);
+                        else (two-arg operation)
+                            :a = float(value_a)\nb = float(value_b);
+                            :calc.execute(operation, a, b);
+                        endif
+
+                        if (ValueError raised?) then (yes)
+                            :result_var.set("Error")\nmessagebox.showerror("Calculation Error", ...);
+                        else (success)
+                            :result_var.set(str(result))\n_history.append(entry)\n_history_listbox.insert("end", entry)\n_history_listbox.see("end")\nappend_to_history(entry);
+                        endif
+                    endif
+
+                elseif (User clicks Show Full History?) then (yes)
+                    :_on_show_history()\nOpen read-only Toplevel window\nList all _history entries in a Text widget;
+
+                elseif (User clicks Quit?) then (yes)
+                    :root.destroy();
+                    stop
+                endif
+
+            repeat while (event loop continues — mainloop blocks)
+        }
+
         stop
     else (no — CLI args)
 

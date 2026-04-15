@@ -17,7 +17,7 @@ participant "error.log" as ErrorLog
 participant "math" as Math
 
 note over Main
-  Cycle 14 modular breakdown of "Main":
+  Cycle 15 modular breakdown of "Main":
   main()          → src.__main__
   cli_mode()      → src.interface.cli
   run_operation() → src.interface.interactive
@@ -27,6 +27,9 @@ note over Main
   file helpers    → src.interface.history
   GUI             → src.interface.gui
     (CalculatorApp + launch_gui)
+  CalculatorApp cycle-15 additions:
+    _on_operation_select: dynamic label/field
+    _history_listbox: inline session history
   Calculator delegates to:
     src.operations.basic (add/subtract/multiply/divide)
     src.operations.scientific (factorial/square/cube/
@@ -50,7 +53,12 @@ alt GUI mode (args == ["--gui"])
 
         App -> User : render widgets\n(mode radio buttons, op listbox,\ninput fields, Calculate/History/Quit)
 
-        alt User clicks Calculate (operation selected)
+        alt User selects operation in listbox
+            User -> App : <<ListboxSelect>> event
+            App -> App : _on_operation_select(event)\nadjust _label_a text (e.g. "Dividend:", "Integer:")\nshow/hide _label_b + _entry_b based on arity
+            App -> User : updated label text and input row visibility
+
+        else User clicks Calculate (operation selected)
             User -> App : click Calculate
             App -> App : _compute(operation, value_a, value_b)
 
@@ -59,12 +67,13 @@ alt GUI mode (args == ["--gui"])
                 activate Calc
                 alt n invalid (not int or n < 0)
                     Calc --> App : raise ValueError
+                    App -> App : result_var.set("Error")
                     App -> User : messagebox.showerror(...)
                 else valid
                     Calc -> Math : factorial(n)
                     Math --> Calc : n!
                     Calc --> App : n!
-                    App -> User : result_var.set(n!)
+                    App -> App : result_var.set(n!)\n_history_listbox.insert("end", entry)\n_history_listbox.see("end")
                     App -> History : append_to_history(entry)
                 end
                 deactivate Calc
@@ -74,12 +83,13 @@ alt GUI mode (args == ["--gui"])
                 activate Calc
                 alt ValueError raised (e.g. sqrt of negative, ln of non-positive)
                     Calc --> App : raise ValueError
+                    App -> App : result_var.set("Error")
                     App -> User : messagebox.showerror(...)
                 else success
                     Calc -> Math : sqrt(a) or log(a) [if needed]
                     Math --> Calc : result
                     Calc --> App : result
-                    App -> User : result_var.set(result)
+                    App -> App : result_var.set(result)\n_history_listbox.insert("end", entry)\n_history_listbox.see("end")
                     App -> History : append_to_history(entry)
                 end
                 deactivate Calc
@@ -89,19 +99,20 @@ alt GUI mode (args == ["--gui"])
                 activate Calc
                 alt ValueError raised (e.g. divide-by-zero, invalid log base)
                     Calc --> App : raise ValueError
+                    App -> App : result_var.set("Error")
                     App -> User : messagebox.showerror(...)
                 else success
                     Calc -> Math : log(a, base) [if log op]
                     Math --> Calc : result
                     Calc --> App : result
-                    App -> User : result_var.set(result)
+                    App -> App : result_var.set(result)\n_history_listbox.insert("end", entry)\n_history_listbox.see("end")
                     App -> History : append_to_history(entry)
                 end
                 deactivate Calc
             end
 
-        else User clicks Show History
-            User -> App : click Show History
+        else User clicks Show Full History
+            User -> App : click Show Full History
             App -> User : open Toplevel window\nwith numbered _history entries
 
         else User switches mode radio button
