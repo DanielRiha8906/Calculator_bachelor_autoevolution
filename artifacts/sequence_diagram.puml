@@ -5,8 +5,8 @@ title Calculator — CLI and Interactive REPL Sequence
 actor User
 participant "__main__\n(main)" as Main
 participant "cli_main" as CLI
-participant "parse_number /\n_to_int_if_needed" as Parser
-participant "Calculator" as Calc
+participant "parse_number" as Parser
+participant "Calculator\n(execute)" as Calc
 participant "math\n(stdlib)" as Math
 participant "logger" as Log
 
@@ -29,21 +29,18 @@ alt sys.argv has arguments — CLI mode
       CLI -> Parser : float(args[2]) → b
     else op in UNARY_OPS
       CLI -> Parser : float(args[1]) → a
-      opt op in INTEGER_OPS (factorial)
-        CLI -> Parser : _to_int_if_needed(op, a)
-        alt a is whole number
-          Parser --> CLI : int(a)
-        else a is not whole
-          Parser --> CLI : raises ValueError
-          CLI -> Log : logger.error("cli_main factorial failed: ...")
-          CLI --> User : "Error: requires whole number"
-          CLI --> Main : return 1
-        end
-      end
     end
 
     CLI -> Calc ** : Calculator()
-    CLI -> Calc : getattr(calc, op)(args)
+    CLI -> Calc : calc.execute(op, a [, b])
+
+    note right of Calc
+      execute() dispatches by op name.
+      For INTEGER_OPS (factorial): calls
+      _to_int_if_needed(op, a) internally;
+      raises ValueError for non-whole operands.
+      On success: history.append({op, operands, result}).
+    end note
 
     alt ops delegating to math stdlib
       Calc -> Math : factorial / sqrt / cbrt / log10 / log
@@ -61,12 +58,13 @@ alt sys.argv has arguments — CLI mode
     end
 
     alt success
+      Calc -> Calc : history.append({op, operands, result})
       Calc --> CLI : result value
       CLI -> CLI : _format_result(result)
       CLI --> User : formatted result string
       CLI --> Main : return 0
       Main -> User : sys.exit(0)
-    else ValueError or ZeroDivisionError (non-math-stdlib ops)
+    else ValueError or ZeroDivisionError
       Calc --> CLI : raises exception
       CLI -> Log : logger.error("cli_main <op> failed: ...")
       CLI --> User : "Error: <exception message>"
@@ -142,21 +140,17 @@ else no arguments — Interactive REPL mode
             Main --> User : "Error: No valid number entered"
           end
         end
-
-        opt op in INTEGER_OPS (factorial)
-          Main -> Parser : _to_int_if_needed(op, a)
-          alt a is whole number
-            Parser --> Main : int(a)
-          else a is not whole
-            Parser --> Main : raises ValueError
-            Main -> Log : logger.error("run_operation factorial failed: ...")
-            Main --> User : "Error: requires whole number"
-            note right of Main: run_operation catches and prints; loop continues
-          end
-        end
       end
 
-      Main -> Calc : getattr(calc, op)(args)
+      Main -> Calc : calc.execute(op, a [, b])
+
+      note right of Calc
+        execute() dispatches by op name.
+        For INTEGER_OPS (factorial): calls
+        _to_int_if_needed(op, a) internally;
+        raises ValueError for non-whole operands.
+        On success: history.append({op, operands, result}).
+      end note
 
       alt ops delegating to math stdlib
         Calc -> Math : factorial / sqrt / cbrt / log10 / log
@@ -173,8 +167,8 @@ else no arguments — Interactive REPL mode
       end
 
       alt success
+        Calc -> Calc : history.append({op, operands, result})
         Calc --> Main : result value
-        Main -> Calc : calc.history.append({op, operands, result})
         Main --> User : "Result: <value>"
       else ValueError or ZeroDivisionError (non-math-stdlib ops)
         Calc --> Main : raises exception

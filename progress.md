@@ -1,5 +1,15 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-15)
+
+- **Branch:** exp3/issue-269-logic-separation
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 10 changes: moved UNARY_OPS, BINARY_OPS, INTEGER_OPS, and _to_int_if_needed from __main__ to Calculator (as module-level static members of calculator.py); added Calculator.execute() method with dispatch, _to_int_if_needed, and history-append semantics; removed those symbols from __main__ class entry; updated all relationships and notes in class diagram; removed explicit INTEGER_OPS branch from activity diagram (now handled inside execute()); updated sequence diagram to remove _to_int_if_needed calls from __main__/CLI participants and show them as internal to Calculator.execute(); renamed Parser participant to parse_number only.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Issue #269 — Logic Separation (2026-04-15)
 
 - **Branch:** exp3/issue-269-logic-separation → PR #285 targeting exp3/naive-generic

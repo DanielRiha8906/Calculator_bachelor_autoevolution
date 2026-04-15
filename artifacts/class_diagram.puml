@@ -5,6 +5,9 @@ title Calculator — Class Diagram
 package "src" {
     class Calculator {
         {static} logger : Logger
+        {static} UNARY_OPS : set
+        {static} BINARY_OPS : set
+        {static} INTEGER_OPS : set
         +history : list[dict]
         +__init__()
         +get_history() : list[dict]
@@ -20,18 +23,16 @@ package "src" {
         +power(base, exp) : number
         +log(n) : float
         +ln(n) : float
+        +execute(op: str, *operands: float|int) : float|int
+        -{static} _to_int_if_needed(op: str, value: float) : float | int
     }
 
     class "__main__" as Main <<module>> {
         {static} logger : Logger
-        +UNARY_OPS : set
-        +BINARY_OPS : set
-        +INTEGER_OPS : set
         +MAX_INPUT_ATTEMPTS : int
         +MENU : str
         +MENU_MAP : dict[str, str]
         +parse_number(prompt: str, max_attempts: int) : float
-        -_to_int_if_needed(op: str, value: float) : float | int
         +run_operation(calc: Calculator, op: str) : void
         -_format_result(value: int | float) : str
         -_show_history(calc: Calculator) : void
@@ -40,8 +41,7 @@ package "src" {
     }
 }
 
-Main ..> Calculator : instantiates
-Main ..> Calculator : dispatches via getattr(calc, op)
+Main ..> Calculator : instantiates / dispatches via calc.execute(op, ...)
 
 note right of Calculator::logger
   logging.getLogger(__name__).
@@ -50,12 +50,41 @@ note right of Calculator::logger
   log at ERROR level before re-raising.
 end note
 
+note right of Calculator::UNARY_OPS
+  Module-level constants in calculator.py.
+  UNARY_OPS: {"factorial","square","cube",
+    "square_root","cube_root","log","ln"}
+  BINARY_OPS: {"add","subtract","multiply",
+    "divide","power"}
+  INTEGER_OPS: {"factorial"}
+  __main__ imports BINARY_OPS and UNARY_OPS
+  to determine operand arity for prompting.
+end note
+
 note right of Calculator::history
   Per-instance history list.
   Entries: {"op": str, "operands": tuple, "result": float|int}.
-  Appended by run_operation on success;
+  Appended by execute() on success;
   failed operations are not recorded.
   get_history() returns a shallow copy.
+end note
+
+note right of Calculator::execute
+  Dispatches by op name via getattr(self, op).
+  For BINARY_OPS: unpacks two operands.
+  For UNARY_OPS: calls _to_int_if_needed first
+    (coerces to int for INTEGER_OPS; raises
+    ValueError for non-whole numbers).
+  Appends history entry on success.
+  Raises ValueError for unknown ops.
+  Propagates ZeroDivisionError/ValueError unchanged.
+end note
+
+note right of Calculator::_to_int_if_needed
+  Module-level helper in calculator.py.
+  If op not in INTEGER_OPS, returns value unchanged.
+  If value is a whole number, returns int(value).
+  Otherwise raises ValueError.
 end note
 
 note right of Calculator::divide
@@ -108,12 +137,6 @@ note left of Main::MENU_MAP
   Both handled directly in main().
 end note
 
-note left of Main::INTEGER_OPS
-  {"factorial"}: float inputs are
-  converted to int before dispatch;
-  non-whole values raise ValueError
-end note
-
 note left of Main::MAX_INPUT_ATTEMPTS
   Default = 3. parse_number retries
   up to max_attempts times; raises
@@ -123,6 +146,8 @@ note left of Main::MAX_INPUT_ATTEMPTS
 end note
 
 note left of Main::run_operation
+  Checks BINARY_OPS (imported from calculator)
+  to decide operand count; calls calc.execute().
   Catches ValueError / ZeroDivisionError;
   logs via logger.error before printing
   "Error: ..." to stdout.
