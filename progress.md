@@ -1,3 +1,24 @@
+## Run: issue-284 — GUI (tkinter) — Expert/generic
+
+- **Branch:** exp3/issue-284-gui-tkinter
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/gui.py` (new): `CalculatorMode` ABC with `name`/`operations` abstract properties; `NormalMode` (6 ops) and `ScientificMode` (18 ops) concrete subclasses; `CalculatorGUI` class delegating all computation to `CalculatorSession`; `run_gui()` entry point. tkinter import wrapped in `try/except ImportError` with `_TKINTER_AVAILABLE` flag.
+  - `tests/test_gui.py` (new): 59 tests — mode invariants, `_parse_operand`, calculate paths (unary/binary/errors), mode switching, history refresh, scientific spot-checks.
+  - `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`: updated for cycle 15.
+- **Purpose:** Add a tkinter GUI that exposes all 18 calculator operations, supports Normal/Scientific mode switching via radio buttons, accepts unary and binary inputs, displays results, and shows session history — without duplicating any calculator logic.
+- **Risks:** tkinter not available in the CI runner; mitigated by conditional import and sys.modules mock injection in tests so all 59 GUI tests pass headlessly.
+- **All tests passed:** 296 passed (237 pre-existing + 59 new)
+- **Current branch/worktree:** exp3/issue-284-gui-tkinter
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`, `src/__main__.py`, `src/session.py`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-issue-281)
 
 - **Branch:** exp3/issue-281-scientific-mode
