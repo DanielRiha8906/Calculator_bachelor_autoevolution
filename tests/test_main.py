@@ -6,6 +6,7 @@ from unittest.mock import patch
 import pytest
 
 import src.__main__ as _main_mod
+import src.interface.history as _history_mod
 from src.__main__ import (
     show_menu,
     parse_number,
@@ -39,8 +40,8 @@ def isolate_files(tmp_path, monkeypatch):
     or ``error.log`` files in the working directory, keeping test runs clean
     and independent.
     """
-    monkeypatch.setattr(_main_mod, "HISTORY_FILE", str(tmp_path / "history.txt"))
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", str(tmp_path / "error.log"))
+    monkeypatch.setattr(_history_mod, "HISTORY_FILE", str(tmp_path / "history.txt"))
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", str(tmp_path / "error.log"))
 
 
 # ---------------------------------------------------------------------------
@@ -147,7 +148,7 @@ def test_append_to_error_log_multiple_entries(tmp_path):
 def test_append_to_error_log_uses_module_constant(tmp_path, monkeypatch):
     """When no filepath is given, ERROR_LOG_FILE constant is used."""
     log_path = str(tmp_path / "default.log")
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", log_path)
     append_to_error_log("default_path_test")
     content = open(log_path).read()
     assert "default_path_test" in content
@@ -160,7 +161,7 @@ def test_append_to_error_log_uses_module_constant(tmp_path, monkeypatch):
 def test_parse_number_logs_invalid_input(tmp_path, monkeypatch):
     """Each invalid number input is written to the error log."""
     log_path = str(tmp_path / "e.log")
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", log_path)
     with patch("builtins.input", side_effect=["bad", "5"]):
         parse_number("Enter: ")
     content = open(log_path).read()
@@ -171,7 +172,7 @@ def test_parse_number_logs_invalid_input(tmp_path, monkeypatch):
 def test_parse_int_logs_invalid_input(tmp_path, monkeypatch):
     """Each invalid integer input is written to the error log."""
     log_path = str(tmp_path / "e.log")
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", log_path)
     with patch("builtins.input", side_effect=["3.5", "3"]):
         parse_int("Enter: ")
     content = open(log_path).read()
@@ -186,7 +187,7 @@ def test_parse_int_logs_invalid_input(tmp_path, monkeypatch):
 def test_run_operation_logs_calculation_error(calc, tmp_path, monkeypatch):
     """A Calculator ValueError (e.g. divide by zero) is written to the error log."""
     log_path = str(tmp_path / "e.log")
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", log_path)
     with patch("builtins.input", side_effect=["10", "0"]):
         run_operation(calc, "divide")
     content = open(log_path).read()
@@ -197,7 +198,7 @@ def test_run_operation_logs_calculation_error(calc, tmp_path, monkeypatch):
 def test_run_operation_logs_unknown_operation(calc, tmp_path, monkeypatch):
     """An unknown operation name is written to the error log."""
     log_path = str(tmp_path / "e.log")
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", log_path)
     run_operation(calc, "unknown_op")
     content = open(log_path).read()
     assert "unsupported_operation" in content
@@ -207,7 +208,7 @@ def test_run_operation_logs_unknown_operation(calc, tmp_path, monkeypatch):
 def test_run_operation_success_does_not_log_error(calc, tmp_path, monkeypatch):
     """A successful operation writes nothing to the error log."""
     log_path = str(tmp_path / "e.log")
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", log_path)
     with patch("builtins.input", side_effect=["3", "4"]):
         run_operation(calc, "add")
     import os
@@ -221,7 +222,7 @@ def test_run_operation_success_does_not_log_error(calc, tmp_path, monkeypatch):
 def test_main_invalid_choice_logged(tmp_path, monkeypatch):
     """Invalid menu choices are written to the error log."""
     log_path = str(tmp_path / "e.log")
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", log_path)
     with patch("builtins.input", side_effect=["99", "q"]):
         main([])
     content = open(log_path).read()
@@ -233,8 +234,8 @@ def test_main_error_log_separate_from_history(tmp_path, monkeypatch):
     """Errors are written to the error log, not to the history file."""
     hist_path = str(tmp_path / "history.txt")
     log_path = str(tmp_path / "error.log")
-    monkeypatch.setattr(_main_mod, "HISTORY_FILE", hist_path)
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    monkeypatch.setattr(_history_mod, "HISTORY_FILE", hist_path)
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", log_path)
     # Divide by zero: error should appear in error log, not in history
     with patch("builtins.input", side_effect=["4", "10", "0", "q"]):
         main([])
@@ -251,7 +252,7 @@ def test_main_error_log_separate_from_history(tmp_path, monkeypatch):
 def test_cli_mode_logs_calculation_error(tmp_path, monkeypatch):
     """A Calculator error in cli_mode is written to the error log."""
     log_path = str(tmp_path / "e.log")
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", log_path)
     cli_mode(["divide", "10", "0"])
     content = open(log_path).read()
     assert "calculation_error" in content
@@ -261,7 +262,7 @@ def test_cli_mode_logs_calculation_error(tmp_path, monkeypatch):
 def test_cli_mode_logs_invalid_number_input(tmp_path, monkeypatch):
     """A non-numeric value in cli_mode is written to the error log."""
     log_path = str(tmp_path / "e.log")
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", log_path)
     cli_mode(["add", "abc", "3"])
     content = open(log_path).read()
     assert "invalid_input" in content
@@ -271,7 +272,7 @@ def test_cli_mode_logs_invalid_number_input(tmp_path, monkeypatch):
 def test_cli_mode_logs_wrong_arg_count(tmp_path, monkeypatch):
     """Wrong argument count in cli_mode is written to the error log."""
     log_path = str(tmp_path / "e.log")
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", log_path)
     cli_mode(["add", "3"])
     content = open(log_path).read()
     assert "invalid_input" in content
@@ -280,7 +281,7 @@ def test_cli_mode_logs_wrong_arg_count(tmp_path, monkeypatch):
 def test_cli_mode_success_does_not_log_error(tmp_path, monkeypatch, capsys):
     """A successful cli_mode call writes nothing to the error log."""
     log_path = str(tmp_path / "e.log")
-    monkeypatch.setattr(_main_mod, "ERROR_LOG_FILE", log_path)
+    monkeypatch.setattr(_history_mod, "ERROR_LOG_FILE", log_path)
     cli_mode(["add", "3", "4"])
     import os
     assert not os.path.exists(log_path)
@@ -562,7 +563,7 @@ def test_main_show_history_option(capsys):
 def test_main_history_recorded_after_operation(tmp_path, monkeypatch):
     """A successful operation is persisted to the history file."""
     hist_path = str(tmp_path / "history.txt")
-    monkeypatch.setattr(_main_mod, "HISTORY_FILE", hist_path)
+    monkeypatch.setattr(_history_mod, "HISTORY_FILE", hist_path)
     with patch("builtins.input", side_effect=["1", "3", "4", "q"]):
         main([])
     lines = open(hist_path).read().splitlines()
@@ -574,7 +575,7 @@ def test_main_history_recorded_after_operation(tmp_path, monkeypatch):
 def test_main_error_operation_not_recorded(tmp_path, monkeypatch):
     """A failed operation (e.g. divide by zero) is not written to history."""
     hist_path = str(tmp_path / "history.txt")
-    monkeypatch.setattr(_main_mod, "HISTORY_FILE", hist_path)
+    monkeypatch.setattr(_history_mod, "HISTORY_FILE", hist_path)
     with patch("builtins.input", side_effect=["4", "10", "0", "q"]):
         main([])
     lines = open(hist_path).read().splitlines()
@@ -584,7 +585,7 @@ def test_main_error_operation_not_recorded(tmp_path, monkeypatch):
 def test_main_history_cleared_on_new_session(tmp_path, monkeypatch):
     """Starting a new session wipes the history from the previous session."""
     hist_path = str(tmp_path / "history.txt")
-    monkeypatch.setattr(_main_mod, "HISTORY_FILE", hist_path)
+    monkeypatch.setattr(_history_mod, "HISTORY_FILE", hist_path)
     # First session: perform add
     with patch("builtins.input", side_effect=["1", "2", "3", "q"]):
         main([])
