@@ -1,3 +1,27 @@
+## Run: issue-253 — Error logging for invalid usage and calculation failures
+
+- **Branch:** exp3/issue-253-add-error-logging
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/error_logger.py` (new) — `ERROR_LOG_FILE` constant and `log_error(source, message)` function; append-mode file I/O with ISO-8601 timestamps
+  - `src/__main__.py` — imported `log_error`; added calls in `get_number_with_retry` (invalid operand), unknown-operation branch, and calculation error catch block
+  - `main.py` — imported `log_error`; added calls for no-args, unknown op, wrong arg count (binary/unary), and calculation/operand-parse errors
+  - `tests/conftest.py` (new) — autouse `isolate_error_log` fixture redirecting `ERROR_LOG_FILE` to `tmp_path` for all tests
+  - `tests/test_error_logger.py` (new) — 7 tests covering file creation, format, timestamp, append, per-line, constant type/extension
+  - `tests/test_main.py` — added 4 error-logging tests (56 total)
+  - `tests/test_cli.py` — added 6 error-logging tests (34 total)
+- **Purpose:** Implement Issue #253 — record invalid usage and calculation failures in `error.log` from both interactive and CLI modes; keep error log separate from user-facing session history.
+- **Risks:** None — purely additive; no existing behaviour changed; autouse fixture prevents test pollution.
+- **Tests passed:** 173/173
+- **Branch/worktree:** exp3/issue-253-add-error-logging
+- **Intended merge target:** exp3/expert-generic
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-issue-250)
 
 - **Branch:** exp3/issue-250-session-history

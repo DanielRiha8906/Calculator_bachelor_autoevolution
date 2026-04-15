@@ -135,3 +135,29 @@ def save_history(history, path=None):
 
 Tests can then `patch("src.__main__.HISTORY_FILE", tmp_path)` and the function
 will pick up the patched value. Applied in `save_history` / `tests/test_main.py`.
+
+## Pattern: autouse conftest fixture for cross-cutting side effects
+
+When a feature produces side effects (file writes, network calls) on every error path,
+patching it per-test is impractical. Instead, place an autouse fixture in `tests/conftest.py`
+that applies the patch for the entire test session. The fixture yields any per-test data
+(e.g., the temporary path) so individual tests that need to inspect the side effect can
+use it as a named fixture argument:
+
+```python
+# tests/conftest.py
+@pytest.fixture(autouse=True)
+def isolate_error_log(tmp_path):
+    log_path = str(tmp_path / "error.log")
+    with patch("src.error_logger.ERROR_LOG_FILE", log_path):
+        yield log_path
+
+# In a test file:
+def test_something_is_logged(isolate_error_log, capsys):
+    run_cli(["divide", "5", "0"], capsys)
+    with open(isolate_error_log) as fh:
+        assert "divide" in fh.read()
+```
+
+Tests that do not care about logging work unchanged because the autouse patch is invisible.
+Applied in `tests/conftest.py` / `tests/test_error_logger.py`, `tests/test_cli.py`, `tests/test_main.py`.
