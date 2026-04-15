@@ -4,6 +4,22 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 10 — Issue #270: Logic Separation (2026-04-15)
+
+- **Task:** Refactor the calculator so calculation logic is separated from user interaction and interface handling. Keep the application object-oriented and preserve the current calculator behavior.
+- **Files changed:** `src/calculator.py`, `src/__main__.py`, `tests/test_calculator.py`
+- **Outcome:** 152 tests pass (68 calculator + 84 CLI/interactive). All 147 prior tests continue to pass; 5 new tests added for `Calculator.execute`.
+- **Key decisions:**
+  - Added `Calculator.execute(operation, *args)` as the logic-layer dispatch point. Callers supply an operation name and already-validated arguments; `execute` routes via `getattr` to the correct method. Raises `ValueError` for unknown/non-callable names.
+  - Replaced the 12-branch `if/elif` chain in `run_operation` with arity-group dispatch (`_INT_ARG_OPS` / `_ONE_ARG_OPS` / else) plus `calc.execute()`. This cleanly separates the two concerns: prompt collection (UI layer) and computation (logic layer).
+  - Added `_OP_PROMPTS` dict in `__main__.py` mapping each operation name to its prompt tuple. All interactive display strings now live in the UI layer; `Calculator` remains free of display concerns.
+  - Replaced `calc.factorial(n)` and `getattr(calc, op)(...)` in `cli_mode` with `calc.execute(op, ...)` for consistency.
+  - No changes to `tests/test_main.py` — external behavior of all functions is identical.
+- **Lessons learned:** Separating prompt metadata (`_OP_PROMPTS`) from arity metadata (`_ONE_ARG_OPS` etc.) keeps each concern single-purpose: arity controls argument collection; prompts control display text. A unified `execute` method on the logic class makes the contract explicit without requiring callers to know individual method names.
+- **Cost:** PENDING | **Turns:** PENDING
+
+---
+
 ## Cycle 9 — Issue #252: Error Logging (2026-04-12)
 
 - **Task:** Add error logging to the calculator so failures and invalid usage are recorded in a local log file (`error.log`), separate from the operation history.

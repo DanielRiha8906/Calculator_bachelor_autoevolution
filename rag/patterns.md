@@ -163,4 +163,35 @@ def test_success_does_not_log_error(tmp_path, monkeypatch):
 
 ---
 
+## Pattern: Logic-layer dispatch method for name-based operation routing
+
+When a class has multiple operation methods and callers need to route by name (e.g. from a menu choice or a CLI argument), add a single `execute(operation, *args)` method to the logic class rather than requiring callers to use `getattr` directly:
+
+```python
+def execute(self, operation: str, *args):
+    method = getattr(self, operation, None)
+    if method is None or not callable(method):
+        raise ValueError(f"Unknown operation: '{operation}'")
+    return method(*args)
+```
+
+This keeps `getattr` logic inside the logic class, raises a clear `ValueError` for unknown names, and gives callers a stable API that does not expose Python introspection. The UI layer calls `calc.execute(op, *args)` and never needs to import individual method names.
+
+**First observed:** cycle 10, `Calculator.execute` in `src/calculator.py`
+
+---
+
+## Pattern: Separate prompt metadata from arity metadata
+
+When a CLI module collects user input for multiple operations with different prompts and arities, keep these as two separate data structures rather than one combined one:
+
+- `_ONE_ARG_OPS / _INT_ARG_OPS / _TWO_ARG_OPS` — control *how many* arguments to collect and what type.
+- `_OP_PROMPTS` — control *what text* to display when collecting each argument.
+
+This keeps single responsibility: arity sets change when new operations are added; prompt sets change when UX copy changes. Merging them into one structure couples two unrelated change axes.
+
+**First observed:** cycle 10, `_OP_PROMPTS` in `src/__main__.py`
+
+---
+
 <!-- Add further patterns here as they are discovered -->

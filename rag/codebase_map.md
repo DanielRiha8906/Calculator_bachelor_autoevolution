@@ -13,7 +13,7 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## src/calculator.py
 - **Purpose:** Defines the `Calculator` class — the core computation unit.
-- **Last updated:** cycle 4
+- **Last updated:** cycle 10
 - **Public API:**
   - `Calculator.add(a, b)` → `a + b`
   - `Calculator.subtract(a, b)` → `a - b`
@@ -27,14 +27,15 @@ Per-file summaries: purpose, public API surface, key invariants.
   - `Calculator.power(a, b)` → `a ** b`
   - `Calculator.log(a, base)` → `math.log(a, base)`; raises `ValueError` for `a <= 0` or `base <= 0` or `base == 1`
   - `Calculator.ln(a)` → `math.log(a)`; raises `ValueError` for `a <= 0`
+  - `Calculator.execute(operation: str, *args)` → dispatches to the named method by `getattr`; raises `ValueError` for unknown or non-callable names. This is the logic-layer entry point for all operation dispatch.
 - **Invariants:** No state — all methods are pure functions of their arguments. Imports `math` at module level.
 
 ---
 
 ## src/__main__.py
-- **Purpose:** CLI entry point — supports both interactive menu-driven mode and non-interactive single-operation mode (via command-line arguments).
-- **Last updated:** cycle 9
-- **Exports:** `main(args=None)`, `cli_mode(args)`, `show_menu()`, `parse_number(prompt, max_attempts)`, `parse_int(prompt, max_attempts)`, `run_operation(calc, operation)`, `clear_history(filepath=None)`, `append_to_history(entry, filepath=None)`, `show_history(filepath=None)`, `append_to_error_log(message, filepath=None)`, `OPERATIONS` dict, `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS`, `_ALL_OPS`, `MAX_ATTEMPTS`, `HISTORY_FILE`, `ERROR_LOG_FILE`, `TooManyAttemptsError`.
+- **Purpose:** CLI entry point — supports both interactive menu-driven mode and non-interactive single-operation mode (via command-line arguments). Calculation is delegated to `Calculator.execute`; this module owns all user interaction and display logic.
+- **Last updated:** cycle 10
+- **Exports:** `main(args=None)`, `cli_mode(args)`, `show_menu()`, `parse_number(prompt, max_attempts)`, `parse_int(prompt, max_attempts)`, `run_operation(calc, operation)`, `clear_history(filepath=None)`, `append_to_history(entry, filepath=None)`, `show_history(filepath=None)`, `append_to_error_log(message, filepath=None)`, `OPERATIONS` dict, `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS`, `_ALL_OPS`, `_OP_PROMPTS`, `MAX_ATTEMPTS`, `HISTORY_FILE`, `ERROR_LOG_FILE`, `TooManyAttemptsError`.
 - **Key constants:**
   - `MAX_ATTEMPTS = 3` — maximum consecutive invalid inputs before session ends.
   - `HISTORY_FILE = "history.txt"` — default path for session history (patchable in tests).
@@ -43,10 +44,12 @@ Per-file summaries: purpose, public API surface, key invariants.
   - `_ONE_ARG_OPS` — `{square, cube, square_root, cube_root, ln}` (one float arg).
   - `_INT_ARG_OPS` — `{factorial}` (one int arg).
   - `_TWO_ARG_OPS` — `{add, subtract, multiply, divide, power, log}` (two float args).
+  - `_OP_PROMPTS` — dict mapping operation name → tuple of interactive prompt strings; centralises all display text for input collection.
 - **`TooManyAttemptsError`:** Custom exception raised by `parse_number`/`parse_int` after `max_attempts` consecutive invalid inputs.
 - **History functions:** `clear_history` truncates/creates the file (called at session start); `append_to_history` appends one line per successful operation; `show_history` reads and prints all entries. All three use `None` sentinel defaults so that monkeypatching `HISTORY_FILE` on the module takes effect at call time.
 - **Error logging:** `append_to_error_log(message, filepath=None)` appends a timestamped line to `ERROR_LOG_FILE`. Called on: invalid number input (parse_number), invalid integer input (parse_int), invalid menu choice (main loop), unknown operation (run_operation), calculation ValueError (run_operation), wrong arg count / non-numeric / calculation errors (cli_mode). Uses the same `None`-sentinel pattern as history helpers. Error log is append-only and never cleared — it persists across sessions.
-- **`run_operation` return value:** Returns a history-entry string like `"add(3.0, 4.0) = 7.0"` on success, or `None` on error or unknown operation.
+- **`run_operation`:** Separated from calculation logic. Looks up prompts in `_OP_PROMPTS` (unknown ops return None immediately), collects user input via `parse_number`/`parse_int` based on arity group, then delegates computation to `calc.execute(operation, *args)`. Returns history-entry string like `"add(3.0, 4.0) = 7.0"` on success, `None` on failure.
+- **`cli_mode`:** Validates arity and numeric format, then calls `calc.execute(op, *args)` for all operations — no direct calls to individual Calculator methods.
 - **CLI mode usage:** `python -m src <operation> <value> [<value2>]` — parses via `argparse`, prints result to stdout, returns 0 on success / 1 on error (errors go to stderr and to error.log). Non-numeric values produce per-field error messages. Never retries. History is NOT written in CLI mode.
 - **Interactive mode:** `python -m src` (no args) — clears history, presents a numbered menu with `h` (show history) and `q` (quit) options, loops until user enters `"q"` or session ends.
 - **Dispatch:** `main(args=None)` — if `args` is `None`, uses `sys.argv[1:]`; if non-empty, delegates to `cli_mode(args)` and exits. Passing `args=[]` forces interactive mode (used by tests).
@@ -75,9 +78,9 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## tests/test_calculator.py
-- **Purpose:** Unit test suite for `Calculator` — full coverage of all twelve operations.
-- **Last updated:** cycle 4
-- **Tests (63 total):**
+- **Purpose:** Unit test suite for `Calculator` — full coverage of all twelve operations plus the execute dispatch method.
+- **Last updated:** cycle 10
+- **Tests (68 total):**
   - **add (5):** positive numbers, negative numbers, mixed sign, zero identity, floats
   - **subtract (6):** positive numbers, negative numbers, mixed sign, zero, floats, same-number-gives-zero
   - **multiply (6):** positive numbers, negative numbers, mixed sign, zero, identity (×1), floats
@@ -90,4 +93,5 @@ Per-file summaries: purpose, public API surface, key invariants.
   - **power (5):** positive exponent, zero exponent, one exponent, negative exponent, float base
   - **log (7):** base 10, base 2, base e, non-positive `a` raises, negative `a` raises, base==1 raises, base==0 raises
   - **ln (5):** ln(e)==1, ln(1)==0, ln(e³)==3, zero raises `ValueError`, negative raises `ValueError`
+  - **execute (5):** two-arg dispatch, one-arg dispatch, int-arg dispatch, ValueError propagation, unknown-op raises ValueError
 - **Invariants:** Must import from `src.calculator`, not from the package root; uses `math.isclose` for float comparisons.
