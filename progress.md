@@ -1,5 +1,15 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-15)
+
+- **Branch:** exp3/issue-273-modularization
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 11 (modularization) changes: added `src.operations` package to class diagram with `arithmetic`, `advanced`, and `scientific` modules and their exported functions; added delegation relationships from Calculator to arithmetic (add/subtract/multiply/divide) and advanced (factorial/square/cube/square_root/cube_root/power/log/ln); updated notes on divide, factorial, sqrt, log, ln to mention delegation; added module-level notes for arithmetic, advanced, and scientific; updated activity diagram notes to describe delegation to operations sub-package; added `arithmetic` and `advanced` participants to sequence diagram, replacing direct Calculator→Math delegation with Calculator→arithmetic/advanced→Math chains for relevant ops; distinguished between ops using math stdlib and those using `**` operator.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Issue #273 — Modularization (2026-04-15)
 
 - **Branch:** exp3/issue-273-modularization → PR targeting exp3/naive-generic

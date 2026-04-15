@@ -7,6 +7,8 @@ participant "__main__\n(main)" as Main
 participant "cli_main" as CLI
 participant "parse_number" as Parser
 participant "Calculator\n(execute)" as Calc
+participant "arithmetic\n(operations)" as Arith
+participant "advanced\n(operations)" as Adv
 participant "math\n(stdlib)" as Math
 participant "logger" as Log
 
@@ -42,18 +44,38 @@ alt sys.argv has arguments — CLI mode
       On success: history.append({op, operands, result}).
     end note
 
-    alt ops delegating to math stdlib
-      Calc -> Math : factorial / sqrt / cbrt / log10 / log
-      alt valid domain
-        Math --> Calc : computed result
-      else invalid domain (n<0, n<=0, div/0)
-        Math --> Calc : raises ValueError / ZeroDivisionError
-        Calc -> Log : logger.error("<op> error: ...")
-        Calc --> CLI : re-raises exception
-        CLI -> Log : logger.error("cli_main <op> failed: ...")
-        CLI --> User : "Error: <exception message>"
+    alt op in BINARY_OPS (add/subtract/multiply/divide)
+      Calc -> Arith : arithmetic.<op>(a, b)
+      alt divide and b == 0
+        Arith --> Calc : raises ZeroDivisionError
+        Calc -> Log : logger.error("divide error: ...")
+        Calc --> CLI : re-raises ZeroDivisionError
+        CLI -> Log : logger.error("cli_main divide failed: ...")
+        CLI --> User : "Error: division by zero"
         CLI --> Main : return 1
         Main -> User : sys.exit(1)
+      else success
+        Arith --> Calc : result
+      end
+    else op in UNARY_OPS / power (delegates to advanced)
+      Calc -> Adv : advanced.<op>(a)
+      alt ops using math stdlib (factorial/sqrt/cbrt/log10/log)
+        Adv -> Math : math.factorial / sqrt / cbrt / log10 / log
+        alt valid domain
+          Math --> Adv : computed result
+          Adv --> Calc : result
+        else invalid domain (n<0, n<=0)
+          Math --> Adv : raises ValueError
+          Adv --> Calc : re-raises ValueError
+          Calc -> Log : logger.error("<op> error: ...")
+          Calc --> CLI : re-raises ValueError
+          CLI -> Log : logger.error("cli_main <op> failed: ...")
+          CLI --> User : "Error: <exception message>"
+          CLI --> Main : return 1
+          Main -> User : sys.exit(1)
+        end
+      else ops using ** operator (square/cube/power)
+        Adv --> Calc : result
       end
     end
 
@@ -64,8 +86,8 @@ alt sys.argv has arguments — CLI mode
       CLI --> User : formatted result string
       CLI --> Main : return 0
       Main -> User : sys.exit(0)
-    else ValueError or ZeroDivisionError
-      Calc --> CLI : raises exception
+    else ValueError (non-domain errors, e.g. factorial non-whole)
+      Calc --> CLI : raises ValueError
       CLI -> Log : logger.error("cli_main <op> failed: ...")
       CLI --> User : "Error: <exception message>"
       CLI --> Main : return 1
@@ -152,17 +174,36 @@ else no arguments — Interactive REPL mode
         On success: history.append({op, operands, result}).
       end note
 
-      alt ops delegating to math stdlib
-        Calc -> Math : factorial / sqrt / cbrt / log10 / log
-        alt valid domain
-          Math --> Calc : computed result
-        else invalid domain (n<0, n<=0, div/0)
-          Math --> Calc : raises ValueError / ZeroDivisionError
-          Calc -> Log : logger.error("<op> error: ...")
-          Calc --> Main : re-raises exception
-          Main -> Log : logger.error("run_operation <op> failed: ...")
-          Main --> User : "Error: <exception message>"
+      alt op in BINARY_OPS (add/subtract/multiply/divide)
+        Calc -> Arith : arithmetic.<op>(a, b)
+        alt divide and b == 0
+          Arith --> Calc : raises ZeroDivisionError
+          Calc -> Log : logger.error("divide error: ...")
+          Calc --> Main : re-raises ZeroDivisionError
+          Main -> Log : logger.error("run_operation divide failed: ...")
+          Main --> User : "Error: division by zero"
           note right of Main: REPL loop continues
+        else success
+          Arith --> Calc : result
+        end
+      else op in UNARY_OPS / power (delegates to advanced)
+        Calc -> Adv : advanced.<op>(a)
+        alt ops using math stdlib (factorial/sqrt/cbrt/log10/log)
+          Adv -> Math : math.factorial / sqrt / cbrt / log10 / log
+          alt valid domain
+            Math --> Adv : computed result
+            Adv --> Calc : result
+          else invalid domain (n<0, n<=0)
+            Math --> Adv : raises ValueError
+            Adv --> Calc : re-raises ValueError
+            Calc -> Log : logger.error("<op> error: ...")
+            Calc --> Main : re-raises ValueError
+            Main -> Log : logger.error("run_operation <op> failed: ...")
+            Main --> User : "Error: <exception message>"
+            note right of Main: REPL loop continues
+          end
+        else ops using ** operator (square/cube/power)
+          Adv --> Calc : result
         end
       end
 
@@ -170,8 +211,8 @@ else no arguments — Interactive REPL mode
         Calc -> Calc : history.append({op, operands, result})
         Calc --> Main : result value
         Main --> User : "Result: <value>"
-      else ValueError or ZeroDivisionError (non-math-stdlib ops)
-        Calc --> Main : raises exception
+      else ValueError (non-domain errors, e.g. factorial non-whole)
+        Calc --> Main : raises ValueError
         Main -> Log : logger.error("run_operation <op> failed: ...")
         Main --> User : "Error: <exception message>"
       end
