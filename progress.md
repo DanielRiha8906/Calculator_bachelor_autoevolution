@@ -2,6 +2,23 @@
 
 ---
 
+## Run: Diagram update after issue #283 add GUI (2026-04-15)
+
+- **Branch:** exp3/issue-283-add-gui
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `CalculatorApp` class and `gui` module inside `src.interface` package with full public API; added relationships (`GUI ..> CalculatorApp`, `CalculatorApp ..> Calculator`, `CalculatorApp ..> History`, `CalculatorApp ..> Interactive`); updated `Calculator.execute` note to mention `_compute`; updated `__main__` note and added `Main ..> GUI` dependency for `--gui` dispatch
+  - `artifacts/activity_diagram.puml` — updated note to cycle 14; added `--gui` branch inside `args non-empty` check: `launch_gui()` → `stop`; added `endif` to close `--gui` inner if before outer interactive-mode `else`
+  - `artifacts/sequence_diagram.puml` — added `CalculatorApp` participant; updated note to cycle 14; changed `alt CLI mode` to a three-way `alt GUI mode / else CLI mode / else interactive mode`; added full GUI event-loop block showing `CalculatorApp` creation, `clear_history`, mode switching, `_compute` dispatch for all three arity types, history append, and history viewer
+- **Purpose:** Bring PlantUML diagrams in sync with cycle 14 GUI additions (`src/interface/gui.py`, `--gui` flag in `__main__.py`).
+- **Risks:** Diagram-only change; no source code modified.
+- **All tests passed:** N/A (no code changed)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md (gui.py, __main__.py, interactive.py, history.py, calculator.py)
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #283 — Add GUI (2026-04-15)
 
 - **Branch:** exp3/issue-283-add-gui

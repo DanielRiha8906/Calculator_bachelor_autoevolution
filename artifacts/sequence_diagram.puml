@@ -10,13 +10,14 @@ skinparam sequence {
 
 actor "User" as User
 participant "__main__ /\ninterface.*" as Main
+participant "CalculatorApp" as App
 participant "Calculator" as Calc
 participant "history.txt" as History
 participant "error.log" as ErrorLog
 participant "math" as Math
 
 note over Main
-  Cycle 13 modular breakdown of "Main":
+  Cycle 14 modular breakdown of "Main":
   main()          → src.__main__
   cli_mode()      → src.interface.cli
   run_operation() → src.interface.interactive
@@ -24,6 +25,8 @@ note over Main
   parse_int()     → src.interface.interactive
   show_menu()     → src.interface.interactive
   file helpers    → src.interface.history
+  GUI             → src.interface.gui
+    (CalculatorApp + launch_gui)
   Calculator delegates to:
     src.operations.basic (add/subtract/multiply/divide)
     src.operations.scientific (factorial/square/cube/
@@ -33,7 +36,91 @@ end note
 User -> Main : python -m src [operation [values...]]
 activate Main
 
-alt CLI mode (args non-empty)
+alt GUI mode (args == ["--gui"])
+
+    Main -> Main : launch_gui()
+    Main -> App : <<create>> CalculatorApp(root, tk, ttk, messagebox)
+    activate App
+    App -> Calc : <<create>>
+    activate Calc
+    App -> History : clear_history()
+    note right of App : mode = "normal"\noperations = NORMAL_MODE_OPERATIONS
+
+    loop GUI event loop (until window closed)
+
+        App -> User : render widgets\n(mode radio buttons, op listbox,\ninput fields, Calculate/History/Quit)
+
+        alt User clicks Calculate (operation selected)
+            User -> App : click Calculate
+            App -> App : _compute(operation, value_a, value_b)
+
+            alt int-arg operation (factorial)
+                App -> Calc : execute("factorial", n)
+                activate Calc
+                alt n invalid (not int or n < 0)
+                    Calc --> App : raise ValueError
+                    App -> User : messagebox.showerror(...)
+                else valid
+                    Calc -> Math : factorial(n)
+                    Math --> Calc : n!
+                    Calc --> App : n!
+                    App -> User : result_var.set(n!)
+                    App -> History : append_to_history(entry)
+                end
+                deactivate Calc
+
+            else one-arg operation (square/cube/square_root/cube_root/ln)
+                App -> Calc : execute(operation, a)
+                activate Calc
+                alt ValueError raised (e.g. sqrt of negative, ln of non-positive)
+                    Calc --> App : raise ValueError
+                    App -> User : messagebox.showerror(...)
+                else success
+                    Calc -> Math : sqrt(a) or log(a) [if needed]
+                    Math --> Calc : result
+                    Calc --> App : result
+                    App -> User : result_var.set(result)
+                    App -> History : append_to_history(entry)
+                end
+                deactivate Calc
+
+            else two-arg operation (add/subtract/multiply/divide/power/log)
+                App -> Calc : execute(operation, a, b)
+                activate Calc
+                alt ValueError raised (e.g. divide-by-zero, invalid log base)
+                    Calc --> App : raise ValueError
+                    App -> User : messagebox.showerror(...)
+                else success
+                    Calc -> Math : log(a, base) [if log op]
+                    Math --> Calc : result
+                    Calc --> App : result
+                    App -> User : result_var.set(result)
+                    App -> History : append_to_history(entry)
+                end
+                deactivate Calc
+            end
+
+        else User clicks Show History
+            User -> App : click Show History
+            App -> User : open Toplevel window\nwith numbered _history entries
+
+        else User switches mode radio button
+            User -> App : select Normal / Scientific radio button
+            App -> App : _on_mode_change()\n_refresh_operations()
+            App -> User : updated op listbox, cleared entries
+
+        else User clicks Quit
+            User -> App : click Quit
+            App -> App : root.destroy()
+            note right : exits event loop
+        end
+
+    end
+
+    deactivate Calc
+    deactivate App
+
+else CLI mode (args non-empty, args[0] != "--gui")
 
     Main -> Main : cli_mode(args)
     activate Main
