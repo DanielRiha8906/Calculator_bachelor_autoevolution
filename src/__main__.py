@@ -1,15 +1,11 @@
 import logging
 import sys
 
-from .calculator import Calculator
+from .calculator import Calculator, BINARY_OPS, UNARY_OPS
 
 logger = logging.getLogger(__name__)
 
 
-UNARY_OPS = {"factorial", "square", "cube", "square_root", "cube_root", "log", "ln"}
-BINARY_OPS = {"add", "subtract", "multiply", "divide", "power"}
-# Operations that require integer operands
-INTEGER_OPS = {"factorial"}
 # Maximum number of attempts allowed when prompting the user for a valid number
 MAX_INPUT_ATTEMPTS = 3
 
@@ -65,27 +61,16 @@ def parse_number(prompt: str, max_attempts: int = MAX_INPUT_ATTEMPTS) -> float:
     raise ValueError(f"No valid number entered after {max_attempts} attempt(s)")
 
 
-def _to_int_if_needed(op: str, value: float) -> "float | int":
-    """Convert value to int for operations that require integer operands."""
-    if op not in INTEGER_OPS:
-        return value
-    if value != int(value):
-        raise ValueError(f"{op} requires a whole number, got {value}")
-    return int(value)
-
-
 def run_operation(calc: Calculator, op: str) -> None:
     """Execute one calculator operation with user-supplied operands."""
     try:
         if op in BINARY_OPS:
             a = parse_number("  Enter first number: ")
             b = parse_number("  Enter second number: ")
-            result = getattr(calc, op)(a, b)
-            calc.history.append({"op": op, "operands": (a, b), "result": result})
+            result = calc.execute(op, a, b)
         else:
-            a = _to_int_if_needed(op, parse_number("  Enter number: "))
-            result = getattr(calc, op)(a)
-            calc.history.append({"op": op, "operands": (a,), "result": result})
+            a = parse_number("  Enter number: ")
+            result = calc.execute(op, a)
         print(f"  Result: {result}")
     except (ValueError, ZeroDivisionError) as exc:
         logger.error("run_operation %s failed: %s", op, exc)
@@ -140,14 +125,13 @@ def cli_main(args: list) -> int:
                 return 1
             a = float(operand_args[0])
             b = float(operand_args[1])
-            result = getattr(calc, op)(a, b)
+            result = calc.execute(op, a, b)
         else:
             if len(operand_args) != 1:
                 print(f"Error: {op} requires exactly 1 operand, got {len(operand_args)}")
                 return 1
             a = float(operand_args[0])
-            a = _to_int_if_needed(op, a)
-            result = getattr(calc, op)(a)
+            result = calc.execute(op, a)
     except (ValueError, ZeroDivisionError) as exc:
         logger.error("cli_main %s failed: %s", op, exc)
         print(f"Error: {exc}")
