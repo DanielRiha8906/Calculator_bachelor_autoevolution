@@ -16,7 +16,7 @@ participant "error.log" as ErrorLog
 participant "math" as Math
 
 note over Main
-  Cycle 11 modular breakdown of "Main":
+  Cycle 13 modular breakdown of "Main":
   main()          → src.__main__
   cli_mode()      → src.interface.cli
   run_operation() → src.interface.interactive
@@ -130,11 +130,11 @@ else interactive mode (no args)
     Main -> Calc : <<create>>
     activate Calc
     Main -> History : clear_history()\n[truncate / create empty file]
-    note right of Main : invalid_op_count = 0
+    note right of Main : mode = "normal"\ncurrent_ops = NORMAL_MODE_OPERATIONS\ninvalid_op_count = 0
 
     loop interactive menu loop
 
-        Main -> User : show_menu()\nprint "1. add ... 12. ln  h. show history  q. quit"
+        Main -> User : show_menu(current_ops, mode)\nprint "Calculator (<Mode> Mode)" header,\nnumbered ops from current_ops,\n"h. show history  s. switch to ... mode  q. quit"
         User -> Main : enter choice
 
         alt choice == "q"
@@ -146,7 +146,16 @@ else interactive mode (no args)
             History --> Main : entry lines
             Main -> User : print "--- History ---\n  1. ...\n  2. ..."
 
-        else invalid choice (not in OPERATIONS)
+        else choice == "s" (mode switch)
+            alt mode == "normal"
+                Main -> Main : mode = "scientific"\ncurrent_ops = SCIENTIFIC_MODE_OPERATIONS
+                Main -> User : print "Switched to scientific mode."
+            else mode == "scientific"
+                Main -> Main : mode = "normal"\ncurrent_ops = NORMAL_MODE_OPERATIONS
+                Main -> User : print "Switched to normal mode."
+            end
+
+        else invalid choice (not in current_ops)
             Main -> ErrorLog : append_to_error_log("invalid_input: ...")
             Main -> Main : invalid_op_count += 1
             alt invalid_op_count >= MAX_ATTEMPTS (3)
@@ -156,9 +165,9 @@ else interactive mode (no args)
                 Main -> User : print "Invalid choice: '<choice>'. <N> attempt(s) left."
             end
 
-        else valid choice (dispatched via OPERATIONS dict)
+        else valid choice (key exists in current_ops)
             Main -> Main : invalid_op_count = 0
-            Main -> Main : operation = OPERATIONS[choice]
+            Main -> Main : operation = current_ops[choice]
 
             Main -> User : prompt for input(s)\n(parse_number / parse_int)
             note right: each invalid attempt → append_to_error_log;\neach helper retries up to MAX_ATTEMPTS=3\ntimes on invalid input, then raises\nTooManyAttemptsError

@@ -91,14 +91,16 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## src/interface/interactive.py
 - **Purpose:** Interactive menu-driven mode components. Owns all user-facing input and output for the interactive loop.
-- **Last updated:** cycle 11
+- **Last updated:** cycle 13
 - **Public API / Exports:**
   - `TooManyAttemptsError` — custom exception raised after MAX_ATTEMPTS invalid inputs
   - `MAX_ATTEMPTS = 3`
-  - `OPERATIONS` — dict mapping menu keys `"1"`–`"12"` to operation names
+  - `NORMAL_MODE_OPERATIONS` — dict mapping menu keys `"1"`–`"4"` to the four basic operation names
+  - `SCIENTIFIC_MODE_OPERATIONS` — dict mapping menu keys `"1"`–`"12"` to all twelve operation names
+  - `OPERATIONS` — alias for `SCIENTIFIC_MODE_OPERATIONS` (backward compatibility)
   - `_ONE_ARG_OPS`, `_INT_ARG_OPS`, `_TWO_ARG_OPS`, `_ALL_OPS` — arity grouping sets
   - `_OP_PROMPTS` — dict mapping operation name → tuple of prompt strings
-  - `show_menu()` — print the numbered operation menu
+  - `show_menu(operations=None, mode="normal")` — print the operation menu; defaults to `NORMAL_MODE_OPERATIONS`; shows mode-switch hint (`s. switch to ...`) in footer
   - `parse_number(prompt, max_attempts)` — prompt for float with retry; raises `TooManyAttemptsError`
   - `parse_int(prompt, max_attempts)` — prompt for int with retry; raises `TooManyAttemptsError`
   - `run_operation(calc, operation)` — collect inputs, delegate to `calc.execute`, return history entry or None
@@ -117,14 +119,15 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ## src/__main__.py
 - **Purpose:** CLI entry point — `main()` function + re-exports from sub-modules for backward compatibility.
-- **Last updated:** cycle 11
+- **Last updated:** cycle 13
 - **Exports (re-exported from sub-modules):**
   - `HISTORY_FILE`, `ERROR_LOG_FILE` from `src.interface.history`
   - `clear_history`, `append_to_history`, `show_history`, `append_to_error_log` from `src.interface.history`
-  - `MAX_ATTEMPTS`, `OPERATIONS`, `TooManyAttemptsError` from `src.interface.interactive`
+  - `MAX_ATTEMPTS`, `NORMAL_MODE_OPERATIONS`, `SCIENTIFIC_MODE_OPERATIONS`, `OPERATIONS`, `TooManyAttemptsError` from `src.interface.interactive`
   - `show_menu`, `parse_number`, `parse_int`, `run_operation` from `src.interface.interactive`
   - `cli_mode` from `src.interface.cli`
 - **Defined here:** `main(args=None)` — dispatches to CLI mode or starts the interactive loop.
+- **Interactive loop mode state:** `main()` tracks `mode` (`"normal"` or `"scientific"`) and `current_ops` dict. The `"s"` key toggles mode; choices are validated against `current_ops` only. Scientific operations (keys `"5"`–`"12"`) are inaccessible in normal mode until the user switches.
 - **Invariants:** Re-exports allow old `from src.__main__ import X` statements to continue working. However, monkeypatching `HISTORY_FILE`/`ERROR_LOG_FILE` must target `src.interface.history`, not `src.__main__`.
 - **CLI mode usage:** `python -m src <operation> <value> [<value2>]`
 - **Interactive mode:** `python -m src` (no args)
@@ -153,8 +156,8 @@ Per-file summaries: purpose, public API surface, key invariants.
 ---
 
 ## tests/test_main.py
-- **Purpose:** Unit tests for the interactive CLI and cli_mode — 84 tests with mocked input.
-- **Last updated:** cycle 11
-- **Key change from cycle 10:** `autouse` fixture `isolate_files` now monkeypatches `src.interface.history.HISTORY_FILE` and `src.interface.history.ERROR_LOG_FILE` (not `src.__main__`). All inline monkeypatching in individual tests also targets `src.interface.history`.
-- **Tests (84 total):** Same test count and coverage as cycle 10. No tests added or removed.
+- **Purpose:** Unit tests for the interactive CLI and cli_mode — 91 tests with mocked input.
+- **Last updated:** cycle 13
+- **Key change from cycle 13:** Added import of `NORMAL_MODE_OPERATIONS` and `SCIENTIFIC_MODE_OPERATIONS` from `src.interface.interactive`. Updated `test_show_menu_prints_all_operations` → `test_show_menu_prints_normal_operations_by_default` to match new default behavior. Updated `test_main_two_operations_then_quit` to use two normal-mode operations. Added 5 new tests for mode switching and `show_menu` mode variants.
+- **Tests (91 total):** 84 prior tests (7 net new, 2 updated).
 - **Invariants:** Tests import `src.interface.history as _history_mod` for monkeypatching. All other imports remain via `src.__main__` re-exports. Interactive tests call `main([])` to bypass sys.argv; cli_mode tests call `cli_mode([...])` directly.

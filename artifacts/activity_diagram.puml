@@ -9,7 +9,7 @@ skinparam activity {
 }
 
 note
-  Module structure (cycle 11):
+  Module structure (cycle 13):
   main() lives in src.__main__
   cli_mode() lives in src.interface.cli
   run_operation / parse_number / parse_int /
@@ -78,11 +78,11 @@ if (args non-empty?) then (yes)
 
 else (no — interactive mode)
 
-    :Instantiate Calculator\nclear_history()\ninvalid_op_count = 0;
+    :Instantiate Calculator\nclear_history()\nmode = "normal"\ncurrent_ops = NORMAL_MODE_OPERATIONS\ninvalid_op_count = 0;
 
     repeat
 
-        :show_menu()\nPrint numbered operation menu (1-12),\n"h. show history", and "q. quit";
+        :show_menu(current_ops, mode)\nPrint "Calculator (<Mode> Mode)" header,\nnumbered operations from current_ops,\n"h. show history", "s. switch to ... mode", "q. quit";
         :choice = input("Select operation:").strip().lower();
 
         if (choice == "q"?) then (yes)
@@ -90,7 +90,13 @@ else (no — interactive mode)
             stop
         elseif (choice == "h"?) then (yes)
             :show_history()\nPrint all entries from history file;
-        elseif (choice not in OPERATIONS?) then (yes)
+        elseif (choice == "s"?) then (yes)
+            if (mode == "normal"?) then (yes)
+                :mode = "scientific"\ncurrent_ops = SCIENTIFIC_MODE_OPERATIONS\nPrint "Switched to scientific mode.";
+            else (no)
+                :mode = "normal"\ncurrent_ops = NORMAL_MODE_OPERATIONS\nPrint "Switched to normal mode.";
+            endif
+        elseif (choice not in current_ops?) then (yes)
             :append_to_error_log("invalid_input: ...")\ninvalid_op_count += 1;
             if (invalid_op_count >= MAX_ATTEMPTS?) then (yes)
                 :Print "Invalid choice. Too many invalid choices. Ending session.";
@@ -100,7 +106,7 @@ else (no — interactive mode)
             endif
         else (valid choice)
             :invalid_op_count = 0;
-            :operation = OPERATIONS[choice];
+            :operation = current_ops[choice];
 
             partition "run_operation(calc, operation)" {
 

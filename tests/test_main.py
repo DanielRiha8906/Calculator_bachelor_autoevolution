@@ -24,6 +24,7 @@ from src.__main__ import (
     HISTORY_FILE,
     ERROR_LOG_FILE,
 )
+from src.interface.interactive import NORMAL_MODE_OPERATIONS, SCIENTIFIC_MODE_OPERATIONS
 from src.calculator import Calculator
 
 
@@ -48,10 +49,22 @@ def isolate_files(tmp_path, monkeypatch):
 # show_menu
 # ---------------------------------------------------------------------------
 
-def test_show_menu_prints_all_operations(capsys):
+def test_show_menu_prints_normal_operations_by_default(capsys):
+    """Default show_menu() shows only the four normal-mode operations."""
     show_menu()
     captured = capsys.readouterr().out
-    for key, name in OPERATIONS.items():
+    for name in NORMAL_MODE_OPERATIONS.values():
+        assert name in captured
+    # Scientific-only operations must not appear in normal mode
+    assert "factorial" not in captured
+    assert "q" in captured
+
+
+def test_show_menu_scientific_mode_shows_all_operations(capsys):
+    """Passing scientific operations shows all twelve operations."""
+    show_menu(SCIENTIFIC_MODE_OPERATIONS, mode="scientific")
+    captured = capsys.readouterr().out
+    for name in SCIENTIFIC_MODE_OPERATIONS.values():
         assert name in captured
     assert "q" in captured
 
@@ -59,6 +72,20 @@ def test_show_menu_prints_all_operations(capsys):
 def test_show_menu_includes_history_option(capsys):
     show_menu()
     assert "h" in capsys.readouterr().out
+
+
+def test_show_menu_includes_mode_switch_option(capsys):
+    """Normal mode menu shows option to switch to scientific mode."""
+    show_menu()
+    assert "s" in capsys.readouterr().out
+
+
+def test_show_menu_scientific_includes_mode_switch_option(capsys):
+    """Scientific mode menu shows option to switch to normal mode."""
+    show_menu(SCIENTIFIC_MODE_OPERATIONS, mode="scientific")
+    captured = capsys.readouterr().out
+    assert "s" in captured
+    assert "normal" in captured
 
 
 # ---------------------------------------------------------------------------
@@ -510,13 +537,13 @@ def test_main_add_then_quit(capsys):
 
 def test_main_two_operations_then_quit(capsys):
     """User performs two operations in sequence before quitting."""
-    # op 1 = add (inputs: 2 and 3)
-    # op 2 = square (input: 4)
-    with patch("builtins.input", side_effect=["1", "2", "3", "6", "4", "q"]):
+    # op 1 = add (inputs: 2 and 3) → 5
+    # op 2 = multiply (inputs: 4 and 5) → 20
+    with patch("builtins.input", side_effect=["1", "2", "3", "3", "4", "5", "q"]):
         main([])
     captured = capsys.readouterr().out
     assert "5" in captured   # 2 + 3
-    assert "16" in captured  # 4^2
+    assert "20" in captured  # 4 * 5
     assert "Goodbye" in captured
 
 
@@ -557,6 +584,43 @@ def test_main_show_history_option(capsys):
         main([])
     captured = capsys.readouterr().out
     assert "No history" in captured
+    assert "Goodbye" in captured
+
+
+def test_main_switch_to_scientific_mode(capsys):
+    """Pressing 's' in normal mode switches to scientific mode."""
+    with patch("builtins.input", side_effect=["s", "q"]):
+        main([])
+    captured = capsys.readouterr().out
+    assert "scientific" in captured.lower()
+    assert "Goodbye" in captured
+
+
+def test_main_switch_back_to_normal_mode(capsys):
+    """Pressing 's' twice returns to normal mode."""
+    with patch("builtins.input", side_effect=["s", "s", "q"]):
+        main([])
+    captured = capsys.readouterr().out
+    assert "normal" in captured.lower()
+    assert "Goodbye" in captured
+
+
+def test_main_scientific_mode_allows_scientific_ops(capsys):
+    """After switching to scientific mode, scientific operations are accessible."""
+    # Switch to scientific mode ('s'), then use square (key '6'), input 4
+    with patch("builtins.input", side_effect=["s", "6", "4", "q"]):
+        main([])
+    captured = capsys.readouterr().out
+    assert "16" in captured
+    assert "Goodbye" in captured
+
+
+def test_main_normal_mode_rejects_scientific_keys(capsys):
+    """In normal mode, a key only valid in scientific mode is treated as invalid."""
+    with patch("builtins.input", side_effect=["6", "q"]):
+        main([])
+    captured = capsys.readouterr().out
+    assert "Invalid choice" in captured
     assert "Goodbye" in captured
 
 
