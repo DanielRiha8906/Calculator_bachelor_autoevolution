@@ -431,3 +431,57 @@ def test_display_menu_includes_history_option():
     for call in mock_print.call_args_list:
         output.extend(str(a) for a in call.args)
     assert any("h" in line and "history" in line for line in output)
+
+
+# ---------------------------------------------------------------------------
+# Error logging — interactive mode writes to error.log
+# ---------------------------------------------------------------------------
+
+def _run_main_capturing_log(inputs, isolate_error_log):
+    """Run main() with canned inputs; return (printed output, log file path)."""
+    with patch("builtins.input", side_effect=inputs), \
+         patch("builtins.print"):
+        main()
+    return isolate_error_log
+
+
+def test_unknown_operation_is_logged(isolate_error_log):
+    _run_main_capturing_log(["99", "q"], isolate_error_log)
+    import os
+    assert os.path.exists(isolate_error_log)
+    with open(isolate_error_log, encoding="utf-8") as fh:
+        content = fh.read()
+    assert "[interactive]" in content
+    assert "unknown operation '99'" in content
+
+
+def test_calculation_error_is_logged(isolate_error_log):
+    # divide by zero triggers a calculation error that should be logged
+    _run_main_capturing_log(["4", "10", "0", "q"], isolate_error_log)
+    import os
+    assert os.path.exists(isolate_error_log)
+    with open(isolate_error_log, encoding="utf-8") as fh:
+        content = fh.read()
+    assert "[interactive]" in content
+    assert "divide" in content
+
+
+def test_invalid_operand_is_logged(isolate_error_log):
+    # "abc" is not a valid number — should be logged then retried
+    _run_main_capturing_log(["1", "abc", "5", "3", "q"], isolate_error_log)
+    import os
+    assert os.path.exists(isolate_error_log)
+    with open(isolate_error_log, encoding="utf-8") as fh:
+        content = fh.read()
+    assert "[interactive]" in content
+    assert "invalid operand input" in content
+
+
+def test_successful_calculation_does_not_write_error_log(isolate_error_log):
+    # A clean session with no errors must not create any log entries
+    _run_main_capturing_log(["1", "2", "3", "q"], isolate_error_log)
+    import os
+    if os.path.exists(isolate_error_log):
+        with open(isolate_error_log, encoding="utf-8") as fh:
+            content = fh.read()
+        assert content == ""
