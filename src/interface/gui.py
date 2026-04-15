@@ -31,6 +31,12 @@ class CalculatorApp:
     (all twelve operations).  Session history is accumulated in memory and
     also written to the shared history file used by the other interface modes.
 
+    The layout is divided into clearly separated sections:
+    - Mode selection (top)
+    - Operation list (left column)
+    - Inputs, result, and session history (right column, stacked vertically)
+    - Action buttons (bottom)
+
     Parameters
     ----------
     root : tk.Tk
@@ -64,71 +70,109 @@ class CalculatorApp:
     # ------------------------------------------------------------------
 
     def _build_ui(self) -> None:
-        """Build and lay out all widgets."""
+        """Build and lay out all widgets in clearly separated sections."""
         tk = self._tk
         ttk = self._ttk
 
-        # --- Mode selector ---
-        mode_frame = ttk.LabelFrame(self._root, text="Mode")
-        mode_frame.grid(row=0, column=0, columnspan=2, padx=8, pady=(8, 4), sticky="ew")
+        self._root.title("Calculator")
+
+        # Outer container provides uniform padding around the whole interface.
+        main = ttk.Frame(self._root, padding="10 10 10 10")
+        main.grid(row=0, column=0, sticky="nsew")
+        self._root.columnconfigure(0, weight=1)
+        self._root.rowconfigure(0, weight=1)
+
+        # --- Mode selector (full width, top) ---
+        mode_frame = ttk.LabelFrame(main, text="Mode", padding="6 4 6 4")
+        mode_frame.grid(row=0, column=0, columnspan=2, pady=(0, 8), sticky="ew")
 
         self._mode_var = tk.StringVar(value="normal")
         ttk.Radiobutton(
             mode_frame, text="Normal", variable=self._mode_var,
             value="normal", command=self._on_mode_change,
-        ).pack(side="left", padx=8, pady=4)
+        ).pack(side="left", padx=12, pady=2)
         ttk.Radiobutton(
             mode_frame, text="Scientific", variable=self._mode_var,
             value="scientific", command=self._on_mode_change,
-        ).pack(side="left", padx=8, pady=4)
+        ).pack(side="left", padx=12, pady=2)
 
-        # --- Operation listbox ---
-        op_frame = ttk.LabelFrame(self._root, text="Operation")
-        op_frame.grid(row=1, column=0, padx=8, pady=4, sticky="ns")
+        # --- Operation listbox (left column) ---
+        op_frame = ttk.LabelFrame(main, text="Operation", padding="4 4 4 4")
+        op_frame.grid(row=1, column=0, padx=(0, 8), pady=(0, 8), sticky="ns")
 
         self._op_listbox = tk.Listbox(
-            op_frame, height=12, width=14, selectmode="single", exportselection=False,
+            op_frame, height=12, width=16, selectmode="single",
+            exportselection=False, activestyle="none",
         )
-        self._op_listbox.pack(padx=4, pady=4)
+        self._op_listbox.grid(row=0, column=0, sticky="ns")
         self._op_listbox.bind("<<ListboxSelect>>", self._on_operation_select)
 
-        # --- Input fields ---
-        input_frame = ttk.LabelFrame(self._root, text="Inputs")
-        input_frame.grid(row=1, column=1, padx=8, pady=4, sticky="nsew")
-
-        self._label_a = ttk.Label(input_frame, text="Value:")
-        self._label_a.grid(row=0, column=0, padx=6, pady=4, sticky="w")
-        self._entry_a = ttk.Entry(input_frame, width=16)
-        self._entry_a.grid(row=0, column=1, padx=6, pady=4)
-
-        self._label_b = ttk.Label(input_frame, text="Value 2:")
-        self._label_b.grid(row=1, column=0, padx=6, pady=4, sticky="w")
-        self._entry_b = ttk.Entry(input_frame, width=16)
-        self._entry_b.grid(row=1, column=1, padx=6, pady=4)
-
-        ttk.Button(input_frame, text="Calculate", command=self._on_calculate).grid(
-            row=2, column=0, columnspan=2, pady=6,
+        op_scroll = ttk.Scrollbar(
+            op_frame, orient="vertical", command=self._op_listbox.yview,
         )
+        op_scroll.grid(row=0, column=1, sticky="ns")
+        self._op_listbox.config(yscrollcommand=op_scroll.set)
+
+        # --- Right column: inputs, result, history (stacked) ---
+        right = ttk.Frame(main)
+        right.grid(row=1, column=1, sticky="nsew", pady=(0, 8))
+        right.columnconfigure(0, weight=1)
+
+        # --- Input fields ---
+        input_frame = ttk.LabelFrame(right, text="Inputs", padding="8 6 8 6")
+        input_frame.grid(row=0, column=0, sticky="ew", pady=(0, 6))
+        input_frame.columnconfigure(1, weight=1)
+
+        self._label_a = ttk.Label(input_frame, text="Value:", width=12, anchor="w")
+        self._label_a.grid(row=0, column=0, padx=(0, 4), pady=3, sticky="w")
+        self._entry_a = ttk.Entry(input_frame, width=20)
+        self._entry_a.grid(row=0, column=1, pady=3, sticky="ew")
+
+        self._label_b = ttk.Label(input_frame, text="Value 2:", width=12, anchor="w")
+        self._label_b.grid(row=1, column=0, padx=(0, 4), pady=3, sticky="w")
+        self._entry_b = ttk.Entry(input_frame, width=20)
+        self._entry_b.grid(row=1, column=1, pady=3, sticky="ew")
+
+        ttk.Button(
+            input_frame, text="Calculate", command=self._on_calculate,
+        ).grid(row=2, column=0, columnspan=2, pady=(8, 0), sticky="ew")
 
         # --- Result display ---
-        result_frame = ttk.LabelFrame(self._root, text="Result")
-        result_frame.grid(row=2, column=0, columnspan=2, padx=8, pady=4, sticky="ew")
+        result_frame = ttk.LabelFrame(right, text="Result", padding="8 4 8 4")
+        result_frame.grid(row=1, column=0, sticky="ew", pady=(0, 6))
+        result_frame.columnconfigure(0, weight=1)
 
         self._result_var = tk.StringVar(value="\u2014")
         ttk.Label(
-            result_frame, textvariable=self._result_var, font=("TkFixedFont", 12),
-        ).pack(padx=8, pady=6)
+            result_frame, textvariable=self._result_var,
+            font=("TkFixedFont", 14), anchor="center",
+        ).grid(row=0, column=0, pady=6, sticky="ew")
 
-        # --- Action buttons ---
-        btn_frame = ttk.Frame(self._root)
-        btn_frame.grid(row=3, column=0, columnspan=2, padx=8, pady=(4, 8))
+        # --- Session history panel ---
+        hist_frame = ttk.LabelFrame(right, text="Session History", padding="4 4 4 4")
+        hist_frame.grid(row=2, column=0, sticky="ew")
+        hist_frame.columnconfigure(0, weight=1)
 
-        ttk.Button(btn_frame, text="Show History", command=self._on_show_history).pack(
-            side="left", padx=6,
+        hist_scroll = ttk.Scrollbar(hist_frame, orient="vertical")
+        self._history_listbox = tk.Listbox(
+            hist_frame, height=4, width=36, selectmode="browse",
+            exportselection=False, yscrollcommand=hist_scroll.set,
+            activestyle="none",
         )
-        ttk.Button(btn_frame, text="Quit", command=self._root.destroy).pack(
-            side="left", padx=6,
-        )
+        hist_scroll.config(command=self._history_listbox.yview)
+        self._history_listbox.grid(row=0, column=0, sticky="ew")
+        hist_scroll.grid(row=0, column=1, sticky="ns")
+
+        # --- Action buttons (full width, bottom) ---
+        btn_frame = ttk.Frame(main)
+        btn_frame.grid(row=2, column=0, columnspan=2, pady=(6, 0), sticky="ew")
+
+        ttk.Button(
+            btn_frame, text="Show Full History", command=self._on_show_history,
+        ).pack(side="left")
+        ttk.Button(
+            btn_frame, text="Quit", command=self._root.destroy,
+        ).pack(side="right")
 
         self._refresh_operations()
 
@@ -205,6 +249,8 @@ class CalculatorApp:
             )
             self._result_var.set(str(result))
             self._history.append(entry)
+            self._history_listbox.insert("end", entry)
+            self._history_listbox.see("end")
             append_to_history(entry)
         except ValueError as exc:
             self._messagebox.showerror("Calculation Error", str(exc))

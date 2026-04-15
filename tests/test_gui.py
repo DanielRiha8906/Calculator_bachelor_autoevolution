@@ -60,6 +60,7 @@ def app(tmp_path) -> CalculatorApp:
     a._result_var = MagicMock()
     a._label_a = MagicMock()
     a._label_b = MagicMock()
+    a._history_listbox = MagicMock()
     a._mode_var = MagicMock()
     a._mode_var.get.return_value = "normal"
     a._messagebox = mock_msgbox
@@ -361,3 +362,12 @@ def test_failed_calculation_does_not_append_to_history(app):
     app._entry_b.get.return_value = "0"
     app._on_calculate()
     assert app._history == []
+
+
+def test_on_calculate_inserts_entry_into_history_listbox(app):
+    app._operations = ["add", "subtract", "multiply", "divide"]
+    app._op_listbox.curselection.return_value = (0,)  # "add"
+    app._entry_a.get.return_value = "3"
+    app._entry_b.get.return_value = "4"
+    app._on_calculate()
+    app._history_listbox.insert.assert_called_once_with("end", "add(3.0, 4.0) = 7.0")
