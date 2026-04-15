@@ -18,5 +18,7 @@ Master index of summarized files. Updated each evolution cycle.
 | `tests/test_error_logger.py` | 7-test suite for error_logger: file creation, source/message/timestamp format, append, per-line invariant | 9 |
 | `tests/test_main.py` | 80+-test suite for the interactive CLI; covers mode switching, NORMAL/SCIENTIFIC ops maps, all 18 ops including trig, retry logic, history, error logging | 14 |
 | `tests/test_session.py` | 49-test suite for CalculatorSession: op metadata sets (18 ops), format_entry, execute (all 18 ops + error paths), history tracking, save() | 14 |
+| `src/gui.py` | tkinter GUI: `CalculatorMode` ABC, `NormalMode` (6 ops), `ScientificMode` (18 ops), `CalculatorGUI` (delegates to CalculatorSession), `run_gui()` | 15 |
+| `tests/test_gui.py` | 59-test suite for GUI: mode class invariants, _parse_operand, calculate paths, mode switching, history refresh; mocks tkinter for headless CI | 15 |
 | `main.py` | Bash-accessible CLI entry point: `python main.py <op> [a] [b]`; imports op sets from src.session, uses CalculatorSession, exits 0/1, logs errors | 11 |
 | `tests/test_cli.py` | 34-test suite for main.py CLI: all 12 ops, arg-count validation, error paths, non-numeric operands, error logging | 9 |

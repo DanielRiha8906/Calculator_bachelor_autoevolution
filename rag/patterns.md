@@ -249,3 +249,54 @@ def test_something_is_logged(isolate_error_log, capsys):
 
 Tests that do not care about logging work unchanged because the autouse patch is invisible.
 Applied in `tests/conftest.py` / `tests/test_error_logger.py`, `tests/test_cli.py`, `tests/test_main.py`.
+
+## Pattern: sys.modules injection to test modules with optional C-extension dependencies
+
+When a source module has an optional import (e.g. `tkinter`, a C extension) that may be
+absent in headless CI, inject a `MagicMock` into `sys.modules` *before* importing the
+module under test.  This lets all tests — including those that test pure-Python abstractions
+inside the same file — run without skipping.
+
+```python
+# At the top of the test file, before any src.* imports:
+try:
+    import tkinter  # noqa: F401
+except ImportError:
+    import sys
+    from unittest.mock import MagicMock
+    _mock = MagicMock()
+    sys.modules.setdefault("tkinter", _mock)
+    sys.modules.setdefault("tkinter.messagebox", _mock)
+    sys.modules.setdefault("tkinter.scrolledtext", _mock)
+
+from src.gui import NormalMode, CalculatorGUI  # now importable
+```
+
+The source module must guard its import with `try/except ImportError` and expose a
+`_TKINTER_AVAILABLE` flag so `run_gui()` (or equivalent) can raise `RuntimeError`
+gracefully at runtime when the real library is absent.
+
+Applied in `src/gui.py` / `tests/test_gui.py` (issue-284).
+
+## Pattern: ABC with class-level attributes satisfying abstract properties
+
+Python's ABCMeta allows a concrete subclass to satisfy an `@abstractmethod`-decorated
+property by defining a *class-level attribute* with the same name.  This avoids the
+verbosity of writing a `@property` getter that only returns a constant:
+
+```python
+class CalculatorMode(ABC):
+    @property
+    @abstractmethod
+    def name(self) -> str: ...
+
+class NormalMode(CalculatorMode):
+    name = "Normal"   # class attribute — satisfies the abstract property
+```
+
+The abstract-method check at instantiation time sees `name` as defined on the class
+and does not raise `TypeError`.  This only works when the concrete value is read-only
+(a constant); mutable state still requires a real `@property`.
+
+Applied in `src/gui.py` — `NormalMode.name`, `NormalMode.operations`,
+`ScientificMode.name`, `ScientificMode.operations` (issue-284).

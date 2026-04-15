@@ -118,6 +118,34 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ---
 
+## `src/gui.py`
+- **Purpose:** Tkinter-based graphical interface for the Calculator. Provides a window with mode selection, operation list, operand inputs, result display, and session history.
+- **Public API:**
+  - `CalculatorMode` (ABC) — abstract base with `name: str` and `operations: dict[str, tuple[str, int]]` abstract properties.
+  - `NormalMode(CalculatorMode)` — 6-op mode: add, subtract, multiply, divide, square, square_root.
+  - `ScientificMode(CalculatorMode)` — 18-op mode: all normal ops plus factorial, cube, cube_root, power, log, ln, sin, cos, tan, cot, asin, acos.
+  - `CalculatorGUI.__init__(root)` — builds all widgets; takes a `tk.Tk` root or compatible container.
+  - `CalculatorGUI._parse_operand(value, require_int=False)` — static method; converts string to int/float; raises `ValueError` on invalid input.
+  - `run_gui() -> None` — creates `tk.Tk()`, instantiates `CalculatorGUI`, calls `mainloop()`; raises `RuntimeError` if tkinter is not installed.
+- **Key invariants:**
+  - All computation is delegated to `CalculatorSession`; no calculator logic is duplicated in the GUI.
+  - tkinter is imported inside a `try/except ImportError` block; `_TKINTER_AVAILABLE` flag is set so the module can be imported in headless environments.
+  - `CalculatorMode.operations` dicts use human-readable display labels as keys and `(session_op_name, arity)` as values.
+  - `ScientificMode.operations` contains exactly `ALL_OPS` (18 operations); `NormalMode.operations` is a strict subset.
+  - The second operand widget is hidden for unary operations and shown for binary operations via `_on_op_selected`.
+  - Failed calculations show an error dialog and do not append to session history.
+- **Last updated:** cycle 15 (issue-284)
+
+---
+
+## `tests/test_gui.py`
+- **Purpose:** Unit tests for `src/gui.py`.
+- **Current state:** 59 tests split into: mode abstraction tests (`CalculatorMode` ABC, `NormalMode`, `ScientificMode` invariants), `_parse_operand` tests (int/float/require_int/error paths), and `CalculatorGUI` logic tests (init, mode switch, op selection, calculate paths, error dialogs, history refresh, scientific mode spot-checks).
+- **Test strategy:** tkinter is mocked via `sys.modules` injection before `src.gui` is imported so tests run in headless CI. `CalculatorGUI` instances are created with `_build_ui` and `_refresh_operations` patched out; mock widget attributes are injected afterwards so logic methods can be tested in isolation.
+- **Last updated:** cycle 15 (issue-284)
+
+---
+
 ## `main.py`
 - **Purpose:** Bash-accessible command-line entry point for the Calculator. Accepts `<operation> [operand1] [operand2]` as positional CLI arguments, computes the result, and prints it to stdout. Not interactive — one invocation, one result.
 - **Public API:**

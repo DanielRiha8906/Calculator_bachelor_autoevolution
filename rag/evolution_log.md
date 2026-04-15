@@ -4,6 +4,19 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 15 — Issue #284: GUI — Expert/generic
+
+- **Task:** Add a tkinter-based graphical interface for the calculator. The GUI must expose all 18 supported operations, allow switching between Normal (6 ops) and Scientific (18 ops) modes, accept unary and binary operand inputs, display results, and show session history. Use an OO mode design with a shared base abstraction (`CalculatorMode` ABC) so Normal and Scientific modes share the same GUI dispatch logic. Reuse `CalculatorSession` rather than duplicating calculator logic.
+- **Files changed:**
+  - `src/gui.py` (new): `CalculatorMode` ABC, `NormalMode`, `ScientificMode`, `CalculatorGUI`, `run_gui()`. tkinter import wrapped in `try/except` so module loads in headless environments with `_TKINTER_AVAILABLE = False`.
+  - `tests/test_gui.py` (new): 59 tests — mode class invariants (name, operation count, valid op names, arity correctness, subset relationships), `_parse_operand` (int/float/require_int/errors), `CalculatorGUI` logic (init, mode switch, op selection arity toggle, calculate paths, error dialogs, history, scientific spot-checks).
+- **Test result:** 296 passed (was 237)
+- **Key decisions:** `CalculatorMode` is an ABC with `name` and `operations` as abstract properties; `NormalMode` and `ScientificMode` define these as class-level attributes which Python's ABC machinery accepts (attribute access satisfies the abstract property contract). `CalculatorGUI` delegates all computation to `CalculatorSession` — the GUI only handles I/O. The type annotation `root: tk.Tk` was changed to `root` (no annotation) to avoid `NameError` when tkinter is absent and `tk` is not bound. Tests inject a `MagicMock` into `sys.modules['tkinter']` before importing `src.gui` so all 59 tests run headlessly; `_build_ui` and `_refresh_operations` are patched out and mock widget attributes injected so logic methods can be tested in isolation.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 14 — Issue #281: Scientific Mode — Expert/generic
 
 - **Task:** Add Normal and Scientific calculator modes to the interactive CLI. Normal mode exposes add, subtract, multiply, divide, square, square_root. Scientific mode extends Normal with cube, cube_root, factorial, power, log, ln, sin, cos, tan, cot, asin, acos (all trig in degrees). Users switch modes with 'm' without restarting the session.
