@@ -1,5 +1,17 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-15)
+
+- **Branch:** exp3/issue-279-scientific-mode
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 13 scientific mode additions. Changes from previous diagrams: (1) class_diagram — added SCIENTIFIC_UNARY_OPS constant, 10 scientific methods (sin/cos/tan/asin/acos/atan/sinh/cosh/tanh/exp) to Calculator, filled in scientific module with actual API, added SCIENTIFIC_MENU/SCIENTIFIC_MENU_MAP to __main__, added delegation arrow to scientific module, updated notes; (2) activity_diagram — added 'm' mode-switching branch in REPL, split normal/scientific menu display, updated CLI all_ops note to include SCIENTIFIC_UNARY_OPS; (3) sequence_diagram — added scientific (operations) participant, added scientific dispatch path in both CLI and REPL, added mode-toggle flow, added shared history note.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Issue #279 Scientific Mode (2026-04-15)
 
 - **Branch:** exp3/issue-279-scientific-mode

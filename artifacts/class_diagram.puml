@@ -8,6 +8,7 @@ package "src" {
         {static} UNARY_OPS : set
         {static} BINARY_OPS : set
         {static} INTEGER_OPS : set
+        {static} SCIENTIFIC_UNARY_OPS : set
         +history : list[dict]
         +__init__()
         +get_history() : list[dict]
@@ -23,6 +24,16 @@ package "src" {
         +power(base, exp) : number
         +log(n) : float
         +ln(n) : float
+        +sin(x) : float
+        +cos(x) : float
+        +tan(x) : float
+        +asin(x) : float
+        +acos(x) : float
+        +atan(x) : float
+        +sinh(x) : float
+        +cosh(x) : float
+        +tanh(x) : float
+        +exp(x) : float
         +execute(op: str, *operands: float|int) : float|int
         -{static} _to_int_if_needed(op: str, value: float) : float | int
     }
@@ -32,6 +43,8 @@ package "src" {
         +MAX_INPUT_ATTEMPTS : int
         +MENU : str
         +MENU_MAP : dict[str, str]
+        +SCIENTIFIC_MENU : str
+        +SCIENTIFIC_MENU_MAP : dict[str, str]
         +parse_number(prompt: str, max_attempts: int) : float
         +run_operation(calc: Calculator, op: str) : void
         -_format_result(value: int | float) : str
@@ -61,19 +74,30 @@ package "src.operations" {
     }
 
     class "scientific" <<module>> {
-        ' placeholder: future scientific operations\n(trigonometric, hyperbolic, etc.)
+        +sin(x) : float
+        +cos(x) : float
+        +tan(x) : float
+        +asin(x) : float
+        +acos(x) : float
+        +atan(x) : float
+        +sinh(x) : float
+        +cosh(x) : float
+        +tanh(x) : float
+        +exp(x) : float
     }
 }
 
 Main ..> Calculator : instantiates / dispatches via calc.execute(op, ...)
 Calculator ..> arithmetic : delegates add/subtract/multiply/divide
 Calculator ..> advanced : delegates factorial/square/cube/\nsquare_root/cube_root/power/log/ln
+Calculator ..> scientific : delegates sin/cos/tan/asin/acos/\natan/sinh/cosh/tanh/exp
 
 note right of Calculator::logger
   logging.getLogger(__name__).
   Used by divide, factorial,
-  square_root, log, and ln to
-  log at ERROR level before re-raising.
+  square_root, log, ln, asin,
+  and acos to log at ERROR level
+  before re-raising.
 end note
 
 note right of Calculator::UNARY_OPS
@@ -83,8 +107,10 @@ note right of Calculator::UNARY_OPS
   BINARY_OPS: {"add","subtract","multiply",
     "divide","power"}
   INTEGER_OPS: {"factorial"}
-  __main__ imports BINARY_OPS and UNARY_OPS
-  to determine operand arity for prompting.
+  SCIENTIFIC_UNARY_OPS: {"sin","cos","tan",
+    "asin","acos","atan","sinh","cosh","tanh","exp"}
+  SCIENTIFIC_UNARY_OPS is disjoint from UNARY_OPS.
+  __main__ imports all four sets.
 end note
 
 note right of Calculator::history
@@ -101,6 +127,8 @@ note right of Calculator::execute
   For UNARY_OPS: calls _to_int_if_needed first
     (coerces to int for INTEGER_OPS; raises
     ValueError for non-whole numbers).
+  For SCIENTIFIC_UNARY_OPS: passes operand directly
+    (no int coercion needed).
   Appends history entry on success.
   Raises ValueError for unknown ops.
   Propagates ZeroDivisionError/ValueError unchanged.
@@ -155,6 +183,20 @@ note right of Calculator::ln
   Logs error at ERROR level before re-raising.
 end note
 
+note right of Calculator::asin
+  Delegates to scientific.asin(x)
+  which calls math.asin(x).
+  Raises ValueError for |x| > 1.
+  Logs error at ERROR level before re-raising.
+end note
+
+note right of Calculator::acos
+  Delegates to scientific.acos(x)
+  which calls math.acos(x).
+  Raises ValueError for |x| > 1.
+  Logs error at ERROR level before re-raising.
+end note
+
 note left of Main::logger
   logging.getLogger(__name__).
   Used by run_operation and cli_main
@@ -165,8 +207,16 @@ end note
 
 note left of Main::MENU_MAP
   Maps "1"–"12" to operation names.
-  "h" shows history; "q" quits.
-  Both handled directly in main().
+  "h" shows history; "m" switches mode; "q" quits.
+  All three handled directly in main().
+end note
+
+note left of Main::SCIENTIFIC_MENU_MAP
+  Maps "1"–"10" to scientific op names:
+  sin, cos, tan, asin, acos, atan,
+  sinh, cosh, tanh, exp.
+  Active when mode == "scientific".
+  "m" switches back to normal mode.
 end note
 
 note left of Main::MAX_INPUT_ATTEMPTS
@@ -179,7 +229,9 @@ end note
 
 note left of Main::run_operation
   Checks BINARY_OPS (imported from calculator)
-  to decide operand count; calls calc.execute().
+  to decide operand count; UNARY_OPS and
+  SCIENTIFIC_UNARY_OPS both take one operand.
+  Calls calc.execute().
   Catches ValueError / ZeroDivisionError;
   logs via logger.error before printing
   "Error: ..." to stdout.
@@ -189,6 +241,7 @@ end note
 note left of Main::cli_main
   Parses sys.argv[1:] as
   <operation> [operands...]
+  Uses all_ops = UNARY_OPS | BINARY_OPS | SCIENTIFIC_UNARY_OPS.
   Returns 0 on success, 1 on error.
   Logs errors via logger.error.
 end note
@@ -218,9 +271,10 @@ note bottom of advanced
 end note
 
 note bottom of scientific
-  Placeholder module (empty body).
-  Intended for future trigonometric /
-  hyperbolic functions in a scientific mode.
+  Pure functions; all delegate to math stdlib.
+  All angle inputs/outputs in radians.
+  asin/acos raise ValueError for |x| > 1.
+  Re-exported from src/operations/__init__.py.
 end note
 
 @enduml
