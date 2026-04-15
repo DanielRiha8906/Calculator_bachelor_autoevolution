@@ -2,6 +2,31 @@
 
 ---
 
+## Run: Issue #274 — Modularization (2026-04-15)
+
+- **Branch:** exp3/issue-274-modularization
+- **PR target:** exp3/structured-generic
+- **Files changed:**
+  - `src/operations/__init__.py` — new file; operations sub-package init
+  - `src/operations/basic.py` — new file; pure functions: add, subtract, multiply, divide
+  - `src/operations/scientific.py` — new file; pure functions: factorial, square, cube, square_root, cube_root, power, log, ln
+  - `src/interface/__init__.py` — new file; interface sub-package init
+  - `src/interface/history.py` — new file; HISTORY_FILE/ERROR_LOG_FILE constants + clear_history, append_to_history, show_history, append_to_error_log
+  - `src/interface/interactive.py` — new file; TooManyAttemptsError, MAX_ATTEMPTS, OPERATIONS, arity sets, _OP_PROMPTS, show_menu, parse_number, parse_int, run_operation
+  - `src/interface/cli.py` — new file; cli_mode function
+  - `src/calculator.py` — refactored: Calculator methods now delegate to operations sub-modules
+  - `src/__main__.py` — refactored: thin entry point with main() + re-exports for backward compatibility
+  - `tests/test_main.py` — updated: added `import src.interface.history as _history_mod`; all monkeypatch.setattr calls for HISTORY_FILE/ERROR_LOG_FILE changed from `_main_mod` to `_history_mod`
+- **Purpose:** Modularize the codebase so operation implementations, core logic, and interface handling are cleanly separated. Organize operations into basic/scientific sub-modules so future scientific functionality can be added in `src/operations/scientific.py` (or a new sub-module) without touching interface code.
+- **Risks:** Low. Public API of Calculator class is unchanged. Re-exports in `src/__main__.py` preserve backward-compatible imports. The only breaking change for direct consumers is monkeypatching: tests must patch `src.interface.history.HISTORY_FILE` instead of `src.__main__.HISTORY_FILE`.
+- **All tests passed:** Yes — 152/152 (68 calculator + 84 CLI/interactive)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update (2026-04-15)
 
 - **Branch:** exp3/issue-270-logic-separation

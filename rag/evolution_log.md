@@ -4,6 +4,23 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 11 — Issue #274: Modularization (2026-04-15)
+
+- **Task:** Refactor the calculator into multiple modules for better organization. Separate core logic, interface handling, and operation implementations. Organize the operations structure so future scientific functionality can be added without another major reorganization.
+- **Files changed:** `src/calculator.py`, `src/__main__.py`, `tests/test_main.py`; created `src/operations/__init__.py`, `src/operations/basic.py`, `src/operations/scientific.py`, `src/interface/__init__.py`, `src/interface/history.py`, `src/interface/interactive.py`, `src/interface/cli.py`
+- **Outcome:** 152 tests pass (68 calculator + 84 CLI/interactive). No tests added or removed — all existing tests continue to pass.
+- **Key decisions:**
+  - Created `src/operations/basic.py` (add, subtract, multiply, divide) and `src/operations/scientific.py` (factorial, square, cube, square_root, cube_root, power, log, ln) as pure standalone functions. `Calculator` class delegates to these via thin wrapper methods, preserving its public API unchanged.
+  - Created `src/interface/history.py` to own `HISTORY_FILE`, `ERROR_LOG_FILE` constants and all file-I/O helpers (`clear_history`, `append_to_history`, `show_history`, `append_to_error_log`). This is now the single canonical location for these constants.
+  - Created `src/interface/interactive.py` to own all interactive-mode components: `TooManyAttemptsError`, `MAX_ATTEMPTS`, `OPERATIONS`, arity sets (`_ONE_ARG_OPS` etc.), `_OP_PROMPTS`, `show_menu`, `parse_number`, `parse_int`, `run_operation`.
+  - Created `src/interface/cli.py` to own `cli_mode` — the non-interactive single-operation mode.
+  - `src/__main__.py` reduced to just `main()` + re-exports from sub-modules for backward compatibility. Re-exports allow existing `from src.__main__ import X` statements to continue working without changes to external consumers.
+  - Updated `tests/test_main.py`: all `monkeypatch.setattr` calls targeting `HISTORY_FILE`/`ERROR_LOG_FILE` changed from `_main_mod` to `_history_mod` (`src.interface.history`). Added `import src.interface.history as _history_mod`. The None-sentinel pattern (reading constants at call time) means patching the owning module is sufficient — no chain-patching needed.
+- **Lessons learned:** When splitting a module, the monkeypatching targets in tests must follow the constants to their new home. Re-exporting names in `src/__main__.py` preserves import compatibility but does NOT fix monkeypatching — the target module must be the one that owns the name read at call time.
+- **Cost:** PENDING | **Turns:** PENDING
+
+---
+
 ## Cycle 10 — Issue #270: Logic Separation (2026-04-15)
 
 - **Task:** Refactor the calculator so calculation logic is separated from user interaction and interface handling. Keep the application object-oriented and preserve the current calculator behavior.

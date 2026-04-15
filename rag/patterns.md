@@ -194,4 +194,40 @@ This keeps single responsibility: arity sets change when new operations are adde
 
 ---
 
+## Pattern: Monkeypatch targets must follow constants to their owning module
+
+When a module constant (e.g. `HISTORY_FILE`) is used as a default via the None-sentinel pattern, `monkeypatch.setattr` must target the module that **owns** the constant — i.e., the module whose attribute the function reads at call time. Re-exporting the constant in another module (e.g. `src.__main__`) does NOT redirect the read; it only creates a second name binding that is independent of the original.
+
+Example: after moving `HISTORY_FILE` from `src.__main__` to `src.interface.history`, tests must patch `src.interface.history.HISTORY_FILE`:
+
+```python
+import src.interface.history as _history_mod
+
+monkeypatch.setattr(_history_mod, "HISTORY_FILE", str(tmp_path / "history.txt"))
+```
+
+Patching `src.__main__.HISTORY_FILE` would update the re-exported name but leave `src.interface.history.HISTORY_FILE` unchanged, so `clear_history()` would still write to the original path.
+
+**First observed:** cycle 11, `tests/test_main.py` — splitting `src/__main__.py` into interface sub-modules required updating all monkeypatch targets from `_main_mod` to `_history_mod`.
+
+---
+
+## Pattern: Thin Calculator class wrapping pure operation functions
+
+When operation logic is extracted into standalone pure functions (e.g., `src/operations/basic.py`), the Calculator class becomes a thin object-oriented wrapper:
+
+```python
+from .operations.basic import add as _add
+
+class Calculator:
+    def add(self, a, b):
+        return _add(a, b)
+```
+
+This keeps the public `Calculator` API unchanged (existing tests and callers require no update) while separating the computation logic into importable, independently testable functions. Adding new operation categories (e.g., `src/operations/statistics.py`) requires only a new module + Calculator wrapper methods — no changes to interface code.
+
+**First observed:** cycle 11, `src/calculator.py` delegating to `src/operations/basic.py` and `src/operations/scientific.py`.
+
+---
+
 <!-- Add further patterns here as they are discovered -->
