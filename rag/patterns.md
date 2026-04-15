@@ -26,6 +26,9 @@ Library modules (e.g., `calculator.py`, `__main__.py` at import time) should onl
 ### Log-then-re-raise for Calculator errors
 When a Calculator method catches an exception to emit a log record (e.g., `ZeroDivisionError`, `ValueError`), always re-raise the original exception unchanged. This keeps logging as a side-effect-only concern: callers retain the same exception contract and tests that use `pytest.raises` are unaffected.
 
+### Named-dispatch execute() method for logic/interface separation
+When a class has multiple operations that share cross-cutting concerns (history recording, input coercion), add an `execute(op, *operands)` method that dispatches by name, applies the shared logic (coercion, history), and propagates exceptions unchanged. The interface layer calls `execute()` with pre-parsed values rather than calling individual methods directly and then applying concerns like history tracking itself. This keeps the interface as pure I/O and the class as the authority on all operation semantics.
+
 ## Anti-Patterns
 
 ### Infinite retry loops without limit
