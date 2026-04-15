@@ -1,5 +1,15 @@
 # Progress Log
 
+## Run: Issue #269 — Logic Separation (2026-04-15)
+
+- **Branch:** exp3/issue-269-logic-separation → PR #285 targeting exp3/naive-generic
+- **Files changed:** src/calculator.py, src/__main__.py, tests/test_calculator.py, rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
+- **Purpose:** Separate calculator logic from interface layer. Moved UNARY_OPS, BINARY_OPS, INTEGER_OPS constants and _to_int_if_needed() from __main__.py to calculator.py. Added Calculator.execute() dispatch method that handles type coercion and history recording. __main__.py now imports these symbols and delegates to calc.execute() — keeping it as pure I/O.
+- **Risks:** Minimal. Behaviour is preserved; all 149 tests pass. The only observable change is that history recording now happens inside execute() rather than in run_operation — external callers that read calc.history directly are unaffected.
+- **Tests passed:** 149/149
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
 ## Run: Diagram Update (2026-04-12)
 
 - **Branch:** exp3/issue-251-add-error-logging
