@@ -2,6 +2,24 @@
 
 ---
 
+## Run: Issue #270 — Logic Separation (2026-04-15)
+
+- **Branch:** exp3/issue-270-logic-separation
+- **PR target:** exp3/structured-generic
+- **Files changed:**
+  - `src/calculator.py` — added `Calculator.execute(operation, *args)` method: dispatches to the named Calculator method via `getattr`; raises `ValueError` for unknown or non-callable names. This is the logic layer's unified dispatch point.
+  - `src/__main__.py` — added `_OP_PROMPTS` dict mapping each operation name to its interactive prompt tuple (UI layer); refactored `run_operation` to replace the 12-branch if/elif chain with arity-group dispatch (`_INT_ARG_OPS` / `_ONE_ARG_OPS` / else) + `calc.execute(operation, *args)`; replaced `calc.factorial(n)` and `getattr(calc, op)(...)` in `cli_mode` with `calc.execute(op, ...)`.
+  - `tests/test_calculator.py` — added 5 tests for `Calculator.execute`: two-arg dispatch, one-arg dispatch, int-arg dispatch, ValueError propagation, unknown operation raises ValueError.
+- **Purpose:** Separate calculation logic from user interaction. `Calculator` now owns all computation and dispatch via `execute`; `__main__.py` owns all input collection and display. `run_operation` no longer mixes prompting and calculation within the same if/elif branches.
+- **Risks:** None — external behavior of all existing functions is identical; all 147 prior tests pass unchanged.
+- **All tests passed:** Yes — 152 tests (68 calculator + 84 CLI/interactive, including 5 new execute tests).
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update (2026-04-12)
 
 - **Branch:** exp3/issue-252-add-error-logging
