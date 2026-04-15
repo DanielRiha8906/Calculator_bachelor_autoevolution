@@ -340,3 +340,20 @@ Duration: 108.0s | Cost: $0.330687 USD | Turns: 21
 - **Tests passed:** N/A (no source changes)
 - **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
 Duration: 216.1s | Cost: $0.502483 USD | Turns: 19
+
+---
+
+## Run: Diagram update (2026-04-15)
+
+- **Branch:** exp3/issue-274-modularization
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — rewritten to reflect cycle 11 modular structure: replaced monolithic `__main__` class with proper `package "src.operations"` (basic, scientific modules), `package "src.interface"` (history, interactive, cli modules), standalone `Calculator` class, and `__main__` entry-point module; added all delegation/dependency arrows between modules; retained and updated all notes for invariants and error conditions.
+  - `artifacts/activity_diagram.puml` — added module-structure note at diagram start identifying which cycle-11 module owns each function (main, cli_mode, run_operation, parse_*, show_menu, file helpers); all flow content unchanged.
+  - `artifacts/sequence_diagram.puml` — updated `Main` participant label to `__main__ / interface.*` with an embedded note listing the cycle-11 module breakdown; all sequence logic unchanged.
+- **Purpose:** Reflect cycle 11 (issue #274) modularization in all three PlantUML diagrams. The class diagram was the primary target as it now shows the `src.operations` and `src.interface` sub-packages explicitly. Activity and sequence diagrams received lightweight annotations only since the observable flow is unchanged.
+- **Risks:** None — diagram-only change; no source code modified.
+- **All tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING

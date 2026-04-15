@@ -8,6 +8,17 @@ skinparam activity {
     DiamondBorderColor Black
 }
 
+note
+  Module structure (cycle 11):
+  main() lives in src.__main__
+  cli_mode() lives in src.interface.cli
+  run_operation / parse_number / parse_int /
+    show_menu live in src.interface.interactive
+  History helpers live in src.interface.history
+  Calculator delegates to src.operations.basic
+    and src.operations.scientific
+end note
+
 start
 
 :args = sys.argv[1:] (or passed directly to main());
