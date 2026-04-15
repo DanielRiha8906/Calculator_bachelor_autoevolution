@@ -52,110 +52,136 @@ class CalculatorGUI:
 
     def _build_ui(self) -> None:
         """Construct all tkinter widgets and lay them out with grid."""
+        # -- colour palette (modern dark theme) --
+        BG         = "#1c1c1e"   # window background
+        D_BG       = "#000000"   # display background
+        D_FG       = "#ffffff"   # display main result text
+        D_FG2      = "#8e8e93"   # display expression/secondary text
+        C_DIGIT    = "#333333"   # digit button
+        C_OP       = "#ff9f0a"   # binary-operator button (orange)
+        C_CLR      = "#a5a5a5"   # clear button (light gray)
+        C_CLR_FG   = "#1c1c1e"   # dark text on clear button for contrast
+        C_UNARY    = "#2c2c2e"   # unary-op button (dark gray)
+        C_CTL_SCI  = "#30d158"   # sci-toggle button (green)
+        C_CTL_HIST = "#0a84ff"   # history button (blue)
+        FG         = "#ffffff"   # default button foreground
+
+        # -- fonts --
+        F_EXPR   = ("Arial", 12)
+        F_DISP   = ("Arial", 36, "bold")
+        F_BTN    = ("Arial", 20, "bold")
+        F_BTN_SM = ("Arial", 14)
+        F_SCI    = ("Arial", 12)
+
         self.root.title("Calculator")
-        self.root.configure(bg="#1a1a2e")
+        self.root.configure(bg=BG)
         self.root.resizable(False, False)
+        self.root.minsize(320, 560)
+
+        # Make all four columns share horizontal space equally
+        for col in range(4):
+            self.root.columnconfigure(col, weight=1, minsize=78)
 
         # --- Display area (row 0) ---
-        display_frame = tk.Frame(self.root, bg="#1a1a2e", padx=6, pady=6)
+        display_frame = tk.Frame(self.root, bg=D_BG, padx=14, pady=10)
         display_frame.grid(row=0, column=0, columnspan=4, sticky="ew")
 
         self.expression_var = tk.StringVar(value="")
         tk.Label(
             display_frame,
             textvariable=self.expression_var,
-            bg="#1a1a2e",
-            fg="#888888",
+            bg=D_BG,
+            fg=D_FG2,
             anchor="e",
-            font=("Arial", 11),
+            font=F_EXPR,
         ).pack(fill="x")
 
         self.display_var = tk.StringVar(value="0")
         tk.Label(
             display_frame,
             textvariable=self.display_var,
-            bg="#1a1a2e",
-            fg="white",
+            bg=D_BG,
+            fg=D_FG,
             anchor="e",
-            font=("Arial", 28, "bold"),
+            font=F_DISP,
         ).pack(fill="x")
 
-        # --- Digit and basic binary-op buttons (rows 1-4) ---
-        _DIG = "#34495e"   # digit button colour
-        _BOP = "#e74c3c"   # binary op colour
-        _EQL = "#e67e22"   # equals colour
-
-        btn_grid = [
-            ("7", 1, 0, lambda: self.press_digit("7"), _DIG),
-            ("8", 1, 1, lambda: self.press_digit("8"), _DIG),
-            ("9", 1, 2, lambda: self.press_digit("9"), _DIG),
-            ("÷", 1, 3, lambda: self.set_binary_op("divide"),   _BOP),
-            ("4", 2, 0, lambda: self.press_digit("4"), _DIG),
-            ("5", 2, 1, lambda: self.press_digit("5"), _DIG),
-            ("6", 2, 2, lambda: self.press_digit("6"), _DIG),
-            ("×", 2, 3, lambda: self.set_binary_op("multiply"), _BOP),
-            ("1", 3, 0, lambda: self.press_digit("1"), _DIG),
-            ("2", 3, 1, lambda: self.press_digit("2"), _DIG),
-            ("3", 3, 2, lambda: self.press_digit("3"), _DIG),
-            ("−", 3, 3, lambda: self.set_binary_op("subtract"), _BOP),
-            ("0", 4, 0, lambda: self.press_digit("0"), _DIG),
-            (".", 4, 1, lambda: self.press_digit("."), _DIG),
-            ("=", 4, 2, self.equals,                             _EQL),
-            ("+", 4, 3, lambda: self.set_binary_op("add"),      _BOP),
-        ]
-        for label, row, col, cmd, bg in btn_grid:
-            tk.Button(
-                self.root,
-                text=label,
-                font=("Arial", 16),
+        # Helper: create a flat, styled button
+        def _btn(parent, text, bg, cmd, fg=FG, font=F_BTN):
+            return tk.Button(
+                parent,
+                text=text,
+                font=font,
                 bg=bg,
-                fg="white",
+                fg=fg,
                 activebackground=bg,
+                activeforeground=fg,
+                relief="flat",
+                borderwidth=0,
+                padx=4,
+                pady=14,
+                cursor="hand2",
                 command=cmd,
-            ).grid(row=row, column=col, sticky="nsew", padx=2, pady=2)
+            )
 
-        # --- Utility buttons: clear + common unary ops (row 5) ---
-        _UOP = "#3498db"   # unary op colour
+        _PAD = {"padx": 2, "pady": 2, "sticky": "nsew"}
+
+        # --- Digit and binary-operator buttons (rows 1–4) ---
+        btn_grid = [
+            ("7", 1, 0, lambda: self.press_digit("7"), C_DIGIT, FG),
+            ("8", 1, 1, lambda: self.press_digit("8"), C_DIGIT, FG),
+            ("9", 1, 2, lambda: self.press_digit("9"), C_DIGIT, FG),
+            ("÷", 1, 3, lambda: self.set_binary_op("divide"),   C_OP,    FG),
+            ("4", 2, 0, lambda: self.press_digit("4"), C_DIGIT, FG),
+            ("5", 2, 1, lambda: self.press_digit("5"), C_DIGIT, FG),
+            ("6", 2, 2, lambda: self.press_digit("6"), C_DIGIT, FG),
+            ("×", 2, 3, lambda: self.set_binary_op("multiply"), C_OP,    FG),
+            ("1", 3, 0, lambda: self.press_digit("1"), C_DIGIT, FG),
+            ("2", 3, 1, lambda: self.press_digit("2"), C_DIGIT, FG),
+            ("3", 3, 2, lambda: self.press_digit("3"), C_DIGIT, FG),
+            ("−", 3, 3, lambda: self.set_binary_op("subtract"), C_OP,    FG),
+            ("0", 4, 0, lambda: self.press_digit("0"), C_DIGIT, FG),
+            (".", 4, 1, lambda: self.press_digit("."), C_DIGIT, FG),
+            ("=", 4, 2, self.equals,                             C_OP,    FG),
+            ("+", 4, 3, lambda: self.set_binary_op("add"),      C_OP,    FG),
+        ]
+        for label, row, col, cmd, bg, fg in btn_grid:
+            _btn(self.root, label, bg, cmd, fg=fg).grid(row=row, column=col, **_PAD)
+
+        # --- Utility row: C, x², √, n! (row 5) ---
         utility = [
-            ("C",  "#e74c3c", self.clear,                              5, 0),
-            ("x²", _UOP,     lambda: self.execute_unary("square"),     5, 1),
-            ("√",  _UOP,     lambda: self.execute_unary("square_root"),5, 2),
-            ("n!", _UOP,     lambda: self.execute_unary("factorial"),  5, 3),
+            ("C",   C_CLR,   C_CLR_FG, self.clear,                               5, 0),
+            ("x²",  C_UNARY, FG,       lambda: self.execute_unary("square"),      5, 1),
+            ("√",   C_UNARY, FG,       lambda: self.execute_unary("square_root"), 5, 2),
+            ("n!",  C_UNARY, FG,       lambda: self.execute_unary("factorial"),   5, 3),
         ]
-        for label, bg, cmd, row, col in utility:
-            tk.Button(
-                self.root, text=label, font=("Arial", 14),
-                bg=bg, fg="white", activebackground=bg, command=cmd,
-            ).grid(row=row, column=col, sticky="nsew", padx=2, pady=2)
+        for label, bg, fg, cmd, row, col in utility:
+            _btn(self.root, label, bg, cmd, fg=fg, font=F_BTN_SM).grid(
+                row=row, column=col, **_PAD
+            )
 
-        # --- More unary ops (row 6) ---
-        unary_row = [
-            ("x³", "cube"),
-            ("∛",  "cube_root"),
-            ("log","log"),
-            ("ln", "ln"),
-        ]
+        # --- Second unary row: x³, ∛, log, ln (row 6) ---
+        unary_row = [("x³", "cube"), ("∛", "cube_root"), ("log", "log"), ("ln", "ln")]
         for col, (label, op) in enumerate(unary_row):
-            tk.Button(
-                self.root, text=label, font=("Arial", 14),
-                bg=_UOP, fg="white", activebackground=_UOP,
-                command=lambda o=op: self.execute_unary(o),
-            ).grid(row=6, column=col, sticky="nsew", padx=2, pady=2)
+            _btn(
+                self.root, label, C_UNARY,
+                lambda o=op: self.execute_unary(o),
+                font=F_BTN_SM,
+            ).grid(row=6, column=col, **_PAD)
 
-        # --- Control row (row 7): power, sci toggle, history ---
+        # --- Control row: xʸ, Sci, Hist (row 7) ---
         controls = [
-            ("xʸ",  "#3498db", lambda: self.set_binary_op("power"), 7, 0),
-            ("Sci", "#9b59b6", self.toggle_mode,                    7, 1),
-            ("Hist","#27ae60", self.show_history,                   7, 2),
+            ("xʸ",  C_OP,        lambda: self.set_binary_op("power"), 7, 0),
+            ("Sci", C_CTL_SCI,  self.toggle_mode,                    7, 1),
+            ("Hist",C_CTL_HIST, self.show_history,                   7, 2),
         ]
         for label, bg, cmd, row, col in controls:
-            tk.Button(
-                self.root, text=label, font=("Arial", 14),
-                bg=bg, fg="white", activebackground=bg, command=cmd,
-            ).grid(row=row, column=col, sticky="nsew", padx=2, pady=2)
+            _btn(self.root, label, bg, cmd, font=F_BTN_SM).grid(
+                row=row, column=col, **_PAD
+            )
 
         # --- Scientific panel (row 8, hidden until toggled) ---
-        self.sci_frame = tk.Frame(self.root, bg="#2c3e50")
+        self.sci_frame = tk.Frame(self.root, bg=BG)
         self.sci_frame.grid(row=8, column=0, columnspan=4, sticky="ew")
 
         sci_ops = [
@@ -163,11 +189,11 @@ class CalculatorGUI:
             "atan", "sinh", "cosh", "tanh", "exp",
         ]
         for i, op in enumerate(sci_ops):
-            tk.Button(
-                self.sci_frame, text=op, font=("Arial", 12),
-                bg="#2c3e50", fg="white", activebackground="#2c3e50",
-                command=lambda o=op: self.execute_unary(o),
-            ).grid(row=i // 5, column=i % 5, sticky="nsew", padx=1, pady=1)
+            _btn(
+                self.sci_frame, op, C_UNARY,
+                lambda o=op: self.execute_unary(o),
+                font=F_SCI,
+            ).grid(row=i // 5, column=i % 5, padx=1, pady=1, sticky="nsew")
 
         self.sci_frame.grid_remove()
 
