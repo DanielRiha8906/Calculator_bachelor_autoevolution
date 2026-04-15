@@ -2,6 +2,44 @@
 
 ---
 
+## Run: Diagram update (2026-04-15)
+
+- **Branch:** exp3/issue-277-add-documentation
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — verified accurate; no structural source changes since last diagram run (issue #277 was documentation-only: docstrings added to `src/__init__.py` and `Calculator`, no class/module relationships altered)
+  - `artifacts/activity_diagram.puml` — verified accurate; execution flow unchanged
+  - `artifacts/sequence_diagram.puml` — verified accurate; component interactions unchanged
+  - `progress.md` — appended this run entry
+- **Purpose:** Verify PlantUML diagrams on current experiment branch after issue #277 documentation run. No diagram content changes required; source structure is identical to cycle 11 post-modularization state.
+- **Risks:** None — no source code modified.
+- **All tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+- **Tokens used:** PENDING | **Cost:** PENDING | **Turns:** PENDING
+
+Duration: 56.9s | Cost: $0.284264 USD | Turns: 21
+
+---
+
+## Run: Issue #277 — Documentation (2026-04-15)
+
+- **Branch:** exp3/issue-277-add-documentation
+- **PR target:** exp3/structured-generic
+- **Files changed:**
+  - `README.md` — expanded from one placeholder line to full reference documentation covering project structure, interactive and CLI usage, operations table, input validation, history, error logging, and test instructions
+  - `src/__init__.py` — added module docstring
+  - `src/calculator.py` — added class-level docstring to Calculator
+- **Purpose:** Add written documentation so the calculator's features, usage, and project structure are easier to understand; no behaviour changes.
+- **Risks:** None — documentation-only changes; no logic modified.
+- **Tests passed:** Yes — 152/152 (68 calculator + 84 CLI/interactive)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: 160.1s | Cost: $0.670297 USD | Turns: 42
+
+---
+
 ## Run: Issue #274 — Modularization (2026-04-15)
 
 - **Branch:** exp3/issue-274-modularization

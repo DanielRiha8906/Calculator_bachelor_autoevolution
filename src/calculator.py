@@ -13,6 +13,13 @@ from .operations.scientific import (
 
 
 class Calculator:
+    """Object-oriented interface to all supported calculator operations.
+
+    All computation is delegated to pure functions in :mod:`src.operations.basic`
+    and :mod:`src.operations.scientific`. Use :meth:`execute` to dispatch by
+    operation name, or call individual methods directly.
+    """
+
     def add(self, a, b):
         return add(a, b)
 

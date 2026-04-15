@@ -4,6 +4,21 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 12 — Issue #277: Documentation (2026-04-15)
+
+- **Task:** Add written documentation for the calculator application so its features, usage, and project structure are easier to understand. Document how to run and use the calculator, including its available functionality and supported interaction modes.
+- **Files changed:** `README.md`, `src/__init__.py`, `src/calculator.py`
+- **Outcome:** 152 tests pass (unchanged). No tests added or removed — documentation-only changes do not affect test correctness.
+- **Key decisions:**
+  - Rewrote `README.md` from a single placeholder line into a full reference document covering: project structure, requirements, how to start interactive and CLI modes, a complete operations table (all 12 operations with argument types and constraints), input validation behaviour, session history, error logging, and test-run instructions.
+  - Added a class-level docstring to `Calculator` describing the delegation pattern and the `execute()` dispatch method. The module docstring was already present; only the class was undocumented.
+  - Added a module docstring to `src/__init__.py` explaining package purpose and entry-point usage.
+  - All source modules already had function-level docstrings; no changes were needed to `src/operations/` or `src/interface/`.
+- **Lessons learned:** Documentation-only changes require no test updates when the documented behaviour already matches the code. The only consistency check is that README examples (CLI invocations, error messages) match the actual runtime behaviour verified by the existing test suite.
+- **Cost:** PENDING | **Turns:** PENDING
+
+---
+
 ## Cycle 11 — Issue #274: Modularization (2026-04-15)
 
 - **Task:** Refactor the calculator into multiple modules for better organization. Separate core logic, interface handling, and operation implementations. Organize the operations structure so future scientific functionality can be added without another major reorganization.
