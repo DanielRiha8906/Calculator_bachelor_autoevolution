@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 9 — Issue #251: Error Logging (2026-04-12)
+- **Task:** Add error logging to the calculator
+- **Branch:** exp3/issue-251-add-error-logging
+- **Files changed:** src/calculator.py, src/__main__.py, tests/test_calculator.py, tests/test_main.py
+- **Outcome:** Added module-level `logger = logging.getLogger(__name__)` to both src/calculator.py and src/__main__.py. Wrapped divide, factorial, square_root, log, and ln in Calculator with try/except/raise to log at ERROR level before re-raising. Added `logger.error(...)` calls in `run_operation` and `cli_main` where exceptions are caught. Configured `logging.basicConfig(level=ERROR)` in `main()`. Added 9 new tests using `caplog` fixture. 134 tests collected, 134 passed.
+- **Key decisions:** Logging is done at the point of catch/re-raise rather than by restructuring exception flow — exceptions continue to propagate unchanged, preserving existing caller behavior. `logging.basicConfig` is only called in `main()` (the entry point), not in library code, following Python logging best practices. Library code (calculator.py, __main__ module-level) only creates loggers, never configures them.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 8 — Issue #248: History (2026-04-12)
 - **Task:** Add history of operations to the calculator
 - **Branch:** exp3/issue-248-add-history

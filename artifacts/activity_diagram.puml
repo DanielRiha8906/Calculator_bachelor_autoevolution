@@ -4,6 +4,8 @@ title Calculator — Execution Flow (CLI + Interactive REPL)
 
 start
 
+:logging.basicConfig(level=ERROR);
+
 if (sys.argv has arguments?) then (yes — CLI mode)
 
   :cli_main(sys.argv[1:]);
@@ -47,6 +49,13 @@ if (sys.argv has arguments?) then (yes — CLI mode)
   :Dispatch: getattr(calc, op)(args);
 
   if (ValueError or ZeroDivisionError raised?) then (yes)
+    note right
+      Calculator logs at ERROR level
+      before re-raising; cli_main also
+      logs the caught exception via
+      logger.error before printing.
+    end note
+    :logger.error("cli_main <op> failed: ...");
     :Print "Error: <exception message>";
     :Return exit code 1;
     stop
@@ -107,6 +116,13 @@ else (no — Interactive REPL mode)
         :Dispatch: getattr(calc, op)(args);
 
         if (ValueError or ZeroDivisionError raised?) then (yes)
+          note right
+            Calculator methods (divide, factorial,
+            square_root, log, ln) log at ERROR level
+            before re-raising; run_operation also
+            logs the caught exception via logger.error.
+          end note
+          :logger.error("run_operation <op> failed: ...");
           :Print "Error: <exception message>";
         else (no)
           :calc.history.append\n{op, operands, result};

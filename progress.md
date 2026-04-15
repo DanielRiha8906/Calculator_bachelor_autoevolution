@@ -2,6 +2,28 @@
 
 ## Run: Diagram Update (2026-04-12)
 
+- **Branch:** exp3/issue-251-add-error-logging
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 9 changes: added `{static} logger : Logger` to both Calculator and __main__ class entries; updated error notes for divide, factorial, square_root, log, ln to mention ERROR-level logging before re-raise; added `logging.basicConfig(level=ERROR)` step to activity diagram start; added `logger.error(...)` steps to error paths in both activity and sequence diagrams; added `logger` participant to sequence diagram showing all logging call sites in Calculator and __main__.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: 148.2s | Cost: $0.432335 USD | Turns: 19
+
+## Run: Issue #251 — Error Logging (2026-04-12)
+
+- **Branch:** exp3/issue-251-add-error-logging
+- **Files changed:** src/calculator.py, src/__main__.py, tests/test_calculator.py, tests/test_main.py
+- **Purpose:** Added error logging to the calculator. Module-level `logger = logging.getLogger(__name__)` added to both `src/calculator.py` and `src/__main__.py`. Error-prone Calculator methods (divide, factorial, square_root, log, ln) now log at ERROR level before re-raising. `run_operation` and `cli_main` in `__main__.py` log caught exceptions. `main()` configures `logging.basicConfig(level=ERROR)` at startup.
+- **Risks:** Low — logging is purely additive; exceptions are re-raised unchanged so all caller contracts and existing tests remain valid.
+- **Tests passed:** 134/134
+- **Current branch:** exp3/issue-251-add-error-logging
+- **Intended PR target:** exp3/naive-generic
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
+Duration: 274.1s | Cost: $0.924365 USD | Turns: 45
+
+## Run: Diagram Update (2026-04-12)
+
 - **Branch:** exp3/issue-248-add-history
 - **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
 - **Purpose:** Updated all three PlantUML diagrams to reflect cycle 8 changes: added `history: list[dict]` attribute, `__init__()`, and `get_history(): list[dict]` to Calculator class diagram; added `_show_history(calc: Calculator): void` to __main__ module. Activity diagram now shows 'h' choice branch calling `_show_history` and `calc.history.append` on the success path. Sequence diagram now shows `choice == "h"` alt branch and `calc.history.append(...)` call after successful operation.

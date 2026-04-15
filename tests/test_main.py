@@ -1,5 +1,6 @@
 """Tests for the interactive CLI in src/__main__.py."""
 
+import logging
 import pytest
 from unittest.mock import patch
 from src.__main__ import parse_number, run_operation, main, MENU_MAP, cli_main, _format_result, _show_history, MAX_INPUT_ATTEMPTS
@@ -493,3 +494,36 @@ def test_main_history_shows_after_operation(capsys):
         main()
     out = capsys.readouterr().out
     assert "add(3, 4) = 7" in out
+
+
+# --- error logging ---
+
+def test_run_operation_divide_by_zero_logs_error(capsys, caplog):
+    calc = Calculator()
+    with caplog.at_level(logging.ERROR, logger="src.__main__"):
+        with patch("builtins.input", side_effect=["10", "0"]):
+            run_operation(calc, "divide")
+    assert any("run_operation divide failed" in r.message for r in caplog.records)
+
+
+def test_run_operation_invalid_input_logs_error(capsys, caplog):
+    calc = Calculator()
+    bad_inputs = ["x"] * MAX_INPUT_ATTEMPTS
+    with caplog.at_level(logging.ERROR, logger="src.__main__"):
+        with patch("builtins.input", side_effect=bad_inputs):
+            run_operation(calc, "add")
+    assert any("run_operation add failed" in r.message for r in caplog.records)
+
+
+def test_cli_main_divide_by_zero_logs_error(capsys, caplog):
+    with caplog.at_level(logging.ERROR, logger="src.__main__"):
+        rc = cli_main(["divide", "10", "0"])
+    assert rc == 1
+    assert any("cli_main divide failed" in r.message for r in caplog.records)
+
+
+def test_cli_main_factorial_negative_logs_error(capsys, caplog):
+    with caplog.at_level(logging.ERROR, logger="src.__main__"):
+        rc = cli_main(["factorial", "-1"])
+    assert rc == 1
+    assert any("cli_main factorial failed" in r.message for r in caplog.records)
