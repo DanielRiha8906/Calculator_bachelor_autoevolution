@@ -8,7 +8,7 @@
 - **Risks:** None — diagram-only update; no source or test changes.
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 164.3s | Cost: $0.438746 USD | Turns: 22
 
 ## Run: Issue #273 — Modularization (2026-04-15)
 
