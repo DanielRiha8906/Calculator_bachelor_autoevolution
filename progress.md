@@ -1,3 +1,24 @@
+## Run: issue-303 — GUI Look (Expert/generic)
+
+- **Branch:** exp3/issue-303-gui-redesign
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/gui.py` (new): `CalculatorGUI` + `ModeSelector`, `OperationSelector`, `OperandSection`, `ResultDisplay`, `HistoryPanel` section classes; `_parse_number` helper; `main()` entry.
+  - `gui_main.py` (new): root-level entry point (`python gui_main.py`).
+  - `tests/test_gui.py` (new): 43-test suite; module skipped via `pytest.importorskip` when tkinter absent.
+  - `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`: updated for cycle 15.
+- **Purpose:** Implement a clean, structured tkinter GUI with six labelled sections (mode selection, operation selection with binary/unary split, operand entry with dynamic Operand B visibility, prominent result display, action controls, session history). OO boundaries: each section is its own class.
+- **Risks:** GUI requires tkinter; CI environments without it skip the GUI test module cleanly via `pytest.importorskip`.
+- **Tests passed:** 237 passed, 1 skipped (test_gui.py — tkinter not installed in CI)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: update-diagrams — PlantUML diagram update (post-issue-281)
 
 - **Branch:** exp3/issue-281-scientific-mode
