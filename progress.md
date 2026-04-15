@@ -8,7 +8,7 @@
 - **Risks:** None — diagram-only update; no source or test changes.
 - **Tests passed:** N/A (no code changes)
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md (src/gui.py entry)
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 108.3s | Cost: $0.478536 USD | Turns: 19
 
 ## Run: Issue #301 — GUI styling (2026-04-15)
 
