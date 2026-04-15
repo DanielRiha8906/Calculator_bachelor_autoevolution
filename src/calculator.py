@@ -1,5 +1,6 @@
 import logging
-import math
+
+from .operations import arithmetic, advanced
 
 logger = logging.getLogger(__name__)
 
@@ -27,57 +28,57 @@ class Calculator:
         return list(self.history)
 
     def add(self, a, b):
-        return a + b
+        return arithmetic.add(a, b)
 
     def subtract(self, a, b):
-        return a - b
+        return arithmetic.subtract(a, b)
 
     def multiply(self, a, b):
-        return a * b
+        return arithmetic.multiply(a, b)
 
     def divide(self, a, b):
         try:
-            return a / b
+            return arithmetic.divide(a, b)
         except ZeroDivisionError:
             logger.error("divide error: division by zero (a=%s, b=%s)", a, b)
             raise
 
     def factorial(self, n):
         try:
-            return math.factorial(n)
+            return advanced.factorial(n)
         except ValueError as exc:
             logger.error("factorial error: %s (n=%s)", exc, n)
             raise
 
     def square(self, n):
-        return n ** 2
+        return advanced.square(n)
 
     def cube(self, n):
-        return n ** 3
+        return advanced.cube(n)
 
     def square_root(self, n):
         try:
-            return math.sqrt(n)
+            return advanced.square_root(n)
         except ValueError as exc:
             logger.error("square_root error: %s (n=%s)", exc, n)
             raise
 
     def cube_root(self, n):
-        return math.cbrt(n)
+        return advanced.cube_root(n)
 
     def power(self, base, exp):
-        return base ** exp
+        return advanced.power(base, exp)
 
     def log(self, n):
         try:
-            return math.log10(n)
+            return advanced.log(n)
         except ValueError as exc:
             logger.error("log error: %s (n=%s)", exc, n)
             raise
 
     def ln(self, n):
         try:
-            return math.log(n)
+            return advanced.ln(n)
         except ValueError as exc:
             logger.error("ln error: %s (n=%s)", exc, n)
             raise
@@ -99,4 +100,3 @@ class Calculator:
         else:
             raise ValueError(f"Unknown operation: {op!r}")
         return result
-
