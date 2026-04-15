@@ -9,7 +9,7 @@
 - **Risks:** tkinter not installed in this CI environment — tests work around this by injecting a fake tkinter module before importing src.gui. Actual GUI rendering requires a display and tkinter installation (standard on most desktop Python installs).
 - **Tests passed:** Yes — 234/234 tests pass (109 calculator, 95 main + 1 new --gui test = 96 main, 46 gui-new... actually let me re-count: test_calculator.py=109, test_main.py=95+1=96 not confirmed, test_gui.py=46; total=234 confirmed by pytest run).
 - **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
-Duration: PENDING | Cost: PENDING | Turns: PENDING
+Duration: 713.9s | Cost: $2.059931 USD | Turns: 50
 
 ## Run: Diagram Update (2026-04-15)
 
