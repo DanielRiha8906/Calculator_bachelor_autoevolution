@@ -143,22 +143,35 @@ package "src.interface" {
 
     class "interactive" as Interactive << (M,orchid) module >> {
         +MAX_ATTEMPTS : int = 3
+        +NORMAL_MODE_OPERATIONS : dict[str, str]
+        +SCIENTIFIC_MODE_OPERATIONS : dict[str, str]
         +OPERATIONS : dict[str, str]
         +_ONE_ARG_OPS : set
         +_INT_ARG_OPS : set
         +_TWO_ARG_OPS : set
         +_ALL_OPS : set
         +_OP_PROMPTS : dict[str, tuple[str, ...]]
-        +show_menu() : None
+        +show_menu(operations: dict|None, mode: str) : None
         +parse_number(prompt: str, max_attempts: int) : float
         +parse_int(prompt: str, max_attempts: int) : int
         +run_operation(calc: Calculator, operation: str) : str|None
     }
-    note right of Interactive::OPERATIONS
-      Maps menu keys "1"–"12" to operation
+    note right of Interactive::NORMAL_MODE_OPERATIONS
+      Maps menu keys "1"–"4" to basic operation
+      names: add, subtract, multiply, divide.
+      Active in normal mode.
+    end note
+    note right of Interactive::SCIENTIFIC_MODE_OPERATIONS
+      Maps menu keys "1"–"12" to all operation
       names: add, subtract, multiply, divide,
       factorial, square, cube, square_root,
       cube_root, power, log, ln.
+      Active in scientific mode.
+    end note
+    note right of Interactive::OPERATIONS
+      Backward-compatible alias for
+      SCIENTIFIC_MODE_OPERATIONS. Existing
+      code importing OPERATIONS still works.
     end note
     note right of Interactive::_ONE_ARG_OPS
       {square, cube, square_root, cube_root, ln}
@@ -176,6 +189,15 @@ package "src.interface" {
       prompt strings (one per required arg).
       Kept in the UI layer so Calculator
       remains free of display concerns.
+    end note
+    note right of Interactive::show_menu
+      Prints header "Calculator (<Mode> Mode)",
+      the operations dict entries, and footer
+      options h/s/q. When mode=="normal" footer
+      shows "switch to scientific mode" and
+      vice versa. Defaults to
+      NORMAL_MODE_OPERATIONS when operations
+      is None.
     end note
     note right of Interactive::parse_number
       Retries up to max_attempts times on
@@ -228,9 +250,14 @@ note right of Main
   Top-level entry point. Dispatches to
   cli_mode(args) when args are present,
   otherwise starts the interactive menu loop.
+  Interactive loop tracks mode ("normal" or
+  "scientific") and current_ops dict; the "s"
+  key toggles between NORMAL_MODE_OPERATIONS
+  and SCIENTIFIC_MODE_OPERATIONS.
   Re-exports all public names from interface
   sub-modules for backward compatibility
   (HISTORY_FILE, ERROR_LOG_FILE, MAX_ATTEMPTS,
+  NORMAL_MODE_OPERATIONS, SCIENTIFIC_MODE_OPERATIONS,
   OPERATIONS, TooManyAttemptsError, show_menu,
   parse_number, parse_int, run_operation,
   cli_mode, clear_history, append_to_history,

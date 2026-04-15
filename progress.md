@@ -2,6 +2,23 @@
 
 ---
 
+## Run: Diagram update after issue #280 scientific mode (2026-04-15)
+
+- **Branch:** exp3/issue-280-add-scientific-mode
+- **Files changed:**
+  - `artifacts/class_diagram.puml` — added `NORMAL_MODE_OPERATIONS` and `SCIENTIFIC_MODE_OPERATIONS` fields to the `interactive` module class; updated `OPERATIONS` note to clarify it is a backward-compat alias; updated `show_menu` signature to `show_menu(operations: dict|None, mode: str)`; updated `__main__` note to describe mode-toggle logic
+  - `artifacts/activity_diagram.puml` — updated note to cycle 13; added "s" choice branch in interactive loop with mode/current_ops toggle; updated `show_menu()` call to show `current_ops, mode` params; updated choice validation to use `current_ops` (not `OPERATIONS`)
+  - `artifacts/sequence_diagram.puml` — updated note to cycle 13; added "s" (mode switch) alt branch in interactive loop; updated `show_menu` call label to show `current_ops, mode`; updated choice validation note to reference `current_ops`
+  - `progress.md` — appended this run entry
+- **Purpose:** Reflect cycle 13 scientific-mode changes (dual operation dicts, mode-toggle "s" key, updated `show_menu` signature) in all three PlantUML diagrams. No source code modified.
+- **Risks:** None — diagram-only changes.
+- **All tests passed:** N/A (no code changes)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Issue #280 — Scientific Mode (2026-04-15)
 
 - **Branch:** exp3/issue-280-add-scientific-mode
