@@ -1,7 +1,7 @@
 import logging
 import pytest
 import math
-from src.calculator import Calculator
+from src.calculator import Calculator, BINARY_OPS, UNARY_OPS, INTEGER_OPS, _to_int_if_needed
 
 
 # --- add ---
@@ -335,7 +335,7 @@ def test_history_initially_empty():
 def test_history_after_add():
     calc = Calculator()
     calc.add(2, 3)
-    assert len(calc.get_history()) == 0  # history is recorded by run_operation, not Calculator methods
+    assert len(calc.get_history()) == 0  # history is recorded by execute(), not by individual Calculator methods
 
 
 def test_history_list_is_instance_attribute():
@@ -393,3 +393,97 @@ def test_ln_non_positive_logs_error(caplog):
         with pytest.raises(ValueError):
             calc.ln(-1)
     assert any("ln error" in r.message for r in caplog.records)
+
+
+# --- execute() dispatch and history recording ---
+
+def test_execute_binary_op_returns_result():
+    calc = Calculator()
+    assert calc.execute("add", 3, 4) == 7
+
+
+def test_execute_unary_op_returns_result():
+    calc = Calculator()
+    assert calc.execute("square", 5) == 25
+
+
+def test_execute_records_binary_op_in_history():
+    calc = Calculator()
+    calc.execute("add", 3.0, 4.0)
+    assert len(calc.history) == 1
+    entry = calc.history[0]
+    assert entry["op"] == "add"
+    assert entry["operands"] == (3.0, 4.0)
+    assert entry["result"] == 7.0
+
+
+def test_execute_records_unary_op_in_history():
+    calc = Calculator()
+    calc.execute("square_root", 9.0)
+    assert len(calc.history) == 1
+    entry = calc.history[0]
+    assert entry["op"] == "square_root"
+    assert entry["operands"] == (9.0,)
+    assert entry["result"] == pytest.approx(3.0)
+
+
+def test_execute_error_not_recorded_in_history():
+    calc = Calculator()
+    with pytest.raises(ZeroDivisionError):
+        calc.execute("divide", 10, 0)
+    assert calc.history == []
+
+
+def test_execute_unknown_op_raises_value_error():
+    calc = Calculator()
+    with pytest.raises(ValueError, match="Unknown operation"):
+        calc.execute("modulo", 10, 3)
+
+
+def test_execute_integer_op_coerces_float_to_int():
+    calc = Calculator()
+    result = calc.execute("factorial", 5.0)
+    assert result == 120
+
+
+def test_execute_integer_op_non_whole_raises_value_error():
+    calc = Calculator()
+    with pytest.raises(ValueError):
+        calc.execute("factorial", 3.5)
+
+
+def test_execute_multiple_ops_accumulate_in_history():
+    calc = Calculator()
+    calc.execute("add", 2.0, 3.0)
+    calc.execute("square", 4.0)
+    assert len(calc.history) == 2
+    assert calc.history[0]["op"] == "add"
+    assert calc.history[1]["op"] == "square"
+
+
+# --- module-level constants ---
+
+def test_binary_ops_set():
+    assert BINARY_OPS == {"add", "subtract", "multiply", "divide", "power"}
+
+
+def test_unary_ops_set():
+    assert UNARY_OPS == {"factorial", "square", "cube", "square_root", "cube_root", "log", "ln"}
+
+
+def test_integer_ops_set():
+    assert INTEGER_OPS == {"factorial"}
+
+
+def test_to_int_if_needed_non_integer_op_passthrough():
+    assert _to_int_if_needed("square", 4.0) == 4.0
+
+
+def test_to_int_if_needed_integer_op_whole_number():
+    assert _to_int_if_needed("factorial", 5.0) == 5
+    assert isinstance(_to_int_if_needed("factorial", 5.0), int)
+
+
+def test_to_int_if_needed_integer_op_non_whole_raises():
+    with pytest.raises(ValueError):
+        _to_int_if_needed("factorial", 3.5)

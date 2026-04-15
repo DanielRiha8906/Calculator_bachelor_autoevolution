@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 10 — Issue #269: Logic Separation (2026-04-15)
+- **Task:** Separate calculator logic from the interface layer
+- **Branch:** exp3/issue-269-logic-separation
+- **Files changed:** src/calculator.py, src/__main__.py, tests/test_calculator.py
+- **Outcome:** Moved UNARY_OPS, BINARY_OPS, INTEGER_OPS constants and _to_int_if_needed() from __main__.py to calculator.py. Added Calculator.execute() method that handles operation dispatch, integer coercion, and history recording — keeping history tracking fully within the logic layer. __main__.py now imports these symbols from calculator and uses execute() in run_operation/cli_main instead of calling getattr(calc, op)() + calc.history.append() directly. Added 15 new tests for execute() and the new module-level symbols. 149 tests collected, 149 passed.
+- **Key decisions:** execute() records history on success and propagates exceptions unchanged — so run_operation/cli_main still catch and log errors at the interface layer. Interface module retains MENU_MAP, MAX_INPUT_ATTEMPTS, MENU, parse_number, _format_result, _show_history, run_operation, cli_main, main as pure I/O concerns. No tests were removed or changed in logic; one stale comment in test_calculator.py was updated.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 9 — Issue #251: Error Logging (2026-04-12)
 - **Task:** Add error logging to the calculator
 - **Branch:** exp3/issue-251-add-error-logging

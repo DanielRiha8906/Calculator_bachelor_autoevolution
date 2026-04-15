@@ -1,5 +1,25 @@
 # Progress Log
 
+## Run: Diagram Update (2026-04-15)
+
+- **Branch:** exp3/issue-269-logic-separation
+- **Files changed:** artifacts/class_diagram.puml, artifacts/activity_diagram.puml, artifacts/sequence_diagram.puml
+- **Purpose:** Updated all three PlantUML diagrams to reflect cycle 10 changes: moved UNARY_OPS, BINARY_OPS, INTEGER_OPS, and _to_int_if_needed from __main__ to Calculator (as module-level static members of calculator.py); added Calculator.execute() method with dispatch, _to_int_if_needed, and history-append semantics; removed those symbols from __main__ class entry; updated all relationships and notes in class diagram; removed explicit INTEGER_OPS branch from activity diagram (now handled inside execute()); updated sequence diagram to remove _to_int_if_needed calls from __main__/CLI participants and show them as internal to Calculator.execute(); renamed Parser participant to parse_number only.
+- **Risks:** None — diagram-only update; no source or test changes.
+- **Tests passed:** N/A (no code changes)
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md
+Duration: 244.7s | Cost: $0.566647 USD | Turns: 19
+
+## Run: Issue #269 — Logic Separation (2026-04-15)
+
+- **Branch:** exp3/issue-269-logic-separation → PR #285 targeting exp3/naive-generic
+- **Files changed:** src/calculator.py, src/__main__.py, tests/test_calculator.py, rag/index.md, rag/codebase_map.md, rag/evolution_log.md, rag/patterns.md
+- **Purpose:** Separate calculator logic from interface layer. Moved UNARY_OPS, BINARY_OPS, INTEGER_OPS constants and _to_int_if_needed() from __main__.py to calculator.py. Added Calculator.execute() dispatch method that handles type coercion and history recording. __main__.py now imports these symbols and delegates to calc.execute() — keeping it as pure I/O.
+- **Risks:** Minimal. Behaviour is preserved; all 149 tests pass. The only observable change is that history recording now happens inside execute() rather than in run_operation — external callers that read calc.history directly are unaffected.
+- **Tests passed:** 149/149
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md, rag/patterns.md
+Duration: 424.2s | Cost: $1.377459 USD | Turns: 45
+
 ## Run: Diagram Update (2026-04-12)
 
 - **Branch:** exp3/issue-251-add-error-logging

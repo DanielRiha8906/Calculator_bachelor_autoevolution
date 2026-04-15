@@ -34,19 +34,18 @@ if (sys.argv has arguments?) then (yes — CLI mode)
       stop
     else (yes)
       :Parse float a from args;
-      if (op in INTEGER_OPS?) then (yes)
-        if (a is whole number?) then (yes)
-          :Convert a float → int;
-        else (no)
-          :Print "Error: requires whole number";
-          :Return exit code 1;
-          stop
-        endif
-      endif
     endif
   endif
 
-  :Dispatch: getattr(calc, op)(args);
+  note right
+    calc.execute() dispatches by op name.
+    For INTEGER_OPS (factorial): calls
+    _to_int_if_needed internally — raises
+    ValueError if operand is not a whole number.
+    On success, appends history entry.
+  end note
+
+  :calc.execute(op, a [, b]);
 
   if (ValueError or ZeroDivisionError raised?) then (yes)
     note right
@@ -96,7 +95,9 @@ else (no — Interactive REPL mode)
           MAX_INPUT_ATTEMPTS (3) times;
           prints remaining-attempts feedback
           on each invalid entry; raises
-          ValueError after all attempts fail
+          ValueError after all attempts fail.
+          calc.execute() handles INTEGER_OPS
+          int coercion via _to_int_if_needed.
         end note
 
         if (op in BINARY_OPS?) then (yes)
@@ -104,16 +105,9 @@ else (no — Interactive REPL mode)
           :parse_number() → b (second operand);
         else (no — UNARY_OPS)
           :parse_number() → a;
-          if (op in INTEGER_OPS?) then (yes)
-            if (a is whole number?) then (yes)
-              :Convert a float → int;
-            else (no)
-              :Raise ValueError\n"requires whole number";
-            endif
-          endif
         endif
 
-        :Dispatch: getattr(calc, op)(args);
+        :calc.execute(op, a [, b]);
 
         if (ValueError or ZeroDivisionError raised?) then (yes)
           note right
@@ -125,7 +119,6 @@ else (no — Interactive REPL mode)
           :logger.error("run_operation <op> failed: ...");
           :Print "Error: <exception message>";
         else (no)
-          :calc.history.append\n{op, operands, result};
           :Print "Result: <value>";
         endif
 
