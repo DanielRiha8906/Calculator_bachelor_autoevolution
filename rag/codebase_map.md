@@ -95,7 +95,8 @@
 - **Purpose:** Tkinter graphical interface for the Calculator. Exposes all 22 Calculator operations through a button-based layout. All computation is delegated to `Calculator.execute()` so history is recorded automatically.
 - **Module-level docstring:** Present — documents launch methods.
 - **Imports:** `import tkinter as tk`, `from tkinter import messagebox`, `from .calculator import Calculator, BINARY_OPS`
-- **Module-level:** `logger = logging.getLogger(__name__)`
+- **Module-level:** `logger = logging.getLogger(__name__)`; colour-palette constants (`_BG`, `_DISPLAY_BG`, `_DIG/HOV/ACT`, `_BOP/HOV/ACT`, `_EQL/HOV/ACT`, `_CLR/HOV/ACT`, `_UOP/HOV/ACT`, `_SCI/HOV/ACT`, `_HIST/HOV/ACT`, `_SCI_PNL`, `_SCI_BTN/HOV/ACT`); `_make_button()` helper
+- **Module-level helper:** `_make_button(parent, text, command, bg, hover_bg, active_bg, fg, font, padx, pady)` — creates a `tk.Button` with `relief="flat"`, `cursor="hand2"`, and `<Enter>`/`<Leave>` hover bindings that swap `bg`/`hover_bg`.
 - **Public API:**
   - `CalculatorGUI(root)` — attaches calculator GUI to a `tk.Tk` root window
   - `CalculatorGUI.press_digit(digit)` — appends digit/decimal to `_current_input`; guards against double decimals and leading zeros
@@ -114,7 +115,9 @@
   - On any error, display shows "Error", `_current_input` is cleared, but `_pending_op`/`_first_operand` may remain set.
   - Scientific panel (`sci_frame`) is hidden by default; `toggle_mode()` calls `grid()` or `grid_remove()` to show/hide it.
   - GUI and CLI/REPL interfaces share no state — each has its own `Calculator` instance.
-- **Last updated:** cycle 14
+  - Colour palette uses GitHub-inspired dark theme: `_BG=#0d1117`, display `#161b22`, blue ops, green equals, red clear, purple unary.
+  - All buttons use `_make_button()` for consistent hover/active theming and flat relief; `ipady` provides uniform height.
+- **Last updated:** cycle 15
 
 ## tests/test_main.py
 - **Purpose:** Test suite for src/__main__.py (both interactive REPL and bash CLI mode), including scientific mode and the --gui flag.
