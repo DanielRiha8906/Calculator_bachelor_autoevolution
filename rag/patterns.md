@@ -230,4 +230,22 @@ This keeps the public `Calculator` API unchanged (existing tests and callers req
 
 ---
 
+## Pattern: Mode-scoped operation dicts for feature-gating in interactive menus
+
+When an interactive menu should expose different operations to users depending on an active mode (e.g., normal vs. scientific), define one dict per mode rather than a single combined dict with conditional visibility:
+
+```python
+NORMAL_MODE_OPERATIONS = {"1": "add", "2": "subtract", ...}
+SCIENTIFIC_MODE_OPERATIONS = {**NORMAL_MODE_OPERATIONS, "5": "factorial", ...}
+OPERATIONS = SCIENTIFIC_MODE_OPERATIONS  # backward-compatible alias
+```
+
+The interactive loop tracks `current_ops = NORMAL_MODE_OPERATIONS` by default and switches to `SCIENTIFIC_MODE_OPERATIONS` on toggle. All choice validation (`if choice not in current_ops`) and dispatch (`current_ops[choice]`) use the same reference. The underlying `run_operation` and `Calculator` layers are mode-agnostic and remain unchanged.
+
+This keeps mode state local to the loop, avoids conditional logic scattered through menu rendering, and lets CLI mode (which has no mode concept) keep using `OPERATIONS` unchanged.
+
+**First observed:** cycle 13, `NORMAL_MODE_OPERATIONS` / `SCIENTIFIC_MODE_OPERATIONS` in `src/interface/interactive.py`.
+
+---
+
 <!-- Add further patterns here as they are discovered -->

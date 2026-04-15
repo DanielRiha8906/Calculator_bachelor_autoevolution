@@ -2,6 +2,26 @@
 
 ---
 
+## Run: Issue #280 — Scientific Mode (2026-04-15)
+
+- **Branch:** exp3/issue-280-add-scientific-mode
+- **PR target:** exp3/structured-generic
+- **Files changed:**
+  - `src/interface/interactive.py` — added `NORMAL_MODE_OPERATIONS` (4 basic ops) and `SCIENTIFIC_MODE_OPERATIONS` (all 12 ops) dicts; `OPERATIONS` kept as alias for backward compat; updated `show_menu()` to accept `operations` and `mode` parameters with normal-mode defaults; added mode-switch hint in menu footer
+  - `src/__main__.py` — imported `NORMAL_MODE_OPERATIONS` and `SCIENTIFIC_MODE_OPERATIONS`; interactive loop now tracks `mode` state and `current_ops`; added `"s"` key handler to toggle between normal and scientific mode
+  - `tests/test_main.py` — imported `NORMAL_MODE_OPERATIONS` and `SCIENTIFIC_MODE_OPERATIONS`; updated `test_show_menu_prints_all_operations` to reflect normal-mode default; updated `test_main_two_operations_then_quit` to use only normal-mode ops; added 5 new tests for mode switching and menu variants
+- **Purpose:** Add a scientific mode to the interactive calculator. Normal mode limits users to the four basic arithmetic operations. Pressing `s` switches to scientific mode to access the eight advanced functions. Mode is a session-local concept; CLI mode is unaffected.
+- **Risks:** Low. CLI mode is entirely unchanged. The `OPERATIONS` alias preserves backward compatibility. The only interactive-mode behavior change is that scientific operations (keys `"5"`–`"12"`) are now behind a mode gate.
+- **All tests passed:** Yes — 159/159 (68 calculator + 91 CLI/interactive, including 7 net new tests)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/patterns.md`, `rag/evolution_log.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: Diagram update (2026-04-15)
 
 - **Branch:** exp3/issue-277-add-documentation

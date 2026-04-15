@@ -4,6 +4,23 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 13 — Issue #280: Scientific Mode (2026-04-15)
+
+- **Task:** Add a scientific mode to the calculator and allow the user to switch between normal and scientific functionality in interactive mode. Normal mode is limited to the four basic operations; scientific mode provides the expanded set of eight advanced functions.
+- **Files changed:** `src/interface/interactive.py`, `src/__main__.py`, `tests/test_main.py`
+- **Outcome:** 159 tests pass (68 calculator + 91 CLI/interactive). 7 net new tests added for mode switching; 1 existing test updated.
+- **Key decisions:**
+  - Added `NORMAL_MODE_OPERATIONS` (keys `"1"`–`"4"`) and `SCIENTIFIC_MODE_OPERATIONS` (keys `"1"`–`"12"`) dicts to `interactive.py`. `OPERATIONS` kept as an alias for `SCIENTIFIC_MODE_OPERATIONS` so CLI mode and external callers are unaffected.
+  - `show_menu()` extended with optional `operations` and `mode` parameters. Defaults to `NORMAL_MODE_OPERATIONS` / `"normal"` to preserve safe-default behavior. Shows the current mode in the header and a mode-switch hint (`s. switch to ...`) in the footer.
+  - `main()` interactive loop tracks `mode` state and `current_ops` dict. The `"s"` key toggles between normal and scientific mode without resetting other session state (history, invalid-op counter).
+  - CLI mode (`cli_mode`) is unchanged — it operates against all twelve operations regardless of mode; mode is an interactive-only concept.
+  - `NORMAL_MODE_OPERATIONS` and `SCIENTIFIC_MODE_OPERATIONS` re-exported from `src/__main__` so callers that import from there continue to work.
+  - `test_main_two_operations_then_quit` updated: op `"6"` (square) is only available in scientific mode; the test now uses `multiply` (key `"3"`) as the second operation, which is valid in normal mode.
+- **Lessons learned:** Keeping mode as a local variable in `main()` and passing it down to `show_menu()` is simpler than putting mode state on a class or module level — there is only one interactive session at a time.
+- **Cost:** PENDING | **Turns:** PENDING
+
+---
+
 ## Cycle 12 — Issue #277: Documentation (2026-04-15)
 
 - **Task:** Add written documentation for the calculator application so its features, usage, and project structure are easier to understand. Document how to run and use the calculator, including its available functionality and supported interaction modes.
