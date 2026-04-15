@@ -1,3 +1,26 @@
+## Run: issue-281 — Scientific Mode — Expert/generic
+
+- **Branch:** exp3/issue-281-scientific-mode
+- **PR target:** exp3/expert-generic
+- **Files changed:**
+  - `src/operations/scientific.py` — added 6 trig methods: sin, cos, tan, cot, asin, acos (all in degrees); tan/cot raise ValueError at undefined points; asin/acos raise ValueError outside [-1, 1]
+  - `src/session.py` — added trig ops to UNARY_OPS; ALL_OPS grows from 12 to 18
+  - `src/__main__.py` — replaced OPERATIONS with NORMAL_OPERATIONS (6 ops) and SCIENTIFIC_OPERATIONS (18 ops); display_menu gains mode params; main() handles 'm' for mode switching; starts in Normal mode
+  - `tests/test_main.py` — updated all tests for mode-based structure; added mode-switching and trig tests; total ~80 tests
+  - `tests/test_session.py` — updated UNARY_OPS/ALL_OPS assertions; added 12 trig tests; total ~49 tests
+  - `rag/index.md`, `rag/codebase_map.md`, `rag/evolution_log.md`, `rag/patterns.md` — updated for cycle 14
+- **Purpose:** Implement Normal/Scientific mode switching in interactive CLI. Normal mode: add, subtract, multiply, divide, square, square_root. Scientific mode: all 18 ops including new trig functions. Users switch with 'm' without restarting the session.
+- **Risks:** `main.py` (bash CLI) still uses the old 12-op set from session.py BINARY_OPS/UNARY_OPS; the new trig ops are available in ALL_OPS but test_cli.py is unchanged — bash CLI does not expose trig ops yet (not required by issue-281).
+- **All tests passed:** Yes (237/237)
+- **RAG entries consulted:** `rag/index.md`, `rag/codebase_map.md`, `rag/patterns.md`, `rag/evolution_log.md`
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+Duration: PENDING | Cost: PENDING | Turns: PENDING
+
+---
+
 ## Run: update-diagrams — PlantUML diagram verification (post-issue-278)
 
 - **Branch:** exp3/issue-278-add-documentation
