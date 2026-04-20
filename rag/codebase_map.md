@@ -188,6 +188,54 @@ Per-file summaries: purpose, public API surface, key invariants.
 
 ---
 
+## `src/gui_modes.py`
+- **Purpose:** Calculator mode abstractions for the GUI; no tkinter dependency so these can be imported and tested without a display.
+- **Exports:** `CalculatorMode`, `SimpleMode`, `ScientificMode`, `parse_number`
+- **Public API:**
+  - `CalculatorMode(ABC)` — abstract base class; subclasses must implement `name: str` and `operations: dict[str, tuple[str, int]]` as abstract properties.
+  - `SimpleMode` — 6 operations: add, subtract, multiply, divide, square, square_root.
+  - `ScientificMode` — 18 operations: all SimpleMode ops plus factorial, cube, cube_root, power, log, ln, sin, cos, tan, cot, asin, acos.
+  - `parse_number(raw: str)` — parses a string to int (if whole number) or float; raises `ValueError` for non-numeric input.
+- **Key invariants:**
+  - `ScientificMode.operations` is a strict superset of `SimpleMode.operations`.
+  - All operation names in both modes are members of `BINARY_OPS | UNARY_OPS` from `src.session`.
+  - `operations` property returns a fresh dict each call (no shared mutable state).
+- **Last updated:** cycle 15 (issue-284)
+
+---
+
+## `src/gui.py`
+- **Purpose:** Tkinter GUI controller for the Calculator. Delegates all computation to `CalculatorSession`; contains no arithmetic logic.
+- **Exports:** `CalculatorGUI`, `main`, re-exports `CalculatorMode`, `SimpleMode`, `ScientificMode`
+- **Public API:**
+  - `CalculatorGUI(root: tk.Tk)` — builds the full widget tree; holds a `CalculatorSession` and a list of `CalculatorMode` instances; mode switching swaps `_current_mode`.
+  - `main() -> None` — creates a `Tk` root, instantiates `CalculatorGUI`, and calls `mainloop()`.
+- **Key invariants:**
+  - All computation goes through `CalculatorSession.execute()`; no direct `Calculator` interaction.
+  - Factorial input is parsed with `int()` to preserve Calculator.factorial's integer contract.
+  - Errors (`ValueError`, `TypeError`, `ZeroDivisionError`) are shown in the result label and forwarded to `log_error("gui", ...)`.
+  - Session history persists across mode switches within the same window lifetime.
+  - Requires a display/tkinter; not importable in headless CI — use `src.gui_modes` for testable logic.
+- **Last updated:** cycle 15 (issue-284)
+
+---
+
+## `gui.py` (root)
+- **Purpose:** Thin GUI launcher at project root; mirrors `main.py` style. Run with `python gui.py`.
+- **Exports:** N/A (script only)
+- **Last updated:** cycle 15 (issue-284)
+
+---
+
+## `tests/test_gui.py`
+- **Purpose:** Tests for `src/gui_modes.py`; no display required.
+- **Current state:** 42 tests covering: `CalculatorMode` cannot be instantiated directly, `SimpleMode` name/op-count/valid-op-names/arity/contents, `ScientificMode` name/op-count/valid-op-names/arity/coverage of all 18 ops, `parse_number` for int/float/negative/scientific-notation/invalid/empty, mode contract parametrized across both classes.
+- **Test strategy:** Imports `src.gui_modes` directly (not `src.gui`) to avoid tkinter dependency.
+- **Exports:** None
+- **Last updated:** cycle 15 (issue-284)
+
+---
+
 ## `tests/test_error_logger.py`
 - **Purpose:** Unit tests for `src/error_logger.py`.
 - **Current state:** 7 tests covering: file creation on first log call, source and message written to file, timestamp format (ISO-8601), append behavior for multiple entries, one-entry-per-line invariant, `ERROR_LOG_FILE` type and extension.

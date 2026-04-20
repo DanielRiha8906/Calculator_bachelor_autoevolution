@@ -4,6 +4,21 @@ Per-cycle entries: task, files changed, outcome, lessons learned.
 
 ---
 
+## Cycle 15 — Issue #284: GUI — Expert/generic
+
+- **Task:** Add a tkinter-based graphical interface that reuses existing application logic (CalculatorSession) without duplicating it. Use an OOP mode design with a shared CalculatorMode ABC so Simple and Scientific modes share structure while keeping their operation sets separate.
+- **Files changed:**
+  - `src/gui_modes.py` (new): `CalculatorMode` ABC with `name` and `operations` abstract properties; `SimpleMode` (6 ops); `ScientificMode` (all 18 ops); `parse_number` helper.
+  - `src/gui.py` (new): `CalculatorGUI` tkinter controller; imports `CalculatorSession` for all computation; mode switching swaps the active `CalculatorMode` instance; session history displayed in a `ScrolledText` widget.
+  - `gui.py` (new): thin root-level launcher (`python gui.py`) mirroring `main.py` style.
+  - `tests/test_gui.py` (new): 42 tests covering `CalculatorMode` abstractness, `SimpleMode`/`ScientificMode` operation sets, arity contracts, and `parse_number`; no display required.
+- **Test result:** 278 passed
+- **Key decisions:** Mode classes extracted to `gui_modes.py` (no tkinter dependency) so they are testable in CI without a display. `gui.py` imports tkinter only at module level so the import fails gracefully when tkinter is absent; tests target `gui_modes.py` directly. `CalculatorGUI` holds no arithmetic logic — all computation goes through `CalculatorSession.execute()`. Factorial operand is converted with `int()` to match `Calculator.factorial`'s integer contract. Both `ValueError`/`TypeError` and `ZeroDivisionError` are caught and shown in the result label; errors are also forwarded to `log_error("gui", ...)` for consistency with CLI modes.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
+---
+
 ## Cycle 14 — Issue #281: Scientific Mode — Expert/generic
 
 - **Task:** Add Normal and Scientific calculator modes to the interactive CLI. Normal mode exposes add, subtract, multiply, divide, square, square_root. Scientific mode extends Normal with cube, cube_root, factorial, power, log, ln, sin, cos, tan, cot, asin, acos (all trig in degrees). Users switch modes with 'm' without restarting the session.
