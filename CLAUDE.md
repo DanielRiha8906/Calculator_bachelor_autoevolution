@@ -16,6 +16,62 @@ Because of that, safety, traceability, and reproducibility are critical: careles
 
 ---
 
+## Self-maintained RAG knowledge base
+
+This experiment variant introduces a **file-based RAG (Retrieval-Augmented Generation)** system that Claude builds and maintains across successive evolution cycles. The purpose is to reduce input token costs and minimize turns by replacing full file reads with targeted lookups into compact, prebuilt summaries.
+
+### RAG file structure
+
+```
+rag/
+  index.md          — master index: file paths, one-line purpose, last-updated cycle
+  codebase_map.md   — per-file summaries: purpose, public API surface, key invariants
+  evolution_log.md  — per-cycle entries: task, files changed, outcome, lessons learned
+  patterns.md       — recurring patterns, known anti-patterns, discovered conventions
+```
+
+### Protocol: start of every run
+
+1. Check if `rag/index.md` exists.
+   - **If missing:** run **RAG initialization** (see below) before working on the task.
+   - **If present:** read `rag/index.md` first, then read only the `rag/*.md` files relevant to the current task.
+2. Use RAG content as the **primary context source**. Open actual source files only when:
+   - The RAG entry for that file is marked stale.
+   - The task requires reading exact logic or implementation details not captured in the summary.
+
+### Protocol: end of every run
+
+After all tests pass and before committing code:
+
+1. Update `rag/codebase_map.md` for every file that was added, removed, or modified.
+2. Append a new entry to `rag/evolution_log.md` with: task name, files changed, test result, key decisions, cost in USD, number of turns.
+3. Update `rag/patterns.md` if a new pattern or anti-pattern was discovered.
+4. Commit RAG updates as a **separate commit** from code changes, with message: `update RAG after <task-name>`.
+
+### RAG initialization
+
+If `rag/` does not exist or `rag/index.md` is missing:
+
+1. Create `rag/` and all four files listed above.
+2. Read each file in `src/` and `tests/` and write a brief summary entry in `rag/codebase_map.md`: purpose, exported names, notable invariants.
+3. Populate `rag/index.md` listing every summarized file with a one-line description and cycle number `0`.
+4. Leave `rag/evolution_log.md` with a single bootstrap entry (no task, initial state).
+5. Leave `rag/patterns.md` empty except for a header.
+6. Commit as a standalone commit: `initialize RAG knowledge base`.
+7. Proceed with the actual task only after the RAG commit is done.
+
+### RAG staleness
+
+An entry is stale if the source file was modified in a cycle after the entry's `last-updated` value, or if the summary omits a function or class known to exist. Re-read the source file and update the entry before relying on it.
+
+### What NOT to store in RAG
+
+- Verbatim source code — summaries only; source files are the authority.
+- Raw test output or full stack traces — those go in `progress.md`.
+- Secrets, credentials, or environment values.
+
+---
+
 ## Safe change rules
 
 These rules exist because the subject of this project is code that modifies itself. Any unsafe practice here undermines both the research integrity and reproducibility.
@@ -44,7 +100,7 @@ These rules exist because the subject of this project is code that modifies itse
 
 ## Git hygiene
 
-- **Branch per experiment.** Each self-evolution run or hypothesis gets its own branch: `experiment/<description>`.
+- **Branch per experiment.** Each self-evolution run or hypothesis gets its own branch: `exp3/<description>`.
 - **Commit messages:** imperative mood, present tense, ≤72 chars subject. Body explains *why*, not *what*.
 - **Never commit to `main` directly.** Always work through an experiment branch or worktree branch and review.
 - **Never amend published commits.** If a fix is needed, make a new commit.
@@ -84,7 +140,7 @@ These rules exist to preserve experiment isolation, reproducibility, and valid t
 
 ## Self-evolving system specific rules
 
-- **Immutable core principle:** the self-evolution loop must not directly modify `CLAUDE.md`, `.gitignore`, thesis documentation, or branch-policy files during normal operation.
+- **Immutable core principle:** the self-evolution loop must not directly modify `CLAUDE.md`, `.gitignore`, thesis documentation, or branch-policy files during normal operation. Exception: `rag/` files are explicitly designed to be written by the loop (see RAG section).
 - **Project level behavioral changes:** If project-level behavioral changes are needed, they must be proposed in `suggestions/update_claude.md` instead of being applied automatically.
 - **All patches produced by the system must be diff-format artifacts** stored under `patches/` or `output/` — not silently applied.
 - **Every evolution cycle must be logged** (inputs, outputs, diffs, timestamps) so experiments can be reproduced and cited in the thesis.
@@ -103,14 +159,17 @@ In this project, Claude (this instance) **is** the self-evolution engine. It is 
 
 1. A GitHub Actions workflow triggers Claude Code on a schedule or on a specific event (e.g., a push, a label on an issue, or a manual dispatch).
 2. Claude receives a task — a mutation goal, a failing test, a performance target, or a research hypothesis — and autonomously produces code changes.
-3. Those changes are committed only within the currently active branch/worktree context. If the workflow includes pull request creation, a pull request may be opened for human review only against the correct non-`main` target branch unless explicitly instructed otherwise. Claude does **not** merge its own PRs.
+3. **Before acting on the task**, Claude queries the RAG knowledge base (`rag/`) for relevant context instead of re-reading all source files.
+4. Those changes are committed only within the currently active branch/worktree context. If the workflow includes pull request creation, a pull request may be opened for human review only against the correct non-`main` target branch unless explicitly instructed otherwise. Claude does **not** merge its own PRs.
+5. **After tests pass**, Claude updates the RAG and commits that update as a separate commit.
 
 ### Responsibilities in autonomous mode
 
 - **Read the task carefully before acting.** The workflow will pass a task description; treat it as the sole source of truth for what needs to change.
+- **Query the RAG before reading source files.** This is the primary cost-reduction mechanism of this experiment variant. Only open source files when the RAG is insufficient.
 - **Produce the smallest change that satisfies the task.** Avoid touching files outside the task scope.
 - **Always run tests before committing.** A cycle that breaks tests must not produce a commit — it must log the failure and stop.
-- **Write a summary to `progress.md`** at the end of every run (files changed, purpose, risks, test results, number of tokens used, cost in USD, number of turns). This is required for thesis reproducibility.
+- **Write a summary to `progress.md`** at the end of every run (files changed, purpose, risks, test results, number of tokens used, cost in USD, number of turns, RAG entries consulted or "RAG initialized"). This is required for thesis reproducibility.
 - **Open a PR, never merge.** The PR description must include: what changed, why, which tests passed, and any risks or open questions.
 - **If the task is ambiguous or unsafe, do nothing and leave a comment** on the triggering issue/PR explaining what clarification is needed.
 - **Treat the current worktree branch as the full scope of the task.** Do not inspect or reason across sibling experiment branches.
@@ -162,6 +221,8 @@ Before any commit, append a run summary to `progress.md` including:
 - whether all tests passed
 - current branch/worktree name
 - intended merge or PR target
+- RAG entries consulted (or "RAG initialized" if first run)
+- number of tokens used, cost in USD, number of turns
 
 ---
 
@@ -178,8 +239,9 @@ Before any commit, append a run summary to `progress.md` including:
 - New source files go in `src/`
 - New test files go in `tests/`
 - Development artifacts go in `artifacts/`
+- RAG knowledge base files go in `rag/`
 - Suggested policy or workflow changes go in `suggestions/`
-- Keep source code, tests, and generated artifacts separate
+- Keep source code, tests, RAG, and generated artifacts separate
 
 ---
 

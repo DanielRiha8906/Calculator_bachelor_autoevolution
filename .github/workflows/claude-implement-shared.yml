@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       branch:
-        description: 'Experiment branch to check out and target (e.g. exp/naive-generic)'
+        description: 'Experiment branch to check out and target (e.g. exp3/naive-generic)'
         type: string
         required: true
       experiment_name:
@@ -80,12 +80,24 @@ jobs:
             2. You encounter a hard blocking error and explain it clearly
 
             Instructions:
-            - Inspect the repository (current branch only)
-            - Create a dedicated sub-branch off ${{ inputs.branch }} for the task, named exactly `task/issue-${{ inputs.issue_number }}-<short-description>` (e.g. `task/issue-${{ inputs.issue_number }}-add-logging`)
-            - Implement the requested change
-            - Run tests if available; if tests do not exist, create appropriate ones
-            - Commit the changes
-            - Open or update a pull request targeting ${{ inputs.branch }}
+            1. RAG — check if `rag/index.md` exists.
+               - If missing: initialize the RAG knowledge base (create `rag/` with
+                 `index.md`, `codebase_map.md`, `evolution_log.md`, `patterns.md`
+                 populated from the current state of `src/` and `tests/`) and commit it
+                 as a standalone commit before touching any implementation code.
+               - If present: read `rag/index.md` and the relevant `rag/*.md` files for
+                 context before opening any source files.
+            2. Create a dedicated sub-branch off ${{ inputs.branch }} for the task,
+               named exactly `exp3/issue-${{ inputs.issue_number }}-<short-description>`
+               (e.g. `exp3/issue-${{ inputs.issue_number }}-add-logging`).
+            3. Implement the requested change using the RAG as primary context.
+               Open source files only when the RAG is insufficient.
+            4. Run tests if available; if tests do not exist, create appropriate ones.
+            5. Commit the code changes.
+            6. Update `rag/codebase_map.md`, `rag/evolution_log.md`, and
+               `rag/patterns.md` (if applicable) then commit those updates as a
+               **separate** commit with message: `update RAG after issue-${{ inputs.issue_number }}`.
+            7. Open or update a pull request targeting ${{ inputs.branch }}.
 
             Constraints:
             - Never push directly to ${{ inputs.branch }} or main
@@ -93,12 +105,14 @@ jobs:
             - Keep changes minimal, reviewable, and reproducible
             - Do not modify workflow or governance files unless explicitly required by the issue
             - Never access or reference sibling experiment branches
+            - RAG update commit must always be separate from the code commit
             ${{ inputs.prompt_additions }}
 
             Progress logging format (mandatory):
-            When writing the cost/turns/duration line in progress.md, write it exactly as:
+            Write this line exactly as plain text, without markdown, bold, italics or any formatting:
             Duration: PENDING | Cost: PENDING | Turns: PENDING
-            Do not estimate or guess these values — the workflow will replace PENDING with real values after your run completes.
+            Do not estimate or guess these values — Do not modify spacing, punctuation or add any symbols.
+            The workflow will replace PENDING with real values after this run completes.
 
       - name: Upload Claude execution log
         if: always()
@@ -138,9 +152,9 @@ jobs:
         if: always()
         run: |
           git fetch --all --quiet
-          TASK_BRANCH=$(git branch -r | grep -E "origin/task/issue-${{ inputs.issue_number }}[^0-9]" | head -1 | tr -d ' ')
+          TASK_BRANCH=$(git branch -r | grep -E "origin/exp3/issue-${{ inputs.issue_number }}[^0-9]" | head -1 | tr -d ' ')
           if [ -z "$TASK_BRANCH" ]; then
-            TASK_BRANCH=$(git branch -r | grep "origin/task/issue-${{ inputs.issue_number }}-" | head -1 | tr -d ' ')
+            TASK_BRANCH=$(git branch -r | grep "origin/exp3/issue-${{ inputs.issue_number }}-" | head -1 | tr -d ' ')
           fi
           LOCAL_BRANCH="${TASK_BRANCH#origin/}"
           echo "task_branch=$LOCAL_BRANCH" >> "$GITHUB_OUTPUT"
