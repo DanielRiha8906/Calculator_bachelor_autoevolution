@@ -7,23 +7,28 @@ participant "main.py\nrun_cli()" as CLI
 participant "__main__\nrun_session()" as Main
 participant "_read_number()" as ReadNum
 participant "Calculator" as Calc
+participant "error_logger\ncalculator_errors.log" as ErrLog
 
 User -> CLI : python main.py [args...]
 
 alt args provided — bash mode
 
+    CLI -> ErrLog : get_error_logger()
     CLI -> CLI : parse operation name
 
     alt unknown operation
+        CLI -> ErrLog : error("CLI: unknown operation '...'")
         CLI -> User : stderr: "Error: unknown operation"
         CLI -> User : stderr: "Available operations: <list>"
         CLI -> User : exit(1)
 
     else wrong operand count
+        CLI -> ErrLog : error("CLI: '...' requires N operand(s), got M")
         CLI -> User : stderr: "Error: requires N operand(s), got M"
         CLI -> User : exit(1)
 
     else invalid number format
+        CLI -> ErrLog : error("CLI: invalid operand '...'")
         CLI -> User : stderr: "Error: '<raw>' is not a valid number"
         CLI -> User : exit(1)
 
@@ -34,6 +39,7 @@ alt args provided — bash mode
             CLI -> User : stdout: result
         else ZeroDivisionError
             Calc -> CLI : raise ZeroDivisionError
+            CLI -> ErrLog : error("CLI: calculation error in divide — ...")
             CLI -> User : stderr: "Error: <message>"
             CLI -> User : exit(1)
         end
@@ -45,12 +51,14 @@ alt args provided — bash mode
             CLI -> User : stdout: result
         else ValueError (e.g. negative square root)
             Calc -> CLI : raise ValueError
+            CLI -> ErrLog : error("CLI: calculation error in square_root — ...")
             CLI -> User : stderr: "Error: <message>"
             CLI -> User : exit(1)
         end
 
     else factorial
         alt non-whole-number input
+            CLI -> ErrLog : error("CLI: factorial requires a whole number; got ...")
             CLI -> User : stderr: "Error: factorial requires a whole number"
             CLI -> User : exit(1)
         else whole number
@@ -60,6 +68,7 @@ alt args provided — bash mode
                 CLI -> User : stdout: result
             else ValueError / TypeError
                 Calc -> CLI : raise error
+                CLI -> ErrLog : error("CLI: calculation error in factorial — ...")
                 CLI -> User : stderr: "Error: <message>"
                 CLI -> User : exit(1)
             end
@@ -71,6 +80,7 @@ else no args — interactive mode
     CLI -> Main : interactive_main()
 
     User -> Main : run program
+    Main -> ErrLog : get_error_logger()
     note right of Main : choice_failures = 0\nhistory = []
 
     loop session (until choice == "0" or too many failures)
@@ -94,10 +104,12 @@ else no args — interactive mode
         else unknown choice
             note right of Main : choice_failures += 1
             alt choice_failures >= MAX_ATTEMPTS
+                Main -> ErrLog : error("Interactive: too many invalid menu choices ...")
                 Main -> Main : _write_history(history, history_file)
                 Main -> User : "Too many invalid choices — ending session"
                 note right of Main : session ends
             else
+                Main -> ErrLog : error("Interactive: invalid menu choice '...'")
                 Main -> User : "Unknown choice '<x>'. Available operations: <list>. (N attempt(s) left)"
             end
 
@@ -105,16 +117,18 @@ else no args — interactive mode
             note right of Main : choice_failures = 0
 
             alt two-operand operation (e.g. add)
-                Main -> ReadNum : _read_number("Enter first number: ")
+                Main -> ReadNum : _read_number("Enter first number: ", error_logger)
                 loop until valid float or MAX_ATTEMPTS exceeded
                     ReadNum -> User : prompt
                     User -> ReadNum : raw input
                     alt invalid float
+                        ReadNum -> ErrLog : error("Interactive: invalid number input '...'")
                         ReadNum -> User : "not a valid number (N left)"
                     end
                 end
                 alt MAX_ATTEMPTS exceeded
                     ReadNum -> Main : raise TooManyAttemptsError
+                    Main -> ErrLog : error("Interactive: Too many invalid inputs ...")
                     Main -> Main : _write_history(history, history_file)
                     Main -> User : "Too many invalid inputs — ending session"
                     note right of Main : session ends
@@ -122,16 +136,18 @@ else no args — interactive mode
                     ReadNum -> Main : first operand (float)
                 end
 
-                Main -> ReadNum : _read_number("Enter second number: ")
+                Main -> ReadNum : _read_number("Enter second number: ", error_logger)
                 loop until valid float or MAX_ATTEMPTS exceeded
                     ReadNum -> User : prompt
                     User -> ReadNum : raw input
                     alt invalid float
+                        ReadNum -> ErrLog : error("Interactive: invalid number input '...'")
                         ReadNum -> User : "not a valid number (N left)"
                     end
                 end
                 alt MAX_ATTEMPTS exceeded
                     ReadNum -> Main : raise TooManyAttemptsError
+                    Main -> ErrLog : error("Interactive: Too many invalid inputs ...")
                     Main -> Main : _write_history(history, history_file)
                     Main -> User : "Too many invalid inputs — ending session"
                     note right of Main : session ends
@@ -146,20 +162,23 @@ else no args — interactive mode
                     Main -> User : "Result: <value>"
                 else ZeroDivisionError (divide by zero)
                     Calc -> Main : raise ZeroDivisionError
+                    Main -> ErrLog : error("Interactive: calculation error in divide — ...")
                     Main -> User : "Error: <message>"
                 end
 
             else single-operand, non-factorial (e.g. square_root)
-                Main -> ReadNum : _read_number("Enter number: ")
+                Main -> ReadNum : _read_number("Enter number: ", error_logger)
                 loop until valid float or MAX_ATTEMPTS exceeded
                     ReadNum -> User : prompt
                     User -> ReadNum : raw input
                     alt invalid float
+                        ReadNum -> ErrLog : error("Interactive: invalid number input '...'")
                         ReadNum -> User : "not a valid number (N left)"
                     end
                 end
                 alt MAX_ATTEMPTS exceeded
                     ReadNum -> Main : raise TooManyAttemptsError
+                    Main -> ErrLog : error("Interactive: Too many invalid inputs ...")
                     Main -> User : "Too many invalid inputs — ending session"
                     note right of Main : session ends
                 else valid float
@@ -173,20 +192,23 @@ else no args — interactive mode
                     Main -> User : "Result: <value>"
                 else ValueError (e.g. negative square root)
                     Calc -> Main : raise ValueError
+                    Main -> ErrLog : error("Interactive: calculation error in square_root — ...")
                     Main -> User : "Error: <message>"
                 end
 
             else factorial
-                Main -> ReadNum : _read_number("Enter number: ")
+                Main -> ReadNum : _read_number("Enter number: ", error_logger)
                 loop until valid float or MAX_ATTEMPTS exceeded
                     ReadNum -> User : prompt
                     User -> ReadNum : raw input
                     alt invalid float
+                        ReadNum -> ErrLog : error("Interactive: invalid number input '...'")
                         ReadNum -> User : "not a valid number (N left)"
                     end
                 end
                 alt MAX_ATTEMPTS exceeded
                     ReadNum -> Main : raise TooManyAttemptsError
+                    Main -> ErrLog : error("Interactive: Too many invalid inputs ...")
                     Main -> User : "Too many invalid inputs — ending session"
                     note right of Main : session ends
                 else valid float
@@ -194,6 +216,7 @@ else no args — interactive mode
                 end
 
                 alt operand is not a whole number
+                    Main -> ErrLog : error("Interactive: factorial requires a whole number; got ...")
                     Main -> User : "Error: Input must be a whole number for factorial"
                 else whole number
                     Main -> Calc : factorial(int(n))
@@ -203,6 +226,7 @@ else no args — interactive mode
                         Main -> User : "Result: <value>"
                     else ValueError / TypeError
                         Calc -> Main : raise error
+                        Main -> ErrLog : error("Interactive: calculation error in factorial — ...")
                         Main -> User : "Error: <message>"
                     end
                 end

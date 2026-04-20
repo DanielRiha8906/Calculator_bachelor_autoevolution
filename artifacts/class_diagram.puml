@@ -22,6 +22,12 @@ package "src" {
     class TooManyAttemptsError {
     }
 
+    class "error_logger" as ErrLog {
+        - ERROR_LOG_FILE : str
+        - _LOG_FORMAT : str
+        + get_error_logger(log_file: str) : Logger
+    }
+
     class "__main__" as Main {
         - OPERATIONS : dict
         - MAX_ATTEMPTS : int
@@ -29,23 +35,25 @@ package "src" {
         + _fmt_num(x) : str
         + _format_entry(method_name: str, operands: tuple, result) : str
         + _write_history(history: list[str], path: str) : None
-        + _read_number(prompt: str, max_attempts: int) : float
-        + run_session(calc: Calculator, history_file: str) : None
+        + _read_number(prompt: str, max_attempts: int, error_logger) : float
+        + run_session(calc: Calculator, history_file: str, error_log_file: str) : None
         + main() : None
     }
 
     Main --> Calculator : uses
     Main ..> TooManyAttemptsError : raises / catches
+    Main --> ErrLog : get_error_logger()
 }
 
 class "main" as CLI {
     - CLI_OPERATIONS : dict
-    + _parse_operand(raw: str) : float
-    + run_cli(args: list[str]) : None
+    + _parse_operand(raw: str, error_logger) : float
+    + run_cli(args: list[str], error_log_file: str) : None
 }
 
 CLI --> Calculator : uses
 CLI --> Main : delegates interactive_main()
+CLI --> ErrLog : get_error_logger()
 
 note right of Calculator
   Validation rules:
@@ -55,6 +63,17 @@ note right of Calculator
   log: a > 0
   ln: a > 0
   factorial: n >= 0, integer, not bool
+end note
+
+note right of ErrLog
+  ERROR_LOG_FILE = "calculator_errors.log"
+  get_error_logger() returns a Logger writing
+  ERROR-level records to the given file.
+  Logger name is derived from the file path
+  for test isolation (unique logger per path).
+  Log format: timestamp [LEVEL] message
+  Kept separate from history.txt so normal
+  operation records and errors never mix.
 end note
 
 note right of Main
@@ -72,6 +91,10 @@ note right of Main
   _write_history() saves the list to
   HISTORY_FILE ("history.txt"). The user
   can view history mid-session via "h".
+  Errors logged: invalid menu choice,
+  too many invalid choices, invalid number
+  inputs, factorial non-integer, calculation
+  errors (ValueError/ZeroDivisionError/TypeError).
 end note
 
 note right of CLI
@@ -79,6 +102,7 @@ note right of CLI
   to (operand_count, method_name) pairs.
   run_cli() dispatches one operation per invocation.
   Errors printed to stderr; exits with code 1.
+  All errors also logged to error_log_file.
   Falls back to interactive_main() when no args given.
 end note
 
