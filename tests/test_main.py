@@ -62,7 +62,8 @@ def test_power_operation():
 
 def test_divide_by_zero_shows_error():
     outputs = []
-    run_calculator(input_fn=make_inputs("4", "10", "0", "n"), print_fn=outputs.append)
+    # First attempt: divide by zero → error + retry; second attempt: valid division succeeds.
+    run_calculator(input_fn=make_inputs("4", "10", "0", "5", "2", "n"), print_fn=outputs.append)
     assert any("Error" in line for line in outputs)
     assert any("Goodbye" in line for line in outputs)
 
@@ -84,8 +85,10 @@ def test_factorial_float_whole_number():
 
 def test_factorial_fractional_input_shows_error():
     outputs = []
-    run_calculator(input_fn=make_inputs("6", "5.5", "n"), print_fn=outputs.append)
+    # First attempt: fractional → error + retry; second attempt: valid whole number succeeds.
+    run_calculator(input_fn=make_inputs("6", "5.5", "5", "n"), print_fn=outputs.append)
     assert any("Error" in line for line in outputs)
+    assert any("120" in line for line in outputs)
 
 
 def test_square_operation():
@@ -108,8 +111,10 @@ def test_sqrt_operation():
 
 def test_sqrt_negative_shows_error():
     outputs = []
-    run_calculator(input_fn=make_inputs("9", "-4", "n"), print_fn=outputs.append)
+    # First attempt: negative input → error + retry; second attempt: valid input succeeds.
+    run_calculator(input_fn=make_inputs("9", "-4", "9", "n"), print_fn=outputs.append)
     assert any("Error" in line for line in outputs)
+    assert any("3.0" in line for line in outputs)
 
 
 def test_cbrt_operation():
@@ -292,3 +297,189 @@ def test_bash_no_args_prints_usage():
     code = run_bash_mode([], print_fn=outputs.append)
     assert code == 1
     assert any("Usage" in line for line in outputs)
+
+
+# --- Interactive mode: retry and max-attempt limits ---
+
+def test_invalid_choice_max_attempts_ends_session():
+    outputs = []
+    # Three consecutive invalid choices exhaust MAX_ATTEMPTS and end the session.
+    run_calculator(input_fn=make_inputs("99", "88", "77"), print_fn=outputs.append)
+    assert any("Invalid choice" in line for line in outputs)
+    assert any("Ending session" in line for line in outputs)
+
+
+def test_invalid_operand_retry_succeeds():
+    outputs = []
+    # Non-numeric input for square → error; valid input on retry → correct result.
+    run_calculator(input_fn=make_inputs("7", "abc", "4", "n"), print_fn=outputs.append)
+    assert any("Error" in line for line in outputs)
+    assert any("16" in line for line in outputs)
+
+
+def test_invalid_operand_all_attempts_exhausted_ends_session():
+    outputs = []
+    # Three consecutive invalid operand inputs exhaust MAX_ATTEMPTS and end the session.
+    run_calculator(input_fn=make_inputs("7", "abc", "def", "xyz"), print_fn=outputs.append)
+    assert any("Error" in line for line in outputs)
+    assert any("Ending session" in line for line in outputs)
+
+
+# --- History feature ---
+
+def test_history_empty_shows_no_history(tmp_path):
+    history_file = str(tmp_path / "history.txt")
+    outputs = []
+    run_calculator(
+        input_fn=make_inputs("h", "q"),
+        print_fn=outputs.append,
+        history_file=history_file,
+    )
+    assert any("No history yet" in line for line in outputs)
+
+
+def test_history_records_single_operation(tmp_path):
+    history_file = str(tmp_path / "history.txt")
+    outputs = []
+    run_calculator(
+        input_fn=make_inputs("1", "3", "7", "y", "h", "q"),
+        print_fn=outputs.append,
+        history_file=history_file,
+    )
+    assert any("add" in line and "10" in line for line in outputs)
+
+
+def test_history_accumulates_multiple_operations(tmp_path):
+    history_file = str(tmp_path / "history.txt")
+    outputs = []
+    run_calculator(
+        input_fn=make_inputs("1", "2", "3", "y", "7", "4", "y", "h", "q"),
+        print_fn=outputs.append,
+        history_file=history_file,
+    )
+    history_lines = [line for line in outputs if "add" in line or "square" in line]
+    assert len(history_lines) >= 2
+
+
+def test_history_cleared_on_new_session(tmp_path):
+    history_file = str(tmp_path / "history.txt")
+    # First session: run one operation
+    outputs1 = []
+    run_calculator(
+        input_fn=make_inputs("1", "2", "3", "n"),
+        print_fn=outputs1.append,
+        history_file=history_file,
+    )
+    # Second session: history should be empty
+    outputs2 = []
+    run_calculator(
+        input_fn=make_inputs("h", "q"),
+        print_fn=outputs2.append,
+        history_file=history_file,
+    )
+    assert any("No history yet" in line for line in outputs2)
+
+
+def test_history_does_not_count_as_invalid_attempt(tmp_path):
+    history_file = str(tmp_path / "history.txt")
+    outputs = []
+    # Three 'h' inputs before a valid choice must not exhaust MAX_ATTEMPTS.
+    run_calculator(
+        input_fn=make_inputs("h", "h", "h", "1", "5", "3", "n"),
+        print_fn=outputs.append,
+        history_file=history_file,
+    )
+    assert any("8" in line for line in outputs)
+
+
+# --- Bash mode: non-numeric input ---
+
+def test_bash_non_numeric_first_value():
+    outputs = []
+    code = run_bash_mode(["add", "abc", "3"], print_fn=outputs.append)
+    assert code == 1
+    assert any("Error" in line for line in outputs)
+
+
+def test_bash_non_numeric_second_value():
+    outputs = []
+    code = run_bash_mode(["add", "5", "xyz"], print_fn=outputs.append)
+    assert code == 1
+    assert any("Error" in line for line in outputs)
+
+
+def test_bash_non_numeric_single_value():
+    outputs = []
+    code = run_bash_mode(["sqrt", "abc"], print_fn=outputs.append)
+    assert code == 1
+    assert any("Error" in line for line in outputs)
+
+
+# --- Error logging ---
+
+def test_error_log_invalid_choice_interactive(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    history_file = str(tmp_path / "history.txt")
+    run_calculator(
+        input_fn=make_inputs("99", "q"),
+        print_fn=lambda x: None,
+        history_file=history_file,
+        error_log_file=error_log,
+    )
+    with open(error_log) as f:
+        content = f.read()
+    assert "99" in content
+
+
+def test_error_log_calc_error_interactive(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    history_file = str(tmp_path / "history.txt")
+    # divide by zero triggers a logged error; second attempt succeeds so session ends cleanly
+    run_calculator(
+        input_fn=make_inputs("4", "10", "0", "5", "2", "n"),
+        print_fn=lambda x: None,
+        history_file=history_file,
+        error_log_file=error_log,
+    )
+    with open(error_log) as f:
+        content = f.read()
+    assert "divide" in content.lower() or "zero" in content.lower()
+
+
+def test_error_log_bash_unknown_operation(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    run_bash_mode(["foobar"], print_fn=lambda x: None, error_log_file=error_log)
+    with open(error_log) as f:
+        content = f.read()
+    assert "foobar" in content
+
+
+def test_error_log_bash_calc_error(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    run_bash_mode(["divide", "5", "0"], print_fn=lambda x: None, error_log_file=error_log)
+    with open(error_log) as f:
+        content = f.read()
+    assert "divide" in content.lower() or "zero" in content.lower()
+
+
+def test_error_log_bash_invalid_input(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    run_bash_mode(["add", "abc", "3"], print_fn=lambda x: None, error_log_file=error_log)
+    with open(error_log) as f:
+        content = f.read()
+    assert "abc" in content or "add" in content.lower()
+
+
+def test_error_log_bash_wrong_arg_count(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    run_bash_mode(["add", "5"], print_fn=lambda x: None, error_log_file=error_log)
+    with open(error_log) as f:
+        content = f.read()
+    assert "add" in content.lower()
+
+
+def test_error_log_not_written_on_success(tmp_path):
+    error_log = str(tmp_path / "errors.log")
+    run_bash_mode(["add", "2", "3"], print_fn=lambda x: None, error_log_file=error_log)
+    # No error occurred, so the log file should not exist
+    assert not (tmp_path / "errors.log").exists()

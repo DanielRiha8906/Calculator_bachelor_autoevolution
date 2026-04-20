@@ -7,6 +7,8 @@ participant "__main__\nmain()" as Main
 participant "__main__\nrun_bash_mode()" as Bash
 participant "__main__\nrun_calculator()" as Interactive
 participant "Calculator" as Calc
+database "history.txt" as HistFile
+database "calculator_errors.log" as ErrLog
 
 User -> Main : python -m src [operation] [values...]
 
@@ -17,56 +19,88 @@ alt command-line arguments present
     alt unknown operation
         Bash -> User : "Error: Unknown operation '<name>'"
         Bash -> User : usage hint
+        Bash -> ErrLog : append timestamped error
         Bash --> Main : exit code 1
     else wrong number of values
         Bash -> User : "Error: '<op>' requires exactly N value(s)"
+        Bash -> ErrLog : append timestamped error
         Bash --> Main : exit code 1
-    else valid arguments
+    else non-numeric value or calc error
         Bash -> Calc : <operation>(parsed values)
-        alt no error
-            Calc --> Bash : result
-            Bash -> User : "Result: <value>"
-            Bash --> Main : exit code 0
-        else ValueError
-            Calc --> Bash : raise ValueError("<message>")
-            Bash -> User : "Error: <message>"
-            Bash --> Main : exit code 1
-        end
+        Calc --> Bash : raise ValueError("<message>")
+        Bash -> User : "Error: <message>"
+        Bash -> ErrLog : append timestamped error
+        Bash --> Main : exit code 1
+    else valid arguments, no error
+        Bash -> Calc : <operation>(parsed values)
+        Calc --> Bash : result
+        Bash -> User : "Result: <value>"
+        Bash --> Main : exit code 0
     end
 
 else no arguments (interactive mode)
 
     Main -> Interactive : run_calculator()
-    Interactive -> User : Display operation menu (1-12)
+    Interactive -> HistFile : clear (truncate to empty)
+    Interactive -> User : Display operation menu (1-12, h, q)
 
     loop until quit or 'n'
 
-        User -> Interactive : Enter operation choice (e.g. "1" for add)
-
-        alt invalid choice
-            Interactive -> User : "Invalid choice, try again."
-        else valid choice
-
-            alt two-operand operation (add, subtract, multiply, divide, power)
-                Interactive -> User : "Enter first number:"
-                User -> Interactive : operand a
-                Interactive -> User : "Enter second number:"
-                User -> Interactive : operand b
-            else one-operand operation (factorial, square, cube, sqrt, cbrt, log, ln)
-                Interactive -> User : "Enter number:"
-                User -> Interactive : operand
+        group operation choice (up to MAX_ATTEMPTS retries for invalid input)
+            loop attempt < MAX_ATTEMPTS
+                User -> Interactive : Enter operation choice
+                alt 'q'
+                    Interactive -> User : "Goodbye!"
+                    Interactive --> Main : return
+                else 'h' — show history (attempt not incremented)
+                    Interactive -> HistFile : read all entries
+                    HistFile --> Interactive : history lines
+                    Interactive -> User : "History:" + entries (or "No history yet.")
+                else valid choice
+                    note right: break out of retry loop
+                else invalid choice, attempts remaining
+                    Interactive -> ErrLog : append timestamped error
+                    Interactive -> User : "Invalid choice. Please try again."
+                else invalid choice, attempts exhausted
+                    Interactive -> ErrLog : append timestamped error
+                    Interactive -> User : "Too many invalid attempts. Ending session."
+                    Interactive --> Main : return
+                end
             end
+        end
 
-            Interactive -> Calc : <operation>(operand(s))
+        group operand input (up to MAX_ATTEMPTS retries)
+            loop attempt < MAX_ATTEMPTS
+                alt two-operand operation (add, subtract, multiply, divide, power)
+                    Interactive -> User : "Enter first value:"
+                    User -> Interactive : operand a
+                    Interactive -> User : "Enter second value:"
+                    User -> Interactive : operand b
+                else one-operand operation (factorial, square, cube, sqrt, cbrt, log, ln)
+                    Interactive -> User : "Enter value:"
+                    User -> Interactive : operand
+                end
 
-            alt no error
-                Calc --> Interactive : result
-                Interactive -> User : "Result: <value>"
-            else ValueError
-                Calc --> Interactive : raise ValueError("<message>")
-                Interactive -> User : "Error: <message>"
+                Interactive -> Calc : <operation>(operand(s))
+
+                alt no error
+                    Calc --> Interactive : result
+                    Interactive -> HistFile : append "<op>(<operands>) = <result>"
+                    Interactive -> User : "Result: <value>"
+                    note right: break out of retry loop
+                else ValueError, attempts remaining
+                    Calc --> Interactive : raise ValueError("<message>")
+                    Interactive -> ErrLog : append timestamped error
+                    Interactive -> User : "Error: <message>"
+                    Interactive -> User : "Please try again."
+                else ValueError, attempts exhausted
+                    Calc --> Interactive : raise ValueError("<message>")
+                    Interactive -> ErrLog : append timestamped error
+                    Interactive -> User : "Error: <message>"
+                    Interactive -> User : "Too many invalid inputs. Ending session."
+                    Interactive --> Main : return
+                end
             end
-
         end
 
         Interactive -> User : "Continue? (y/n)"

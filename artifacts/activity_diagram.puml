@@ -11,6 +11,7 @@ if (Command-line arguments provided?) then (yes)
     if (Operation name is known?) then (no)
         :Print "Error: Unknown operation";
         :Print usage hint;
+        :Append timestamped error to calculator_errors.log;
         :Exit with code 1;
         stop
     endif
@@ -21,7 +22,18 @@ if (Command-line arguments provided?) then (yes)
             :Exit with code 1;
             stop
         endif
-        :Parse argv[2] and argv[3] as float;
+        :Parse argv[2] as float (_parse_float);
+        if (Parse failed?) then (yes)
+            :Print "Error: '<value>' is not a valid number";
+            :Exit with code 1;
+            stop
+        endif
+        :Parse argv[3] as float (_parse_float);
+        if (Parse failed?) then (yes)
+            :Print "Error: '<value>' is not a valid number";
+            :Exit with code 1;
+            stop
+        endif
         :Call Calculator.<operation>(a, b);
     else (no)
         if (Exactly 1 value supplied?) then (no)
@@ -29,16 +41,24 @@ if (Command-line arguments provided?) then (yes)
             :Exit with code 1;
             stop
         endif
+        :Parse argv[2] as float (_parse_float);
+        if (Parse failed?) then (yes)
+            :Print "Error: '<value>' is not a valid number";
+            :Exit with code 1;
+            stop
+        endif
         if (Operation is factorial?) then (yes)
             :Validate input is a whole number;
+            if (Not a whole number?) then (yes)
+                :Raise ValueError;
+            endif
             :Convert to int;
-        else (no)
-            :Parse argv[2] as float;
         endif
         :Call Calculator.<operation>(x);
     endif
 
     if (ValueError raised?) then (yes)
+        :Append timestamped error to calculator_errors.log;
         :Print "Error: <message>";
         :Exit with code 1;
         stop
@@ -50,52 +70,76 @@ if (Command-line arguments provided?) then (yes)
 
 else (no)
 
-    :Display operation menu (1-12);
+    :Clear history file (history.txt);
+    :Display operation menu (1-12, h, q);
 
     repeat
 
-        :Prompt user for operation choice;
+        :attempt = 0;
 
-        if (Input is 'q'?) then (yes)
-            :Print "Goodbye!";
-            stop
-        endif
+        repeat
+            :Prompt user for operation choice;
+            if (Input is 'q'?) then (yes)
+                :Print "Goodbye!";
+                stop
+            endif
+            if (Input is 'h'?) then (yes)
+                :Display session history from file;
+                note right: attempt not incremented
+            elseif (Input is a valid number 1-12?) then (yes)
+                :Select operation;
+                break
+            else (no)
+                :attempt = attempt + 1;
+                :Append timestamped error to calculator_errors.log;
+                if (attempt < MAX_ATTEMPTS?) then (yes)
+                    :Print "Invalid choice. Please try again.";
+                else (no)
+                    :Print "Too many invalid attempts. Ending session.";
+                    stop
+                endif
+            endif
+        repeat while (choice invalid or 'h')
 
-        if (Input is a valid number 1-12?) then (no)
-            :Print "Invalid choice";
-        else (yes)
+        :attempt = 0;
 
+        repeat
             if (Operation requires two operands?\n(add, subtract, multiply,\ndivide, power)) then (yes)
                 :Prompt for operand a;
-                :Convert a to float;
                 :Prompt for operand b;
-                :Convert b to float;
             else (no)
                 :Prompt for single operand;
-                if (Operation is factorial?) then (yes)
-                    :Validate input is a whole number;
-                    :Convert to int;
-                else (no)
-                    :Convert to float;
-                endif
+            endif
+
+            if (Operation is factorial?) then (yes)
+                :Validate input is a whole number;
             endif
 
             :Call Calculator.<operation>(operands);
 
             if (ValueError raised?) then (yes)
+                :attempt = attempt + 1;
+                :Append timestamped error to calculator_errors.log;
                 :Print "Error: <message>";
+                if (attempt < MAX_ATTEMPTS?) then (yes)
+                    :Print "Please try again.";
+                else (no)
+                    :Print "Too many invalid inputs. Ending session.";
+                    stop
+                endif
             else (no)
+                :Append "<op>(<operands>) = <result>" to history file;
                 :Print "Result: <value>";
+                break
             endif
-
-        endif
+        repeat while (input invalid)
 
         :Prompt "Continue? (y/n)";
 
     repeat while (User answers 'y'?) is (yes)
     ->no;
 
-    :Exit;
+    :Print "Goodbye!";
     stop
 
 endif
