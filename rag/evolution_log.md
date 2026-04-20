@@ -1,5 +1,14 @@
 # Evolution Log
 
+## Cycle 15 — Issue #301: GUI Styling (2026-04-15)
+- **Task:** Give the calculator GUI a new and stylish look
+- **Branch:** exp3/issue-301-gui-styling
+- **Files changed:** src/gui.py
+- **Outcome:** Replaced the previous basic dark theme with a GitHub-inspired modern dark palette. Added module-level colour constants for background, display, and all button categories (digit, binary-op, equals, clear, unary, sci-toggle, history, scientific panel). Extracted `_make_button()` helper that attaches `<Enter>`/`<Leave>` hover bindings and sets `relief="flat"`, `cursor="hand2"`. Display upgraded to 32pt Segoe UI bold with a thin separator line between display and button grid. All button groups styled with distinct colour families and consistent `ipady` for uniform height. No logic or API changes. 234 tests collected, 234 passed.
+- **Key decisions:** All visual changes are confined to `_build_ui` and module-level constants — no public API changed. Using `<Enter>`/`<Leave>` bindings for hover because tkinter's native `activebackground` only fires on click. `_make_button()` helper avoids repeating the bind + config block for ~30 buttons while keeping it a single-file helper (not worth a separate module). Tests remain green because they mock tkinter fully and only test GUI logic.
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Cycle 14 — Issue #282: GUI (2026-04-15)
 - **Task:** Add a tkinter GUI for the calculator app while keeping existing CLI/REPL functionality
 - **Branch:** exp3/issue-282-gui-tkinter

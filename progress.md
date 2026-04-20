@@ -1,5 +1,19 @@
 # Progress Log
 
+## Run: Issue #301 — GUI Styling (2026-04-15)
+
+- **Branch:** exp3/issue-301-gui-styling
+- **Files changed:** src/gui.py
+- **Purpose:** Gave the calculator GUI a modern, stylish dark theme inspired by GitHub's UI palette. Added a module-level colour palette with distinct semantic groups (digit/neutral, binary-op blue, equals green, clear red, unary purple, sci navy, history dark-green, scientific-panel). Extracted `_make_button()` helper with flat relief, hand cursor, and `<Enter>`/`<Leave>` hover bindings. Upgraded display to 32pt Segoe UI bold; added thin separator between display and button grid. All button groups use `ipady` for uniform height.
+- **Risks:** Low — visual-only change; no logic, public API, or test changes. tkinter mock still covers all 46 GUI tests.
+- **Tests passed:** 234 / 234 (all tests)
+- **Current branch:** exp3/issue-301-gui-styling
+- **Intended PR target:** exp3/naive-generic
+- **RAG entries consulted:** rag/index.md, rag/codebase_map.md (src/gui.py entry)
+- **Tokens used:** PENDING
+- **Cost:** PENDING
+- **Turns:** PENDING
+
 ## Run: Diagram Update (2026-04-15)
 
 - **Branch:** exp3/issue-282-gui-tkinter

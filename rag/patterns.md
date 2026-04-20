@@ -38,6 +38,9 @@ When the CI environment has no display (and possibly no tkinter), GUI tests must
 ### Lazy GUI import in entry-point to avoid tkinter cost for CLI/REPL
 When a module has both a GUI path and non-GUI paths (CLI, REPL), do the GUI import lazily inside the dispatch branch (``from .gui import launch_gui``) rather than at the module top level. This prevents tkinter from being imported when the user runs the CLI or REPL, and keeps the non-GUI code paths decoupled from the GUI framework.
 
+### Use <Enter>/<Leave> bindings for hover effects in tkinter
+tkinter's `activebackground` only fires while the mouse button is pressed — it does not produce hover highlighting. To give buttons a visual response when the cursor enters them, bind `<Enter>` to `btn.config(bg=hover_bg)` and `<Leave>` to `btn.config(bg=bg)`. Extract this into a `_make_button()` factory helper to avoid repeating the pattern for every button in `_build_ui`. The factory also sets `relief="flat"` and `cursor="hand2"` for a modern look. Tests are unaffected because tkinter is fully mocked — the `bind` calls land on MagicMock and the colour constants are pure strings.
+
 ## Anti-Patterns
 
 ### Infinite retry loops without limit
