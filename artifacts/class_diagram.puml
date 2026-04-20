@@ -69,6 +69,38 @@ package "src" {
         +cli_mode(argv: list | None) : int
     }
 
+    class "gui" as GUI {
+        TWO_ARG_OPS : set
+        INT_OPS : set
+        +launch_gui() : void
+    }
+
+    class CalculatorGUI {
+        +root : Tk
+        +calc : Calculator
+        +scientific_mode : bool
+        -_pending_op : str | None
+        -_pending_value : float | None
+        -_should_reset : bool
+        -_display_var : StringVar
+        -_sci_buttons : list[Button]
+        -_build_ui() : void
+        -_build_number_pad() : void
+        -_build_basic_ops() : void
+        -_build_scientific_ops() : void
+        -_get_display() : str
+        -_set_display(value: str) : void
+        -_display_float(value: float) : void
+        -_update_sci_buttons_state() : void
+        +_on_digit(digit: str) : void
+        +_on_clear() : void
+        +_on_binary_op(op: str) : void
+        +_on_equals() : void
+        +_on_unary_op(op: str) : void
+        +_toggle_mode() : void
+        +_show_history() : void
+    }
+
     class "__main__" as Main {
     }
 
@@ -368,6 +400,90 @@ package "tests" {
         +test_successful_operation_does_not_log_error() : void
     }
 
+    class TestCalculatorGUIInit {
+        +test_scientific_mode_defaults_to_false() : void
+        +test_pending_op_defaults_to_none() : void
+        +test_pending_value_defaults_to_none() : void
+        +test_should_reset_defaults_to_false() : void
+        +test_calculator_instance_created() : void
+    }
+
+    class TestDigitInput {
+        +test_digit_replaces_leading_zero() : void
+        +test_digit_appends_to_existing_value() : void
+        +test_decimal_appended_to_zero() : void
+        +test_duplicate_decimal_is_ignored() : void
+        +test_should_reset_clears_display_before_digit() : void
+        +test_should_reset_flag_cleared_after_digit() : void
+    }
+
+    class TestClear {
+        +test_display_set_to_zero() : void
+        +test_pending_op_cleared() : void
+        +test_pending_value_cleared() : void
+        +test_should_reset_cleared() : void
+    }
+
+    class TestBinaryOp {
+        +test_stores_pending_op_name() : void
+        +test_stores_pending_value_as_float() : void
+        +test_sets_should_reset_flag() : void
+        +test_invalid_display_shows_error_and_leaves_no_pending_op() : void
+    }
+
+    class TestEquals {
+        +test_add_two_integers() : void
+        +test_subtract_two_integers() : void
+        +test_multiply_two_integers() : void
+        +test_divide_two_integers() : void
+        +test_power_operation() : void
+        +test_divide_by_zero_shows_error() : void
+        +test_no_pending_op_does_nothing() : void
+        +test_clears_pending_op_after_success() : void
+        +test_clears_pending_value_after_success() : void
+        +test_sets_should_reset_after_success() : void
+    }
+
+    class TestUnaryOp {
+        +test_square() : void
+        +test_cube() : void
+        +test_square_root_of_perfect_square() : void
+        +test_factorial() : void
+        +test_log_base_ten() : void
+        +test_cube_root() : void
+        +test_square_root_of_negative_shows_error() : void
+        +test_sets_should_reset_on_success() : void
+        +test_does_not_set_should_reset_on_error() : void
+    }
+
+    class TestModeToggle {
+        +test_starts_in_normal_mode() : void
+        +test_toggle_enables_scientific() : void
+        +test_toggle_twice_returns_to_normal() : void
+        +test_scientific_mode_enables_sci_buttons() : void
+        +test_normal_mode_disables_sci_buttons() : void
+        +test_title_updated_to_scientific() : void
+        +test_title_updated_to_normal() : void
+    }
+
+    class TestDisplayFloat {
+        +test_whole_number_shown_without_decimal() : void
+        +test_fractional_number_shown_with_decimal() : void
+        +test_negative_whole_number() : void
+        +test_zero() : void
+    }
+
+    class TestHistoryIntegration {
+        +test_binary_op_recorded_in_history() : void
+        +test_unary_op_recorded_in_history() : void
+        +test_multiple_ops_accumulate_in_history() : void
+        +test_failed_op_not_recorded_in_history() : void
+    }
+
+    class TestLaunchGui {
+        +test_creates_tk_window_and_calls_mainloop() : void
+    }
+
     class TestScientificCalculatorIsSubclass {
         +test_is_subclass_of_calculator() : void
         +test_instance_is_calculator() : void
@@ -409,8 +525,11 @@ package "tests" {
 ScientificCalculator --|> Calculator : extends
 Calculator ..> BasicOps : delegates basic ops
 Calculator ..> ScientificOps : delegates scientific ops
+Main --> GUI : calls launch_gui() (--gui flag)
 Main --> UserInput : calls interactive_mode() (no args)
 Main --> CLI : calls cli_mode() (with args)
+GUI --> CalculatorGUI : creates
+CalculatorGUI --> Calculator : creates and invokes
 UserInput --> Calculator : creates and invokes
 CLI --> Calculator : creates and invokes
 Init --> Calculator : exports
@@ -448,5 +567,15 @@ TestScientificCalculatorIsSubclass --> ScientificCalculator : tests
 TestScientificCalculatorInheritsBasicOps --> ScientificCalculator : tests
 TestScientificCalculatorInheritsScientificOps --> ScientificCalculator : tests
 TestScientificCalculatorHistory --> ScientificCalculator : tests
+TestCalculatorGUIInit --> CalculatorGUI : tests
+TestDigitInput --> CalculatorGUI : tests
+TestClear --> CalculatorGUI : tests
+TestBinaryOp --> CalculatorGUI : tests
+TestEquals --> CalculatorGUI : tests
+TestUnaryOp --> CalculatorGUI : tests
+TestModeToggle --> CalculatorGUI : tests
+TestDisplayFloat --> CalculatorGUI : tests
+TestHistoryIntegration --> CalculatorGUI : tests
+TestLaunchGui --> GUI : tests
 
 @enduml
