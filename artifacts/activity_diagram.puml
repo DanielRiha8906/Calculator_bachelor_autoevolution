@@ -1,0 +1,164 @@
+@startuml activity_diagram
+
+title Calculator — Activity Diagram
+
+start
+
+:Create Calculator instance;
+
+if (command-line args provided?) then (yes)
+    :run_cli(argv, calc);
+
+    if (argv is empty or --help?) then (yes)
+        :Display usage/help;
+        stop
+    endif
+
+    :Parse operation from argv[0];
+
+    if (operation not in ALL_OPS?) then (yes)
+        :Display "Unknown operation" error;
+        :Exit with code 1;
+        stop
+    endif
+
+    if (operation in BINARY_OPS?) then (yes)
+        if (fewer than 2 number args?) then (yes)
+            :Display "requires two numbers" error;
+            :Exit with code 1;
+            stop
+        endif
+        if (inputs are valid numbers?) then (no)
+            :Display "inputs must be valid numbers" error;
+            :Exit with code 1;
+            stop
+        else (yes)
+            :Call calc.<operation>(a, b);
+        endif
+    else (unary op)
+        if (no number arg?) then (yes)
+            :Display "requires one number" error;
+            :Exit with code 1;
+            stop
+        endif
+        if (operation == "factorial"?) then (yes)
+            if (input is valid integer?) then (no)
+                :Display "factorial requires a whole number" error;
+                :Exit with code 1;
+                stop
+            else (yes)
+                :Call calc.factorial(n);
+            endif
+        else (other unary)
+            if (input is valid float?) then (no)
+                :Display "input must be a valid number" error;
+                :Exit with code 1;
+                stop
+            else (yes)
+                :Call calc.<operation>(a);
+            endif
+        endif
+    endif
+
+    if (operation raises ValueError/TypeError?) then (yes)
+        :Display error message;
+        :Exit with code 1;
+    else (no)
+        :Display result;
+        :Exit with code 0;
+    endif
+    stop
+
+else (no args — interactive mode)
+    :run_interactive(calc);
+    :Display available operations;
+    :Display history/clear_history hint;
+
+    repeat
+        :Prompt user for operation;
+        if (operation == "quit"?) then (yes)
+            stop
+        elseif (operation == "history"?) then (yes)
+            if (history is empty?) then (yes)
+                :Display "No history yet.";
+            else (no)
+                :Display numbered list of past operations;
+            endif
+        elseif (operation == "clear_history"?) then (yes)
+            :Call calc.clear_history();
+            :Display "History cleared.";
+        elseif (operation in ALL_OPS?) then (no)
+            :Display "Unknown operation" error;
+        elseif (operation in BINARY_OPS?) then (yes)
+            :attempt = 1;
+            repeat
+                :Prompt for first number (a);
+                if (input is valid float?) then (yes)
+                    break
+                else (no)
+                    :Display "input must be a valid number" error;
+                    :attempt = attempt + 1;
+                endif
+            repeat while (attempt <= MAX_INPUT_RETRIES)
+            if (a parsed successfully?) then (no)
+                :Return to operation prompt;
+            else (yes)
+                :attempt = 1;
+                repeat
+                    :Prompt for second number (b);
+                    if (input is valid float?) then (yes)
+                        break
+                    else (no)
+                        :Display "input must be a valid number" error;
+                        :attempt = attempt + 1;
+                    endif
+                repeat while (attempt <= MAX_INPUT_RETRIES)
+                if (b parsed successfully?) then (no)
+                    :Return to operation prompt;
+                else (yes)
+                    :Call calc.<operation>(a, b);
+                    if (operation raises ValueError?) then (yes)
+                        :Display error message;
+                    else (no)
+                        :Display result;
+                    endif
+                endif
+            endif
+        else (unary op)
+            :attempt = 1;
+            if (operation == "factorial"?) then (yes)
+                repeat
+                    :Prompt for integer number;
+                    if (input is valid integer?) then (yes)
+                        break
+                    else (no)
+                        :Display "factorial requires a whole number" error;
+                        :attempt = attempt + 1;
+                    endif
+                repeat while (attempt <= MAX_INPUT_RETRIES)
+            else (other unary)
+                repeat
+                    :Prompt for number;
+                    if (input is valid float?) then (yes)
+                        break
+                    else (no)
+                        :Display "input must be a valid number" error;
+                        :attempt = attempt + 1;
+                    endif
+                repeat while (attempt <= MAX_INPUT_RETRIES)
+            endif
+            if (a parsed successfully?) then (no)
+                :Return to operation prompt;
+            else (yes)
+                :Call calc.<operation>(a);
+                if (operation raises ValueError/TypeError?) then (yes)
+                    :Display error message;
+                else (no)
+                    :Display result;
+                endif
+            endif
+        endif
+    repeat while (session active)
+endif
+
+@enduml

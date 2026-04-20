@@ -1,0 +1,49 @@
+@startuml class_diagram
+
+title Calculator — Class Diagram
+
+class Calculator {
+    - _history : list[dict]
+    + __init__()
+    - _record(operation: str, operands: tuple, result) : None
+    + get_history() : list[dict]
+    + clear_history() : None
+    + add(a, b) : float
+    + subtract(a, b) : float
+    + multiply(a, b) : float
+    + divide(a, b) : float
+    + factorial(n: int) : int
+    + square(x) : float
+    + cube(x) : float
+    + square_root(x) : float
+    + cube_root(x) : float
+    + power(base, exp) : float
+    + log(x) : float
+    + ln(x) : float
+}
+
+note right of Calculator
+  divide raises ValueError on b == 0
+  factorial raises TypeError for non-int,
+    ValueError for negative n
+  square_root raises ValueError for x < 0
+  log / ln raise ValueError for x <= 0
+  Failed operations are not recorded
+    in history; only successful ones are.
+  All error conditions are logged at ERROR
+    level via module-level logger.
+end note
+
+class "__main__" as Main {
+    + BINARY_OPS : set
+    + UNARY_OPS : set
+    + ALL_OPS : set
+    + HISTORY_OPS : set
+    + run_interactive(calc, input_fn, output_fn) : None
+    + run_cli(argv, calc, output_fn) : int
+    + main() : None
+}
+
+Main --> Calculator : uses
+
+@enduml
